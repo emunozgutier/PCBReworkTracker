@@ -6,6 +6,10 @@
     <title>PCB Rework Tracker | Modern Tracking</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- React CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
@@ -33,89 +37,149 @@
           {% endif %}
         {% endwith %}
 
-        <section class="dashboard">
-            <div class="row g-4">
-                <!-- Column 1: Projects -->
-                <div class="col-12 col-md-6 col-xl-3">
-                    <div class="card glass-card animate-zoom-in h-100">
-                        <div class="card-icon">📁</div>
-                        <h3>Projects</h3>
-                        <p>Total: {{ projects|length }}</p>
-                        <ul class="data-list">
-                            {% for project in projects %}
-                                <li class="list-item-with-action">
-                                    <span>{{ project.name }}</span>
-                                    <form action="{{ url_for('create_project.delete_project', project_id=project.id) }}" method="POST" class="delete-form">
-                                        <button type="submit" class="delete-btn" title="Delete Project">&times;</button>
-                                    </form>
-                                </li>
-                            {% else %}
-                                <li class="empty-state">No projects yet.</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Column 2: PCBs -->
-                <div class="col-12 col-md-6 col-xl-3">
-                    <div class="card glass-card animate-zoom-in delay-100 h-100">
-                        <div class="card-icon">📟</div>
-                        <h3>Logged PCBs</h3>
-                        <p>Total: {{ pcbs|length }}</p>
-                        <ul class="data-list">
-                            {% for pcb in pcbs %}
-                                <li>
-                                    <div class="item-main">{{ pcb.number }}</div>
-                                    <div class="item-sub">{{ pcb.project.name }}</div>
-                                </li>
-                            {% else %}
-                                <li class="empty-state">No PCBs logged.</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Column 3: Reworks -->
-                <div class="col-12 col-md-6 col-xl-3">
-                    <div class="card glass-card animate-zoom-in delay-200 h-100">
-                        <div class="card-icon">🔧</div>
-                        <h3>Latest Reworks</h3>
-                        <p>Total: {{ reworks|length }}</p>
-                        <ul class="data-list">
-                            {% for rework in reworks %}
-                                <li>
-                                    <div class="item-main">{{ rework.description[:50] }}{% if rework.description|length > 50 %}...{% endif %}</div>
-                                    <div class="item-sub">PCB: {{ rework.pcb.number }} | {{ rework.timestamp.strftime('%Y-%m-%d') }}</div>
-                                </li>
-                            {% else %}
-                                <li class="empty-state">No reworks logged.</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Column 4: Task Tags -->
-                <div class="col-12 col-md-6 col-xl-3">
-                    <div class="card glass-card animate-zoom-in h-100" style="animation-delay: 0.3s">
-                        <div class="card-icon">🏷️</div>
-                        <h3>Task Tags</h3>
-                        <p>Available Categories</p>
-                        <ul class="data-list tags-list">
-                            {% for tag in task_tags %}
-                                <li class="tag-item">{{ tag.name }}</li>
-                            {% else %}
-                                <li class="empty-state">No tags defined.</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <section id="dashboard-root" class="dashboard"></section>
 
         <footer class="footer">
-            <p>&copy; 2026 PCB Rework Tracker. Powered by Flask.</p>
+            <p>&copy; 2026 PCB Rework Tracker. Powered by Flask & React.</p>
         </footer>
     </main>
+
+    <script type="text/babel">
+        {% raw %}
+        const { useState, useEffect } = React;
+
+        function Dashboard() {
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            const fetchData = async () => {
+                try {
+                    const response = await fetch('/api/dashboard');
+                    const result = await response.json();
+                    setData(result);
+                    setLoading(false);
+                } catch (err) {
+                    setError('Failed to load dashboard data');
+                    setLoading(false);
+                }
+            };
+
+            useEffect(() => {
+                fetchData();
+            }, []);
+
+            const handleDeleteProject = async (projectId) => {
+                if (!confirm('Are you sure you want to delete this project?')) return;
+                
+                try {
+                    const response = await fetch(`/delete_project/${projectId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        fetchData();
+                    } else {
+                        alert(result.message);
+                    }
+                } catch (err) {
+                    alert('Error deleting project');
+                }
+            };
+
+            if (loading) return <div className="text-center p-5"><div className="spinner-border text-primary" role="status"></div><p className="mt-3 text-white">Loading Dashboard...</p></div>;
+            if (error) return <div className="alert alert-danger m-4">{error}</div>;
+
+            return (
+                <div className="row g-4">
+                    {/* Column 1: Projects */}
+                    <div className="col-12 col-md-6 col-xl-3">
+                        <div className="card glass-card animate-zoom-in h-100">
+                            <div className="card-icon">📁</div>
+                            <h3>Projects</h3>
+                            <p>Total: {data.projects.length}</p>
+                            <ul className="data-list">
+                                {data.projects.map(project => (
+                                    <li key={project.id} className="list-item-with-action">
+                                        <span>{project.name}</span>
+                                        <div className="delete-form">
+                                            <button 
+                                                onClick={() => handleDeleteProject(project.id)} 
+                                                className="delete-btn" 
+                                                title="Delete Project"
+                                            >
+                                                &times;
+                                            </button>
+                                        </div>
+                                    </li>
+                                ))}
+                                {data.projects.length === 0 && <li className="empty-state">No projects yet.</li>}
+                            </ul>
+                        </div>
+                    </div>
+
+                    {/* Column 2: PCBs */}
+                    <div className="col-12 col-md-6 col-xl-3">
+                        <div className="card glass-card animate-zoom-in delay-100 h-100">
+                            <div className="card-icon">📟</div>
+                            <h3>Logged PCBs</h3>
+                            <p>Total: {data.pcbs.length}</p>
+                            <ul className="data-list">
+                                {data.pcbs.map(pcb => (
+                                    <li key={pcb.id}>
+                                        <div className="item-main">{pcb.number}</div>
+                                        <div className="item-sub">{pcb.project_name}</div>
+                                    </li>
+                                ))}
+                                {data.pcbs.length === 0 && <li className="empty-state">No PCBs logged.</li>}
+                            </ul>
+                        </div>
+                    </div>
+
+                    {/* Column 3: Reworks */}
+                    <div className="col-12 col-md-6 col-xl-3">
+                        <div className="card glass-card animate-zoom-in delay-200 h-100">
+                            <div className="card-icon">🔧</div>
+                            <h3>Latest Reworks</h3>
+                            <p>Total: {data.reworks.length}</p>
+                            <ul className="data-list">
+                                {data.reworks.map(rework => (
+                                    <li key={rework.id}>
+                                        <div className="item-main">{rework.description.substring(0, 50)}{rework.description.length > 50 ? '...' : ''}</div>
+                                        <div className="item-sub">PCB: {rework.pcb_number} | {rework.timestamp}</div>
+                                    </li>
+                                ))}
+                                {data.reworks.length === 0 && <li className="empty-state">No reworks logged.</li>}
+                            </ul>
+                        </div>
+                    </div>
+
+                    {/* Column 4: Task Tags */}
+                    <div className="col-12 col-md-6 col-xl-3">
+                        <div className="card glass-card animate-zoom-in h-100" style={{'animationDelay': '0.3s'}}>
+                            <div className="card-icon">🏷️</div>
+                            <h3>Task Tags</h3>
+                            <p>Available Categories</p>
+                            <ul className="data-list tags-list">
+                                {data.task_tags.map(tag => (
+                                    <li key={tag.id} className="tag-item">{tag.name}</li>
+                                ))}
+                                {data.task_tags.length === 0 && <li className="empty-state">No tags defined.</li>}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('dashboard-root'));
+        root.render(<Dashboard />);
+        {% endraw %}
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>

@@ -133,6 +133,9 @@ h1 span {
 
 .dashboard {
     margin-bottom: 5rem;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
 }
 
 .glass-card {

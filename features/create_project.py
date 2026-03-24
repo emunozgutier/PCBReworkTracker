@@ -22,15 +22,22 @@ def create_project():
     projects = Project.query.all()
     return render_template('create_project.html', projects=projects)
 
-@create_project_bp.route('/delete-project/<int:project_id>', methods=['POST'])
+@create_project_bp.route('/delete_project/<int:project_id>', methods=['POST'])
 def delete_project(project_id):
     project = Project.query.get_or_404(project_id)
-    if project.pcbs:
-        flash(f'Cannot delete project "{project.name}" because it has logged PCBs.', 'warning')
-    else:
-        db.session.delete(project)
-        db.session.commit()
-        flash(f'Project "{project.name}" deleted successfully.', 'success')
     
-    # Redirect back to where the user came from
-    return redirect(request.referrer or url_for('home'))
+    if project.pcbs:
+        message = "Cannot delete project with associated PCBs."
+        flash(message, 'error')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json or 'application/json' in request.headers.get('Accept', ''):
+            return jsonify({'success': False, 'message': message}), 400
+        return redirect(url_for('home'))
+        
+    db.session.delete(project)
+    db.session.commit()
+    flash('Project deleted successfully!', 'success')
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json or 'application/json' in request.headers.get('Accept', ''):
+        return jsonify({'success': True, 'message': 'Project deleted successfully!'})
+    
+    return redirect(url_for('home'))

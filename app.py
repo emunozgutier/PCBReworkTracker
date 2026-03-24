@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from models import db, Project, PCB, Rework, TaskTag
 from features.create_project import create_project_bp
 from features.add_pcb import add_pcb_bp
@@ -33,6 +33,25 @@ with app.app_context():
         if sample_pcb:
             db.session.add(Rework(description='Initial component inspection and flux removal.', pcb_id=sample_pcb.id))
             db.session.commit()
+
+@app.route('/api/dashboard')
+def dashboard_api():
+    projects = Project.query.all()
+    pcbs = PCB.query.order_by(PCB.id.desc()).all()
+    reworks = Rework.query.order_by(Rework.id.desc()).all()
+    task_tags = TaskTag.query.all()
+    
+    return jsonify({
+        'projects': [{'id': p.id, 'name': p.name, 'pcb_count': len(p.pcbs)} for p in projects],
+        'pcbs': [{'id': p.id, 'number': p.number, 'project_name': p.project.name} for p in pcbs],
+        'reworks': [{
+            'id': r.id, 
+            'description': r.description, 
+            'pcb_number': r.pcb.number, 
+            'timestamp': r.timestamp.strftime('%Y-%m-%d')
+        } for r in reworks],
+        'task_tags': [{'id': t.id, 'name': t.name} for t in task_tags]
+    })
 
 @app.route('/')
 def home():
