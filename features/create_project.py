@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from models import db, Project
 
 create_project_bp = Blueprint('create_project', __name__, template_folder='.')
