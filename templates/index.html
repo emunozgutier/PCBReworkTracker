@@ -33,56 +33,72 @@
         {% endwith %}
 
         <section class="dashboard">
-            <div class="card glass-card animate-zoom-in">
-                <div class="card-icon">🚀</div>
-                <h3>Project Overview</h3>
-                <p>Total projects currently tracked.</p>
-                <div class="stat-group">
-                    <div class="stat">
-                        <span class="stat-value">{{ projects|length }}</span>
-                        <span class="stat-label">Projects</span>
-                    </div>
+             <div class="dashboard-grid">
+                <!-- Column 1: Projects -->
+                <div class="card glass-card animate-zoom-in">
+                    <div class="card-icon">📁</div>
+                    <h3>Projects</h3>
+                    <p>Total: {{ projects|length }}</p>
+                    <ul class="data-list">
+                        {% for project in projects %}
+                            <li class="list-item-with-action">
+                                <span>{{ project.name }}</span>
+                                <form action="{{ url_for('create_project.delete_project', project_id=project.id) }}" method="POST" class="delete-form">
+                                    <button type="submit" class="delete-btn" title="Delete Project">&times;</button>
+                                </form>
+                            </li>
+                        {% else %}
+                            <li class="empty-state">No projects yet.</li>
+                        {% endfor %}
+                    </ul>
                 </div>
-                <ul class="data-list">
-                    {% for project in projects %}
-                        <li class="list-item-with-action">
-                            <span>{{ project.name }}</span>
-                            <form action="{{ url_for('create_project.delete_project', project_id=project.id) }}" method="POST" class="delete-form">
-                                <button type="submit" class="delete-btn" title="Delete Project">&times;</button>
-                            </form>
-                        </li>
-                    {% else %}
-                        <li class="empty-state">No projects yet.</li>
-                    {% endfor %}
-                </ul>
-            </div>
 
-            <div class="card glass-card animate-zoom-in delay-100">
-                <div class="card-icon">🛠️</div>
-                <h3>Logged PCBs</h3>
-                <p>Breakdown of PCBs by project and number.</p>
-                <div class="stat-group">
-                    <div class="stat">
-                        <span class="stat-value">{{ pcbs|length }}</span>
-                        <span class="stat-label">Total PCBs</span>
-                    </div>
+                <!-- Column 2: PCBs -->
+                <div class="card glass-card animate-zoom-in delay-100">
+                    <div class="card-icon">📟</div>
+                    <h3>Logged PCBs</h3>
+                    <p>Total: {{ pcbs|length }}</p>
+                    <ul class="data-list">
+                        {% for pcb in pcbs %}
+                            <li>
+                                <div class="item-main">{{ pcb.number }}</div>
+                                <div class="item-sub">{{ pcb.project.name }}</div>
+                            </li>
+                        {% else %}
+                            <li class="empty-state">No PCBs logged.</li>
+                        {% endfor %}
+                    </ul>
                 </div>
-                <ul class="data-list">
-                    {% for pcb in pcbs %}
-                        <li><strong>{{ pcb.project.name }}</strong>: {{ pcb.number }}</li>
-                    {% else %}
-                        <li class="empty-state">No PCBs logged yet.</li>
-                    {% endfor %}
-                </ul>
-            </div>
 
-            <div class="card glass-card animate-zoom-in delay-200">
-                <div class="card-icon">📊</div>
-                <h3>System Health</h3>
-                <p>Real-time status of the tracking engine.</p>
-                <div class="status-indicator">
-                    <span class="dot pulse"></span>
-                    <span class="status-text">Operational</span>
+                <!-- Column 3: Reworks -->
+                <div class="card glass-card animate-zoom-in delay-200">
+                    <div class="card-icon">🔧</div>
+                    <h3>Latest Reworks</h3>
+                    <p>Total: {{ reworks|length }}</p>
+                    <ul class="data-list">
+                        {% for rework in reworks %}
+                            <li>
+                                <div class="item-main">{{ rework.description[:50] }}{% if rework.description|length > 50 %}...{% endif %}</div>
+                                <div class="item-sub">PCB: {{ rework.pcb.number }} | {{ rework.timestamp.strftime('%Y-%m-%d') }}</div>
+                            </li>
+                        {% else %}
+                            <li class="empty-state">No reworks logged.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Column 4: Task Tags -->
+                <div class="card glass-card animate-zoom-in" style="animation-delay: 0.3s">
+                    <div class="card-icon">🏷️</div>
+                    <h3>Task Tags</h3>
+                    <p>Available Categories</p>
+                    <ul class="data-list tags-list">
+                        {% for tag in task_tags %}
+                            <li class="tag-item">{{ tag.name }}</li>
+                        {% else %}
+                            <li class="empty-state">No tags defined.</li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
         </section>

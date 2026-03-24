@@ -133,9 +133,21 @@ h1 span {
 
 .dashboard {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
     margin-bottom: 5rem;
+}
+
+@media (max-width: 1200px) {
+    .dashboard {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
 }
 
 .glass-card {
@@ -211,6 +223,42 @@ h3 {
 .delete-btn:hover {
     transform: scale(1.2);
     color: #f87171;
+}
+
+/* Tag Styles */
+.tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 1rem 0;
+}
+
+.tag-item {
+    background: rgba(124, 58, 237, 0.2);
+    border: 1px solid rgba(124, 58, 237, 0.3);
+    color: #a78bfa;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.tag-item:hover {
+    background: rgba(124, 58, 237, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+}
+
+.item-main {
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.2rem;
+}
+
+.item-sub {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .stat-value {
