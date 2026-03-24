@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from models import db, Project, PCB, Rework, TaskTag
-from features.create_project import create_project_bp
-from features.add_pcb import add_pcb_bp
+from pages.create_project import create_project_bp
+from pages.add_pcb import add_pcb_bp
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='pages')
 app.secret_key = 'super-secret-key'
 
 # Database Configuration
