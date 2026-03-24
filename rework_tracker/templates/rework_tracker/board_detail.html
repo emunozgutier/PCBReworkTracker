@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board Detail - PCB Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #38bdf8;
+            --text-color: #f1f5f9;
+            --border-color: #475569;
+            --success: #10b981;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+        }
+        .header {
+            max-width: 1000px;
+            margin: 0 auto 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 {
+            font-size: 2.25rem;
+            margin: 0;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .pcb-info {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border-color);
+            max-width: 1000px;
+            margin: 0 auto 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        .info-card {
+            padding: 1rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 0.5rem;
+        }
+        .info-card label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+        .info-card span {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        .reworks-section {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .rework-list {
+            display: grid;
+            gap: 1rem;
+        }
+        .rework-item {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border-color);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+        }
+        .rework-details h3 {
+            margin: 0 0 0.5rem;
+            color: var(--accent-color);
+        }
+        .rework-meta {
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+        .rework-image {
+            max-width: 150px;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        .nav-link {
+            padding: 0.5rem 1rem;
+            background: var(--accent-color);
+            color: var(--bg-color);
+            text-decoration: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        .nav-link:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Board Info: {{ pcb.pcb_number }}</h1>
+        <a href="{% url 'add_rework' %}" class="nav-link">Add Rework</a>
+    </div>
+
+    <div class="pcb-info">
+        <div class="info-card">
+            <label>Product</label>
+            <span>{{ pcb.product_name_and_rev }}</span>
+        </div>
+        <div class="info-card">
+            <label>BOM Number</label>
+            <span>{{ pcb.bom_number }}</span>
+        </div>
+        <div class="info-card">
+            <label>Last Owner</label>
+            <span>{{ pcb.last_owner }}</span>
+        </div>
+        <div class="info-card">
+            <label>Status</label>
+            <span>{{ pcb.status }}</span>
+        </div>
+    </div>
+
+    <div class="reworks-section">
+        <h2>Rework History</h2>
+        <div class="rework-list">
+            {% for rework in pcb.reworks.all %}
+            <div class="rework-item">
+                <div class="rework-details">
+                    <h3>Rework #{{ rework.rework_number }}</h3>
+                    <p>{{ rework.rework_description }}</p>
+                    <div class="rework-meta">
+                        Owner: {{ rework.rework_owner }} | Status: {{ rework.rework_status }} | Date: {{ rework.rework_date|date:"M d, Y" }}
+                    </div>
+                </div>
+                {% if rework.rework_picture %}
+                <img src="{{ rework.rework_picture.url }}" alt="Rework Picture" class="rework-image">
+                {% endif %}
+            </div>
+            {% empty %}
+            <p>No reworks recorded for this board.</p>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

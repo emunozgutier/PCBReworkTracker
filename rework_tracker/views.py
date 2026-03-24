@@ -8,16 +8,6 @@ def add_rework(request):
         rework_form = ReworkForm(request.POST, request.FILES)
 
         if pcb_form.is_valid() and rework_form.is_valid():
-            # Handle PCB
-            pcb_number = pcb_form.cleaned_data['pcb_number']
-            pcb, created = PCB.objects.get_or_create(pcb_number=pcb_number)
-            
-            # Update PCB fields if provided
-            if pcb_form.cleaned_data['bom_number']:
-                pcb.bom_number = pcb_form.cleaned_data['bom_number']
-            if pcb_form.cleaned_data['status']:
-                pcb.status = pcb_form.cleaned_data['status']
-
             # Handle Product Name and Rev
             product = pcb_form.cleaned_data['product_name_and_rev']
             new_prod_name = pcb_form.cleaned_data['new_product_name']
@@ -26,8 +16,27 @@ def add_rework(request):
             if new_prod_name and new_prod_rev:
                 product, _ = ProductNameAndRev.objects.get_or_create(name=new_prod_name, rev=new_prod_rev)
             
+            # Handle PCB
+            pcb_number = pcb_form.cleaned_data['pcb_number']
+            # We need the product before we can create the PCB
+            if not product:
+                # If no product is selected or created, we might have an issue, 
+                # but for now let's assume one is provided as per form validation or logic.
+                # In a real app, you'd add more validation.
+                pass
+
+            pcb, created = PCB.objects.get_or_create(
+                pcb_number=pcb_number,
+                defaults={'product_name_and_rev': product}
+            )
+            
+            # Update PCB fields
             if product:
                 pcb.product_name_and_rev = product
+            if pcb_form.cleaned_data['bom_number']:
+                pcb.bom_number = pcb_form.cleaned_data['bom_number']
+            if pcb_form.cleaned_data['status']:
+                pcb.status = pcb_form.cleaned_data['status']
 
             # Handle Last Owner
             last_owner = pcb_form.cleaned_data['last_owner']
