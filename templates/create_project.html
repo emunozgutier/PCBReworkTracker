@@ -25,12 +25,12 @@
           {% endif %}
         {% endwith %}
 
-        <section class="form-container">
+        <section class="form-grid">
             <div class="card glass-card animate-zoom-in">
-                <form action="{{ url_for('create_project') }}" method="POST">
+                <form action="{{ url_for('create_project.create_project') }}" method="POST">
                     <div class="form-group">
-                        <label for="project_name">Project Name</label>
-                        <input type="text" id="project_name" name="project_name" placeholder="e.g. NextGen CPU Board" required autofocus>
+                        <label for="project_name">New Project Name</label>
+                        <input type="text" id="project_name" name="project_name" placeholder="e.g. NextGen CPU Board" required autofocus autocomplete="off">
                     </div>
                     <div class="button-group">
                         <button type="submit" class="btn btn-primary">Create Project</button>
@@ -38,7 +38,77 @@
                     </div>
                 </form>
             </div>
+
+            <div class="card glass-card animate-zoom-in delay-100">
+                <h3>Existing Projects</h3>
+                <p>Check for similar names to avoid duplicates.</p>
+                <div class="project-filter-list">
+                    <ul id="existing-projects-list" class="data-list">
+                        {% for project in projects %}
+                            <li data-name="{{ project.name }}">{{ project.name }}</li>
+                        {% else %}
+                            <li class="empty-state">No projects created yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
         </section>
+
+    <script>
+        document.getElementById('project_name').addEventListener('input', function(e) {
+            const input = e.target.value.toLowerCase();
+            const list = document.getElementById('existing-projects-list');
+            const items = Array.from(list.getElementsByTagName('li'));
+            
+            if (items.length === 0 || (items.length === 1 && items[0].classList.contains('empty-state'))) return;
+
+            items.sort((a, b) => {
+                const nameA = a.getAttribute('data-name').toLowerCase();
+                const nameB = b.getAttribute('data-name').toLowerCase();
+                
+                const scoreA = getSimilarityScore(nameA, input);
+                const scoreB = getSimilarityScore(nameB, input);
+                
+                return scoreB - scoreA; // Higher score first
+            });
+
+            // Re-append sorted items
+            items.forEach(item => {
+                list.appendChild(item);
+                
+                // Highlight matches
+                const name = item.getAttribute('data-name');
+                if (input && name.toLowerCase().includes(input)) {
+                    item.style.opacity = '1';
+                    item.style.color = '#fff';
+                    item.style.fontWeight = 'bold';
+                    item.style.background = 'rgba(99, 102, 241, 0.1)';
+                    item.style.borderRadius = '8px';
+                    item.style.padding = '12px 10px';
+                } else if (input) {
+                    item.style.opacity = '0.4';
+                    item.style.color = '#94a3b8';
+                    item.style.fontWeight = 'normal';
+                    item.style.background = 'transparent';
+                    item.style.padding = '12px 0';
+                } else {
+                    item.style.opacity = '1';
+                    item.style.color = '#cbd5e1';
+                    item.style.fontWeight = 'normal';
+                    item.style.background = 'transparent';
+                    item.style.padding = '12px 0';
+                }
+            });
+        });
+
+        function getSimilarityScore(name, input) {
+            if (!input) return 0;
+            if (name === input) return 100;
+            if (name.startsWith(input)) return 50 + input.length;
+            if (name.includes(input)) return 10 + input.length;
+            return 0;
+        }
+    </script>
     </main>
 </body>
 </html>
