@@ -10,6 +10,7 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel" src="/pages/subcomponents/CardList.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
@@ -101,81 +102,76 @@
             return (
                 <div className="row g-4">
                     {/* Column 1: Projects */}
-                    <div className="col-12 col-md-6 col-xl-3">
-                        <div className="card glass-card animate-zoom-in h-100">
-                            <div className="card-icon">📁</div>
-                            <h3>Projects</h3>
-                            <p>Total: {data.projects.length}</p>
-                            <ul className="data-list">
-                                {data.projects.map(project => (
-                                    <li key={project.id} className="list-item-with-action">
-                                        <span>{project.name}</span>
-                                        <div className="delete-form">
-                                            <button 
-                                                onClick={() => handleDeleteProject(project.id)} 
-                                                className="delete-btn" 
-                                                title="Delete Project"
-                                            >
-                                                &times;
-                                            </button>
-                                        </div>
-                                    </li>
-                                ))}
-                                {data.projects.length === 0 && <li className="empty-state">No projects yet.</li>}
-                            </ul>
-                        </div>
-                    </div>
-
+                    <CardList 
+                        icon="📁" 
+                        title="Projects" 
+                        subtitle={`Total: ${data.projects.length}`}
+                        items={data.projects}
+                        emptyMessage="No projects yet."
+                    >
+                        {(project) => (
+                            <li className="list-item-with-action">
+                                <span>{project.name}</span>
+                                <div className="delete-form">
+                                    <button 
+                                        onClick={() => handleDeleteProject(project.id)} 
+                                        className="delete-btn" 
+                                        title="Delete Project"
+                                    >
+                                        &times;
+                                    </button>
+                                </div>
+                            </li>
+                        )}
+                    </CardList>
+                    
                     {/* Column 2: PCBs */}
-                    <div className="col-12 col-md-6 col-xl-3">
-                        <div className="card glass-card animate-zoom-in delay-100 h-100">
-                            <div className="card-icon">📟</div>
-                            <h3>Logged PCBs</h3>
-                            <p>Total: {data.pcbs.length}</p>
-                            <ul className="data-list">
-                                {data.pcbs.map(pcb => (
-                                    <li key={pcb.id}>
-                                        <div className="item-main">{pcb.number}</div>
-                                        <div className="item-sub">{pcb.project_name}</div>
-                                    </li>
-                                ))}
-                                {data.pcbs.length === 0 && <li className="empty-state">No PCBs logged.</li>}
-                            </ul>
-                        </div>
-                    </div>
+                    <CardList 
+                        icon="📟" 
+                        title="Logged PCBs" 
+                        subtitle={`Total: ${data.pcbs.length}`}
+                        items={data.pcbs}
+                        emptyMessage="No PCBs logged."
+                        delay="100"
+                    >
+                        {(pcb) => (
+                            <li>
+                                <div className="item-main">{pcb.number}</div>
+                                <div className="item-sub">{pcb.project_name}</div>
+                            </li>
+                        )}
+                    </CardList>
 
                     {/* Column 3: Reworks */}
-                    <div className="col-12 col-md-6 col-xl-3">
-                        <div className="card glass-card animate-zoom-in delay-200 h-100">
-                            <div className="card-icon">🔧</div>
-                            <h3>Latest Reworks</h3>
-                            <p>Total: {data.reworks.length}</p>
-                            <ul className="data-list">
-                                {data.reworks.map(rework => (
-                                    <li key={rework.id}>
-                                        <div className="item-main">{rework.description.substring(0, 50)}{rework.description.length > 50 ? '...' : ''}</div>
-                                        <div className="item-sub">PCB: {rework.pcb_number} | {rework.timestamp}</div>
-                                    </li>
-                                ))}
-                                {data.reworks.length === 0 && <li className="empty-state">No reworks logged.</li>}
-                            </ul>
-                        </div>
-                    </div>
+                    <CardList 
+                        icon="🔧" 
+                        title="Latest Reworks" 
+                        subtitle={`Total: ${data.reworks.length}`}
+                        items={data.reworks}
+                        emptyMessage="No reworks logged."
+                        delay="200"
+                    >
+                        {(rework) => (
+                            <li>
+                                <div className="item-main">{rework.description.substring(0, 50)}{rework.description.length > 50 ? '...' : ''}</div>
+                                <div className="item-sub">PCB: {rework.pcb_number} | {rework.timestamp}</div>
+                            </li>
+                        )}
+                    </CardList>
 
                     {/* Column 4: Task Tags */}
-                    <div className="col-12 col-md-6 col-xl-3">
-                        <div className="card glass-card animate-zoom-in h-100" style={{'animationDelay': '0.3s'}}>
-                            <div className="card-icon">🏷️</div>
-                            <h3>Task Tags</h3>
-                            <p>Available Categories</p>
-                            <ul className="data-list tags-list">
-                                {data.task_tags.map(tag => (
-                                    <li key={tag.id} className="tag-item">{tag.name}</li>
-                                ))}
-                                {data.task_tags.length === 0 && <li className="empty-state">No tags defined.</li>}
-                            </ul>
-                        </div>
-                    </div>
+                    <CardList 
+                        icon="🏷️" 
+                        title="Task Tags" 
+                        subtitle="Available Categories"
+                        items={data.task_tags}
+                        emptyMessage="No tags defined."
+                        delay="300"
+                    >
+                        {(tag) => (
+                            <li className="tag-item">{tag.name}</li>
+                        )}
+                    </CardList>
                 </div>
             );
         }

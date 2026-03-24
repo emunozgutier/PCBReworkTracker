@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
 from models import db, Project, PCB, Rework, TaskTag
 from pages.create_project import create_project_bp
 from pages.add_pcb import add_pcb_bp
@@ -6,6 +6,10 @@ import os
 
 app = Flask(__name__, template_folder='pages')
 app.secret_key = 'super-secret-key'
+
+@app.route('/pages/subcomponents/<path:filename>')
+def serve_subcomponents(filename):
+    return send_from_directory('pages/subcomponents', filename)
 
 # Database Configuration
 basedir = os.path.abspath(os.path.dirname(__file__))
