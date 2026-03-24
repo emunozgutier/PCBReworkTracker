@@ -13,6 +13,8 @@
     <script type="text/babel" src="/pages/subcomponents/CardHeader.jsx"></script>
     <script type="text/babel" src="/pages/subcomponents/CardListElement.jsx"></script>
     <script type="text/babel" src="/pages/subcomponents/CardList.jsx"></script>
+    <script type="text/babel" src="/pages/subcomponents/TitleBar.jsx"></script>
+    <script type="text/babel" src="/pages/subcomponents/Footer.jsx"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
@@ -20,31 +22,7 @@
 <body>
     <div class="glass-background"></div>
     <main class="container">
-        <header class="hero">
-            <h1 class="animate-fade-in-down">PCB <span>Rework</span> Tracker</h1>
-            <p class="subtitle animate-fade-in-up">Manage, track, and optimize your PCB rework workflow with ease.</p>
-            
-        </header>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div class="flash-messages animate-fade-in-down">
-              {% for category, message in messages %}
-                <div class="flash {{ category }}">{{ message }}</div>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
-
         <section id="dashboard-root" class="dashboard">
-            <div class="text-center p-5">
-                <p class="text-white">Initializing Dashboard Engine...</p>
-            </div>
-        </section>
-
-        <footer class="footer">
-            <p>&copy; 2026 PCB Rework Tracker. Powered by Flask & React.</p>
-        </footer>
     </main>
 
     <script type="text/babel">
@@ -99,86 +77,90 @@
             if (error) return <div className="alert alert-danger m-4">{error}</div>;
 
             return (
-                <div className="row g-4 dashboard">
-                    {/* Column 1: Projects */}
-                    <CardList 
-                        icon="📁" 
-                        title="Projects" 
-                        subtitle={`Total: ${data.projects.length}`}
-                        items={data.projects}
-                        emptyMessage="No projects yet."
-                        isActive={activeCard === 'projects'}
-                        onHeaderClick={() => setActiveCard('projects')}
-                    >
-                        {(project) => (
-                            <li className="list-item-with-action">
-                                <span>{project.name}</span>
-                                <div className="delete-form">
-                                    <button 
-                                        onClick={() => handleDeleteProject(project.id)} 
-                                        className="delete-btn" 
-                                        title="Delete Project"
-                                    >
-                                        &times;
-                                    </button>
-                                </div>
-                            </li>
-                        )}
-                    </CardList>
-                    
-                    {/* Column 2: PCBs */}
-                    <CardList 
-                        icon="📟" 
-                        title="Logged PCBs" 
-                        subtitle={`Total: ${data.pcbs.length}`}
-                        items={data.pcbs}
-                        emptyMessage="No PCBs logged."
-                        delay="100"
-                        isActive={activeCard === 'pcbs'}
-                        onHeaderClick={() => setActiveCard('pcbs')}
-                    >
-                        {(pcb) => (
-                            <li>
-                                <div className="item-main">{pcb.number}</div>
-                                <div className="item-sub">{pcb.project_name}</div>
-                            </li>
-                        )}
-                    </CardList>
+                <div className="dashboard-container">
+                    <TitleBar />
+                    <div className="row g-4 dashboard">
+                        {/* Column 1: Projects */}
+                        <CardList 
+                            icon="📁" 
+                            title="Projects" 
+                            subtitle={`Total: ${data.projects.length}`}
+                            items={data.projects}
+                            emptyMessage="No projects yet."
+                            isActive={activeCard === 'projects'}
+                            onHeaderClick={() => setActiveCard('projects')}
+                        >
+                            {(project) => (
+                                <li className="list-item-with-action">
+                                    <span>{project.name}</span>
+                                    <div className="delete-form">
+                                        <button 
+                                            onClick={() => handleDeleteProject(project.id)} 
+                                            className="delete-btn" 
+                                            title="Delete Project"
+                                        >
+                                            &times;
+                                        </button>
+                                    </div>
+                                </li>
+                            )}
+                        </CardList>
+                        
+                        {/* Column 2: PCBs */}
+                        <CardList 
+                            icon="📟" 
+                            title="Logged PCBs" 
+                            subtitle={`Total: ${data.pcbs.length}`}
+                            items={data.pcbs}
+                            emptyMessage="No PCBs logged."
+                            delay="100"
+                            isActive={activeCard === 'pcbs'}
+                            onHeaderClick={() => setActiveCard('pcbs')}
+                        >
+                            {(pcb) => (
+                                <li>
+                                    <div className="item-main">{pcb.number}</div>
+                                    <div className="item-sub">{pcb.project_name}</div>
+                                </li>
+                            )}
+                        </CardList>
 
-                    {/* Column 3: Reworks */}
-                    <CardList 
-                        icon="🔧" 
-                        title="Latest Reworks" 
-                        subtitle={`Total: ${data.reworks.length}`}
-                        items={data.reworks}
-                        emptyMessage="No reworks logged."
-                        delay="200"
-                        isActive={activeCard === 'reworks'}
-                        onHeaderClick={() => setActiveCard('reworks')}
-                    >
-                        {(rework) => (
-                            <li>
-                                <div className="item-main">{rework.description.substring(0, 50)}{rework.description.length > 50 ? '...' : ''}</div>
-                                <div className="item-sub">PCB: {rework.pcb_number} | {rework.timestamp}</div>
-                            </li>
-                        )}
-                    </CardList>
+                        {/* Column 3: Reworks */}
+                        <CardList 
+                            icon="🔧" 
+                            title="Latest Reworks" 
+                            subtitle={`Total: ${data.reworks.length}`}
+                            items={data.reworks}
+                            emptyMessage="No reworks logged."
+                            delay="200"
+                            isActive={activeCard === 'reworks'}
+                            onHeaderClick={() => setActiveCard('reworks')}
+                        >
+                            {(rework) => (
+                                <li>
+                                    <div className="item-main">{rework.description.substring(0, 50)}{rework.description.length > 50 ? '...' : ''}</div>
+                                    <div className="item-sub">PCB: {rework.pcb_number} | {rework.timestamp}</div>
+                                </li>
+                            )}
+                        </CardList>
 
-                    {/* Column 4: Task Tags */}
-                    <CardList 
-                        icon="🏷️" 
-                        title="Task Tags" 
-                        subtitle="Available Categories"
-                        items={data.task_tags}
-                        emptyMessage="No tags defined."
-                        delay="300"
-                        isActive={activeCard === 'tags'}
-                        onHeaderClick={() => setActiveCard('tags')}
-                    >
-                        {(tag) => (
-                            <li className="tag-item">{tag.name}</li>
-                        )}
-                    </CardList>
+                        {/* Column 4: Task Tags */}
+                        <CardList 
+                            icon="🏷️" 
+                            title="Task Tags" 
+                            subtitle="Available Categories"
+                            items={data.task_tags}
+                            emptyMessage="No tags defined."
+                            delay="300"
+                            isActive={activeCard === 'tags'}
+                            onHeaderClick={() => setActiveCard('tags')}
+                        >
+                            {(tag) => (
+                                <li className="tag-item">{tag.name}</li>
+                            )}
+                        </CardList>
+                    </div>
+                    <Footer />
                 </div>
             );
         }

@@ -6,105 +6,130 @@
     <title>Create Project | PCB Tracker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap" rel="stylesheet">
+    <!-- React CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel" src="/pages/subcomponents/TitleBar.jsx"></script>
+    <script type="text/babel" src="/pages/subcomponents/Footer.jsx"></script>
 </head>
 <body>
     <div class="glass-background"></div>
-    <main class="container">
-        <header class="hero">
-            <h1 class="animate-fade-in-down">Create <span>Project</span></h1>
-            <p class="subtitle">Enter a unique name for your new PCB project.</p>
-        </header>
+    <main class="container" id="create-project-root">
+        <div class="text-center p-5">
+            <p class="text-white">Loading Interface...</p>
+        </div>
+    </main>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div class="flash-messages">
-              {% for category, message in messages %}
-                <div class="flash {{ category }}">{{ message }}</div>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
+    <script type="text/babel">
+        const { useState } = React;
 
-        <section class="form-grid">
-            <div class="card glass-card animate-zoom-in">
-                <form action="{{ url_for('create_project.create_project') }}" method="POST">
-                    <div class="form-group">
-                        <label for="project_name">New Project Name</label>
-                        <input type="text" id="project_name" name="project_name" placeholder="e.g. NextGen CPU Board" required autofocus autocomplete="off">
-                    </div>
-                    <div class="button-group">
-                        <button type="submit" class="btn btn-primary">Create Project</button>
-                        <a href="{{ url_for('home') }}" class="btn btn-secondary">Cancel</a>
-                    </div>
-                </form>
-            </div>
-
-            <div class="card glass-card animate-zoom-in delay-100">
-                <h3>Existing Projects</h3>
-                <p>Check for similar names to avoid duplicates.</p>
-                <div class="project-filter-list">
-                    <ul id="existing-projects-list" class="data-list">
-                        {% for project in projects %}
-                            <li data-name="{{ project.name }}" class="list-item-with-action">
-                                <span>{{ project.name }}</span>
-                                <form action="{{ url_for('create_project.delete_project', project_id=project.id) }}" method="POST" class="delete-form">
-                                    <button type="submit" class="delete-btn" title="Delete Project">&times;</button>
-                                </form>
-                            </li>
-                        {% else %}
-                            <li class="empty-state">No projects created yet.</li>
+        function CreateProjectPage() {
+            return (
+                <div className="page-wrapper">
+                    <TitleBar title="Create Project" subtitle="Enter a unique name for your new PCB project." />
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div className="flash-messages">
+                        {% for category, message in messages %}
+                            <div className="flash {{ category }}">{{ message }}</div>
                         {% endfor %}
-                    </ul>
+                        </div>
+                    {% endif %}
+                    {% endwith %}
+
+                    <section className="form-grid">
+                        <div className="card glass-card animate-zoom-in">
+                            <form action="{{ url_for('create_project.create_project') }}" method="POST">
+                                <div className="form-group">
+                                    <label htmlFor="project_name">New Project Name</label>
+                                    <input type="text" id="project_name" name="project_name" placeholder="e.g. NextGen CPU Board" required autoFocus autoComplete="off" />
+                                </div>
+                                <div className="button-group">
+                                    <button type="submit" className="btn btn-primary">Create Project</button>
+                                    <a href="{{ url_for('home') }}" className="btn btn-secondary">Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div className="card glass-card animate-zoom-in delay-100">
+                            <h3>Existing Projects</h3>
+                            <p>Check for similar names to avoid duplicates.</p>
+                            <div className="project-filter-list">
+                                <ul id="existing-projects-list" className="data-list">
+                                    {% for project in projects %}
+                                        <li data-name="{{ project.name }}" className="list-item-with-action">
+                                            <span>{{ project.name }}</span>
+                                            <form action="{{ url_for('create_project.delete_project', project_id=project.id) }}" method="POST" className="delete-form">
+                                                <button type="submit" className="delete-btn" title="Delete Project">&times;</button>
+                                            </form>
+                                        </li>
+                                    {% else %}
+                                        <li className="empty-state">No projects created yet.</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+                    <Footer />
                 </div>
-            </div>
-        </section>
+            );
+        }
 
+        const root = ReactDOM.createRoot(document.getElementById('create-project-root'));
+        root.render(<CreateProjectPage />);
+    <!-- Preserve legacy filtering logic -->
     <script>
-        document.getElementById('project_name').addEventListener('input', function(e) {
-            const input = e.target.value.toLowerCase();
-            const list = document.getElementById('existing-projects-list');
-            const items = Array.from(list.getElementsByTagName('li'));
-            
-            if (items.length === 0 || (items.length === 1 && items[0].classList.contains('empty-state'))) return;
+        // Use a slight delay to ensure React has rendered the list
+        setTimeout(() => {
+            const input = document.getElementById('project_name');
+            if (input) {
+                input.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const list = document.getElementById('existing-projects-list');
+                    if (!list) return;
+                    const items = Array.from(list.getElementsByTagName('li'));
+                    
+                    if (items.length === 0 || (items.length === 1 && items[0].classList.contains('empty-state'))) return;
 
-            items.sort((a, b) => {
-                const nameA = a.getAttribute('data-name').toLowerCase();
-                const nameB = b.getAttribute('data-name').toLowerCase();
-                
-                const scoreA = getSimilarityScore(nameA, input);
-                const scoreB = getSimilarityScore(nameB, input);
-                
-                return scoreB - scoreA; // Higher score first
-            });
+                    items.sort((a, b) => {
+                        const nameA = a.getAttribute('data-name').toLowerCase();
+                        const nameB = b.getAttribute('data-name').toLowerCase();
+                        
+                        const scoreA = getSimilarityScore(nameA, searchTerm);
+                        const scoreB = getSimilarityScore(nameB, searchTerm);
+                        
+                        return scoreB - scoreA;
+                    });
 
-            // Re-append sorted items
-            items.forEach(item => {
-                list.appendChild(item);
-                
-                // Highlight matches
-                const name = item.getAttribute('data-name');
-                if (input && name.toLowerCase().includes(input)) {
-                    item.style.opacity = '1';
-                    item.style.color = '#fff';
-                    item.style.fontWeight = 'bold';
-                    item.style.background = 'rgba(99, 102, 241, 0.1)';
-                    item.style.borderRadius = '8px';
-                    item.style.padding = '12px 10px';
-                } else if (input) {
-                    item.style.opacity = '0.4';
-                    item.style.color = '#94a3b8';
-                    item.style.fontWeight = 'normal';
-                    item.style.background = 'transparent';
-                    item.style.padding = '12px 0';
-                } else {
-                    item.style.opacity = '1';
-                    item.style.color = '#cbd5e1';
-                    item.style.fontWeight = 'normal';
-                    item.style.background = 'transparent';
-                    item.style.padding = '12px 0';
-                }
-            });
-        });
+                    items.forEach(item => {
+                        list.appendChild(item);
+                        const name = item.getAttribute('data-name');
+                        if (searchTerm && name.toLowerCase().includes(searchTerm)) {
+                            item.style.opacity = '1';
+                            item.style.color = '#fff';
+                            item.style.fontWeight = 'bold';
+                            item.style.background = 'rgba(99, 102, 241, 0.1)';
+                            item.style.borderRadius = '8px';
+                            item.style.padding = '12px 10px';
+                        } else if (searchTerm) {
+                            item.style.opacity = '0.4';
+                            item.style.color = '#94a3b8';
+                            item.style.fontWeight = 'normal';
+                            item.style.background = 'transparent';
+                            item.style.padding = '12px 0';
+                        } else {
+                            item.style.opacity = '1';
+                            item.style.color = '#cbd5e1';
+                            item.style.fontWeight = 'normal';
+                            item.style.background = 'transparent';
+                            item.style.padding = '12px 0';
+                        }
+                    });
+                });
+            }
+        }, 1000);
 
         function getSimilarityScore(name, input) {
             if (!input) return 0;

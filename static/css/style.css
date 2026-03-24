@@ -250,15 +250,40 @@ h1 span {
     }
 
     .is-active .card-content-wrapper {
-        max-height: 1000px;
+        max-height: 400px;
+        overflow-y: auto;
         margin-top: 1rem;
         padding-top: 1rem;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-right: 5px; /* Space for scrollbar */
     }
 
     .is-active .glass-card {
         background: rgba(255, 255, 255, 0.1);
         border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .hero {
+        padding: 2rem 1rem 1rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    .hero h1 {
+        font-size: 1.8rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .hero .subtitle {
+        font-size: 0.85rem !important;
+        margin-bottom: 0 !important;
+        opacity: 0.8;
+    }
+
+    .footer {
+        padding: 1rem 0 !important;
+        margin-top: 1.5rem !important;
+        font-size: 0.75rem !important;
+        opacity: 0.6;
     }
 }
 

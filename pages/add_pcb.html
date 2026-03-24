@@ -6,48 +6,68 @@
     <title>Add PCB | PCB Tracker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap" rel="stylesheet">
+    <!-- React CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel" src="/pages/subcomponents/TitleBar.jsx"></script>
+    <script type="text/babel" src="/pages/subcomponents/Footer.jsx"></script>
 </head>
 <body>
     <div class="glass-background"></div>
-    <main class="container">
-        <header class="hero">
-            <h1 class="animate-fade-in-down">Add <span>PCB</span></h1>
-            <p class="subtitle">Assign a new PCB number to an existing project.</p>
-        </header>
+    <main class="container" id="add-pcb-root">
+        <div class="text-center p-5">
+            <p class="text-white">Loading Interface...</p>
+        </div>
+    </main>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div class="flash-messages">
-              {% for category, message in messages %}
-                <div class="flash {{ category }}">{{ message }}</div>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
+    <script type="text/babel">
+        function AddPCBPage() {
+            return (
+                <div className="page-wrapper">
+                    <TitleBar title="Add PCB" subtitle="Assign a new PCB number to an existing project." />
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div className="flash-messages">
+                        {% for category, message in messages %}
+                            <div className="flash {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% endwith %}
 
-        <section class="form-container">
-            <div class="card glass-card animate-zoom-in">
-                <form action="{{ url_for('add_pcb.add_pcb') }}" method="POST">
-                    <div class="form-group">
-                        <label for="project_name">Select Project</label>
-                        <select id="project_name" name="project_name" required>
-                            <option value="" disabled selected>Choose a project...</option>
-                            {% for project in projects %}
-                                <option value="{{ project.name }}">{{ project.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="pcb_number">PCB Number</label>
-                        <input type="text" id="pcb_number" name="pcb_number" placeholder="e.g. SN-2026-X12" required>
-                    </div>
-                    <div class="button-group">
-                        <button type="submit" class="btn btn-primary">Add PCB</button>
-                        <a href="{{ url_for('home') }}" class="btn btn-secondary">Cancel</a>
-                    </div>
-                </form>
-            </div>
-        </section>
+                    <section className="form-container">
+                        <div className="card glass-card animate-zoom-in">
+                            <form action="{{ url_for('add_pcb.add_pcb') }}" method="POST">
+                                <div className="form-group">
+                                    <label htmlFor="project_name">Select Project</label>
+                                    <select id="project_name" name="project_name" required>
+                                        <option value="" disabled selected>Choose a project...</option>
+                                        {% for project in projects %}
+                                            <option value="{{ project.name }}">{{ project.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="pcb_number">PCB Number</label>
+                                    <input type="text" id="pcb_number" name="pcb_number" placeholder="e.g. SN-2026-X12" required />
+                                </div>
+                                <div className="button-group">
+                                    <button type="submit" className="btn btn-primary">Add PCB</button>
+                                    <a href="{{ url_for('home') }}" className="btn btn-secondary">Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+                    <Footer />
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('add-pcb-root'));
+        root.render(<AddPCBPage />);
+    </script>
     </main>
 </body>
 </html>
