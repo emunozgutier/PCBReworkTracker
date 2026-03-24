@@ -45,7 +45,12 @@
                 </div>
                 <ul class="data-list">
                     {% for project in projects %}
-                        <li>{{ project.name }}</li>
+                        <li class="list-item-with-action">
+                            <span>{{ project.name }}</span>
+                            <form action="{{ url_for('create_project.delete_project', project_id=project.id) }}" method="POST" class="delete-form">
+                                <button type="submit" class="delete-btn" title="Delete Project">&times;</button>
+                            </form>
+                        </li>
                     {% else %}
                         <li class="empty-state">No projects yet.</li>
                     {% endfor %}
