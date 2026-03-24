@@ -24,10 +24,6 @@
             <h1 class="animate-fade-in-down">PCB <span>Rework</span> Tracker</h1>
             <p class="subtitle animate-fade-in-up">Manage, track, and optimize your PCB rework workflow with ease.</p>
             
-            <div class="quick-actions animate-fade-in-up delay-100">
-                <a href="{{ url_for('create_project.create_project') }}" class="btn btn-primary">Create Project</a>
-                <a href="{{ url_for('add_pcb.add_pcb') }}" class="btn btn-secondary">Add PCB</a>
-            </div>
         </header>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
