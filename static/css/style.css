@@ -148,7 +148,118 @@ h1 span {
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: hidden;
-    color: var(--text-primary) !important; /* Force white text */
+    color: var(--text-color); /* Changed from --text-primary to --text-color */
+}
+
+/* Card Header Row Styles */
+.card-header-row {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.header-main {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-sub {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.header-sub p {
+    margin: 0;
+    opacity: 0.7;
+    font-size: 0.9rem;
+}
+
+.mobile-chevron {
+    display: none;
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+/* Mobile Specific Optimizations */
+@media (max-width: 767.98px) {
+    .dashboard {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .dashboard-col {
+        order: 2; /* Unselected cards go below or maintain flow */
+    }
+
+    .dashboard-col.is-active {
+        order: 1; /* Active card goes to top */
+    }
+
+    .glass-card {
+        padding: 1rem;
+    }
+
+    .card-header-row {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        cursor: pointer;
+    }
+
+    .header-main {
+        gap: 10px;
+    }
+
+    .header-main .card-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0;
+    }
+
+    .header-main h3 {
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    .header-sub {
+        width: auto;
+        gap: 10px;
+    }
+
+    .header-sub p {
+        font-size: 0.8rem;
+    }
+
+    .mobile-chevron {
+        display: block;
+    }
+
+    .is-active .mobile-chevron {
+        transform: rotate(180deg);
+    }
+
+    .card-content-wrapper {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-out;
+    }
+
+    .is-active .card-content-wrapper {
+        max-height: 1000px;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .is-active .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
 }
 
 .glass-card:hover {
@@ -172,7 +283,8 @@ h1 span {
     margin-bottom: 1.5rem;
 }
 
-    margin-bottom: 0.75rem;
+.glass-card {
+    color: white !important;
 }
 
 .glass-card p {

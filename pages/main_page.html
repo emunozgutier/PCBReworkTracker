@@ -59,6 +59,7 @@
             const [data, setData] = useState(null);
             const [loading, setLoading] = useState(true);
             const [error, setError] = useState(null);
+            const [activeCard, setActiveCard] = useState('projects');
 
             const fetchData = async () => {
                 try {
@@ -102,7 +103,7 @@
             if (error) return <div className="alert alert-danger m-4">{error}</div>;
 
             return (
-                <div className="row g-4">
+                <div className="row g-4 dashboard">
                     {/* Column 1: Projects */}
                     <CardList 
                         icon="📁" 
@@ -110,6 +111,8 @@
                         subtitle={`Total: ${data.projects.length}`}
                         items={data.projects}
                         emptyMessage="No projects yet."
+                        isActive={activeCard === 'projects'}
+                        onHeaderClick={() => setActiveCard('projects')}
                     >
                         {(project) => (
                             <li className="list-item-with-action">
@@ -135,6 +138,8 @@
                         items={data.pcbs}
                         emptyMessage="No PCBs logged."
                         delay="100"
+                        isActive={activeCard === 'pcbs'}
+                        onHeaderClick={() => setActiveCard('pcbs')}
                     >
                         {(pcb) => (
                             <li>
@@ -152,6 +157,8 @@
                         items={data.reworks}
                         emptyMessage="No reworks logged."
                         delay="200"
+                        isActive={activeCard === 'reworks'}
+                        onHeaderClick={() => setActiveCard('reworks')}
                     >
                         {(rework) => (
                             <li>
@@ -169,6 +176,8 @@
                         items={data.task_tags}
                         emptyMessage="No tags defined."
                         delay="300"
+                        isActive={activeCard === 'tags'}
+                        onHeaderClick={() => setActiveCard('tags')}
                     >
                         {(tag) => (
                             <li className="tag-item">{tag.name}</li>
