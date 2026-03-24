@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 from models import db, Project, PCB
-from create_project import create_project_bp
-from add_pcb import add_pcb_bp
+from features.create_project import create_project_bp
+from features.add_pcb import add_pcb_bp
 import os
 
 app = Flask(__name__)

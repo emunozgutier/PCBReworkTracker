@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models import db, Project, PCB
 
-add_pcb_bp = Blueprint('add_pcb', __name__)
+add_pcb_bp = Blueprint('add_pcb', __name__, template_folder='.')
 
 @add_pcb_bp.route('/add-pcb', methods=['GET', 'POST'])
 def add_pcb():

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models import db, Project
 
-create_project_bp = Blueprint('create_project', __name__)
+create_project_bp = Blueprint('create_project', __name__, template_folder='.')
 
 @create_project_bp.route('/create-project', methods=['GET', 'POST'])
 def create_project():
