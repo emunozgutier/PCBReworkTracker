@@ -60,7 +60,7 @@ def home():
     reworks = Rework.query.order_by(Rework.id.desc()).all()
     task_tags = TaskTag.query.all()
     
-    return render_template('index.html', 
+    return render_template('main_page.html', 
                            projects=projects, 
                            pcbs=pcbs, 
                            reworks=reworks, 
