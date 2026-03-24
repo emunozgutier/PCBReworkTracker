@@ -45,7 +45,7 @@
                 </div>
                 <ul class="data-list">
                     {% for project in projects %}
-                        <li>{{ project }}</li>
+                        <li>{{ project.name }}</li>
                     {% else %}
                         <li class="empty-state">No projects yet.</li>
                     {% endfor %}
@@ -64,7 +64,7 @@
                 </div>
                 <ul class="data-list">
                     {% for pcb in pcbs %}
-                        <li><strong>{{ pcb.project }}</strong>: {{ pcb.number }}</li>
+                        <li><strong>{{ pcb.project.name }}</strong>: {{ pcb.number }}</li>
                     {% else %}
                         <li class="empty-state">No PCBs logged yet.</li>
                     {% endfor %}

@@ -33,7 +33,7 @@
                         <select id="project_name" name="project_name" required>
                             <option value="" disabled selected>Choose a project...</option>
                             {% for project in projects %}
-                                <option value="{{ project }}">{{ project }}</option>
+                                <option value="{{ project.name }}">{{ project.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
