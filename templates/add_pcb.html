@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add PCB | PCB Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-background"></div>
+    <main class="container">
+        <header class="hero">
+            <h1 class="animate-fade-in-down">Add <span>PCB</span></h1>
+            <p class="subtitle">Assign a new PCB number to an existing project.</p>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-messages">
+              {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <section class="form-container">
+            <div class="card glass-card animate-zoom-in">
+                <form action="{{ url_for('add_pcb') }}" method="POST">
+                    <div class="form-group">
+                        <label for="project_name">Select Project</label>
+                        <select id="project_name" name="project_name" required>
+                            <option value="" disabled selected>Choose a project...</option>
+                            {% for project in projects %}
+                                <option value="{{ project }}">{{ project }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pcb_number">PCB Number</label>
+                        <input type="text" id="pcb_number" name="pcb_number" placeholder="e.g. SN-2026-X12" required>
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary">Add PCB</button>
+                        <a href="{{ url_for('home') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

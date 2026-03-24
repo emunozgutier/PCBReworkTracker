@@ -15,46 +15,69 @@
         <header class="hero">
             <h1 class="animate-fade-in-down">PCB <span>Rework</span> Tracker</h1>
             <p class="subtitle animate-fade-in-up">Manage, track, and optimize your PCB rework workflow with ease.</p>
+            
+            <div class="quick-actions animate-fade-in-up delay-100">
+                <a href="{{ url_for('create_project') }}" class="btn btn-primary">Create Project</a>
+                <a href="{{ url_for('add_pcb') }}" class="btn btn-secondary">Add PCB</a>
+            </div>
         </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-messages animate-fade-in-down">
+              {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
 
         <section class="dashboard">
             <div class="card glass-card animate-zoom-in">
                 <div class="card-icon">🚀</div>
-                <h3>Quick Statistics</h3>
-                <p>Monitor your project progress in real-time.</p>
+                <h3>Project Overview</h3>
+                <p>Total projects currently tracked.</p>
                 <div class="stat-group">
                     <div class="stat">
-                        <span class="stat-value">24</span>
-                        <span class="stat-label">Pending</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-value">158</span>
-                        <span class="stat-label">Completed</span>
+                        <span class="stat-value">{{ projects|length }}</span>
+                        <span class="stat-label">Projects</span>
                     </div>
                 </div>
+                <ul class="data-list">
+                    {% for project in projects %}
+                        <li>{{ project }}</li>
+                    {% else %}
+                        <li class="empty-state">No projects yet.</li>
+                    {% endfor %}
+                </ul>
             </div>
 
             <div class="card glass-card animate-zoom-in delay-100">
                 <div class="card-icon">🛠️</div>
-                <h3>Active Reworks</h3>
-                <p>Ongoing tasks currently in the pipeline.</p>
-                <ul class="task-list">
-                    <li>Board #5041 - CPU Swap</li>
-                    <li>Board #2293 - Cap Replacement</li>
-                    <li>Board #9981 - Trace Refurbish</li>
+                <h3>Logged PCBs</h3>
+                <p>Breakdown of PCBs by project and number.</p>
+                <div class="stat-group">
+                    <div class="stat">
+                        <span class="stat-value">{{ pcbs|length }}</span>
+                        <span class="stat-label">Total PCBs</span>
+                    </div>
+                </div>
+                <ul class="data-list">
+                    {% for pcb in pcbs %}
+                        <li><strong>{{ pcb.project }}</strong>: {{ pcb.number }}</li>
+                    {% else %}
+                        <li class="empty-state">No PCBs logged yet.</li>
+                    {% endfor %}
                 </ul>
             </div>
 
             <div class="card glass-card animate-zoom-in delay-200">
                 <div class="card-icon">📊</div>
-                <h3>Weekly Performance</h3>
-                <p>Insights into your team's efficiency.</p>
-                <div class="chart-placeholder">
-                    <div class="bar" style="height: 60%;"></div>
-                    <div class="bar" style="height: 80%;"></div>
-                    <div class="bar" style="height: 40%;"></div>
-                    <div class="bar" style="height: 100%;"></div>
-                    <div class="bar" style="height: 70%;"></div>
+                <h3>System Health</h3>
+                <p>Real-time status of the tracking engine.</p>
+                <div class="status-indicator">
+                    <span class="dot pulse"></span>
+                    <span class="status-text">Operational</span>
                 </div>
             </div>
         </section>
