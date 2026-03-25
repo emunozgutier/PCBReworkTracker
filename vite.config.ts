@@ -1,14 +1,12 @@
 import { defineConfig } from 'vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
-import { qrcode } from 'vite-plugin-qrcode'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    babel({ presets: [reactCompilerPreset()] }),
-    qrcode() // Display QR code in terminal
+    babel({ presets: [reactCompilerPreset()] })
   ],
   define: {
     __LOCAL_IP__: JSON.stringify('192.168.1.152'),
