@@ -243,3 +243,9 @@
   border-radius: 4px;
   white-space: nowrap;
 }
+
+@media (max-width: 768px) {
+  .network-qr-container {
+    display: none;
+  }
+}
