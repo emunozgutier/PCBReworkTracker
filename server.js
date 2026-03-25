@@ -39,9 +39,20 @@ app.get('/api/dashboard', (req, res) => {
 
 // Projects API
 app.get('/api/projects', (req, res) => {
-    db.all("SELECT * FROM projects", [], (err, rows) => {
+    const query = `
+        SELECT projects.*, 
+        COUNT(pcbs.id) as pcb_count,
+        GROUP_CONCAT(pcbs.board_number) as pcb_list
+        FROM projects
+        LEFT JOIN pcbs ON projects.id = pcbs.project_id
+        GROUP BY projects.id
+    `;
+    db.all(query, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
+        res.json(rows.map(row => ({
+            ...row,
+            pcbs: row.pcb_list ? row.pcb_list.split(',') : []
+        })));
     });
 });
 
