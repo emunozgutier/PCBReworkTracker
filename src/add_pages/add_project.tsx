@@ -11,6 +11,7 @@ interface AddProjectProps {
 export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
+    const [revisions, setRevisions] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -20,7 +21,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
             const res = await fetch(`${API_BASE}/projects`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, description })
+                body: JSON.stringify({ name, description, revisions })
             });
             if (res.ok) {
                 onSuccess();
@@ -54,6 +55,16 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                         onChange={(e) => setName(e.target.value)} 
                         placeholder="e.g. Project Ares"
                         required 
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="revisions">Available Revisions (comma separated)</label>
+                    <input 
+                        id="revisions"
+                        type="text" 
+                        value={revisions} 
+                        onChange={(e) => setRevisions(e.target.value)} 
+                        placeholder="e.g. A0, A1, B0, B1"
                     />
                 </div>
                 <div className="form-group">

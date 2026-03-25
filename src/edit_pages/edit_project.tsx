@@ -12,6 +12,7 @@ interface EditProjectProps {
 export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
+    const [revisions, setRevisions] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
@@ -24,6 +25,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                 if (project) {
                     setName(project.name);
                     setDescription(project.description || '');
+                    setRevisions(Array.isArray(project.revisions) ? project.revisions.join(', ') : (project.revisions || ''));
                 }
                 setLoading(false);
             })
@@ -40,7 +42,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
             const res = await fetch(`${API_BASE}/projects/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, description })
+                body: JSON.stringify({ name, description, revisions })
             });
             if (res.ok) onSuccess();
             else alert('Failed to update project');
@@ -88,6 +90,16 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                         value={name} 
                         onChange={(e) => setName(e.target.value)} 
                         required 
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="revisions">Available Revisions (comma separated)</label>
+                    <input 
+                        id="revisions"
+                        type="text" 
+                        value={revisions} 
+                        onChange={(e) => setRevisions(e.target.value)} 
+                        placeholder="e.g. A0, A1, B0, B1"
                     />
                 </div>
                 <div className="form-group">

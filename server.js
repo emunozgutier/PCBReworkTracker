@@ -51,14 +51,15 @@ app.get('/api/projects', (req, res) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows.map(row => ({
             ...row,
+            revisions: row.revisions ? row.revisions.split(',').map(r => r.trim()) : [],
             pcbs: row.pcb_list ? row.pcb_list.split(',') : []
         })));
     });
 });
 
 app.post('/api/projects', (req, res) => {
-    const { name, description } = req.body;
-    db.run("INSERT INTO projects (name, description) VALUES (?, ?)", [name, description], function(err) {
+    const { name, description, revisions } = req.body;
+    db.run("INSERT INTO projects (name, description, revisions) VALUES (?, ?, ?)", [name, description, revisions], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.status(201).json({ id: this.lastID, name });
     });
@@ -151,8 +152,8 @@ app.post('/api/reworks', (req, res) => {
 
 // --- Projects API Expansions ---
 app.put('/api/projects/:id', (req, res) => {
-    const { name, description } = req.body;
-    db.run("UPDATE projects SET name = ?, description = ? WHERE id = ?", [name, description, req.params.id], function(err) {
+    const { name, description, revisions } = req.body;
+    db.run("UPDATE projects SET name = ?, description = ?, revisions = ? WHERE id = ?", [name, description, revisions, req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ updated: this.changes });
     });

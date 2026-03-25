@@ -15,8 +15,18 @@ const initDb = () => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             description TEXT,
+            revisions TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )`);
+        )`, (err) => {
+            if (!err) {
+                // Migration: Add revisions column if it doesn't exist
+                db.run(`ALTER TABLE projects ADD COLUMN revisions TEXT`, (err) => {
+                    if (err && !err.message.includes('duplicate column name')) {
+                        console.error('Migration error (projects.revisions):', err.message);
+                    }
+                });
+            }
+        });
 
         // Owners Table
         db.run(`CREATE TABLE IF NOT EXISTS owners (

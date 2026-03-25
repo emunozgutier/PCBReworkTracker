@@ -13,6 +13,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     const [boardNumber, setBoardNumber] = useState('');
     const [status, setStatus] = useState('In Progress');
     const [productName, setProductName] = useState('');
+    const [selectedRevision, setSelectedRevision] = useState('');
     const [selectedProject, setSelectedProject] = useState('');
     const [selectedOwner, setSelectedOwner] = useState('');
     
@@ -20,6 +21,8 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     const [owners, setOwners] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+
+    const availableRevisions = projects.find(p => p.id.toString() === selectedProject)?.revisions || [];
 
     useEffect(() => {
         Promise.all([
@@ -32,7 +35,24 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
             if (pcb) {
                 setBoardNumber(pcb.board_number);
                 setStatus(pcb.status);
-                setProductName(pcb.product_name_and_rev || '');
+                
+                // Try to split product_name_and_rev
+                const project = projData.find((p: any) => p.id === pcb.project_id);
+                let rawProduct = pcb.product_name_and_rev || '';
+                let foundRev = '';
+                
+                if (project && project.revisions) {
+                    for (const rev of project.revisions) {
+                        if (rawProduct.endsWith(rev)) {
+                            foundRev = rev;
+                            rawProduct = rawProduct.slice(0, -rev.length).trim();
+                            break;
+                        }
+                    }
+                }
+                
+                setProductName(rawProduct);
+                setSelectedRevision(foundRev);
                 setSelectedProject(pcb.project_id.toString());
                 setSelectedOwner(pcb.owner_id ? pcb.owner_id.toString() : '');
             }
@@ -43,9 +63,20 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
         });
     }, [id]);
 
+    const handleProjectChange = (id: string) => {
+        setSelectedProject(id);
+        const project = projects.find(p => p.id.toString() === id);
+        if (project && project.revisions && project.revisions.length > 0) {
+            setSelectedRevision(project.revisions[0]);
+        } else {
+            setSelectedRevision('');
+        }
+    };
+
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
+        const combinedProduct = selectedRevision ? `${productName} ${selectedRevision}`.trim() : productName;
         try {
             const res = await fetch(`${API_BASE}/pcbs/${id}`, {
                 method: 'PUT',
@@ -53,7 +84,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                 body: JSON.stringify({ 
                     board_number: boardNumber, 
                     status, 
-                    product_name_and_rev: productName,
+                    product_name_and_rev: combinedProduct,
                     project_id: parseInt(selectedProject),
                     owner_id: selectedOwner ? parseInt(selectedOwner) : null
                 })
@@ -106,22 +137,39 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                         required 
                     />
                 </div>
-                <div className="form-group">
-                    <label htmlFor="product_name">Product Name & Rev</label>
-                    <input 
-                        id="product_name"
-                        type="text" 
-                        value={productName} 
-                        onChange={(e) => setProductName(e.target.value)} 
-                    />
+                
+                <div className="form-row">
+                    <div className="form-group flex-1">
+                        <label htmlFor="product_name">Product Name</label>
+                        <input 
+                            id="product_name"
+                            type="text" 
+                            value={productName} 
+                            onChange={(e) => setProductName(e.target.value)} 
+                        />
+                    </div>
+                    <div className="form-group flex-1">
+                        <label htmlFor="revision">Revision</label>
+                        <select 
+                            id="revision"
+                            value={selectedRevision}
+                            onChange={(e) => setSelectedRevision(e.target.value)}
+                        >
+                            <option value="">N/A</option>
+                            {availableRevisions.map((rev: string) => (
+                                <option key={rev} value={rev}>{rev}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
+
                 <div className="form-row">
                     <div className="form-group flex-1">
                         <label htmlFor="project">Project</label>
                         <select 
                             id="project" 
                             value={selectedProject} 
-                            onChange={(e) => setSelectedProject(e.target.value)}
+                            onChange={(e) => handleProjectChange(e.target.value)}
                         >
                             {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                         </select>

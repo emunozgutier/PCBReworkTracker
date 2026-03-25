@@ -8,6 +8,7 @@ interface ProjectCardProps {
         description: string;
         pcb_count: number;
         pcbs: string[];
+        revisions: string[];
     };
     onEdit: (id: number) => void;
 }
@@ -41,6 +42,19 @@ export function ProjectCard({ project, onEdit }: ProjectCardProps) {
 
             {isExpanded && (
                 <div className="card-expanded-content">
+                    <div style={{ marginBottom: '16px' }}>
+                        <h4>Available Revisions</h4>
+                        {project.revisions && project.revisions.length > 0 ? (
+                            <div className="pcb-mini-list">
+                                {project.revisions.map((rev, index) => (
+                                    <span key={index} className="pcb-pill" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>{rev}</span>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="no-data">No specific revisions defined.</p>
+                        )}
+                    </div>
+
                     <h4>Associated PCBs</h4>
                     {project.pcbs.length > 0 ? (
                         <div className="pcb-mini-list">
