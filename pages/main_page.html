@@ -15,6 +15,7 @@
     <script type="text/babel" src="/pages/subcomponents/CardList.jsx"></script>
     <script type="text/babel" src="/pages/subcomponents/TitleBar.jsx"></script>
     <script type="text/babel" src="/pages/subcomponents/Footer.jsx"></script>
+    <script type="text/babel" src="/pages/subcomponents/TabBar.jsx"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
@@ -89,6 +90,7 @@
                             emptyMessage="No projects yet."
                             isActive={activeCard === 'projects'}
                             onHeaderClick={() => setActiveCard('projects')}
+                            hideHeaderMobile={true}
                         >
                             {(project) => (
                                 <li className="list-item-with-action">
@@ -116,6 +118,7 @@
                             delay="100"
                             isActive={activeCard === 'pcbs'}
                             onHeaderClick={() => setActiveCard('pcbs')}
+                            hideHeaderMobile={true}
                         >
                             {(pcb) => (
                                 <li>
@@ -135,6 +138,7 @@
                             delay="200"
                             isActive={activeCard === 'reworks'}
                             onHeaderClick={() => setActiveCard('reworks')}
+                            hideHeaderMobile={true}
                         >
                             {(rework) => (
                                 <li>
@@ -154,12 +158,14 @@
                             delay="300"
                             isActive={activeCard === 'tags'}
                             onHeaderClick={() => setActiveCard('tags')}
+                            hideHeaderMobile={true}
                         >
                             {(tag) => (
                                 <li className="tag-item">{tag.name}</li>
                             )}
                         </CardList>
                     </div>
+                    <TabBar activeTab={activeCard} onTabChange={setActiveCard} />
                     <Footer />
                 </div>
             );
