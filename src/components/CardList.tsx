@@ -13,6 +13,8 @@ export function CardList({ type, title }: CardListProps) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        setLoading(true);
+        setItems([]); // Clear old items to prevent rendering mismatch
         fetch(`${API_BASE}/${type}`)
             .then(res => res.json())
             .then(data => {
@@ -46,7 +48,7 @@ export function CardList({ type, title }: CardListProps) {
                                 <>
                                     <div className="card-title">
                                         <span className="board-num">{item.board_number}</span>
-                                        <span className={`status-pill ${item.status.toLowerCase().replace(' ', '-')}`}>
+                                        <span className={`status-pill ${item.status?.toLowerCase().replace(' ', '-') || 'unknown'}`}>
                                             {item.status}
                                         </span>
                                     </div>
