@@ -1,4 +1,4 @@
-import { QRCodeSVG } from 'qrcode.react';
+import QRCode from "react-qr-code";
 
 export function NetworkQRCode() {
     // These constants are defined in vite.config.ts
@@ -9,13 +9,12 @@ export function NetworkQRCode() {
     return (
         <div className="network-qr-container">
             <div className="qr-wrapper">
-                <QRCodeSVG 
+                <QRCode 
                     value={url} 
                     size={120}
-                    bgColor={"transparent"}
-                    fgColor={"#ffffff"}
+                    bgColor={"#ffffff"}
+                    fgColor={"#000000"}
                     level={"H"}
-                    includeMargin={false}
                 />
             </div>
             <div className="qr-info">
