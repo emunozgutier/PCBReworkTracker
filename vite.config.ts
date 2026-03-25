@@ -12,11 +12,11 @@ export default defineConfig({
   ],
   define: {
     __LOCAL_IP__: JSON.stringify('192.168.1.152'),
-    __PORT__: 5000
+    __PORT__: 5001
   },
   server: {
     host: '0.0.0.0', // Listen on all network interfaces
-    port: 5000,      // Port number
+    port: 5001,      // Port number
     strictPort: true // Fail if port is already in use
   }
 })
