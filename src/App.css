@@ -92,8 +92,28 @@ body {
   .app-container { padding: 16px; }
   .tab-label { display: none; }
   .tab-item { padding: 12px; }
-  .tab-bar { bottom: 20px; top: auto; position: fixed; width: calc(100% - 40px); left: 20px; }
+  .tab-bar { 
+    position: sticky; 
+    top: 10px; 
+    bottom: auto; 
+    width: 100%; 
+    left: 0; 
+    margin-bottom: 24px;
+    border-radius: 12px;
+    gap: 8px; /* Reduced gap */
+    padding: 6px; /* Reduced padding */
+  }
 }
+
+/* Responsive Font System using Zustand State */
+.mobile-state {
+  font-size: 0.9rem;
+}
+
+.mobile-state h1 { font-size: 1.5rem !important; }
+.mobile-state h2 { font-size: 1.2rem !important; }
+.mobile-state .stat-value { font-size: 2rem !important; }
+.mobile-state .tab-item { padding: 10px !important; }
 
 /* Dashboard Grid */
 .dashboard-grid {

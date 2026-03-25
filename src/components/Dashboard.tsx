@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const API_BASE = 'http://127.0.0.1:5002/api';
+import { API_BASE } from '../api';
 
 interface DashboardStats {
     projects: number;

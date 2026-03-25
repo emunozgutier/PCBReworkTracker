@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Edit2 } from 'lucide-react';
 import { ProjectCard } from '../cards/ProjectCard';
 
-const API_BASE = 'http://127.0.0.1:5002/api';
+import { API_BASE } from '../api';
 
 interface CardListProps {
     type: 'projects' | 'pcbs' | 'reworks' | 'tags' | 'owners';

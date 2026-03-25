@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
-const API_BASE = 'http://127.0.0.1:5002/api';
+import { API_BASE } from '../api';
 
 interface EditPCBProps {
     id: string | number;

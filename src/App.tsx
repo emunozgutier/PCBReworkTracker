@@ -16,7 +16,7 @@ import { EditTab } from './edit_pages/edit_tab'
 import { useStore } from './store/useStore'
 
 function App() {
-  const { page, selectedId, editItem, addItem, goBack } = useStore();
+  const { page, selectedId, editItem, addItem, goBack, isMobile } = useStore();
 
   const handleSuccess = () => {
     // Refresh data and go back
@@ -53,7 +53,7 @@ function App() {
   };
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${isMobile ? 'mobile-state' : ''}`}>
       <header className="app-header">
         <h1>PCB Rework Tracker</h1>
       </header>

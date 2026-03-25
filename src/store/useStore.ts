@@ -11,6 +11,7 @@ interface NavigationState {
     page: Page;
     activeTab: string;
     selectedId: string | number | null;
+    isMobile: boolean;
     
     // Actions
     setPage: (page: Page) => void;
@@ -18,12 +19,14 @@ interface NavigationState {
     editItem: (page: Page, id: string | number) => void;
     addItem: (page: Page) => void;
     goBack: () => void;
+    setIsMobile: (isMobile: boolean) => void;
 }
 
 export const useStore = create<NavigationState>((set) => ({
     page: 'projects',
     activeTab: 'projects',
     selectedId: null,
+    isMobile: typeof window !== 'undefined' ? window.innerWidth <= 768 : false,
 
     setPage: (page) => set({ page }),
     
@@ -47,4 +50,16 @@ export const useStore = create<NavigationState>((set) => ({
         page: state.activeTab as Page, 
         selectedId: null 
     })),
+
+    setIsMobile: (isMobile) => set({ isMobile }),
 }));
+
+// Initialize listener
+if (typeof window !== 'undefined') {
+    window.addEventListener('resize', () => {
+        const mobile = window.innerWidth <= 768;
+        if (useStore.getState().isMobile !== mobile) {
+            useStore.getState().setIsMobile(mobile);
+        }
+    });
+}

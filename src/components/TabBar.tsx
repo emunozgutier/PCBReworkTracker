@@ -21,7 +21,7 @@ export function TabBar() {
                     onClick={() => setActiveTab(tab.id)}
                 >
                     <tab.icon size={20} />
-                    <span>{tab.label}</span>
+                    <span className="tab-label">{tab.label}</span>
                 </button>
             ))}
         </div>
