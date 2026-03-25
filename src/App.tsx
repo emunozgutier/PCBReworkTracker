@@ -2,16 +2,13 @@ import { useState } from 'react'
 import './App.css'
 import { NetworkQRCode } from './components/NetworkQRCode'
 import { TabBar } from './components/TabBar'
-import { Dashboard } from './components/Dashboard'
 import { CardList } from './components/CardList'
 
 function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('projects');
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard':
-        return <Dashboard />;
       case 'projects':
         return <CardList type="projects" title="Projects" />;
       case 'pcbs':
@@ -21,7 +18,7 @@ function App() {
       case 'tags':
         return <CardList type="tags" title="Tags" />;
       default:
-        return <Dashboard />;
+        return <CardList type="projects" title="Projects" />;
     }
   };
 
