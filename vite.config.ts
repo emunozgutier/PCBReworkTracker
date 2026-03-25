@@ -8,8 +8,12 @@ export default defineConfig({
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] }),
-    qrcode() // Display QR code in terminal for mobile access
+    qrcode() // Display QR code in terminal
   ],
+  define: {
+    __LOCAL_IP__: JSON.stringify('192.168.1.152'),
+    __PORT__: 5000
+  },
   server: {
     host: '0.0.0.0', // Listen on all network interfaces
     port: 5000,      // Port number
