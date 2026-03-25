@@ -83,6 +83,61 @@ app.post('/api/pcbs', (req, res) => {
     });
 });
 
+// Owners API
+app.get('/api/owners', (req, res) => {
+    db.all("SELECT * FROM owners", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+app.post('/api/owners', (req, res) => {
+    const { name } = req.body;
+    db.run("INSERT INTO owners (name) VALUES (?)", [name], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.status(201).json({ id: this.lastID, name });
+    });
+});
+
+// Tags API
+app.get('/api/tags', (req, res) => {
+    db.all("SELECT * FROM tags", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+app.post('/api/tags', (req, res) => {
+    const { name, color } = req.body;
+    db.run("INSERT INTO tags (name, color) VALUES (?, ?)", [name, color], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.status(201).json({ id: this.lastID, name });
+    });
+});
+
+// Reworks API
+app.get('/api/reworks', (req, res) => {
+    const query = `
+        SELECT reworks.*, pcbs.board_number 
+        FROM reworks 
+        LEFT JOIN pcbs ON reworks.pcb_id = pcbs.id
+        ORDER BY timestamp DESC
+    `;
+    db.all(query, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+app.post('/api/reworks', (req, res) => {
+    const { pcb_id, description, status } = req.body;
+    const query = "INSERT INTO reworks (pcb_id, description, status) VALUES (?, ?, ?)";
+    db.run(query, [pcb_id, description, status || 'Completed'], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.status(201).json({ id: this.lastID, pcb_id });
+    });
+});
+
 // Start Server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

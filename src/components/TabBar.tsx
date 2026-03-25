@@ -1,4 +1,4 @@
-import { CircuitBoard, ClipboardList, PenTool, Hash } from 'lucide-react';
+import { CircuitBoard, ClipboardList, PenTool, Hash, Users } from 'lucide-react';
 
 interface TabBarProps {
     activeTab: string;
@@ -10,6 +10,7 @@ export function TabBar({ activeTab, onTabChange }: TabBarProps) {
         { id: 'projects', label: 'Projects', icon: ClipboardList },
         { id: 'pcbs', label: 'PCBs', icon: CircuitBoard },
         { id: 'reworks', label: 'Reworks', icon: PenTool },
+        { id: 'owners', label: 'Owners', icon: Users },
         { id: 'tags', label: 'Tags', icon: Hash }
     ];
 

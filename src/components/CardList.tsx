@@ -4,11 +4,12 @@ import { Plus } from 'lucide-react';
 const API_BASE = 'http://127.0.0.1:5002/api';
 
 interface CardListProps {
-    type: 'projects' | 'pcbs' | 'reworks' | 'tags';
+    type: 'projects' | 'pcbs' | 'reworks' | 'tags' | 'owners';
     title: string;
+    onAdd: () => void;
 }
 
-export function CardList({ type, title }: CardListProps) {
+export function CardList({ type, title, onAdd }: CardListProps) {
     const [items, setItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -33,7 +34,7 @@ export function CardList({ type, title }: CardListProps) {
         <div className="card-list-container">
             <div className="list-header">
                 <h2>{title}</h2>
-                <button className="add-button">
+                <button className="add-button" onClick={onAdd}>
                     <Plus size={18} />
                     <span>Add New</span>
                 </button>
@@ -62,15 +63,44 @@ export function CardList({ type, title }: CardListProps) {
                             {type === 'projects' && (
                                 <>
                                     <div className="card-title">
-                                        <h3>{item.name}</h3>
+                                        <span className="board-num">{item.name}</span>
                                     </div>
-                                    <p className="card-desc">{item.description}</p>
+                                    <div className="card-details">
+                                        <p>{item.description}</p>
+                                    </div>
                                 </>
                             )}
-                            {/* Tags and Reworks logic can be expanded here */}
+                            {type === 'owners' && (
+                                <>
+                                    <div className="card-title">
+                                        <span className="board-num">{item.name}</span>
+                                    </div>
+                                    <div className="card-details">
+                                        <p>Active Owner</p>
+                                    </div>
+                                </>
+                            )}
+                            {type === 'reworks' && (
+                                <>
+                                    <div className="card-title">
+                                        <span className="board-num">PCB #{item.pcb_id}</span>
+                                        <span className="status-pill">{item.status}</span>
+                                    </div>
+                                    <div className="card-details">
+                                        <p>{item.description}</p>
+                                        <p><small>{new Date(item.timestamp).toLocaleString()}</small></p>
+                                    </div>
+                                </>
+                            )}
                             {type === 'tags' && (
-                                <div className="tag-item" style={{ borderLeft: `4px solid ${item.color}` }}>
-                                    <span>{item.name}</span>
+                                <div className="card-title" style={{ marginBottom: 0 }}>
+                                    <span className="board-num">{item.name}</span>
+                                    <div 
+                                        style={{ 
+                                            width: 16, height: 16, borderRadius: '50%', 
+                                            backgroundColor: item.color || '#818cf8' 
+                                        }} 
+                                    />
                                 </div>
                             )}
                         </div>
