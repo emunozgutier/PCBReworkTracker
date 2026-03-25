@@ -138,6 +138,115 @@ app.post('/api/reworks', (req, res) => {
     });
 });
 
+// --- Projects API Expansions ---
+app.put('/api/projects/:id', (req, res) => {
+    const { name, description } = req.body;
+    db.run("UPDATE projects SET name = ?, description = ? WHERE id = ?", [name, description, req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ updated: this.changes });
+    });
+});
+
+app.delete('/api/projects/:id', (req, res) => {
+    db.run("DELETE FROM projects WHERE id = ?", [req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ deleted: this.changes });
+    });
+});
+
+// --- PCBs API Expansions ---
+app.get('/api/pcbs/:id', (req, res) => {
+    db.get("SELECT * FROM pcbs WHERE id = ?", [req.params.id], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(row);
+    });
+});
+
+app.put('/api/pcbs/:id', (req, res) => {
+    const { board_number, status, product_name_and_rev, project_id, owner_id } = req.body;
+    const query = "UPDATE pcbs SET board_number = ?, status = ?, product_name_and_rev = ?, project_id = ?, owner_id = ? WHERE id = ?";
+    db.run(query, [board_number, status, product_name_and_rev, project_id, owner_id, req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ updated: this.changes });
+    });
+});
+
+app.delete('/api/pcbs/:id', (req, res) => {
+    db.run("DELETE FROM pcbs WHERE id = ?", [req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ deleted: this.changes });
+    });
+});
+
+// --- Owners API Expansions ---
+app.get('/api/owners/:id', (req, res) => {
+    db.get("SELECT * FROM owners WHERE id = ?", [req.params.id], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(row);
+    });
+});
+
+app.put('/api/owners/:id', (req, res) => {
+    const { name } = req.body;
+    db.run("UPDATE owners SET name = ? WHERE id = ?", [name, req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ updated: this.changes });
+    });
+});
+
+app.delete('/api/owners/:id', (req, res) => {
+    db.run("DELETE FROM owners WHERE id = ?", [req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ deleted: this.changes });
+    });
+});
+
+// --- Tags API Expansions ---
+app.get('/api/tags/:id', (req, res) => {
+    db.get("SELECT * FROM tags WHERE id = ?", [req.params.id], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(row);
+    });
+});
+
+app.put('/api/tags/:id', (req, res) => {
+    const { name, color } = req.body;
+    db.run("UPDATE tags SET name = ?, color = ? WHERE id = ?", [name, color, req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ updated: this.changes });
+    });
+});
+
+app.delete('/api/tags/:id', (req, res) => {
+    db.run("DELETE FROM tags WHERE id = ?", [req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ deleted: this.changes });
+    });
+});
+
+// --- Reworks API Expansions ---
+app.get('/api/reworks/:id', (req, res) => {
+    db.get("SELECT * FROM reworks WHERE id = ?", [req.params.id], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(row);
+    });
+});
+
+app.put('/api/reworks/:id', (req, res) => {
+    const { pcb_id, description, status } = req.body;
+    db.run("UPDATE reworks SET pcb_id = ?, description = ?, status = ? WHERE id = ?", [pcb_id, description, status, req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ updated: this.changes });
+    });
+});
+
+app.delete('/api/reworks/:id', (req, res) => {
+    db.run("DELETE FROM reworks WHERE id = ?", [req.params.id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ deleted: this.changes });
+    });
+});
+
 // Start Server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

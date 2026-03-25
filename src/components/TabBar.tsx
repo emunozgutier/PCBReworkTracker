@@ -1,11 +1,9 @@
 import { CircuitBoard, ClipboardList, PenTool, Hash, Users } from 'lucide-react';
+import { useStore } from '../store/useStore';
 
-interface TabBarProps {
-    activeTab: string;
-    onTabChange: (tab: string) => void;
-}
-
-export function TabBar({ activeTab, onTabChange }: TabBarProps) {
+export function TabBar() {
+    const { activeTab, setActiveTab } = useStore();
+    
     const tabs = [
         { id: 'projects', label: 'Projects', icon: ClipboardList },
         { id: 'pcbs', label: 'PCBs', icon: CircuitBoard },
@@ -15,20 +13,17 @@ export function TabBar({ activeTab, onTabChange }: TabBarProps) {
     ];
 
     return (
-        <nav className="tab-bar">
-            {tabs.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                    <button
-                        key={tab.id}
-                        className={`tab-item ${activeTab === tab.id ? 'active' : ''}`}
-                        onClick={() => onTabChange(tab.id)}
-                    >
-                        <Icon size={20} strokeWidth={2.5} />
-                        <span className="tab-label">{tab.label}</span>
-                    </button>
-                );
-            })}
-        </nav>
+        <div className="tab-bar">
+            {tabs.map((tab) => (
+                <button
+                    key={tab.id}
+                    className={`tab-item ${activeTab === tab.id ? 'active' : ''}`}
+                    onClick={() => setActiveTab(tab.id)}
+                >
+                    <tab.icon size={20} />
+                    <span>{tab.label}</span>
+                </button>
+            ))}
+        </div>
     );
 }

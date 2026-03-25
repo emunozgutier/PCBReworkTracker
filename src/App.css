@@ -358,3 +358,45 @@ body {
   border-color: white;
   transform: scale(1.2);
 }
+
+.delete-icon-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+  margin-left: auto;
+}
+
+.delete-icon-button:hover {
+  background: rgba(244, 63, 94, 0.1);
+}
+
+.edit-button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.edit-button:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}

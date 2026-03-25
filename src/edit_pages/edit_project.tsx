@@ -1,0 +1,109 @@
+import { useEffect, useState } from 'react';
+import { ArrowLeft, Save, Trash2 } from 'lucide-react';
+
+const API_BASE = 'http://127.0.0.1:5002/api';
+
+interface EditProjectProps {
+    id: string | number;
+    onBack: () => void;
+    onSuccess: () => void;
+}
+
+export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        // Find existing project (could be from props or fetch)
+        fetch(`${API_BASE}/projects`)
+            .then(res => res.json())
+            .then(data => {
+                const project = data.find((p: any) => p.id.toString() === id.toString());
+                if (project) {
+                    setName(project.name);
+                    setDescription(project.description || '');
+                }
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error(err);
+                setLoading(false);
+            });
+    }, [id]);
+
+    const handleUpdate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSaving(true);
+        try {
+            const res = await fetch(`${API_BASE}/projects/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, description })
+            });
+            if (res.ok) onSuccess();
+            else alert('Failed to update project');
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!window.confirm('Are you sure you want to delete this project?')) return;
+        setSaving(true);
+        try {
+            const res = await fetch(`${API_BASE}/projects/${id}`, { method: 'DELETE' });
+            if (res.ok) onSuccess();
+            else alert('Failed to delete project');
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) return <div className="loading">Loading Project...</div>;
+
+    return (
+        <div className="add-page-container">
+            <header className="add-page-header">
+                <button onClick={onBack} className="back-button">
+                    <ArrowLeft size={20} />
+                </button>
+                <h2>Edit Project</h2>
+                <button onClick={handleDelete} className="delete-icon-button" title="Delete Project">
+                    <Trash2 size={20} color="#ef4444" />
+                </button>
+            </header>
+
+            <form onSubmit={handleUpdate} className="add-form">
+                <div className="form-group">
+                    <label htmlFor="name">Project Name</label>
+                    <input 
+                        id="name"
+                        type="text" 
+                        value={name} 
+                        onChange={(e) => setName(e.target.value)} 
+                        required 
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="description">Description</label>
+                    <textarea 
+                        id="description"
+                        value={description} 
+                        onChange={(e) => setDescription(e.target.value)} 
+                        rows={4}
+                    />
+                </div>
+                <button type="submit" className="submit-button" disabled={saving}>
+                    <Save size={18} />
+                    <span>{saving ? 'Saving...' : 'Update Project'}</span>
+                </button>
+            </form>
+        </div>
+    );
+}

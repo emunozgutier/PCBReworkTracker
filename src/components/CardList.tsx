@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Edit2 } from 'lucide-react';
 
 const API_BASE = 'http://127.0.0.1:5002/api';
 
@@ -7,9 +7,10 @@ interface CardListProps {
     type: 'projects' | 'pcbs' | 'reworks' | 'tags' | 'owners';
     title: string;
     onAdd: () => void;
+    onEdit: (id: string | number) => void;
 }
 
-export function CardList({ type, title, onAdd }: CardListProps) {
+export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
     const [items, setItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -45,6 +46,11 @@ export function CardList({ type, title, onAdd }: CardListProps) {
                 ) : (
                     items.map((item) => (
                         <div key={item.id} className="item-card">
+                            <div className="card-actions-overlay">
+                                <button className="edit-button" onClick={() => onEdit(item.id)}>
+                                    <Edit2 size={16} />
+                                </button>
+                            </div>
                             {type === 'pcbs' && (
                                 <>
                                     <div className="card-title">
