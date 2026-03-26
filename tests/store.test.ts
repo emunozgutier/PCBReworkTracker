@@ -23,7 +23,7 @@ describe('Store and Database Integration Tests', () => {
             name: testProjectName,
             description: 'A test project',
             revisions: 'A1',
-            project_key: 'VT'
+            project_key: 'VTT'
         });
         expect(success).toBe(true);
         const updatedStore = useProjectStore.getState();
@@ -40,7 +40,7 @@ describe('Store and Database Integration Tests', () => {
             name: testProjectName.toLowerCase(),
             description: 'Duplicate',
             revisions: 'A1',
-            project_key: 'VV'
+            project_key: 'VVV'
         });
         expect(success).toBe(false);
         const updatedStore = useProjectStore.getState();
@@ -99,7 +99,7 @@ describe('Store and Database Integration Tests', () => {
             name: 'VitestProjectTwo',
             description: 'Second project',
             revisions: 'A1',
-            project_key: 'V2'
+            project_key: 'VT2'
         });
         const p2 = useProjectStore.getState().projects.find(p => p.name.toLowerCase() === 'VitestProjectTwo'.toLowerCase());
         expect(p2).toBeDefined();

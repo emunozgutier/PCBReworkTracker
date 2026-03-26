@@ -47,7 +47,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
 
     let keyBorderColor = undefined;
     let keyTextColor = undefined;
-    if (projectKey.length === 2) {
+    if (projectKey.length === 3) {
         const isDuplicate = projects.some(p => p.id.toString() !== id.toString() && p.project_key === projectKey);
         if (isDuplicate) {
             keyBorderColor = '#ef4444';
@@ -104,18 +104,18 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                 </div>
                 <div className="form-group">
                     <label htmlFor="project_key" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        Project Key (2 Letters)
-                        <span title="The 2-letter project key is for the links and storing data" style={{ cursor: 'help', display: 'flex' }}>
+                        Project Key (3 Letters)
+                        <span title="The 3-letter project key is for the links and storing data" style={{ cursor: 'help', display: 'flex' }}>
                             <HelpCircle size={14} color="var(--text-muted)" />
                         </span>
                     </label>
                     <input 
                         id="project_key"
                         type="text" 
-                        maxLength={2}
+                        maxLength={3}
                         value={projectKey} 
                         onChange={(e) => setProjectKey(e.target.value.replace(/[^A-Za-z]/g, '').toUpperCase())} 
-                        placeholder="e.g. MO"
+                        placeholder="e.g. MOD"
                         style={{ 
                             textTransform: 'uppercase',
                             borderColor: keyBorderColor,
