@@ -23,10 +23,13 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, description, revisions })
             });
+
+            const data = await res.json();
+
             if (res.ok) {
                 onSuccess();
             } else {
-                alert('Failed to add project');
+                alert(data.error || 'Failed to add project');
             }
         } catch (err) {
             console.error(err);

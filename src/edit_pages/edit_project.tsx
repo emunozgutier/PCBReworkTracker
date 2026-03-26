@@ -44,10 +44,17 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, description, revisions })
             });
-            if (res.ok) onSuccess();
-            else alert('Failed to update project');
+
+            const data = await res.json();
+
+            if (res.ok) {
+                onSuccess();
+            } else {
+                alert(data.error || 'Failed to update project');
+            }
         } catch (err) {
             console.error(err);
+            alert('Error connecting to server');
         } finally {
             setSaving(false);
         }

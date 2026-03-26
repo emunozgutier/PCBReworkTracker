@@ -37,6 +37,19 @@ app.get('/api/dashboard', (req, res) => {
     });
 });
 
+// --- Helpers ---
+function sanitizeProjectName(name) {
+    if (!name) return "";
+    // Remove non-alphanumeric characters but keep spaces for splitting
+    const clean = name.replace(/[^a-zA-Z0-9\s]/g, '');
+    // Split by spaces, filter empty, capitalize (PascalCase), and join
+    return clean
+        .split(/\s+/)
+        .filter(word => word.length > 0)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join('');
+}
+
 // Projects API
 app.get('/api/projects', (req, res) => {
     const query = `
@@ -59,9 +72,18 @@ app.get('/api/projects', (req, res) => {
 
 app.post('/api/projects', (req, res) => {
     const { name, description, revisions } = req.body;
-    db.run("INSERT INTO projects (name, description, revisions) VALUES (?, ?, ?)", [name, description, revisions], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.status(201).json({ id: this.lastID, name });
+    const cleanName = sanitizeProjectName(name);
+    
+    if (!cleanName) return res.status(400).json({ error: "Project name is required and must contain alphanumeric characters" });
+
+    db.run("INSERT INTO projects (name, description, revisions) VALUES (?, ?, ?)", [cleanName, description, revisions], function(err) {
+        if (err) {
+            if (err.message.includes('UNIQUE constraint failed')) {
+                return res.status(400).json({ error: `A project with the name "${cleanName}" already exists.` });
+            }
+            return res.status(500).json({ error: err.message });
+        }
+        res.status(201).json({ id: this.lastID, name: cleanName });
     });
 });
 
@@ -153,9 +175,18 @@ app.post('/api/reworks', (req, res) => {
 // --- Projects API Expansions ---
 app.put('/api/projects/:id', (req, res) => {
     const { name, description, revisions } = req.body;
-    db.run("UPDATE projects SET name = ?, description = ?, revisions = ? WHERE id = ?", [name, description, revisions, req.params.id], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ updated: this.changes });
+    const cleanName = sanitizeProjectName(name);
+
+    if (!cleanName) return res.status(400).json({ error: "Project name is required" });
+
+    db.run("UPDATE projects SET name = ?, description = ?, revisions = ? WHERE id = ?", [cleanName, description, revisions, req.params.id], function(err) {
+        if (err) {
+            if (err.message.includes('UNIQUE constraint failed')) {
+                return res.status(400).json({ error: `A project with the name "${cleanName}" already exists.` });
+            }
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ updated: this.changes, name: cleanName });
     });
 });
 

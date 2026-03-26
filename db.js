@@ -25,6 +25,10 @@ const initDb = () => {
                         console.error('Migration error (projects.revisions):', err.message);
                     }
                 });
+                // Migration: Add unique index on project name
+                db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_name ON projects(name)`, (err) => {
+                    if (err) console.error('Migration error (projects.name unique):', err.message);
+                });
             }
         });
 
