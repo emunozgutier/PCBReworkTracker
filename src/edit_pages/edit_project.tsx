@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE } from '../api';
-import { RevisionManager } from '../components/RevisionManager';
 import { useProjectStore } from '../store/storeProject';
 
 interface EditProjectProps {
@@ -89,16 +88,13 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                 </div>
                 <div className="form-group">
                     <label htmlFor="revisions">Available Revisions (comma separated)</label>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <input 
-                            id="revisions"
-                            type="text" 
-                            value={revisions} 
-                            onChange={(e) => setRevisions(e.target.value)} 
-                            placeholder="e.g. A0, A1, B0, B1"
-                        />
-                        <RevisionManager revisions={revisions} onChange={setRevisions} />
-                    </div>
+                    <input 
+                        id="revisions"
+                        type="text" 
+                        value={revisions} 
+                        onChange={(e) => setRevisions(e.target.value)} 
+                        placeholder="e.g. A0, A1, B0, B1"
+                    />
                 </div>
                 <div className="form-group">
                     <label htmlFor="description">Description</label>
