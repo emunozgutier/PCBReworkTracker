@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE } from '../api';
+import { RevisionManager } from '../components/RevisionManager';
+import { useProjectStore } from '../store/storeProject';
 
 interface EditProjectProps {
     id: string | number;
@@ -14,63 +16,49 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
     const [description, setDescription] = useState('');
     const [revisions, setRevisions] = useState('');
     const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
+    
+    const { projects, updateProject, deleteProject, loading: saving } = useProjectStore();
 
     useEffect(() => {
-        // Find existing project (could be from props or fetch)
-        fetch(`${API_BASE}/projects`)
-            .then(res => res.json())
-            .then(data => {
-                const project = data.find((p: any) => p.id.toString() === id.toString());
-                if (project) {
-                    setName(project.name);
-                    setDescription(project.description || '');
-                    setRevisions(Array.isArray(project.revisions) ? project.revisions.join(', ') : (project.revisions || ''));
-                }
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
-    }, [id]);
+        // Find existing project from store directly if available, else fetch
+        const existingProject = projects.find(p => p.id.toString() === id.toString());
+        if (existingProject) {
+            setName(existingProject.name);
+            setDescription(existingProject.description || '');
+            setRevisions(Array.isArray(existingProject.revisions) ? existingProject.revisions.join(', ') : (existingProject.revisions || ''));
+            setLoading(false);
+        } else {
+            fetch(`${API_BASE}/projects`)
+                .then(res => res.json())
+                .then(data => {
+                    const project = data.find((p: any) => p.id.toString() === id.toString());
+                    if (project) {
+                        setName(project.name);
+                        setDescription(project.description || '');
+                        setRevisions(Array.isArray(project.revisions) ? project.revisions.join(', ') : (project.revisions || ''));
+                    }
+                    setLoading(false);
+                })
+                .catch(err => {
+                    console.error(err);
+                    setLoading(false);
+                });
+        }
+    }, [id, projects]);
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
-        setSaving(true);
-        try {
-            const res = await fetch(`${API_BASE}/projects/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, description, revisions })
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                onSuccess();
-            } else {
-                alert(data.error || 'Failed to update project');
-            }
-        } catch (err) {
-            console.error(err);
-            alert('Error connecting to server');
-        } finally {
-            setSaving(false);
+        const success = await updateProject(id, { name, description, revisions });
+        if (success) {
+            onSuccess();
         }
     };
 
     const handleDelete = async () => {
         if (!window.confirm('Are you sure you want to delete this project?')) return;
-        setSaving(true);
-        try {
-            const res = await fetch(`${API_BASE}/projects/${id}`, { method: 'DELETE' });
-            if (res.ok) onSuccess();
-            else alert('Failed to delete project');
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setSaving(false);
+        const success = await deleteProject(id);
+        if (success) {
+            onSuccess();
         }
     };
 
@@ -101,13 +89,16 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                 </div>
                 <div className="form-group">
                     <label htmlFor="revisions">Available Revisions (comma separated)</label>
-                    <input 
-                        id="revisions"
-                        type="text" 
-                        value={revisions} 
-                        onChange={(e) => setRevisions(e.target.value)} 
-                        placeholder="e.g. A0, A1, B0, B1"
-                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input 
+                            id="revisions"
+                            type="text" 
+                            value={revisions} 
+                            onChange={(e) => setRevisions(e.target.value)} 
+                            placeholder="e.g. A0, A1, B0, B1"
+                        />
+                        <RevisionManager revisions={revisions} onChange={setRevisions} />
+                    </div>
                 </div>
                 <div className="form-group">
                     <label htmlFor="description">Description</label>

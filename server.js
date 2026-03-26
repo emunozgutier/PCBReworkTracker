@@ -10,6 +10,10 @@ const port = 5002;
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
+app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    next();
+});
 
 // Initialize Database
 initDb();

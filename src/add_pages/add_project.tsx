@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 
-import { API_BASE } from '../api';
+import { RevisionManager } from '../components/RevisionManager';
+import { useProjectStore } from '../store/storeProject';
 
 interface AddProjectProps {
     onBack: () => void;
@@ -12,30 +13,14 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [revisions, setRevisions] = useState('');
-    const [loading, setLoading] = useState(false);
+    
+    const { addProject, loading } = useProjectStore();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
-        try {
-            const res = await fetch(`${API_BASE}/projects`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, description, revisions })
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                onSuccess();
-            } else {
-                alert(data.error || 'Failed to add project');
-            }
-        } catch (err) {
-            console.error(err);
-            alert('Error connecting to server');
-        } finally {
-            setLoading(false);
+        const success = await addProject({ name, description, revisions });
+        if (success) {
+            onSuccess();
         }
     };
 
@@ -62,13 +47,16 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                 </div>
                 <div className="form-group">
                     <label htmlFor="revisions">Available Revisions (comma separated)</label>
-                    <input 
-                        id="revisions"
-                        type="text" 
-                        value={revisions} 
-                        onChange={(e) => setRevisions(e.target.value)} 
-                        placeholder="e.g. A0, A1, B0, B1"
-                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input 
+                            id="revisions"
+                            type="text" 
+                            value={revisions} 
+                            onChange={(e) => setRevisions(e.target.value)} 
+                            placeholder="e.g. A0, A1, B0, B1"
+                        />
+                        <RevisionManager revisions={revisions} onChange={setRevisions} />
+                    </div>
                 </div>
                 <div className="form-group">
                     <label htmlFor="description">Description</label>

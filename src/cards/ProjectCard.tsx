@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Edit2, CircuitBoard } from 'lucide-react';
+import { ChevronDown, ChevronUp, Edit2 } from 'lucide-react';
 
 interface ProjectCardProps {
     project: {
@@ -18,30 +18,40 @@ export function ProjectCard({ project, onEdit }: ProjectCardProps) {
 
     return (
         <div className={`item-card project-card ${isExpanded ? 'active' : ''}`}>
-            <div className="card-actions-overlay">
-                <button className="edit-button" onClick={() => onEdit(project.id)}>
-                    <Edit2 size={16} />
-                </button>
-            </div>
+            <div 
+                className="card-header-main" 
+                onClick={() => setIsExpanded(!isExpanded)}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                    <button 
+                        className="edit-button" 
+                        onClick={(e) => { e.stopPropagation(); onEdit(project.id); }}
+                        style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
+                    >
+                        <Edit2 size={16} />
+                    </button>
+                    <span className="board-num" style={{ margin: 0 }}>{project.name}</span>
+                </div>
 
-            <div className="card-header-main" onClick={() => setIsExpanded(!isExpanded)}>
-                <div className="card-title">
-                    <span className="board-num">{project.name}</span>
-                    <span className="pcb-count-tag">
-                        <CircuitBoard size={14} />
-                        {project.pcb_count} PCBs
-                    </span>
-                </div>
-                <div className="card-details">
-                    <p>{project.description}</p>
-                </div>
-                <div className="expand-indicator">
-                    {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+                    {!isExpanded && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1rem', color: 'inherit', fontFamily: 'inherit' }}>
+                            <span>{project.revisions?.length || 0} Revs</span>
+                            <span>{project.pcb_count} PCBs</span>
+                        </div>
+                    )}
+                    <div className="expand-indicator" style={{ display: 'flex' }}>
+                        {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    </div>
                 </div>
             </div>
 
             {isExpanded && (
                 <div className="card-expanded-content">
+                    {project.description && (
+                        <p style={{ marginBottom: '16px', color: 'var(--text-secondary)' }}>{project.description}</p>
+                    )}
                     <div style={{ marginBottom: '16px' }}>
                         <h4>Available Revisions</h4>
                         {project.revisions && project.revisions.length > 0 ? (

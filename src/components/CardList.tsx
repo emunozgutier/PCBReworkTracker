@@ -4,6 +4,8 @@ import { ProjectCard } from '../cards/ProjectCard';
 
 import { API_BASE } from '../api';
 
+import { useProjectStore } from '../store/storeProject';
+
 interface CardListProps {
     type: 'projects' | 'pcbs' | 'reworks' | 'tags' | 'owners';
     title: string;
@@ -12,23 +14,32 @@ interface CardListProps {
 }
 
 export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
-    const [items, setItems] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [localItems, setLocalItems] = useState<any[]>([]);
+    const [localLoading, setLocalLoading] = useState(true);
+
+    const { projects, loading: projectsLoading, fetchProjects } = useProjectStore();
 
     useEffect(() => {
-        setLoading(true);
-        setItems([]); 
-        fetch(`${API_BASE}/${type}`)
-            .then(res => res.json())
-            .then(data => {
-                setItems(data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(`Failed to fetch ${type}:`, err);
-                setLoading(false);
-            });
-    }, [type]);
+        if (type === 'projects') {
+            fetchProjects();
+        } else {
+            setLocalLoading(true);
+            setLocalItems([]); 
+            fetch(`${API_BASE}/${type}`)
+                .then(res => res.json())
+                .then(data => {
+                    setLocalItems(data);
+                    setLocalLoading(false);
+                })
+                .catch(err => {
+                    console.error(`Failed to fetch ${type}:`, err);
+                    setLocalLoading(false);
+                });
+        }
+    }, [type, fetchProjects]);
+
+    const items = type === 'projects' ? projects : localItems;
+    const loading = type === 'projects' ? projectsLoading : localLoading;
 
     if (loading) return <div className="loading">Loading {title}...</div>;
 
