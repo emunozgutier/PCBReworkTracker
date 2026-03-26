@@ -22,7 +22,14 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const [owners, setOwners] = useState<any[]>([]);
     const { addPcb, loading } = usePcbStore();
 
-    const availableRevisions = projects.find(p => p.id.toString() === selectedProject)?.revisions || [];
+    const selectedProjData = projects.find(p => p.id.toString() === selectedProject);
+    const availableRevisions = selectedProjData?.revisions || [];
+    const selectedProjectKey = selectedProjData?.project_key || 'XXX';
+
+    const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value.replace(/[^0-9A-Fa-f]/g, '').toUpperCase().slice(0, 4);
+        setBoardNumber(val);
+    };
 
     useEffect(() => {
         // Fetch projects and owners for dropdowns
@@ -58,8 +65,10 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         
         const finalPcbRev = noPartYet ? "No part yet" : pcbRev;
         const combinedProduct = selectedRevision ? `${finalPcbRev} ${selectedRevision}`.trim() : finalPcbRev;
+        const finalBoardName = `${selectedProjectKey}-${boardNumber.toUpperCase()}`;
+        
         const success = await addPcb({
-            board_number: boardNumber,
+            board_number: finalBoardName,
             status,
             product_name_and_rev: combinedProduct,
             project_id: selectedProject ? parseInt(selectedProject) : null,
@@ -81,17 +90,22 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
 
             <form onSubmit={handleSubmit} className="add-form">
                 <div className="form-group">
-                    <label htmlFor="board_number">Board Number</label>
-                    <input 
-                        id="board_number"
-                        type="number" 
-                        min="0"
-                        max="1000"
-                        value={boardNumber} 
-                        onChange={(e) => setBoardNumber(e.target.value)} 
-                        placeholder="e.g. 42"
-                        required 
-                    />
+                    <label htmlFor="board_number">Board Number (4-Digit Hex)</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--accent)' }}>
+                            {selectedProjectKey}-
+                        </span>
+                        <input 
+                            id="board_number"
+                            type="text" 
+                            maxLength={4}
+                            value={boardNumber} 
+                            onChange={handleHexChange} 
+                            placeholder="e.g. 00A1"
+                            style={{ textTransform: 'uppercase', width: '120px' }}
+                            required 
+                        />
+                    </div>
                 </div>
                 
                 <div className="form-row">

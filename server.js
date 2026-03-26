@@ -54,6 +54,33 @@ function sanitizeProjectName(name) {
         .join('');
 }
 
+function generateProjectKey(name, attempt = 1) {
+    return new Promise((resolve, reject) => {
+        if (attempt > 20) return reject(new Error("Unable to generate unique project key"));
+        
+        // Grab alpha chars
+        let chars = name.replace(/[^A-Za-z]/g, '').toUpperCase();
+        if (chars.length < 2) chars = chars + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        
+        let proposedKey = chars[0] + chars[1];
+        
+        if (attempt > 1) {
+            const i1 = Math.floor(Math.random() * chars.length);
+            const i2 = Math.floor(Math.random() * chars.length);
+            proposedKey = chars[i1] + chars[i2];
+        }
+
+        db.get("SELECT id FROM projects WHERE project_key = ?", [proposedKey], (err, row) => {
+            if (err) return reject(err);
+            if (row) {
+                resolve(generateProjectKey(name, attempt + 1));
+            } else {
+                resolve(proposedKey);
+            }
+        });
+    });
+}
+
 // Projects API
 app.get('/api/projects', (req, res) => {
     const query = `
@@ -74,21 +101,31 @@ app.get('/api/projects', (req, res) => {
     });
 });
 
-app.post('/api/projects', (req, res) => {
+app.post('/api/projects', async (req, res) => {
     const { name, description, revisions } = req.body;
     const cleanName = sanitizeProjectName(name);
     
     if (!cleanName) return res.status(400).json({ error: "Project name is required and must contain alphanumeric characters" });
 
-    db.run("INSERT INTO projects (name, description, revisions) VALUES (?, ?, ?)", [cleanName, description, revisions], function(err) {
-        if (err) {
-            if (err.message.includes('UNIQUE constraint failed')) {
-                return res.status(400).json({ error: `A project with the name "${cleanName}" already exists.` });
+    try {
+        const projectKey = await generateProjectKey(cleanName);
+        db.run("INSERT INTO projects (name, description, revisions, project_key) VALUES (?, ?, ?, ?)", [cleanName, description, revisions, projectKey], function(err) {
+            if (err) {
+                if (err.message.includes('UNIQUE constraint failed')) {
+                    if (err.message.includes('projects.name')) {
+                        return res.status(400).json({ error: `A project with the name "${cleanName}" already exists.` });
+                    }
+                    if (err.message.includes('projects.project_key')) {
+                        return res.status(500).json({ error: "Failed to allocate unique project key. Try again." });
+                    }
+                }
+                return res.status(500).json({ error: err.message });
             }
-            return res.status(500).json({ error: err.message });
-        }
-        res.status(201).json({ id: this.lastID, name: cleanName });
-    });
+            res.status(201).json({ id: this.lastID, name: cleanName, project_key: projectKey });
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // PCBs API

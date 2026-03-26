@@ -25,7 +25,14 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     const { updatePcb, deletePcb } = usePcbStore();
     const [saving, setSaving] = useState(false);
 
-    const availableRevisions = projects.find(p => p.id.toString() === selectedProject)?.revisions || [];
+    const selectedProjData = projects.find(p => p.id.toString() === selectedProject);
+    const availableRevisions = selectedProjData?.revisions || [];
+    const selectedProjectKey = selectedProjData?.project_key || 'XXX';
+
+    const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value.replace(/[^0-9A-Fa-f]/g, '').toUpperCase().slice(0, 4);
+        setBoardNumber(val);
+    };
 
     useEffect(() => {
         Promise.all([
@@ -36,7 +43,9 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
             setProjects(projData);
             setOwners(ownerData);
             if (pcb) {
-                setBoardNumber(pcb.board_number);
+                const parts = pcb.board_number.split('-');
+                const hexPart = parts.length > 1 ? parts.slice(1).join('-') : pcb.board_number;
+                setBoardNumber(hexPart);
                 setStatus(pcb.status);
                 
                 // Try to split product_name_and_rev
@@ -87,8 +96,10 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
         setSaving(true);
         const finalPcbRev = noPartYet ? "No part yet" : pcbRev;
         const combinedProduct = selectedRevision ? `${finalPcbRev} ${selectedRevision}`.trim() : finalPcbRev;
+        const finalBoardName = `${selectedProjectKey}-${boardNumber.toUpperCase()}`;
+        
         const success = await updatePcb(id, {
-            board_number: boardNumber,
+            board_number: finalBoardName,
             status,
             product_name_and_rev: combinedProduct,
             project_id: selectedProject ? parseInt(selectedProject) : null,
@@ -122,16 +133,22 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
 
             <form onSubmit={handleUpdate} className="add-form">
                 <div className="form-group">
-                    <label htmlFor="board_number">Board Number</label>
-                    <input 
-                        id="board_number"
-                        type="number" 
-                        min="0"
-                        max="1000"
-                        value={boardNumber} 
-                        onChange={(e) => setBoardNumber(e.target.value)} 
-                        required 
-                    />
+                    <label htmlFor="board_number">Board Number (4-Digit Hex)</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--accent)' }}>
+                            {selectedProjectKey}-
+                        </span>
+                        <input 
+                            id="board_number"
+                            type="text" 
+                            maxLength={4}
+                            value={boardNumber} 
+                            onChange={handleHexChange} 
+                            placeholder="e.g. 00A1"
+                            style={{ textTransform: 'uppercase', width: '120px' }}
+                            required 
+                        />
+                    </div>
                 </div>
                 
                 <div className="form-row">

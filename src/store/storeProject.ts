@@ -8,6 +8,7 @@ export interface Project {
     pcb_count: number;
     pcbs: string[];
     revisions: string[];
+    project_key: string;
 }
 
 interface ProjectState {

@@ -16,6 +16,7 @@ const initDb = () => {
             name TEXT NOT NULL,
             description TEXT,
             revisions TEXT,
+            project_key TEXT UNIQUE,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`, (err) => {
             if (!err) {
@@ -23,6 +24,24 @@ const initDb = () => {
                 db.run(`ALTER TABLE projects ADD COLUMN revisions TEXT`, (err) => {
                     if (err && !err.message.includes('duplicate column name')) {
                         console.error('Migration error (projects.revisions):', err.message);
+                    }
+                });
+                db.run(`ALTER TABLE projects ADD COLUMN project_key TEXT`, (err) => {
+                    if (err && !err.message.includes('duplicate column name')) {
+                        console.error('Migration error (projects.project_key):', err.message);
+                    } else if (!err) {
+                        // Populate existing
+                        db.all("SELECT id, name FROM projects WHERE project_key IS NULL", [], (err, rows) => {
+                            if (!err && rows) {
+                                rows.forEach(row => {
+                                    const key = (row.name.replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase() + "XX").slice(0, 2);
+                                    db.run("UPDATE projects SET project_key = ? WHERE id = ?", [key + row.id, row.id]);
+                                });
+                            }
+                            db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_key ON projects(project_key)`);
+                        });
+                    } else {
+                        db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_key ON projects(project_key)`);
                     }
                 });
                 // Migration: Add unique index on project name

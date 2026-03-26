@@ -216,7 +216,6 @@ body {
 .card-details p { margin: 4px 0; font-size: 0.9rem; color: var(--text-muted); }
 .card-details strong { color: var(--text); }
 
-/* QR Code Styles (Preserved/Repurposed) */
 .network-qr-container {
   position: fixed;
   bottom: 24px;
@@ -225,18 +224,66 @@ body {
   backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 16px;
+  padding: 24px 16px 16px 16px; /* Extra top padding for close button */
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
   box-shadow: var(--shadow);
   z-index: 1000;
-  max-width: 160px;
+  width: max-content;
+  max-width: 300px;
+}
+
+.qr-toggle-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  z-index: 1000;
+  transition: all 0.2s ease;
+}
+
+.qr-toggle-button:hover {
+  background: var(--accent);
+  color: white;
+  transform: scale(1.05);
+}
+
+.qr-close-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.qr-close-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
 }
 
 @media (max-width: 768px) {
-  .network-qr-container { display: none; }
+  .network-qr-container, .qr-toggle-button { display: none; }
 }
 
 .loading {
