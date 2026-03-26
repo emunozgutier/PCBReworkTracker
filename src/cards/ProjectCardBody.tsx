@@ -9,9 +9,6 @@ interface ProjectCardBodyProps {
 export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     return (
         <div className="card-expanded-content">
-            {project.description && (
-                <p style={{ marginBottom: '16px', color: 'var(--text-secondary)' }}>{project.description}</p>
-            )}
             <div style={{ marginBottom: '16px' }}>
                 <h4>Available Revisions</h4>
                 {project.revisions && project.revisions.length > 0 ? (

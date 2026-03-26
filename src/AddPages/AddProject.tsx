@@ -10,14 +10,13 @@ interface AddProjectProps {
 
 export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
     const [revisions, setRevisions] = useState('');
     
     const { addProject, loading } = useProjectStore();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const success = await addProject({ name, description, revisions });
+        const success = await addProject({ name, description: '', revisions });
         if (success) {
             onSuccess();
         }
@@ -52,16 +51,6 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                         value={revisions} 
                         onChange={(e) => setRevisions(e.target.value)} 
                         placeholder="e.g. A0, A1, B0, B1"
-                    />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="description">Description</label>
-                    <textarea 
-                        id="description"
-                        value={description} 
-                        onChange={(e) => setDescription(e.target.value)} 
-                        placeholder="Briefly describe the project goals..."
-                        rows={4}
                     />
                 </div>
                 <button type="submit" className="submit-button" disabled={loading}>

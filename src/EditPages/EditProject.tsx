@@ -12,7 +12,6 @@ interface EditProjectProps {
 
 export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
     const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
     const [revisions, setRevisions] = useState('');
     const [loading, setLoading] = useState(true);
     
@@ -23,7 +22,6 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
         const existingProject = projects.find(p => p.id.toString() === id.toString());
         if (existingProject) {
             setName(existingProject.name);
-            setDescription(existingProject.description || '');
             setRevisions(Array.isArray(existingProject.revisions) ? existingProject.revisions.join(', ') : (existingProject.revisions || ''));
             setLoading(false);
         } else {
@@ -33,7 +31,6 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                     const project = data.find((p: any) => p.id.toString() === id.toString());
                     if (project) {
                         setName(project.name);
-                        setDescription(project.description || '');
                         setRevisions(Array.isArray(project.revisions) ? project.revisions.join(', ') : (project.revisions || ''));
                     }
                     setLoading(false);
@@ -47,7 +44,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
-        const success = await updateProject(id, { name, description, revisions });
+        const success = await updateProject(id, { name, description: '', revisions });
         if (success) {
             onSuccess();
         }
@@ -94,15 +91,6 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                         value={revisions} 
                         onChange={(e) => setRevisions(e.target.value)} 
                         placeholder="e.g. A0, A1, B0, B1"
-                    />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="description">Description</label>
-                    <textarea 
-                        id="description"
-                        value={description} 
-                        onChange={(e) => setDescription(e.target.value)} 
-                        rows={4}
                     />
                 </div>
                 <button type="submit" className="submit-button" disabled={saving}>
