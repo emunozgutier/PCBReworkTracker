@@ -10,6 +10,7 @@ interface ProjectCardProps {
         pcb_count: number;
         pcbs: string[];
         revisions: string[];
+        project_key: string;
     };
     onEdit: (id: number) => void;
 }

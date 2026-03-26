@@ -102,14 +102,14 @@ app.get('/api/projects', (req, res) => {
 });
 
 app.post('/api/projects', async (req, res) => {
-    const { name, description, revisions } = req.body;
+    const { name, description, revisions, project_key } = req.body;
     const cleanName = sanitizeProjectName(name);
     
     if (!cleanName) return res.status(400).json({ error: "Project name is required and must contain alphanumeric characters" });
 
     try {
-        const projectKey = await generateProjectKey(cleanName);
-        db.run("INSERT INTO projects (name, description, revisions, project_key) VALUES (?, ?, ?, ?)", [cleanName, description, revisions, projectKey], function(err) {
+        const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2) : await generateProjectKey(cleanName);
+        db.run("INSERT INTO projects (name, description, revisions, project_key) VALUES (?, ?, ?, ?)", [cleanName, description, revisions, finalProjectKey], function(err) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
                     if (err.message.includes('projects.name')) {
@@ -215,15 +215,21 @@ app.post('/api/reworks', (req, res) => {
 
 // --- Projects API Expansions ---
 app.put('/api/projects/:id', (req, res) => {
-    const { name, description, revisions } = req.body;
+    const { name, description, revisions, project_key } = req.body;
     const cleanName = sanitizeProjectName(name);
 
     if (!cleanName) return res.status(400).json({ error: "Project name is required" });
+    const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2) : null;
 
-    db.run("UPDATE projects SET name = ?, description = ?, revisions = ? WHERE id = ?", [cleanName, description, revisions, req.params.id], function(err) {
+    db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, req.params.id], function(err) {
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {
-                return res.status(400).json({ error: `A project with the name "${cleanName}" already exists.` });
+                if (err.message.includes('projects.name')) {
+                    return res.status(400).json({ error: `A project with the name "${cleanName}" already exists.` });
+                }
+                if (err.message.includes('projects.project_key')) {
+                    return res.status(400).json({ error: `The project key "${finalProjectKey}" is already in use.` });
+                }
             }
             return res.status(500).json({ error: err.message });
         }

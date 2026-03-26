@@ -16,8 +16,8 @@ interface ProjectState {
     loading: boolean;
     error: string | null;
     fetchProjects: () => Promise<void>;
-    addProject: (data: { name: string; description: string; revisions: string }) => Promise<boolean>;
-    updateProject: (id: number | string, data: { name: string; description: string; revisions: string }) => Promise<boolean>;
+    addProject: (data: { name: string; description: string; revisions: string; project_key: string }) => Promise<boolean>;
+    updateProject: (id: number | string, data: { name: string; description: string; revisions: string; project_key: string }) => Promise<boolean>;
     deleteProject: (id: number | string) => Promise<boolean>;
 }
 

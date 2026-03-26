@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, HelpCircle } from 'lucide-react';
 
 import { API_BASE } from '../api';
 import { useProjectStore } from '../store/storeProject';
@@ -13,6 +13,7 @@ interface EditProjectProps {
 export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
     const [name, setName] = useState('');
     const [revisions, setRevisions] = useState('');
+    const [projectKey, setProjectKey] = useState('');
     const [loading, setLoading] = useState(true);
     
     const { projects, updateProject, deleteProject, loading: saving } = useProjectStore();
@@ -23,6 +24,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
         if (existingProject) {
             setName(existingProject.name);
             setRevisions(Array.isArray(existingProject.revisions) ? existingProject.revisions.join(', ') : (existingProject.revisions || ''));
+            setProjectKey(existingProject.project_key || '');
             setLoading(false);
         } else {
             fetch(`${API_BASE}/projects`)
@@ -32,6 +34,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                     if (project) {
                         setName(project.name);
                         setRevisions(Array.isArray(project.revisions) ? project.revisions.join(', ') : (project.revisions || ''));
+                        setProjectKey(project.project_key || '');
                     }
                     setLoading(false);
                 })
@@ -42,9 +45,25 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
         }
     }, [id, projects]);
 
+    let keyBorderColor = undefined;
+    let keyTextColor = undefined;
+    if (projectKey.length === 2) {
+        const isDuplicate = projects.some(p => p.id.toString() !== id.toString() && p.project_key === projectKey);
+        if (isDuplicate) {
+            keyBorderColor = '#ef4444';
+            keyTextColor = '#ef4444';
+        } else {
+            keyBorderColor = '#22c55e';
+            keyTextColor = '#22c55e';
+        }
+    } else {
+        keyBorderColor = '#ef4444';
+        keyTextColor = '#ef4444';
+    }
+
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
-        const success = await updateProject(id, { name, description: '', revisions });
+        const success = await updateProject(id, { name, description: '', revisions, project_key: projectKey });
         if (success) {
             onSuccess();
         }
@@ -81,6 +100,28 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                         value={name} 
                         onChange={(e) => setName(e.target.value)} 
                         required 
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="project_key" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        Project Key (2 Letters)
+                        <span title="The 2-letter project key is for the links and storing data" style={{ cursor: 'help', display: 'flex' }}>
+                            <HelpCircle size={14} color="var(--text-muted)" />
+                        </span>
+                    </label>
+                    <input 
+                        id="project_key"
+                        type="text" 
+                        maxLength={2}
+                        value={projectKey} 
+                        onChange={(e) => setProjectKey(e.target.value.replace(/[^A-Za-z]/g, '').toUpperCase())} 
+                        placeholder="e.g. MO"
+                        style={{ 
+                            textTransform: 'uppercase',
+                            borderColor: keyBorderColor,
+                            color: keyTextColor,
+                            outlineColor: keyBorderColor
+                        }}
                     />
                 </div>
                 <div className="form-group">

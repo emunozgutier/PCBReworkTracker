@@ -6,6 +6,7 @@ interface ProjectCardHeaderProps {
         name: string;
         pcb_count: number;
         revisions: string[];
+        project_key: string;
     };
     isExpanded: boolean;
     onToggle: () => void;
@@ -27,7 +28,7 @@ export function ProjectCardHeader({ project, isExpanded, onToggle, onEdit }: Pro
                 >
                     <Edit2 size={16} />
                 </button>
-                <span className="board-num" style={{ margin: 0 }}>{project.name}</span>
+                <span className="board-num" style={{ margin: 0 }}>{project.project_key} - {project.name}</span>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
