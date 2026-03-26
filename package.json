@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest --run --environment jsdom"
+    "test:run": "vitest --run --environment jsdom",
+    "test": "start-server-and-test 'node server.js' http-get://localhost:5002/api/dashboard test:run"
   },
   "dependencies": {
     "cors": "^2.8.6",
@@ -38,6 +39,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
     "jsdom": "^29.0.1",
+    "start-server-and-test": "^3.0.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
     "vite": "^8.0.1",

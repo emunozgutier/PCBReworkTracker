@@ -60,14 +60,15 @@ function generateProjectKey(name, attempt = 1) {
         
         // Grab alpha chars
         let chars = name.replace(/[^A-Za-z]/g, '').toUpperCase();
-        if (chars.length < 2) chars = chars + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        if (chars.length < 3) chars = chars + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         
-        let proposedKey = chars[0] + chars[1];
+        let proposedKey = chars[0] + chars[1] + chars[2];
         
         if (attempt > 1) {
             const i1 = Math.floor(Math.random() * chars.length);
             const i2 = Math.floor(Math.random() * chars.length);
-            proposedKey = chars[i1] + chars[i2];
+            const i3 = Math.floor(Math.random() * chars.length);
+            proposedKey = chars[i1] + chars[i2] + chars[i3];
         }
 
         db.get("SELECT id FROM projects WHERE project_key = ?", [proposedKey], (err, row) => {
@@ -108,7 +109,7 @@ app.post('/api/projects', async (req, res) => {
     if (!cleanName) return res.status(400).json({ error: "Project name is required and must contain alphanumeric characters" });
 
     try {
-        const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2) : await generateProjectKey(cleanName);
+        const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : await generateProjectKey(cleanName);
         db.run("INSERT INTO projects (name, description, revisions, project_key) VALUES (?, ?, ?, ?)", [cleanName, description, revisions, finalProjectKey], function(err) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
@@ -219,7 +220,7 @@ app.put('/api/projects/:id', (req, res) => {
     const cleanName = sanitizeProjectName(name);
 
     if (!cleanName) return res.status(400).json({ error: "Project name is required" });
-    const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 2) : null;
+    const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : null;
 
     db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, req.params.id], function(err) {
         if (err) {

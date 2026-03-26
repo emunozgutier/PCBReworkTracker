@@ -7,6 +7,7 @@ import { useReworkStore } from '../src/store/storeRework';
 
 describe('Store and Database Integration Tests', () => {
     let projectId: number;
+    let projectId2: number;
     let pcbId: number;
     let ownerId: number;
     let tagId: number;
@@ -80,7 +81,7 @@ describe('Store and Database Integration Tests', () => {
         if (added) pcbId = added.id;
     });
 
-    it('should fail to add a PCB with the same board_number (case-insensitive)', async () => {
+    it('should fail to add a PCB with the same board_number in the SAME project (case-insensitive)', async () => {
         const store = usePcbStore.getState();
         const success = await store.addPcb({
             board_number: testPcbName.toLowerCase(),
@@ -90,6 +91,29 @@ describe('Store and Database Integration Tests', () => {
             owner_id: ownerId
         });
         expect(success).toBe(false);
+    });
+
+    it('should add a PCB with the same board_number to a DIFFERENT project', async () => {
+        const storeProject = useProjectStore.getState();
+        await storeProject.addProject({
+            name: 'VitestProjectTwo',
+            description: 'Second project',
+            revisions: 'A1',
+            project_key: 'V2'
+        });
+        const p2 = useProjectStore.getState().projects.find(p => p.name.toLowerCase() === 'VitestProjectTwo'.toLowerCase());
+        expect(p2).toBeDefined();
+        if (p2) projectId2 = p2.id;
+
+        const store = usePcbStore.getState();
+        const success = await store.addPcb({
+            board_number: testPcbName, // Same board number
+            status: 'Done',
+            product_name_and_rev: 'RevC',
+            project_id: projectId2, // Different project
+            owner_id: ownerId
+        });
+        expect(success).toBe(true);
     });
 
     it('should fail to delete a Project if it has PCBs (Foreign Key restriction)', async () => {
@@ -140,6 +164,12 @@ describe('Store and Database Integration Tests', () => {
             await fetch(`http://localhost:5002/api/pcbs/${pcbId}`, { method: 'DELETE' });
         }
         if (projectId) await projects.deleteProject(projectId);
+        
+        if (projectId2) {
+            const pcbs2 = usePcbStore.getState().pcbs.filter(p => (p as any).project.toLowerCase() === 'VitestProjectTwo'.toLowerCase());
+            for (const p of pcbs2) await fetch(`http://localhost:5002/api/pcbs/${p.id}`, { method: 'DELETE' });
+            await projects.deleteProject(projectId2);
+        }
         
         if (ownerId) await fetch(`http://localhost:5002/api/owners/${ownerId}`, { method: 'DELETE' });
         if (tagId) await fetch(`http://localhost:5002/api/tags/${tagId}`, { method: 'DELETE' });
