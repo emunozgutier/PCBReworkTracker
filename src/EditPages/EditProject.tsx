@@ -99,6 +99,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                         type="text" 
                         value={name} 
                         onChange={(e) => setName(e.target.value)} 
+                        disabled
                         required 
                     />
                 </div>
@@ -116,11 +117,13 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                         value={projectKey} 
                         onChange={(e) => setProjectKey(e.target.value.replace(/[^A-Za-z]/g, '').toUpperCase())} 
                         placeholder="e.g. MOD"
+                        disabled
                         style={{ 
                             textTransform: 'uppercase',
                             borderColor: keyBorderColor,
                             color: keyTextColor,
-                            outlineColor: keyBorderColor
+                            outlineColor: keyBorderColor,
+                            opacity: 0.7
                         }}
                     />
                 </div>
