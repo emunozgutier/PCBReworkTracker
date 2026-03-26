@@ -121,7 +121,7 @@ app.post('/api/projects', async (req, res) => {
                 }
                 return res.status(500).json({ error: err.message });
             }
-            res.status(201).json({ id: this.lastID, name: cleanName, project_key: projectKey });
+            res.status(201).json({ id: this.lastID, name: cleanName, project_key: finalProjectKey });
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
