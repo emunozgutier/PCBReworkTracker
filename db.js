@@ -10,6 +10,8 @@ const db = new sqlite3.Database(dbPath);
 
 const initDb = () => {
     db.serialize(() => {
+        db.run('PRAGMA foreign_keys = ON');
+        
         // Projects Table
         db.run(`CREATE TABLE IF NOT EXISTS projects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,7 +47,7 @@ const initDb = () => {
                     }
                 });
                 // Migration: Add unique index on project name
-                db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_name ON projects(name)`, (err) => {
+                db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_name ON projects(name COLLATE NOCASE)`, (err) => {
                     if (err) console.error('Migration error (projects.name unique):', err.message);
                 });
             }
@@ -110,6 +112,11 @@ const initDb = () => {
                 db.run("INSERT INTO pcb_tags (pcb_id, tag_id) VALUES (?, ?)", [1, 1]);
             }
         });
+
+        // Add Case-Insensitive Unique Indexes for all entities
+        db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_owners_name_nocase ON owners(name COLLATE NOCASE)`);
+        db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_tags_name_nocase ON tags(name COLLATE NOCASE)`);
+        db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_pcbs_board_number_nocase ON pcbs(board_number COLLATE NOCASE)`);
     });
 };
 
