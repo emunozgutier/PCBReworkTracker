@@ -13,7 +13,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [revisions, setRevisions] = useState('');
     const [projectKey, setProjectKey] = useState('');
     
-    const { addProject, loading, projects } = useProjectStore();
+    const { addProject, loading, projects, error } = useProjectStore();
 
     let keyBorderColor = undefined;
     let keyTextColor = undefined;
@@ -92,6 +92,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                         placeholder="e.g. A0, A1, B0, B1"
                     />
                 </div>
+                {error && <div className="error-message" style={{ color: '#ef4444', marginBottom: '1rem', padding: '0.5rem', backgroundColor: '#fee2e2', borderRadius: '4px' }}>{error}</div>}
                 <button type="submit" className="submit-button" disabled={loading}>
                     <Save size={18} />
                     <span>{loading ? 'Saving...' : 'Save Project'}</span>
