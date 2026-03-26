@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE } from '../api';
+import { usePcbStore } from '../store/storePcb';
 
 interface EditPCBProps {
     id: string | number;
@@ -12,7 +13,8 @@ interface EditPCBProps {
 export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     const [boardNumber, setBoardNumber] = useState('');
     const [status, setStatus] = useState('In Progress');
-    const [productName, setProductName] = useState('');
+    const [pcbRev, setPcbRev] = useState('');
+    const [noPartYet, setNoPartYet] = useState(false);
     const [selectedRevision, setSelectedRevision] = useState('');
     const [selectedProject, setSelectedProject] = useState('');
     const [selectedOwner, setSelectedOwner] = useState('');
@@ -20,6 +22,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     const [projects, setProjects] = useState<any[]>([]);
     const [owners, setOwners] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const { updatePcb, deletePcb } = usePcbStore();
     const [saving, setSaving] = useState(false);
 
     const availableRevisions = projects.find(p => p.id.toString() === selectedProject)?.revisions || [];
@@ -51,7 +54,13 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                     }
                 }
                 
-                setProductName(rawProduct);
+                if (rawProduct === "No part yet") {
+                    setNoPartYet(true);
+                    setPcbRev('');
+                } else {
+                    setNoPartYet(false);
+                    setPcbRev(rawProduct);
+                }
                 setSelectedRevision(foundRev);
                 setSelectedProject(pcb.project_id.toString());
                 setSelectedOwner(pcb.owner_id ? pcb.owner_id.toString() : '');
@@ -76,40 +85,25 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        const combinedProduct = selectedRevision ? `${productName} ${selectedRevision}`.trim() : productName;
-        try {
-            const res = await fetch(`${API_BASE}/pcbs/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    board_number: boardNumber, 
-                    status, 
-                    product_name_and_rev: combinedProduct,
-                    project_id: parseInt(selectedProject),
-                    owner_id: selectedOwner ? parseInt(selectedOwner) : null
-                })
-            });
-            if (res.ok) onSuccess();
-            else alert('Failed to update PCB');
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setSaving(false);
-        }
+        const finalPcbRev = noPartYet ? "No part yet" : pcbRev;
+        const combinedProduct = selectedRevision ? `${finalPcbRev} ${selectedRevision}`.trim() : finalPcbRev;
+        const success = await updatePcb(id, {
+            board_number: boardNumber,
+            status,
+            product_name_and_rev: combinedProduct,
+            project_id: selectedProject ? parseInt(selectedProject) : null,
+            owner_id: selectedOwner ? parseInt(selectedOwner) : null
+        });
+        if (success) onSuccess();
+        setSaving(false);
     };
 
     const handleDelete = async () => {
         if (!window.confirm('Are you sure you want to delete this PCB?')) return;
         setSaving(true);
-        try {
-            const res = await fetch(`${API_BASE}/pcbs/${id}`, { method: 'DELETE' });
-            if (res.ok) onSuccess();
-            else alert('Failed to delete PCB');
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setSaving(false);
-        }
+        const success = await deletePcb(id);
+        if (success) onSuccess();
+        setSaving(false);
     };
 
     if (loading) return <div className="loading">Loading PCB...</div>;
@@ -131,7 +125,9 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                     <label htmlFor="board_number">Board Number</label>
                     <input 
                         id="board_number"
-                        type="text" 
+                        type="number" 
+                        min="0"
+                        max="1000"
                         value={boardNumber} 
                         onChange={(e) => setBoardNumber(e.target.value)} 
                         required 
@@ -140,13 +136,29 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                 
                 <div className="form-row">
                     <div className="form-group flex-1">
-                        <label htmlFor="product_name">Product Name</label>
-                        <input 
-                            id="product_name"
-                            type="text" 
-                            value={productName} 
-                            onChange={(e) => setProductName(e.target.value)} 
-                        />
+                        <label htmlFor="pcb_rev">PCB Rev Number</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <input 
+                                id="pcb_rev"
+                                type="number" 
+                                step="any"
+                                value={pcbRev} 
+                                onChange={(e) => setPcbRev(e.target.value)} 
+                                disabled={noPartYet}
+                                required={!noPartYet}
+                            />
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'normal', fontSize: '0.9rem', cursor: 'pointer' }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={noPartYet} 
+                                    onChange={(e) => {
+                                        setNoPartYet(e.target.checked);
+                                        if (e.target.checked) setPcbRev('');
+                                    }} 
+                                />
+                                No part yet
+                            </label>
+                        </div>
                     </div>
                     <div className="form-group flex-1">
                         <label htmlFor="revision">Revision</label>

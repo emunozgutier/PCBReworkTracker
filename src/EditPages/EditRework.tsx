@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE } from '../api';
+import { useReworkStore } from '../store/storeRework';
 
 interface EditReworkProps {
     id: string | number;
@@ -15,6 +16,7 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
     const [description, setDescription] = useState('');
     const [status, setStatus] = useState('Completed');
     const [loading, setLoading] = useState(true);
+    const { updateRework, deleteRework } = useReworkStore();
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -38,33 +40,21 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        try {
-            const res = await fetch(`${API_BASE}/reworks/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pcb_id: parseInt(selectedPcb), description, status })
-            });
-            if (res.ok) onSuccess();
-            else alert('Failed to update rework');
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setSaving(false);
-        }
+        const success = await updateRework(id, {
+            pcb_id: selectedPcb ? parseInt(selectedPcb) : null,
+            description,
+            status
+        });
+        if (success) onSuccess();
+        setSaving(false);
     };
 
     const handleDelete = async () => {
         if (!window.confirm('Are you sure you want to delete this rework record?')) return;
         setSaving(true);
-        try {
-            const res = await fetch(`${API_BASE}/reworks/${id}`, { method: 'DELETE' });
-            if (res.ok) onSuccess();
-            else alert('Failed to delete rework');
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setSaving(false);
-        }
+        const success = await deleteRework(id);
+        if (success) onSuccess();
+        setSaving(false);
     };
 
     if (loading) return <div className="loading">Loading Rework...</div>;

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE } from '../api';
+import { useOwnerStore } from '../store/storeOwner';
 
 interface EditUserProps {
     id: string | number;
@@ -12,6 +13,7 @@ interface EditUserProps {
 export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
     const [name, setName] = useState('');
     const [loading, setLoading] = useState(true);
+    const { updateOwner, deleteOwner } = useOwnerStore();
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -30,33 +32,17 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        try {
-            const res = await fetch(`${API_BASE}/owners/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name })
-            });
-            if (res.ok) onSuccess();
-            else alert('Failed to update owner');
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setSaving(false);
-        }
+        const success = await updateOwner(id, { name });
+        if (success) onSuccess();
+        setSaving(false);
     };
 
     const handleDelete = async () => {
         if (!window.confirm('Are you sure you want to delete this owner?')) return;
         setSaving(true);
-        try {
-            const res = await fetch(`${API_BASE}/owners/${id}`, { method: 'DELETE' });
-            if (res.ok) onSuccess();
-            else alert('Failed to delete owner');
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setSaving(false);
-        }
+        const success = await deleteOwner(id);
+        if (success) onSuccess();
+        setSaving(false);
     };
 
     if (loading) return <div className="loading">Loading Owner...</div>;

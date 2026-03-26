@@ -22,19 +22,34 @@ interface NavigationState {
     setIsMobile: (isMobile: boolean) => void;
 }
 
+const getInitialPage = (): Page => {
+    if (typeof window === 'undefined') return 'projects';
+    const path = window.location.pathname.replace('/', '') || 'projects';
+    const validPages: Page[] = ['projects', 'pcbs', 'reworks', 'owners', 'tags'];
+    if (validPages.includes(path as Page)) return path as Page;
+    return 'projects';
+};
+
+const initialPage = getInitialPage();
+
 export const useStore = create<NavigationState>((set) => ({
-    page: 'projects',
-    activeTab: 'projects',
+    page: initialPage,
+    activeTab: initialPage,
     selectedId: null,
     isMobile: typeof window !== 'undefined' ? window.innerWidth <= 768 : false,
 
     setPage: (page) => set({ page }),
     
-    setActiveTab: (tab) => set({ 
-        activeTab: tab, 
-        page: tab as Page, // When we switch tabs, we go to the main list page
-        selectedId: null 
-    }),
+    setActiveTab: (tab) => {
+        if (typeof window !== 'undefined') {
+            window.history.pushState({}, '', `/${tab}`);
+        }
+        set({ 
+            activeTab: tab, 
+            page: tab as Page, // When we switch tabs, we go to the main list page
+            selectedId: null 
+        });
+    },
 
     editItem: (page, id) => set({ 
         page, 
@@ -60,6 +75,18 @@ if (typeof window !== 'undefined') {
         const mobile = window.innerWidth <= 768;
         if (useStore.getState().isMobile !== mobile) {
             useStore.getState().setIsMobile(mobile);
+        }
+    });
+
+    window.addEventListener('popstate', () => {
+        const path = window.location.pathname.replace('/', '') || 'projects';
+        const validPages = ['projects', 'pcbs', 'reworks', 'owners', 'tags'];
+        if (validPages.includes(path)) {
+            useStore.setState({
+                activeTab: path,
+                page: path as Page,
+                selectedId: null
+            });
         }
     });
 }

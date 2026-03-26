@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 
-import { API_BASE } from '../api';
+import { useOwnerStore } from '../store/storeOwner';
 
 interface AddUserProps {
     onBack: () => void;
@@ -10,27 +10,13 @@ interface AddUserProps {
 
 export function AddUser({ onBack, onSuccess }: AddUserProps) {
     const [name, setName] = useState('');
-    const [loading, setLoading] = useState(false);
+    const { addOwner, loading } = useOwnerStore();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
-        try {
-            const res = await fetch(`${API_BASE}/owners`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name })
-            });
-            if (res.ok) {
-                onSuccess();
-            } else {
-                alert('Failed to add user');
-            }
-        } catch (err) {
-            console.error(err);
-            alert('Error connecting to server');
-        } finally {
-            setLoading(false);
+        const success = await addOwner({ name });
+        if (success) {
+            onSuccess();
         }
     };
 

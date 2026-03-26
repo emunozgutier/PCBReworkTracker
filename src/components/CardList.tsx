@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Plus, Edit2 } from 'lucide-react';
 import { ProjectCard } from '../cards/ProjectCard';
 
-import { API_BASE } from '../api';
-
 import { useProjectStore } from '../store/storeProject';
+import { usePcbStore } from '../store/storePcb';
+import { useReworkStore } from '../store/storeRework';
+import { useOwnerStore } from '../store/storeOwner';
+import { useTagStore } from '../store/storeTag';
 
 interface CardListProps {
     type: 'projects' | 'pcbs' | 'reworks' | 'tags' | 'owners';
@@ -14,32 +16,30 @@ interface CardListProps {
 }
 
 export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
-    const [localItems, setLocalItems] = useState<any[]>([]);
-    const [localLoading, setLocalLoading] = useState(true);
-
     const { projects, loading: projectsLoading, fetchProjects } = useProjectStore();
+    const { pcbs, loading: pcbsLoading, fetchPcbs } = usePcbStore();
+    const { reworks, loading: reworksLoading, fetchReworks } = useReworkStore();
+    const { owners, loading: ownersLoading, fetchOwners } = useOwnerStore();
+    const { tags, loading: tagsLoading, fetchTags } = useTagStore();
 
     useEffect(() => {
-        if (type === 'projects') {
-            fetchProjects();
-        } else {
-            setLocalLoading(true);
-            setLocalItems([]); 
-            fetch(`${API_BASE}/${type}`)
-                .then(res => res.json())
-                .then(data => {
-                    setLocalItems(data);
-                    setLocalLoading(false);
-                })
-                .catch(err => {
-                    console.error(`Failed to fetch ${type}:`, err);
-                    setLocalLoading(false);
-                });
-        }
-    }, [type, fetchProjects]);
+        if (type === 'projects') fetchProjects();
+        if (type === 'pcbs') fetchPcbs();
+        if (type === 'reworks') fetchReworks();
+        if (type === 'owners') fetchOwners();
+        if (type === 'tags') fetchTags();
+    }, [type, fetchProjects, fetchPcbs, fetchReworks, fetchOwners, fetchTags]);
 
-    const items = type === 'projects' ? projects : localItems;
-    const loading = type === 'projects' ? projectsLoading : localLoading;
+    let items: any[] = [];
+    let loading = false;
+
+    switch (type) {
+        case 'projects': items = projects; loading = projectsLoading; break;
+        case 'pcbs': items = pcbs; loading = pcbsLoading; break;
+        case 'reworks': items = reworks; loading = reworksLoading; break;
+        case 'owners': items = owners; loading = ownersLoading; break;
+        case 'tags': items = tags; loading = tagsLoading; break;
+    }
 
     if (loading) return <div className="loading">Loading {title}...</div>;
 
@@ -64,7 +64,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                         return (
                             <div key={item.id} className="item-card">
                                 <div className="card-actions-overlay">
-                                    <button className="edit-button" onClick={() => onEdit(item.id)}>
+                                    <button className="edit-button" onClick={(e) => { e.stopPropagation(); onEdit(item.id); }}>
                                         <Edit2 size={16} />
                                     </button>
                                 </div>
@@ -77,9 +77,9 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                                             </span>
                                         </div>
                                         <div className="card-details">
-                                            <p><strong>Project:</strong> {item.project_name || 'N/A'}</p>
-                                            <p><strong>Owner:</strong> {item.owner_name || 'N/A'}</p>
-                                            <p className="product-info">{item.product}</p>
+                                            <p><strong>Project:</strong> {item.project || 'N/A'}</p>
+                                            <p><strong>Owner:</strong> {item.owner || 'N/A'}</p>
+                                            <p className="product-info">{item.product_name_and_rev || item.product}</p>
                                         </div>
                                     </>
                                 )}

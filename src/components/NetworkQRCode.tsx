@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
+import { useStore } from '../store/useStore';
 
 export function NetworkQRCode() {
     const [qrDataUrl, setQrDataUrl] = useState<string>('');
+    const { activeTab } = useStore();
     
     // These constants are defined in vite.config.ts
     // Use fallbacks for development if constants are not yet defined
     const localIp = typeof __LOCAL_IP__ !== 'undefined' ? __LOCAL_IP__ : window.location.hostname;
     const port = typeof __PORT__ !== 'undefined' ? __PORT__ : window.location.port;
-    const url = `http://${localIp}:${port}`;
+    const url = `http://${localIp}:${port}/${activeTab}`;
 
     useEffect(() => {
         const generateQR = async () => {
@@ -37,7 +39,10 @@ export function NetworkQRCode() {
             </div>
             <div className="qr-info">
                 <p className="qr-label">Scan to view on mobile</p>
-                <code className="qr-url">{url}</code>
+                <code className="qr-url" style={{ display: 'block', wordBreak: 'break-all' }}>
+                    <div>http://{localIp}:{port}</div>
+                    <div style={{ color: '#818cf8', fontWeight: 'bold' }}>/{activeTab}</div>
+                </code>
             </div>
         </div>
     );

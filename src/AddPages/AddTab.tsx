@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 
-import { API_BASE } from '../api';
+import { useTagStore } from '../store/storeTag';
 
 interface AddTabProps {
     onBack: () => void;
@@ -11,27 +11,13 @@ interface AddTabProps {
 export function AddTab({ onBack, onSuccess }: AddTabProps) {
     const [name, setName] = useState('');
     const [color, setColor] = useState('#818cf8');
-    const [loading, setLoading] = useState(false);
+    const { addTag, loading } = useTagStore();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
-        try {
-            const res = await fetch(`${API_BASE}/tags`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, color })
-            });
-            if (res.ok) {
-                onSuccess();
-            } else {
-                alert('Failed to add tag');
-            }
-        } catch (err) {
-            console.error(err);
-            alert('Error connecting to server');
-        } finally {
-            setLoading(false);
+        const success = await addTag({ name, color });
+        if (success) {
+            onSuccess();
         }
     };
 

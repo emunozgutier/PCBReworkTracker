@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE } from '../api';
+import { useTagStore } from '../store/storeTag';
 
 interface EditTabProps {
     id: string | number;
@@ -13,6 +14,7 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
     const [name, setName] = useState('');
     const [color, setColor] = useState('#818cf8');
     const [loading, setLoading] = useState(true);
+    const { updateTag, deleteTag } = useTagStore();
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -34,33 +36,17 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        try {
-            const res = await fetch(`${API_BASE}/tags/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, color })
-            });
-            if (res.ok) onSuccess();
-            else alert('Failed to update tag');
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setSaving(false);
-        }
+        const success = await updateTag(id, { name, color });
+        if (success) onSuccess();
+        setSaving(false);
     };
 
     const handleDelete = async () => {
         if (!window.confirm('Are you sure you want to delete this tag?')) return;
         setSaving(true);
-        try {
-            const res = await fetch(`${API_BASE}/tags/${id}`, { method: 'DELETE' });
-            if (res.ok) onSuccess();
-            else alert('Failed to delete tag');
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setSaving(false);
-        }
+        const success = await deleteTag(id);
+        if (success) onSuccess();
+        setSaving(false);
     };
 
     const colors = ['#818cf8', '#ef4444', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6'];

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 
 import { API_BASE } from '../api';
+import { useReworkStore } from '../store/storeRework';
 
 interface AddReworkProps {
     onBack: () => void;
@@ -13,7 +14,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
     const [selectedPcb, setSelectedPcb] = useState('');
     const [description, setDescription] = useState('');
     const [status, setStatus] = useState('Completed');
-    const [loading, setLoading] = useState(false);
+    const { addRework, loading } = useReworkStore();
 
     useEffect(() => {
         fetch(`${API_BASE}/pcbs`)
@@ -27,27 +28,13 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
-        try {
-            const res = await fetch(`${API_BASE}/reworks`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    pcb_id: parseInt(selectedPcb), 
-                    description, 
-                    status 
-                })
-            });
-            if (res.ok) {
-                onSuccess();
-            } else {
-                alert('Failed to add rework');
-            }
-        } catch (err) {
-            console.error(err);
-            alert('Error connecting to server');
-        } finally {
-            setLoading(false);
+        const success = await addRework({
+            pcb_id: selectedPcb ? parseInt(selectedPcb) : null,
+            description,
+            status
+        });
+        if (success) {
+            onSuccess();
         }
     };
 

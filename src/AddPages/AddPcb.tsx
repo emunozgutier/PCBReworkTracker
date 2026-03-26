@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 
 import { API_BASE } from '../api';
+import { usePcbStore } from '../store/storePcb';
 
 interface AddPCBProps {
     onBack: () => void;
@@ -10,15 +11,16 @@ interface AddPCBProps {
 
 export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const [boardNumber, setBoardNumber] = useState('');
-    const [status, setStatus] = useState('In Progress');
-    const [productName, setProductName] = useState('');
+    const [status] = useState('In Progress');
+    const [pcbRev, setPcbRev] = useState('');
+    const [noPartYet, setNoPartYet] = useState(false);
     const [selectedRevision, setSelectedRevision] = useState('');
     const [selectedProject, setSelectedProject] = useState('');
     const [selectedOwner, setSelectedOwner] = useState('');
     
     const [projects, setProjects] = useState<any[]>([]);
     const [owners, setOwners] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
+    const { addPcb, loading } = usePcbStore();
 
     const availableRevisions = projects.find(p => p.id.toString() === selectedProject)?.revisions || [];
 
@@ -53,30 +55,18 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
-        const combinedProduct = selectedRevision ? `${productName} ${selectedRevision}`.trim() : productName;
-        try {
-            const res = await fetch(`${API_BASE}/pcbs`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    board_number: boardNumber, 
-                    status, 
-                    product_name_and_rev: combinedProduct,
-                    project_id: parseInt(selectedProject),
-                    owner_id: parseInt(selectedOwner)
-                })
-            });
-            if (res.ok) {
-                onSuccess();
-            } else {
-                alert('Failed to add PCB');
-            }
-        } catch (err) {
-            console.error(err);
-            alert('Error connecting to server');
-        } finally {
-            setLoading(false);
+        
+        const finalPcbRev = noPartYet ? "No part yet" : pcbRev;
+        const combinedProduct = selectedRevision ? `${finalPcbRev} ${selectedRevision}`.trim() : finalPcbRev;
+        const success = await addPcb({
+            board_number: boardNumber,
+            status,
+            product_name_and_rev: combinedProduct,
+            project_id: selectedProject ? parseInt(selectedProject) : null,
+            owner_id: selectedOwner ? parseInt(selectedOwner) : null
+        });
+        if (success) {
+            onSuccess();
         }
     };
 
@@ -94,27 +84,45 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                     <label htmlFor="board_number">Board Number</label>
                     <input 
                         id="board_number"
-                        type="text" 
+                        type="number" 
+                        min="0"
+                        max="1000"
                         value={boardNumber} 
                         onChange={(e) => setBoardNumber(e.target.value)} 
-                        placeholder="e.g. ARES-001"
+                        placeholder="e.g. 42"
                         required 
                     />
                 </div>
                 
                 <div className="form-row">
                     <div className="form-group flex-1">
-                        <label htmlFor="product_name">Product Name</label>
-                        <input 
-                            id="product_name"
-                            type="text" 
-                            value={productName} 
-                            onChange={(e) => setProductName(e.target.value)} 
-                            placeholder="e.g. ARES"
-                        />
+                        <label htmlFor="pcb_rev">PCB Rev Number</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <input 
+                                id="pcb_rev"
+                                type="number" 
+                                step="any"
+                                value={pcbRev} 
+                                onChange={(e) => setPcbRev(e.target.value)} 
+                                placeholder="e.g. 1.2"
+                                disabled={noPartYet}
+                                required={!noPartYet}
+                            />
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'normal', fontSize: '0.9rem', cursor: 'pointer' }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={noPartYet} 
+                                    onChange={(e) => {
+                                        setNoPartYet(e.target.checked);
+                                        if (e.target.checked) setPcbRev('');
+                                    }} 
+                                />
+                                No part yet
+                            </label>
+                        </div>
                     </div>
                     <div className="form-group flex-1">
-                        <label htmlFor="revision">Revision</label>
+                        <label htmlFor="revision">Project Rev</label>
                         <select 
                             id="revision"
                             value={selectedRevision}
