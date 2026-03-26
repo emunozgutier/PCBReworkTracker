@@ -17,7 +17,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
 
     let keyBorderColor = undefined;
     let keyTextColor = undefined;
-    if (projectKey.length === 2) {
+    if (projectKey.length === 3) {
         const isDuplicate = projects.some(p => p.project_key === projectKey);
         if (isDuplicate) {
             keyBorderColor = '#ef4444';
@@ -26,7 +26,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
             keyBorderColor = '#22c55e';
             keyTextColor = '#22c55e';
         }
-    } else if (projectKey.length === 1) {
+    } else if (projectKey.length > 0 && projectKey.length < 3) {
         keyBorderColor = '#ef4444';
         keyTextColor = '#ef4444';
     }
@@ -62,18 +62,18 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                 </div>
                 <div className="form-group">
                     <label htmlFor="project_key" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        Project Key (2 Letters)
-                        <span title="The 2-letter project key is for the links and storing data" style={{ cursor: 'help', display: 'flex' }}>
+                        Project Key (3 Letters)
+                        <span title="The 3-letter project key is for the links and storing data" style={{ cursor: 'help', display: 'flex' }}>
                             <HelpCircle size={14} color="var(--text-muted)" />
                         </span>
                     </label>
                     <input 
                         id="project_key"
                         type="text" 
-                        maxLength={2}
+                        maxLength={3}
                         value={projectKey} 
                         onChange={(e) => setProjectKey(e.target.value.replace(/[^A-Za-z]/g, '').toUpperCase())} 
-                        placeholder="e.g. MO (Auto-generates if blank)"
+                        placeholder="e.g. MOD (Auto-generates if blank)"
                         style={{ 
                             textTransform: 'uppercase',
                             borderColor: keyBorderColor,
