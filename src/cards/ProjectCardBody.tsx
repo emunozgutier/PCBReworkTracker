@@ -59,6 +59,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                                 isExpanded={false}
                                 onToggle={() => {}}
                                 onEdit={(id) => editItem('pcbs_edit', id)}
+                                hideActions={true}
                             />
                         </div>
                     ))}
