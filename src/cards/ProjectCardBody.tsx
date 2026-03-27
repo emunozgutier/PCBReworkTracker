@@ -33,8 +33,8 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
                         {project.formfactors.map((ff, index) => (
                             <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <span style={{ fontWeight: 600, minWidth: '60px', color: 'var(--text)', fontSize: '0.9rem' }}>{ff.name}</span>
-                                <div className="pcb-mini-list" style={{ marginTop: 0, gap: '6px' }}>
+                                <span style={{ fontWeight: 600, minWidth: '100px', width: '100px', flexShrink: 0, color: 'var(--text)', fontSize: '0.9rem' }}>{ff.name}</span>
+                                <div className="pcb-mini-list" style={{ marginTop: 0, gap: '6px', flex: 1 }}>
                                     {ff.revisions.map((rev, rIdx) => (
                                         <span key={rIdx} className="pcb-pill" style={{ opacity: 0.8, padding: '2px 8px' }}>{rev}</span>
                                     ))}
