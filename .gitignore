@@ -25,3 +25,7 @@ dist-ssr
 
 # Database files
 *.db
+
+# Uploaded files
+pictures/
+

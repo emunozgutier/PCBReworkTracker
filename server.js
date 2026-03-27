@@ -237,11 +237,6 @@ app.get('/api/reworks', (req, res) => {
 
 app.post('/api/reworks', upload.any(), (req, res) => {
     const { pcb_id, description, status } = req.body;
-    let paths = [];
-    if (req.files && req.files.length > 0) {
-        paths = req.files.slice(0, 3).map(file => `/pictures/${file.filename}`);
-    }
-    const image_path = paths.length > 0 ? JSON.stringify(paths) : null;
     
     // 1. Get the PCB board_number
     db.get("SELECT board_number FROM pcbs WHERE id = ?", [pcb_id], (err, row) => {
@@ -264,6 +259,28 @@ app.post('/api/reworks', upload.any(), (req, res) => {
             }
             
             const reworkName = `${boardName}-R-${String(sequence).padStart(3, '0')}`;
+            
+            // Post-process the uploaded files dynamically to match the reworkName
+            let finalPaths = [];
+            if (req.files && req.files.length > 0) {
+                req.files.slice(0, 3).forEach((file, index) => {
+                    const ext = path.extname(file.originalname) || '.jpg';
+                    const newFileName = `${reworkName}-PIC-${index + 1}${ext}`;
+                    const oldPath = path.join(__dirname, 'pictures', file.filename);
+                    const newPath = path.join(__dirname, 'pictures', newFileName);
+                    
+                    try {
+                        if (fs.existsSync(oldPath)) {
+                            fs.renameSync(oldPath, newPath);
+                            finalPaths.push(`/pictures/${newFileName}`);
+                        }
+                    } catch (err) {
+                        console.error('Failed to rename picture file:', err);
+                        finalPaths.push(`/pictures/${file.filename}`); // Fallback
+                    }
+                });
+            }
+            const image_path = finalPaths.length > 0 ? JSON.stringify(finalPaths) : null;
             
             // 3. Insert new rework
             const query = "INSERT INTO reworks (pcb_id, rework_name, description, status, image_path) VALUES (?, ?, ?, ?, ?)";
