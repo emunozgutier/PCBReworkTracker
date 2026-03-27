@@ -9,54 +9,57 @@ interface ProjectCardBodyProps {
 
 export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     return (
-        <div className="card-expanded-content">
-            <div style={{ marginBottom: '16px' }}>
-                <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>Silicon Versions</h4>
+        <div className="card-expanded-content" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Silicon Versions Row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', minWidth: '120px' }}>Silicon Versions</span>
                 {project.revisions && project.revisions.length > 0 ? (
-                    <div className="pcb-mini-list">
+                    <div className="pcb-mini-list" style={{ marginTop: 0, gap: '6px' }}>
                         {project.revisions.map((rev, index) => (
-                            <span key={index} className="pcb-pill" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>{rev}</span>
+                            <span key={index} className="pcb-pill" style={{ borderColor: 'var(--accent)', color: 'var(--accent)', padding: '2px 8px' }}>{rev}</span>
                         ))}
                     </div>
                 ) : (
-                    <p className="no-data">No silicon versions defined.</p>
+                    <span className="no-data" style={{ margin: 0, fontSize: '0.85rem' }}>None defined.</span>
                 )}
             </div>
 
-            <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '16px 0', opacity: 0.5 }} />
+            <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: 0, opacity: 0.3 }} />
 
-            <div style={{ marginBottom: '16px' }}>
-                <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>PCB Flavors</h4>
+            {/* PCB Flavors Row */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', minWidth: '120px', paddingTop: '4px' }}>PCB Flavors</span>
                 {project.formfactors && project.formfactors.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
                         {project.formfactors.map((ff, index) => (
                             <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <span style={{ fontWeight: 600, minWidth: '80px', color: 'var(--text)' }}>{ff.name}</span>
-                                <div className="pcb-mini-list" style={{ marginTop: 0 }}>
+                                <span style={{ fontWeight: 600, minWidth: '60px', color: 'var(--text)', fontSize: '0.9rem' }}>{ff.name}</span>
+                                <div className="pcb-mini-list" style={{ marginTop: 0, gap: '6px' }}>
                                     {ff.revisions.map((rev, rIdx) => (
-                                        <span key={rIdx} className="pcb-pill" style={{ opacity: 0.8 }}>{rev}</span>
+                                        <span key={rIdx} className="pcb-pill" style={{ opacity: 0.8, padding: '2px 8px' }}>{rev}</span>
                                     ))}
                                 </div>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <p className="no-data">No PCB flavors defined.</p>
+                    <span className="no-data" style={{ margin: 0, fontSize: '0.85rem', paddingTop: '4px' }}>None defined.</span>
                 )}
             </div>
 
-            <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '16px 0', opacity: 0.5 }} />
+            <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: 0, opacity: 0.3 }} />
 
-            <div>
-                <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>Associated PCBs</h4>
+            {/* Associated PCBs Row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', minWidth: '120px' }}>Associated PCBs</span>
                 {project.pcbs.length > 0 ? (
-                    <div className="pcb-mini-list">
+                    <div className="pcb-mini-list" style={{ marginTop: 0, gap: '6px' }}>
                         {project.pcbs.map((pcb, index) => (
-                            <span key={index} className="pcb-pill">{pcb}</span>
+                            <span key={index} className="pcb-pill" style={{ padding: '2px 8px' }}>{pcb}</span>
                         ))}
                     </div>
                 ) : (
-                    <p className="no-data">No PCBs assigned yet.</p>
+                    <span className="no-data" style={{ margin: 0, fontSize: '0.85rem' }}>None assigned.</span>
                 )}
             </div>
         </div>
