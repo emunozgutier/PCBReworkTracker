@@ -37,22 +37,21 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
     let items: any[] = [];
     let loading = false;
 
-    const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+    const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
     const [selectedRevisions, setSelectedRevisions] = useState<string[]>([]);
+    const [showFilters, setShowFilters] = useState<boolean>(false);
 
     switch (type) {
         case 'projects': items = projects; loading = projectsLoading; break;
         case 'pcbs': 
             items = pcbs; 
             loading = pcbsLoading || projectsLoading;
-            if (selectedProjectId) {
-                const proj = projects.find(p => p.id.toString() === selectedProjectId);
-                if (proj) {
-                    items = items.filter(pcb => pcb.project === proj.name);
-                    if (selectedRevisions.length > 0) {
-                        items = items.filter(pcb => selectedRevisions.some(rev => pcb.product.includes(rev)));
-                    }
-                }
+            if (selectedProjects.length > 0) {
+                const projNames = selectedProjects.map(id => projects.find(p => p.id.toString() === id)?.name);
+                items = items.filter(pcb => projNames.includes(pcb.project));
+            }
+            if (selectedRevisions.length > 0) {
+                items = items.filter(pcb => selectedRevisions.some(rev => pcb.product && pcb.product.includes(rev)));
             }
             break;
         case 'reworks': items = reworks; loading = reworksLoading; break;
@@ -62,71 +61,153 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
 
     if (loading) return <div className="loading">Loading {title}...</div>;
 
+    const activeFilterCount = selectedProjects.length + selectedRevisions.length;
+
     return (
         <div className="card-list-container">
             <div className="list-header" style={{ marginBottom: type === 'pcbs' ? '12px' : '24px' }}>
                 <h2>{title}</h2>
-                <button className="add-button" onClick={onAdd}>
-                    <Plus size={18} />
-                    <span>Add New</span>
-                </button>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    {type === 'pcbs' && (
+                        <button 
+                            className="secondary-button" 
+                            onClick={() => setShowFilters(!showFilters)}
+                            style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '8px', 
+                                padding: '8px 16px', 
+                                borderRadius: '8px', 
+                                backgroundColor: activeFilterCount > 0 ? 'rgba(99, 102, 241, 0.1)' : 'var(--bg-element)', 
+                                border: `1px solid ${activeFilterCount > 0 ? 'var(--accent)' : 'var(--border-color)'}`, 
+                                color: activeFilterCount > 0 ? 'var(--accent)' : 'var(--text)', 
+                                cursor: 'pointer',
+                                fontWeight: 500
+                            }}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                            <span>{showFilters ? 'Hide Filters' : 'Filters'} {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}</span>
+                        </button>
+                    )}
+                    <button className="add-button" onClick={onAdd}>
+                        <Plus size={18} />
+                        <span>Add New</span>
+                    </button>
+                </div>
             </div>
             
-            {type === 'pcbs' && (
-                <div className="pcb-filters" style={{ marginBottom: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
-                    <select 
-                        value={selectedProjectId}
-                        onChange={(e) => {
-                            setSelectedProjectId(e.target.value);
-                            setSelectedRevisions([]);
-                        }}
-                        style={{ padding: '8px 12px', borderRadius: '8px', backgroundColor: 'var(--bg-panel)', border: '1px solid var(--border-color)', color: 'var(--text)', outline: 'none' }}
-                    >
-                        <option value="">All Projects</option>
-                        {projects.map(p => {
-                            const count = pcbs.filter(pcb => pcb.project === p.name).length;
-                            if (count === 0) return null;
-                            return <option key={p.id} value={p.id}>{p.name} ({count})</option>;
-                        })}
-                    </select>
+            {type === 'pcbs' && showFilters && (
+                <div className="pcb-filters" style={{ marginBottom: '24px', display: 'flex', gap: '16px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                    
+                    {/* Projects DigiKey-style Select */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Projects</span>
+                        <select 
+                            multiple 
+                            value={selectedProjects}
+                            onChange={(e) => {
+                                const selected = Array.from(e.target.selectedOptions, option => option.value);
+                                setSelectedProjects(selected);
+                            }}
+                            style={{ 
+                                width: '220px', 
+                                height: '140px', 
+                                padding: '6px', 
+                                borderRadius: '4px', 
+                                backgroundColor: 'var(--bg-panel)', 
+                                border: '1px solid var(--border-color)', 
+                                color: 'var(--text)', 
+                                outline: 'none',
+                                fontFamily: 'inherit',
+                                fontSize: '0.9rem'
+                            }}
+                        >
+                            {projects.map(p => {
+                                // Count how many pcbs belong to this project AND match the selected revisions
+                                const count = pcbs.filter(pcb => 
+                                    pcb.project === p.name && 
+                                    (selectedRevisions.length === 0 || selectedRevisions.some(rev => pcb.product && pcb.product.includes(rev)))
+                                ).length;
+                                if (count === 0 && selectedRevisions.length === 0) return null;
+                                return <option key={p.id} value={p.id.toString()}>{p.name} ({count})</option>;
+                            })}
+                        </select>
+                    </div>
 
-                    {selectedProjectId && (() => {
-                        const proj = projects.find(p => p.id.toString() === selectedProjectId);
-                        if (!proj || !proj.revisions || proj.revisions.length === 0) return null;
-                        
-                        return (
-                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Silicon Revs:</span>
-                                {proj.revisions.map((rev: string) => {
-                                    const count = pcbs.filter(pcb => pcb.project === proj.name && pcb.product && pcb.product.includes(rev)).length;
-                                    const isSelected = selectedRevisions.includes(rev);
-                                    return (
-                                        <button 
-                                            key={rev}
-                                            onClick={() => {
-                                                if (isSelected) setSelectedRevisions(selectedRevisions.filter(r => r !== rev));
-                                                else setSelectedRevisions([...selectedRevisions, rev]);
-                                            }}
-                                            style={{
-                                                padding: '4px 12px',
-                                                borderRadius: '16px',
-                                                border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--border-color)'}`,
-                                                backgroundColor: isSelected ? 'rgba(99, 102, 241, 0.1)' : 'var(--bg-panel)',
-                                                color: isSelected ? 'var(--accent)' : 'var(--text-muted)',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                gap: '6px',
-                                                alignItems: 'center',
-                                                transition: 'all 0.2s ease'
-                                            }}
-                                        >
-                                            {rev} <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>({count})</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        );
-                    })()}
+                    {/* Revisions DigiKey-style Select */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Silicon Revisions & Flavors</span>
+                        <select 
+                            multiple 
+                            value={selectedRevisions}
+                            onChange={(e) => {
+                                const selected = Array.from(e.target.selectedOptions, option => option.value);
+                                setSelectedRevisions(selected);
+                            }}
+                            style={{ 
+                                width: '220px', 
+                                height: '140px', 
+                                padding: '6px', 
+                                borderRadius: '4px', 
+                                backgroundColor: 'var(--bg-panel)', 
+                                border: '1px solid var(--border-color)', 
+                                color: 'var(--text)', 
+                                outline: 'none',
+                                fontFamily: 'inherit',
+                                fontSize: '0.9rem'
+                            }}
+                        >
+                            {(() => {
+                                const activeProjects = selectedProjects.length > 0 
+                                    ? projects.filter(p => selectedProjects.includes(p.id.toString()))
+                                    : projects;
+                                
+                                const allRevs = new Set<string>();
+                                activeProjects.forEach((p: any) => {
+                                    if (p.revisions) {
+                                        p.revisions.forEach((r: string) => allRevs.add(r));
+                                    }
+                                    if (p.formfactors) {
+                                        p.formfactors.forEach((ff: any) => {
+                                            if (ff.revisions) ff.revisions.forEach((r: string) => allRevs.add(r));
+                                        });
+                                    }
+                                });
+
+                                return Array.from(allRevs).sort().map(rev => {
+                                    // Count how many pcbs match this revision AND match the selected projects
+                                    const count = pcbs.filter(pcb => 
+                                        (pcb.product && pcb.product.includes(rev)) &&
+                                        (selectedProjects.length === 0 || selectedProjects.includes(
+                                            projects.find(p => p.name === pcb.project)?.id.toString() || ''
+                                        ))
+                                    ).length;
+                                    if (count === 0) return null;
+                                    return <option key={rev} value={rev}>{rev} ({count})</option>;
+                                });
+                            })()}
+                        </select>
+                    </div>
+
+                    {/* Clear Filters Button */}
+                    {(selectedProjects.length > 0 || selectedRevisions.length > 0) && (
+                        <div style={{ alignSelf: 'flex-start', marginTop: '26px' }}>
+                            <button 
+                                onClick={() => { setSelectedProjects([]); setSelectedRevisions([]); }}
+                                style={{ 
+                                    padding: '6px 12px', 
+                                    backgroundColor: 'transparent', 
+                                    border: '1px solid var(--border-color)', 
+                                    borderRadius: '4px', 
+                                    color: 'var(--text-muted)', 
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem'
+                                }}
+                            >
+                                Clear All
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
 
