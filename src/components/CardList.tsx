@@ -101,7 +101,15 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
             </div>
             
             {type === 'pcbs' && showFilters && (
-                <div className="pcb-filters" style={{ marginBottom: '24px', display: 'flex', gap: '16px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                <div className="pcb-filters" style={{ 
+                    marginBottom: '24px', 
+                    display: 'flex', 
+                    gap: '16px', 
+                    alignItems: 'flex-start', 
+                    overflowX: 'auto', 
+                    width: '100%',
+                    paddingBottom: '8px'
+                }}>
                     
                     {/* Projects DigiKey-style Select */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
