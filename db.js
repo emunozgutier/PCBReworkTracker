@@ -114,6 +114,7 @@ const initDb = () => {
             description TEXT NOT NULL,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             status TEXT DEFAULT 'Completed',
+            image_path TEXT,
             FOREIGN KEY (pcb_id) REFERENCES pcbs (id)
         )`, (err) => {
             if (!err) {
@@ -122,6 +123,11 @@ const initDb = () => {
                         console.error('Migration error (reworks.rework_name):', err.message);
                     } else if (!err) {
                         db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_reworks_name ON reworks(rework_name)`);
+                    }
+                });
+                db.run(`ALTER TABLE reworks ADD COLUMN image_path TEXT`, (err) => {
+                    if (err && !err.message.includes('duplicate column name')) {
+                        console.error('Migration error (reworks.image_path):', err.message);
                     }
                 });
             }

@@ -1,10 +1,33 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { db, initDb } from './db.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = 5002;
+
+// Configure Multer Storage
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const dir = path.join(__dirname, 'pictures');
+        if (!fs.existsSync(dir)){
+            fs.mkdirSync(dir);
+        }
+        cb(null, dir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
 
 // Middleware
 app.use(cors());
@@ -14,6 +37,8 @@ app.use((req, res, next) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     next();
 });
+
+app.use('/pictures', express.static(path.join(__dirname, 'pictures')));
 
 // Initialize Database
 initDb();
@@ -210,8 +235,9 @@ app.get('/api/reworks', (req, res) => {
     });
 });
 
-app.post('/api/reworks', (req, res) => {
+app.post('/api/reworks', upload.single('image'), (req, res) => {
     const { pcb_id, description, status } = req.body;
+    const image_path = req.file ? `/pictures/${req.file.filename}` : null;
     
     // 1. Get the PCB board_number
     db.get("SELECT board_number FROM pcbs WHERE id = ?", [pcb_id], (err, row) => {
@@ -236,10 +262,10 @@ app.post('/api/reworks', (req, res) => {
             const reworkName = `${boardName}-R-${String(sequence).padStart(3, '0')}`;
             
             // 3. Insert new rework
-            const query = "INSERT INTO reworks (pcb_id, rework_name, description, status) VALUES (?, ?, ?, ?)";
-            db.run(query, [pcb_id, reworkName, description, status || 'Completed'], function(err) {
+            const query = "INSERT INTO reworks (pcb_id, rework_name, description, status, image_path) VALUES (?, ?, ?, ?, ?)";
+            db.run(query, [pcb_id, reworkName, description, status || 'Completed', image_path], function(err) {
                 if (err) return res.status(500).json({ error: err.message });
-                res.status(201).json({ id: this.lastID, pcb_id, rework_name: reworkName });
+                res.status(201).json({ id: this.lastID, pcb_id, rework_name: reworkName, image_path });
             });
         });
     });
