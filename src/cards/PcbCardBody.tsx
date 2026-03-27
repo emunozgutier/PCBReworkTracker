@@ -15,7 +15,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
         if (reworks.length === 0) fetchReworks();
     }, [reworks.length, fetchReworks]);
 
-    const pcbReworks = reworks.filter((r: any) => r.pcb_board_number === pcb.board_number);
+    const pcbReworks = reworks.filter((r: any) => r.pcb_id === pcb.id);
 
     return (
         <div className="card-expanded-content">

@@ -264,7 +264,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                 </div>
             )}
 
-            <div className={`cards-grid ${type === 'projects' || type === 'pcbs' ? 'single-column' : ''}`}>
+            <div className={`cards-grid ${['projects', 'pcbs', 'reworks'].includes(type) ? 'single-column' : ''}`}>
                 {items.length === 0 ? (
                     <div className="empty-state">No {type} found.</div>
                 ) : (
