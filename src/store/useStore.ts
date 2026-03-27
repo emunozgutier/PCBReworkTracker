@@ -12,6 +12,7 @@ interface NavigationState {
     activeTab: string;
     selectedId: string | number | null;
     isMobile: boolean;
+    expandedProject: string | null;
     
     // Actions
     setPage: (page: Page) => void;
@@ -20,11 +21,23 @@ interface NavigationState {
     addItem: (page: Page, prefillId?: string | number) => void;
     goBack: () => void;
     setIsMobile: (isMobile: boolean) => void;
+    setExpandedProject: (name: string | null) => void;
 }
+
+const getInitialExpandedProject = (): string | null => {
+    if (typeof window === 'undefined') return null;
+    const rawPath = window.location.pathname;
+    if (rawPath.startsWith('/PCB/')) {
+        return decodeURIComponent(rawPath.replace('/PCB/', ''));
+    }
+    return null;
+};
 
 const getInitialPage = (): Page => {
     if (typeof window === 'undefined') return 'projects';
-    const path = window.location.pathname.replace('/', '') || 'projects';
+    const rawPath = window.location.pathname;
+    if (rawPath.startsWith('/PCB/')) return 'projects';
+    const path = rawPath.replace('/', '') || 'projects';
     const validPages: Page[] = ['projects', 'pcbs', 'reworks', 'owners', 'tags'];
     if (validPages.includes(path as Page)) return path as Page;
     return 'projects';
@@ -37,9 +50,21 @@ export const useStore = create<NavigationState>((set) => ({
     activeTab: initialPage,
     selectedId: null,
     isMobile: typeof window !== 'undefined' ? window.innerWidth <= 768 : false,
+    expandedProject: getInitialExpandedProject(),
 
     setPage: (page) => set({ page }),
     
+    setExpandedProject: (name) => {
+        if (typeof window !== 'undefined') {
+            if (name) {
+                window.history.pushState({}, '', `/PCB/${encodeURIComponent(name)}`);
+            } else {
+                window.history.pushState({}, '', `/projects`);
+            }
+        }
+        set({ expandedProject: name });
+    },
+
     setActiveTab: (tab) => {
         if (typeof window !== 'undefined') {
             window.history.pushState({}, '', `/${tab}`);
@@ -47,7 +72,8 @@ export const useStore = create<NavigationState>((set) => ({
         set({ 
             activeTab: tab, 
             page: tab as Page, // When we switch tabs, we go to the main list page
-            selectedId: null 
+            selectedId: null,
+            expandedProject: null
         });
     },
 
@@ -91,13 +117,25 @@ if (typeof window !== 'undefined') {
     });
 
     window.addEventListener('popstate', () => {
-        const path = window.location.pathname.replace('/', '') || 'projects';
+        const rawPath = window.location.pathname;
+        if (rawPath.startsWith('/PCB/')) {
+            useStore.setState({
+                activeTab: 'projects',
+                page: 'projects',
+                selectedId: null,
+                expandedProject: decodeURIComponent(rawPath.replace('/PCB/', ''))
+            });
+            return;
+        }
+
+        const path = rawPath.replace('/', '') || 'projects';
         const validPages = ['projects', 'pcbs', 'reworks', 'owners', 'tags'];
         if (validPages.includes(path)) {
             useStore.setState({
                 activeTab: path,
                 page: path as Page,
-                selectedId: null
+                selectedId: null,
+                expandedProject: null
             });
         }
     });
