@@ -21,12 +21,17 @@ interface ReworkState {
     addRework: (data: FormData | { pcb_id: number | null; description: string; owner_id: string | null }) => Promise<boolean>;
     updateRework: (id: number | string, data: { pcb_id: number | null; description: string; owner_id: string | null }) => Promise<boolean>;
     deleteRework: (id: number | string) => Promise<boolean>;
+    selectedBoards: string[];
+    setSelectedBoards: (boards: string[]) => void;
 }
 
 export const useReworkStore = create<ReworkState>((set, get) => ({
     reworks: [],
     loading: false,
     error: null,
+    selectedBoards: [],
+
+    setSelectedBoards: (boards) => set({ selectedBoards: boards }),
 
     fetchReworks: async () => {
         set({ loading: true, error: null });

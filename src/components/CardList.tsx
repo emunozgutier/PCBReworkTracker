@@ -20,7 +20,7 @@ interface CardListProps {
 export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
     const { projects, loading: projectsLoading, fetchProjects } = useProjectStore();
     const { pcbs, loading: pcbsLoading, fetchPcbs } = usePcbStore();
-    const { reworks, loading: reworksLoading, fetchReworks } = useReworkStore();
+    const { reworks, loading: reworksLoading, fetchReworks, selectedBoards, setSelectedBoards } = useReworkStore();
     const { owners, loading: ownersLoading, fetchOwners } = useOwnerStore();
     const { tags, loading: tagsLoading, fetchTags } = useTagStore();
 
@@ -70,7 +70,13 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                 items = items.filter(pcb => selectedFlavors.some(ff => pcb.product && pcb.product.includes(ff)));
             }
             break;
-        case 'reworks': items = reworks; loading = reworksLoading; break;
+        case 'reworks': 
+            items = reworks; 
+            loading = reworksLoading; 
+            if (selectedBoards && selectedBoards.length > 0) {
+                items = items.filter(rw => selectedBoards.includes(rw.pcb_id.toString()));
+            }
+            break;
         case 'owners': items = owners; loading = ownersLoading; break;
         case 'tags': items = tags; loading = tagsLoading; break;
     }
@@ -112,8 +118,22 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                 </div>
             </div>
             
+            {type === 'reworks' && selectedBoards && selectedBoards.length > 0 && (
+                <div style={{ marginBottom: '24px', padding: '12px', backgroundColor: 'rgba(99, 102, 241, 0.1)', border: '1px solid var(--accent)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--accent)', fontWeight: 500 }}>
+                        Filtered by Board ID: {selectedBoards.join(', ')}
+                    </span>
+                    <button 
+                        onClick={() => setSelectedBoards([])}
+                        style={{ padding: '6px 12px', backgroundColor: 'transparent', border: '1px solid var(--accent)', borderRadius: '4px', color: 'var(--accent)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500 }}
+                    >
+                        Clear Filter
+                    </button>
+                </div>
+            )}
+            
             {type === 'pcbs' && showFilters && (
-                <div className="pcb-filters" style={{ 
+                <div className="pcb-filters" style={{  
                     marginBottom: '24px', 
                     display: 'flex', 
                     gap: '16px', 
