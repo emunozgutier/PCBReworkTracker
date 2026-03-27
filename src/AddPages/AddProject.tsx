@@ -12,6 +12,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [name, setName] = useState('');
     const [revisions, setRevisions] = useState('');
     const [projectKey, setProjectKey] = useState('');
+    const [formfactors, setFormfactors] = useState([{ name: '', revisions: '' }]);
     
     const { addProject, loading, projects, error } = useProjectStore();
 
@@ -33,7 +34,13 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const success = await addProject({ name, description: '', revisions, project_key: projectKey });
+        const payloadFormfactors = formfactors
+            .filter(f => f.name.trim())
+            .map(f => ({
+                name: f.name.trim(),
+                revisions: f.revisions.split(',').map(r => r.trim()).filter(Boolean)
+            }));
+        const success = await addProject({ name, description: '', revisions, project_key: projectKey, formfactors: payloadFormfactors });
         if (success) {
             onSuccess();
         }
@@ -83,7 +90,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="revisions">Available Revisions (comma separated)</label>
+                    <label htmlFor="revisions">Global Available Revisions (Optional)</label>
                     <input 
                         id="revisions"
                         type="text" 
@@ -91,6 +98,55 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                         onChange={(e) => setRevisions(e.target.value)} 
                         placeholder="e.g. A0, A1, B0, B1"
                     />
+                </div>
+                <div className="form-group">
+                    <label>PCB Formfactors & Revisions</label>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '-4px', marginBottom: '8px' }}>
+                        Define specific formfactors (e.g., Demo, Validation) and their allowed revisions.
+                    </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {formfactors.map((ff, idx) => (
+                            <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                                <input 
+                                    type="text" 
+                                    placeholder="Name (e.g. Demo)" 
+                                    value={ff.name} 
+                                    onChange={e => {
+                                        const newFf = [...formfactors];
+                                        newFf[idx].name = e.target.value;
+                                        setFormfactors(newFf);
+                                    }}
+                                    style={{ flex: 1 }}
+                                />
+                                <input 
+                                    type="text" 
+                                    placeholder="Revisions (e.g. 1.0, 1.1)" 
+                                    value={ff.revisions} 
+                                    onChange={e => {
+                                        const newFf = [...formfactors];
+                                        newFf[idx].revisions = e.target.value;
+                                        setFormfactors(newFf);
+                                    }}
+                                    style={{ flex: 2 }}
+                                />
+                                <button 
+                                    type="button" 
+                                    onClick={() => setFormfactors(formfactors.filter((_, i) => i !== idx))}
+                                    style={{ padding: '8px 12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '4px', cursor: 'pointer', color: '#ef4444' }}
+                                    title="Remove Formfactor"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                    <button 
+                        type="button" 
+                        onClick={() => setFormfactors([...formfactors, { name: '', revisions: '' }])} 
+                        style={{ marginTop: '8px', padding: '6px 12px', background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-muted)' }}
+                    >
+                        + Add Formfactor
+                    </button>
                 </div>
                 {error && <div className="error-message" style={{ color: '#ef4444', marginBottom: '1rem', padding: '0.5rem', backgroundColor: '#fee2e2', borderRadius: '4px' }}>{error}</div>}
                 <button type="submit" className="submit-button" disabled={loading}>

@@ -6,6 +6,7 @@ interface ProjectCardHeaderProps {
         name: string;
         pcb_count: number;
         revisions: string[];
+        formfactors?: any[];
         project_key: string;
     };
     isExpanded: boolean;
@@ -33,6 +34,7 @@ export function ProjectCardHeader({ project, isExpanded, onToggle, onEdit }: Pro
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1rem', color: 'inherit', fontFamily: 'inherit' }}>
+                    <span>{project.formfactors?.length || 0} Flavors</span>
                     <span>{project.revisions?.length || 0} Revs</span>
                     <span>{project.pcb_count} PCBs</span>
                 </div>

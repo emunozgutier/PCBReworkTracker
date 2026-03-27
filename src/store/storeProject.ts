@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { API_BASE } from '../api';
 
+export interface Formfactor {
+    name: string;
+    revisions: string[];
+}
+
 export interface Project {
     id: number;
     name: string;
@@ -9,6 +14,7 @@ export interface Project {
     pcbs: string[];
     revisions: string[];
     project_key: string;
+    formfactors: Formfactor[];
 }
 
 interface ProjectState {
@@ -16,8 +22,8 @@ interface ProjectState {
     loading: boolean;
     error: string | null;
     fetchProjects: () => Promise<void>;
-    addProject: (data: { name: string; description: string; revisions: string; project_key: string }) => Promise<boolean>;
-    updateProject: (id: number | string, data: { name: string; description: string; revisions: string; project_key: string }) => Promise<boolean>;
+    addProject: (data: { name: string; description: string; revisions: string; project_key: string; formfactors?: Formfactor[] }) => Promise<boolean>;
+    updateProject: (id: number | string, data: { name: string; description: string; revisions: string; project_key: string; formfactors?: Formfactor[] }) => Promise<boolean>;
     deleteProject: (id: number | string) => Promise<boolean>;
 }
 

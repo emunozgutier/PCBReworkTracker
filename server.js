@@ -94,23 +94,28 @@ app.get('/api/projects', (req, res) => {
     `;
     db.all(query, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json(rows.map(row => ({
-            ...row,
-            revisions: row.revisions ? row.revisions.split(',').map(r => r.trim()) : [],
-            pcbs: row.pcb_list ? row.pcb_list.split(',') : []
-        })));
+        res.json(rows.map(row => {
+            let parsedFormfactors = [];
+            try { parsedFormfactors = row.formfactors ? JSON.parse(row.formfactors) : []; } catch (e) {}
+            return {
+                ...row,
+                revisions: row.revisions ? row.revisions.split(',').map(r => r.trim()) : [],
+                formfactors: parsedFormfactors,
+                pcbs: row.pcb_list ? row.pcb_list.split(',') : []
+            };
+        }));
     });
 });
 
 app.post('/api/projects', async (req, res) => {
-    const { name, description, revisions, project_key } = req.body;
+    const { name, description, revisions, project_key, formfactors } = req.body;
     const cleanName = sanitizeProjectName(name);
     
     if (!cleanName) return res.status(400).json({ error: "Project name is required and must contain alphanumeric characters" });
 
     try {
         const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : await generateProjectKey(cleanName);
-        db.run("INSERT INTO projects (name, description, revisions, project_key) VALUES (?, ?, ?, ?)", [cleanName, description, revisions, finalProjectKey], function(err) {
+        db.run("INSERT INTO projects (name, description, revisions, project_key, formfactors) VALUES (?, ?, ?, ?, ?)", [cleanName, description, revisions, finalProjectKey, JSON.stringify(formfactors || [])], function(err) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
                     if (err.message.includes('projects.name')) {
@@ -216,13 +221,13 @@ app.post('/api/reworks', (req, res) => {
 
 // --- Projects API Expansions ---
 app.put('/api/projects/:id', (req, res) => {
-    const { name, description, revisions, project_key } = req.body;
+    const { name, description, revisions, project_key, formfactors } = req.body;
     const cleanName = sanitizeProjectName(name);
 
     if (!cleanName) return res.status(400).json({ error: "Project name is required" });
     const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : null;
 
-    db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, req.params.id], function(err) {
+    db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, formfactors = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, JSON.stringify(formfactors || []), req.params.id], function(err) {
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {
                 if (err.message.includes('projects.name')) {

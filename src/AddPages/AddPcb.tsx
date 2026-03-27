@@ -15,6 +15,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const [pcbRev, setPcbRev] = useState('');
     const [noPartYet, setNoPartYet] = useState(false);
     const [selectedRevision, setSelectedRevision] = useState('');
+    const [selectedFormfactor, setSelectedFormfactor] = useState('');
     const [selectedProject, setSelectedProject] = useState('');
     const [selectedOwner, setSelectedOwner] = useState('');
     
@@ -23,7 +24,14 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const { addPcb, loading } = usePcbStore();
 
     const selectedProjData = projects.find(p => p.id.toString() === selectedProject);
-    const availableRevisions = selectedProjData?.revisions || [];
+    const availableFormfactors = selectedProjData?.formfactors || [];
+    let availableRevisions: string[] = [];
+    if (selectedFormfactor) {
+        const ff = availableFormfactors.find((f: any) => f.name === selectedFormfactor);
+        availableRevisions = ff ? ff.revisions : [];
+    } else {
+        availableRevisions = selectedProjData?.revisions || [];
+    }
     const selectedProjectKey = selectedProjData?.project_key || 'XXX';
 
     const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +50,11 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
             if (projData.length > 0) {
                 const firstProj = projData[0];
                 setSelectedProject(firstProj.id.toString());
-                if (firstProj.revisions && firstProj.revisions.length > 0) {
+                if (firstProj.formfactors && firstProj.formfactors.length > 0) {
+                    setSelectedFormfactor(firstProj.formfactors[0].name);
+                    setSelectedRevision(firstProj.formfactors[0].revisions[0] || '');
+                } else if (firstProj.revisions && firstProj.revisions.length > 0) {
+                    setSelectedFormfactor('');
                     setSelectedRevision(firstProj.revisions[0]);
                 }
             }
@@ -53,9 +65,14 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const handleProjectChange = (id: string) => {
         setSelectedProject(id);
         const project = projects.find(p => p.id.toString() === id);
-        if (project && project.revisions && project.revisions.length > 0) {
+        if (project && project.formfactors && project.formfactors.length > 0) {
+            setSelectedFormfactor(project.formfactors[0].name);
+            setSelectedRevision(project.formfactors[0].revisions[0] || '');
+        } else if (project && project.revisions && project.revisions.length > 0) {
+            setSelectedFormfactor('');
             setSelectedRevision(project.revisions[0]);
         } else {
+            setSelectedFormfactor('');
             setSelectedRevision('');
         }
     };
@@ -64,7 +81,9 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         e.preventDefault();
         
         const finalPcbRev = noPartYet ? "No part yet" : pcbRev;
-        const combinedProduct = selectedRevision ? `${finalPcbRev} ${selectedRevision}`.trim() : finalPcbRev;
+        const revPart = selectedRevision ? selectedRevision : '';
+        const ffPart = selectedFormfactor ? selectedFormfactor : '';
+        const combinedProduct = [ffPart, finalPcbRev, revPart].filter(Boolean).join(' ').trim();
         const finalBoardName = `${selectedProjectKey}-${boardNumber.toUpperCase()}`;
         
         const success = await addPcb({
@@ -134,6 +153,23 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                 No part yet
                             </label>
                         </div>
+                    </div>
+                    <div className="form-group flex-1">
+                        <label htmlFor="formfactor">PCB Flavor</label>
+                        <select 
+                            id="formfactor"
+                            value={selectedFormfactor}
+                            onChange={(e) => {
+                                setSelectedFormfactor(e.target.value);
+                                const ff = availableFormfactors.find((f: any) => f.name === e.target.value);
+                                setSelectedRevision(ff && ff.revisions.length > 0 ? ff.revisions[0] : '');
+                            }}
+                        >
+                            <option value="">N/A</option>
+                            {availableFormfactors.map((ff: any) => (
+                                <option key={ff.name} value={ff.name}>{ff.name}</option>
+                            ))}
+                        </select>
                     </div>
                     <div className="form-group flex-1">
                         <label htmlFor="revision">Project Rev</label>

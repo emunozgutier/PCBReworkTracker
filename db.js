@@ -19,9 +19,16 @@ const initDb = () => {
             description TEXT,
             revisions TEXT,
             project_key TEXT UNIQUE,
+            formfactors TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`, (err) => {
             if (!err) {
+                // Migration: Add formfactors column if it doesn't exist
+                db.run(`ALTER TABLE projects ADD COLUMN formfactors TEXT`, (err) => {
+                    if (err && !err.message.includes('duplicate column name')) {
+                        console.error('Migration error (projects.formfactors):', err.message);
+                    }
+                });
                 // Migration: Add revisions column if it doesn't exist
                 db.run(`ALTER TABLE projects ADD COLUMN revisions TEXT`, (err) => {
                     if (err && !err.message.includes('duplicate column name')) {
