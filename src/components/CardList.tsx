@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Plus, Edit2 } from 'lucide-react';
 import { ProjectCard } from '../cards/ProjectCard';
+import { PcbCard } from '../cards/PcbCard';
 
 import { useProjectStore } from '../store/storeProject';
 import { usePcbStore } from '../store/storePcb';
@@ -52,13 +53,16 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                     <span>Add New</span>
                 </button>
             </div>
-            <div className="cards-grid">
+            <div className={`cards-grid ${type === 'projects' || type === 'pcbs' ? 'single-column' : ''}`}>
                 {items.length === 0 ? (
                     <div className="empty-state">No {type} found.</div>
                 ) : (
                     items.map((item) => {
                         if (type === 'projects') {
                             return <ProjectCard key={item.id} project={item} onEdit={onEdit} />;
+                        }
+                        if (type === 'pcbs') {
+                            return <PcbCard key={item.id} pcb={item} onEdit={onEdit} />;
                         }
 
                         return (
@@ -68,21 +72,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                                         <Edit2 size={16} />
                                     </button>
                                 </div>
-                                {type === 'pcbs' && (
-                                    <>
-                                        <div className="card-title">
-                                            <span className="board-num">{item.board_number}</span>
-                                            <span className={`status-pill ${item.status?.toLowerCase().replace(' ', '-') || 'unknown'}`}>
-                                                {item.status}
-                                            </span>
-                                        </div>
-                                        <div className="card-details">
-                                            <p><strong>Project:</strong> {item.project || 'N/A'}</p>
-                                            <p><strong>Owner:</strong> {item.owner || 'N/A'}</p>
-                                            <p className="product-info">{item.product_name_and_rev || item.product}</p>
-                                        </div>
-                                    </>
-                                )}
+
                                 {type === 'owners' && (
                                     <>
                                         <div className="card-title">

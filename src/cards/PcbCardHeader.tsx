@@ -1,0 +1,43 @@
+import { ChevronDown, ChevronUp, Edit2 } from 'lucide-react';
+
+interface PcbCardHeaderProps {
+    pcb: any;
+    isExpanded: boolean;
+    onToggle: () => void;
+    onEdit: (id: number | string) => void;
+}
+
+export function PcbCardHeader({ pcb, isExpanded, onToggle, onEdit }: PcbCardHeaderProps) {
+    return (
+        <div 
+            className="card-header-main" 
+            onClick={onToggle}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', gap: '16px' }}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                <button 
+                    className="edit-button" 
+                    onClick={(e) => { e.stopPropagation(); onEdit(pcb.id); }}
+                    style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
+                >
+                    <Edit2 size={16} />
+                </button>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', minWidth: 0 }}>
+                    <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap' }}>{pcb.board_number}</span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {pcb.product || 'No Rev'} • {pcb.owner || 'Unassigned'}
+                    </span>
+                </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+                <span className={`status-pill ${pcb.status?.toLowerCase().replace(' ', '-') || 'unknown'}`} style={{ marginRight: '4px' }}>
+                    {pcb.status}
+                </span>
+                <div className="expand-indicator" style={{ display: 'flex', position: 'static', transform: 'none' }}>
+                    {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                </div>
+            </div>
+        </div>
+    );
+}

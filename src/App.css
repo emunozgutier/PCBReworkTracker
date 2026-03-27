@@ -187,6 +187,10 @@ body {
   gap: 20px;
 }
 
+.cards-grid.single-column {
+  grid-template-columns: 1fr;
+}
+
 .item-card {
   background: var(--card-bg);
   border: 1px solid var(--border);
