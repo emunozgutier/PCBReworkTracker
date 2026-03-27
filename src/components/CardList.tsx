@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Edit2 } from 'lucide-react';
 import { ProjectCard } from '../cards/ProjectCard';
 import { PcbCard } from '../cards/PcbCard';
+import { ReworkCard } from '../cards/ReworkCard';
 
 import { useProjectStore } from '../store/storeProject';
 import { usePcbStore } from '../store/storePcb';
@@ -276,6 +277,10 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                             return <PcbCard key={item.id} pcb={item} onEdit={onEdit} />;
                         }
 
+                        if (type === 'reworks') {
+                            return <ReworkCard key={item.id} rework={item} onEdit={onEdit} />;
+                        }
+
                         return (
                             <div key={item.id} className="item-card">
                                 <div className="card-actions-overlay">
@@ -291,21 +296,6 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                                         </div>
                                         <div className="card-details">
                                             <p>Active Owner</p>
-                                        </div>
-                                    </>
-                                )}
-                                {type === 'reworks' && (
-                                    <>
-                                        <div className="card-title" style={{ marginBottom: '8px' }}>
-                                            <span className="board-num" style={{ color: 'var(--accent)' }}>
-                                                {item.rework_name || `Rework #${item.id}`}
-                                            </span>
-                                            <span className={`status-pill ${item.status?.toLowerCase().replace(' ', '-') || 'unknown'}`}>{item.status}</span>
-                                        </div>
-                                        <div className="card-details">
-                                            <p style={{ fontWeight: 600, color: 'var(--text)', marginBottom: '4px' }}>PCB: {item.pcb_board_number}</p>
-                                            <p style={{ marginBottom: '8px' }}>{item.description}</p>
-                                            <p><small>{new Date(item.timestamp).toLocaleString()}</small></p>
                                         </div>
                                     </>
                                 )}
