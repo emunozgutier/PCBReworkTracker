@@ -235,11 +235,11 @@ app.get('/api/reworks', (req, res) => {
     });
 });
 
-app.post('/api/reworks', upload.array('images', 3), (req, res) => {
+app.post('/api/reworks', upload.any(), (req, res) => {
     const { pcb_id, description, status } = req.body;
     let paths = [];
     if (req.files && req.files.length > 0) {
-        paths = req.files.map(file => `/pictures/${file.filename}`);
+        paths = req.files.slice(0, 3).map(file => `/pictures/${file.filename}`);
     }
     const image_path = paths.length > 0 ? JSON.stringify(paths) : null;
     
