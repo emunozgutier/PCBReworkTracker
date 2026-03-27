@@ -18,12 +18,25 @@ interface PcbState {
     addPcb: (data: { board_number: string; status: string; product_name_and_rev: string; project_id: number | null; owner_id: number | null }) => Promise<boolean>;
     updatePcb: (id: number | string, data: { board_number: string; status: string; product_name_and_rev: string; project_id: number | null; owner_id: number | null }) => Promise<boolean>;
     deletePcb: (id: number | string) => Promise<boolean>;
+    selectedProjects: string[];
+    selectedRevisions: string[];
+    selectedFlavors: string[];
+    setSelectedProjects: (projects: string[]) => void;
+    setSelectedRevisions: (revisions: string[]) => void;
+    setSelectedFlavors: (flavors: string[]) => void;
 }
 
 export const usePcbStore = create<PcbState>((set, get) => ({
     pcbs: [],
     loading: false,
     error: null,
+    selectedProjects: [],
+    selectedRevisions: [],
+    selectedFlavors: [],
+
+    setSelectedProjects: (projects) => set({ selectedProjects: projects }),
+    setSelectedRevisions: (revisions) => set({ selectedRevisions: revisions }),
+    setSelectedFlavors: (flavors) => set({ selectedFlavors: flavors }),
 
     fetchPcbs: async () => {
         set({ loading: true, error: null });

@@ -38,10 +38,21 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
     let items: any[] = [];
     let loading = false;
 
-    const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
-    const [selectedRevisions, setSelectedRevisions] = useState<string[]>([]);
-    const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
-    const [showFilters, setShowFilters] = useState<boolean>(false);
+    const { 
+        selectedProjects, setSelectedProjects, 
+        selectedRevisions, setSelectedRevisions, 
+        selectedFlavors, setSelectedFlavors 
+    } = usePcbStore();
+    
+    const [showFilters, setShowFilters] = useState<boolean>(
+        selectedProjects.length > 0 || selectedRevisions.length > 0 || selectedFlavors.length > 0
+    );
+
+    useEffect(() => {
+        if (selectedProjects.length > 0 || selectedRevisions.length > 0 || selectedFlavors.length > 0) {
+            setShowFilters(true);
+        }
+    }, [selectedProjects, selectedRevisions, selectedFlavors]);
 
     switch (type) {
         case 'projects': items = projects; loading = projectsLoading; break;
