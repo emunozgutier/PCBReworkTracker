@@ -3,6 +3,7 @@ import { ArrowLeft, Save, Trash2, HelpCircle } from 'lucide-react';
 
 import { API_BASE } from '../api';
 import { useProjectStore } from '../store/storeProject';
+import { usePcbStore } from '../store/storePcb';
 
 interface EditProjectProps {
     id: string | number;
@@ -17,6 +18,14 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
     const [loading, setLoading] = useState(true);
     
     const { projects, updateProject, deleteProject, loading: saving } = useProjectStore();
+    const { pcbs, fetchPcbs } = usePcbStore();
+
+    useEffect(() => {
+        if (pcbs.length === 0) fetchPcbs();
+    }, [pcbs.length, fetchPcbs]);
+
+    const projectPcbs = pcbs.filter(p => p.project === name);
+    const pcbCount = projectPcbs.length;
 
     useEffect(() => {
         // Find existing project from store directly if available, else fetch
@@ -45,21 +54,6 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
         }
     }, [id, projects]);
 
-    let keyBorderColor = undefined;
-    let keyTextColor = undefined;
-    if (projectKey.length === 3) {
-        const isDuplicate = projects.some(p => p.id.toString() !== id.toString() && p.project_key === projectKey);
-        if (isDuplicate) {
-            keyBorderColor = '#ef4444';
-            keyTextColor = '#ef4444';
-        } else {
-            keyBorderColor = '#22c55e';
-            keyTextColor = '#22c55e';
-        }
-    } else {
-        keyBorderColor = '#ef4444';
-        keyTextColor = '#ef4444';
-    }
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -85,47 +79,42 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                 <button onClick={onBack} className="back-button">
                     <ArrowLeft size={20} />
                 </button>
-                <h2>Edit Project</h2>
-                <button onClick={handleDelete} className="delete-icon-button" title="Delete Project">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h2 style={{ margin: 0 }}>Edit Project</h2>
+                    <span style={{ fontSize: '0.8rem', backgroundColor: 'var(--bg-element)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                        {pcbCount} {pcbCount === 1 ? 'PCB' : 'PCBs'}
+                    </span>
+                </div>
+                <button 
+                    onClick={handleDelete} 
+                    className="delete-icon-button" 
+                    title={pcbCount > 0 ? `Cannot delete project with ${pcbCount} active ${pcbCount === 1 ? 'PCB' : 'PCBs'}` : "Delete Project"}
+                    disabled={pcbCount > 0}
+                    style={{ opacity: pcbCount > 0 ? 0.3 : 1, cursor: pcbCount > 0 ? 'not-allowed' : 'pointer' }}
+                >
                     <Trash2 size={20} color="#ef4444" />
                 </button>
             </header>
 
             <form onSubmit={handleUpdate} className="add-form">
-                <div className="form-group">
-                    <label htmlFor="name">Project Name</label>
-                    <input 
-                        id="name"
-                        type="text" 
-                        value={name} 
-                        onChange={(e) => setName(e.target.value)} 
-                        disabled
-                        required 
-                    />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="project_key" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        Project Key (3 Letters)
-                        <span title="The 3-letter project key is for the links and storing data" style={{ cursor: 'help', display: 'flex' }}>
-                            <HelpCircle size={14} color="var(--text-muted)" />
-                        </span>
-                    </label>
-                    <input 
-                        id="project_key"
-                        type="text" 
-                        maxLength={3}
-                        value={projectKey} 
-                        onChange={(e) => setProjectKey(e.target.value.replace(/[^A-Za-z]/g, '').toUpperCase())} 
-                        placeholder="e.g. MOD"
-                        disabled
-                        style={{ 
-                            textTransform: 'uppercase',
-                            borderColor: keyBorderColor,
-                            color: keyTextColor,
-                            outlineColor: keyBorderColor,
-                            opacity: 0.7
-                        }}
-                    />
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div className="form-group" style={{ flex: 1.5 }}>
+                        <label>Project Name</label>
+                        <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-panel)', borderRadius: '4px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px solid var(--border-color)' }}>
+                            {name}
+                        </div>
+                    </div>
+                    <div className="form-group" style={{ flex: 1 }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            Project Key (3 Letters)
+                            <span title="The 3-letter project key is for the links and storing data" style={{ cursor: 'help', display: 'flex' }}>
+                                <HelpCircle size={14} color="var(--text-muted)" />
+                            </span>
+                        </label>
+                        <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-panel)', borderRadius: '4px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, textTransform: 'uppercase', border: '1px solid var(--border-color)' }}>
+                            {projectKey}
+                        </div>
+                    </div>
                 </div>
                 <div className="form-group">
                     <label htmlFor="revisions">Available Revisions (comma separated)</label>
