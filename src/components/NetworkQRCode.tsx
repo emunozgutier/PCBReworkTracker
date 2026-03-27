@@ -1,25 +1,23 @@
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
-import { QrCode, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 export function NetworkQRCode() {
     const [qrDataUrl, setQrDataUrl] = useState<string>('');
-    const [isVisible, setIsVisible] = useState(false);
-    const { activeTab } = useStore();
+    const { qrModalBoard, setQrModalBoard } = useStore();
     
-    // These constants are defined in vite.config.ts
-    // Use fallbacks for development if constants are not yet defined
     const localIp = typeof __LOCAL_IP__ !== 'undefined' ? __LOCAL_IP__ : window.location.hostname;
     const port = typeof __PORT__ !== 'undefined' ? __PORT__ : window.location.port;
-    const url = `http://${localIp}:${port}/${activeTab}`;
+    const url = qrModalBoard ? `http://${localIp}:${port}/pcbs/${qrModalBoard}` : '';
 
     useEffect(() => {
+        if (!url) return;
         const generateQR = async () => {
             try {
                 const dataUrl = await QRCode.toDataURL(url, {
                     margin: 2,
-                    width: 120,
+                    width: 250,
                     color: {
                         dark: '#000000',
                         light: '#ffffff'
@@ -34,36 +32,85 @@ export function NetworkQRCode() {
         generateQR();
     }, [url]);
 
-    if (!isVisible) {
-        return (
-            <button 
-                className="qr-toggle-button" 
-                onClick={() => setIsVisible(true)}
-                title="Show Network QR Code"
-            >
-                <QrCode size={24} />
-            </button>
-        );
+    if (!qrModalBoard) {
+        return null;
     }
 
     return (
-        <div className="network-qr-container">
-            <button 
-                className="qr-close-button" 
-                onClick={() => setIsVisible(false)}
-                title="Hide QR Code"
-            >
-                <X size={16} />
-            </button>
-            <div className="qr-wrapper">
-                {qrDataUrl && <img src={qrDataUrl} alt="Network QR Code" width="120" height="120" />}
-            </div>
-            <div className="qr-info">
-                <p className="qr-label">Scan to view on mobile</p>
-                <code className="qr-url" style={{ display: 'block', whiteSpace: 'nowrap' }}>
-                    <div>http://{localIp}:{port}</div>
-                    <div style={{ color: '#818cf8', fontWeight: 'bold' }}>/{activeTab}</div>
-                </code>
+        <div style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '24px'
+        }} onClick={() => setQrModalBoard(null)}>
+            <div className="item-card" style={{
+                cursor: 'default',
+                padding: '32px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3)',
+                position: 'relative',
+                maxWidth: '90%',
+                width: '380px',
+            }} onClick={(e) => e.stopPropagation()}>
+                <button 
+                    onClick={() => setQrModalBoard(null)}
+                    style={{
+                        position: 'absolute',
+                        top: '16px',
+                        right: '16px',
+                        background: 'rgba(255,255,255,0.1)',
+                        border: 'none',
+                        color: 'var(--text-muted)',
+                        cursor: 'pointer',
+                        padding: '8px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.color = '#fff';
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.color = 'var(--text-muted)';
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                    }}
+                    title="Close"
+                >
+                    <X size={20} />
+                </button>
+                <h3 style={{ margin: '0 0 16px 0', color: 'var(--text)', fontSize: '1.25rem', fontWeight: 600 }}>PCB Board Identity</h3>
+                <div style={{ 
+                    backgroundColor: '#fff', 
+                    padding: '16px', 
+                    borderRadius: '12px',
+                    marginBottom: '20px'
+                }}>
+                    {qrDataUrl && <img src={qrDataUrl} alt="PCB QR Code" style={{ display: 'block', width: '250px', height: '250px' }} />}
+                </div>
+                <div style={{ textAlign: 'center', width: '100%' }}>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent)', marginBottom: '8px' }}>{qrModalBoard}</div>
+                    <code style={{ 
+                        display: 'block', 
+                        fontSize: '0.8rem', 
+                        color: 'var(--text-muted)', 
+                        background: 'rgba(0,0,0,0.2)', 
+                        padding: '12px 8px',
+                        borderRadius: '6px',
+                        lineHeight: '1.4'
+                    }}>
+                        <div style={{ wordBreak: 'break-all' }}>http://{localIp}:{port}</div>
+                        <div style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '2px' }}>/pcbs/{qrModalBoard}</div>
+                    </code>
+                </div>
             </div>
         </div>
     );

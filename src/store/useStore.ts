@@ -14,6 +14,7 @@ interface NavigationState {
     isMobile: boolean;
     expandedProject: string | null;
     expandedPcb: string | null;
+    qrModalBoard: string | null;
     
     // Actions
     setPage: (page: Page) => void;
@@ -24,6 +25,7 @@ interface NavigationState {
     setIsMobile: (isMobile: boolean) => void;
     setExpandedProject: (name: string | null) => void;
     setExpandedPcb: (name: string | null) => void;
+    setQrModalBoard: (board: string | null) => void;
 }
 
 const getInitialExpandedPcb = (): string | null => {
@@ -64,6 +66,7 @@ export const useStore = create<NavigationState>((set) => ({
     isMobile: typeof window !== 'undefined' ? window.innerWidth <= 768 : false,
     expandedProject: getInitialExpandedProject(),
     expandedPcb: getInitialExpandedPcb(),
+    qrModalBoard: null,
 
     setPage: (page) => set({ page }),
     
@@ -88,6 +91,8 @@ export const useStore = create<NavigationState>((set) => ({
         }
         set({ expandedPcb: name });
     },
+
+    setQrModalBoard: (name) => set({ qrModalBoard: name }),
 
     setActiveTab: (tab) => {
         if (typeof window !== 'undefined') {
