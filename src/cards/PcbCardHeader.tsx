@@ -31,9 +31,6 @@ export function PcbCardHeader({ pcb, isExpanded, onToggle, onEdit }: PcbCardHead
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-                <span className={`status-pill ${pcb.status?.toLowerCase().replace(' ', '-') || 'unknown'}`} style={{ marginRight: '4px' }}>
-                    {pcb.status}
-                </span>
                 <div className="expand-indicator" style={{ display: 'flex', position: 'static', transform: 'none' }}>
                     {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                 </div>
