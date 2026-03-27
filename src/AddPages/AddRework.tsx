@@ -129,6 +129,16 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                         }} 
                         style={{ display: 'none' }}
                     />
+                    
+                    {image && (
+                        <div style={{ marginTop: '12px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                            <img 
+                                src={URL.createObjectURL(image)} 
+                                alt="Preview" 
+                                style={{ width: '100%', display: 'block', maxHeight: '300px', objectFit: 'contain', background: '#000' }} 
+                            />
+                        </div>
+                    )}
                 </div>
                 <button type="submit" className="submit-button" disabled={loading}>
                     <Save size={18} />
