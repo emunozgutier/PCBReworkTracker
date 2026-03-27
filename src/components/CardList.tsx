@@ -39,6 +39,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
 
     const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
     const [selectedRevisions, setSelectedRevisions] = useState<string[]>([]);
+    const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
     const [showFilters, setShowFilters] = useState<boolean>(false);
 
     switch (type) {
@@ -53,6 +54,9 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
             if (selectedRevisions.length > 0) {
                 items = items.filter(pcb => selectedRevisions.some(rev => pcb.product && pcb.product.includes(rev)));
             }
+            if (selectedFlavors.length > 0) {
+                items = items.filter(pcb => selectedFlavors.some(ff => pcb.product && pcb.product.includes(ff)));
+            }
             break;
         case 'reworks': items = reworks; loading = reworksLoading; break;
         case 'owners': items = owners; loading = ownersLoading; break;
@@ -61,7 +65,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
 
     if (loading) return <div className="loading">Loading {title}...</div>;
 
-    const activeFilterCount = selectedProjects.length + selectedRevisions.length;
+    const activeFilterCount = selectedProjects.length + selectedRevisions.length + selectedFlavors.length;
 
     return (
         <div className="card-list-container">
@@ -123,23 +127,24 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                             }}
                         >
                             {projects.map(p => {
-                                // Count how many pcbs belong to this project AND match the selected revisions
+                                // Count how many pcbs belong to this project AND match the selected revisions and flavors
                                 const count = pcbs.filter(pcb => 
                                     pcb.project === p.name && 
-                                    (selectedRevisions.length === 0 || selectedRevisions.some(rev => pcb.product && pcb.product.includes(rev)))
+                                    (selectedRevisions.length === 0 || selectedRevisions.some(rev => pcb.product && pcb.product.includes(rev))) &&
+                                    (selectedFlavors.length === 0 || selectedFlavors.some(ff => pcb.product && pcb.product.includes(ff)))
                                 ).length;
                                 
-                                // Only hide projects if we are actively filtering by a revision that this project doesn't have boards for
-                                if (selectedRevisions.length > 0 && count === 0) return null;
+                                // Only hide projects if we are actively filtering by a revision/flavor that this project doesn't have boards for
+                                if ((selectedRevisions.length > 0 || selectedFlavors.length > 0) && count === 0) return null;
                                 
                                 return <option key={p.id} value={p.id.toString()}>{p.name} ({count})</option>;
                             })}
                         </select>
                     </div>
 
-                    {/* Revisions DigiKey-style Select */}
+                    {/* Silicon Revisions Box */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Silicon Revisions & Flavors</span>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Silicon Revisions</span>
                         <select 
                             multiple 
                             value={selectedRevisions}
@@ -167,36 +172,73 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                                 
                                 const allRevs = new Set<string>();
                                 activeProjects.forEach((p: any) => {
-                                    if (p.revisions) {
-                                        p.revisions.forEach((r: string) => allRevs.add(r));
-                                    }
-                                    if (p.formfactors) {
-                                        p.formfactors.forEach((ff: any) => {
-                                            if (ff.revisions) ff.revisions.forEach((r: string) => allRevs.add(r));
-                                        });
-                                    }
+                                    if (p.revisions) p.revisions.forEach((r: string) => allRevs.add(r));
                                 });
 
                                 return Array.from(allRevs).sort().map(rev => {
-                                    // Count how many pcbs match this revision AND match the selected projects
                                     const count = pcbs.filter(pcb => 
                                         (pcb.product && pcb.product.includes(rev)) &&
-                                        (selectedProjects.length === 0 || selectedProjects.includes(
-                                            projects.find(p => p.name === pcb.project)?.id.toString() || ''
-                                        ))
+                                        (selectedProjects.length === 0 || selectedProjects.includes(projects.find(p => p.name === pcb.project)?.id.toString() || '')) &&
+                                        (selectedFlavors.length === 0 || selectedFlavors.some(ff => pcb.product && pcb.product.includes(ff)))
                                     ).length;
-                                    if (count === 0) return null;
+                                    if (count === 0 && selectedProjects.length > 0) return null;
                                     return <option key={rev} value={rev}>{rev} ({count})</option>;
                                 });
                             })()}
                         </select>
                     </div>
 
+                    {/* PCB Flavors Box */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>PCB Flavors</span>
+                        <select 
+                            multiple 
+                            value={selectedFlavors}
+                            onChange={(e) => {
+                                const selected = Array.from(e.target.selectedOptions, option => option.value);
+                                setSelectedFlavors(selected);
+                            }}
+                            style={{ 
+                                width: '220px', 
+                                height: '140px', 
+                                padding: '6px', 
+                                borderRadius: '4px', 
+                                backgroundColor: 'var(--bg-panel)', 
+                                border: '1px solid var(--border-color)', 
+                                color: 'var(--text)', 
+                                outline: 'none',
+                                fontFamily: 'inherit',
+                                fontSize: '0.9rem'
+                            }}
+                        >
+                            {(() => {
+                                const activeProjects = selectedProjects.length > 0 
+                                    ? projects.filter(p => selectedProjects.includes(p.id.toString()))
+                                    : projects;
+                                
+                                const allFlavors = new Set<string>();
+                                activeProjects.forEach((p: any) => {
+                                    if (p.formfactors) p.formfactors.forEach((ff: any) => allFlavors.add(ff.name));
+                                });
+
+                                return Array.from(allFlavors).sort().map(ff => {
+                                    const count = pcbs.filter(pcb => 
+                                        (pcb.product && pcb.product.includes(ff)) &&
+                                        (selectedProjects.length === 0 || selectedProjects.includes(projects.find(p => p.name === pcb.project)?.id.toString() || '')) &&
+                                        (selectedRevisions.length === 0 || selectedRevisions.some(rev => pcb.product && pcb.product.includes(rev)))
+                                    ).length;
+                                    if (count === 0 && selectedProjects.length > 0) return null;
+                                    return <option key={ff} value={ff}>{ff} ({count})</option>;
+                                });
+                            })()}
+                        </select>
+                    </div>
+
                     {/* Clear Filters Button */}
-                    {(selectedProjects.length > 0 || selectedRevisions.length > 0) && (
+                    {(selectedProjects.length > 0 || selectedRevisions.length > 0 || selectedFlavors.length > 0) && (
                         <div style={{ alignSelf: 'flex-start', marginTop: '26px' }}>
                             <button 
-                                onClick={() => { setSelectedProjects([]); setSelectedRevisions([]); }}
+                                onClick={() => { setSelectedProjects([]); setSelectedRevisions([]); setSelectedFlavors([]); }}
                                 style={{ 
                                     padding: '6px 12px', 
                                     backgroundColor: 'transparent', 
