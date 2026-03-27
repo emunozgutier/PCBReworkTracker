@@ -5,6 +5,9 @@ export interface Tag {
     id: number;
     name: string;
     color: string;
+    owner_id?: number | null;
+    owner_name?: string | null;
+    pcb_count?: number;
 }
 
 interface TagState {
@@ -12,8 +15,8 @@ interface TagState {
     loading: boolean;
     error: string | null;
     fetchTags: () => Promise<void>;
-    addTag: (data: { name: string; color: string }) => Promise<boolean>;
-    updateTag: (id: number | string, data: { name: string; color: string }) => Promise<boolean>;
+    addTag: (data: { name: string; color: string; owner_id?: number | string | null }) => Promise<boolean>;
+    updateTag: (id: number | string, data: { name: string; color: string; owner_id?: number | string | null }) => Promise<boolean>;
     deleteTag: (id: number | string) => Promise<boolean>;
 }
 

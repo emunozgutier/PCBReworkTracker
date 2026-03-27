@@ -69,9 +69,20 @@ const initDb = () => {
         // Tags Table
         db.run(`CREATE TABLE IF NOT EXISTS tags (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE,
-            color TEXT DEFAULT '#818cf8'
-        )`);
+            name TEXT NOT NULL,
+            color TEXT DEFAULT '#818cf8',
+            owner_id INTEGER REFERENCES owners(id)
+        )`, (err) => {
+            if (!err) {
+                db.run(`ALTER TABLE tags ADD COLUMN owner_id INTEGER REFERENCES owners(id)`, (err) => {
+                    if (err && !err.message.includes('duplicate column name')) {
+                        console.error('Migration error (tags.owner_id):', err.message);
+                    } else if (!err) {
+                        db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_tags_owner_name ON tags(owner_id, name COLLATE NOCASE)`);
+                    }
+                });
+            }
+        });
 
         // PCBs Table
         db.run(`CREATE TABLE IF NOT EXISTS pcbs_new (

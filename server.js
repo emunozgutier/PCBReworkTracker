@@ -207,15 +207,23 @@ app.post('/api/owners', (req, res) => {
 
 // Tags API
 app.get('/api/tags', (req, res) => {
-    db.all("SELECT * FROM tags", [], (err, rows) => {
+    const query = `
+        SELECT tags.*, owners.name as owner_name, COUNT(pcb_tags.pcb_id) as pcb_count
+        FROM tags
+        LEFT JOIN owners ON tags.owner_id = owners.id
+        LEFT JOIN pcb_tags ON tags.id = pcb_tags.tag_id
+        GROUP BY tags.id
+    `;
+    db.all(query, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
 
 app.post('/api/tags', (req, res) => {
-    const { name, color } = req.body;
-    db.run("INSERT INTO tags (name, color) VALUES (?, ?)", [name, color], function(err) {
+    const { name, color, owner_id } = req.body;
+    const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
+    db.run("INSERT INTO tags (name, color, owner_id) VALUES (?, ?, ?)", [name, color, finalOwnerId], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.status(201).json({ id: this.lastID, name });
     });
@@ -386,8 +394,9 @@ app.get('/api/tags/:id', (req, res) => {
 });
 
 app.put('/api/tags/:id', (req, res) => {
-    const { name, color } = req.body;
-    db.run("UPDATE tags SET name = ?, color = ? WHERE id = ?", [name, color, req.params.id], function(err) {
+    const { name, color, owner_id } = req.body;
+    const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
+    db.run("UPDATE tags SET name = ?, color = ?, owner_id = ? WHERE id = ?", [name, color, finalOwnerId, req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ updated: this.changes });
     });

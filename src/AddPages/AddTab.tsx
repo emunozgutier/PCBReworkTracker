@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 
 import { useTagStore } from '../store/storeTag';
+import { useOwnerStore } from '../store/storeOwner';
 
 interface AddTabProps {
     onBack: () => void;
@@ -11,11 +12,17 @@ interface AddTabProps {
 export function AddTab({ onBack, onSuccess }: AddTabProps) {
     const [name, setName] = useState('');
     const [color, setColor] = useState('#818cf8');
+    const [ownerId, setOwnerId] = useState<string>('');
     const { addTag, loading } = useTagStore();
+    const { owners, fetchOwners } = useOwnerStore();
+
+    useEffect(() => {
+        if (owners.length === 0) fetchOwners();
+    }, [owners.length, fetchOwners]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const success = await addTag({ name, color });
+        const success = await addTag({ name, color, owner_id: ownerId });
         if (success) {
             onSuccess();
         }
@@ -43,6 +50,19 @@ export function AddTab({ onBack, onSuccess }: AddTabProps) {
                         placeholder="e.g. Prototype"
                         required 
                     />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="owner">Tag Owner (Optional)</label>
+                    <select 
+                        id="owner"
+                        value={ownerId} 
+                        onChange={(e) => setOwnerId(e.target.value)} 
+                    >
+                        <option value="">Unassigned</option>
+                        {owners.map(o => (
+                            <option key={o.id} value={o.id}>{o.name}</option>
+                        ))}
+                    </select>
                 </div>
                 <div className="form-group">
                     <label>Choose Color</label>
