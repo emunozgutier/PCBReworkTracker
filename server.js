@@ -268,9 +268,14 @@ app.put('/api/pcbs/:id', (req, res) => {
 });
 
 app.delete('/api/pcbs/:id', (req, res) => {
-    db.run("DELETE FROM pcbs WHERE id = ?", [req.params.id], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ deleted: this.changes });
+    const pcbId = req.params.id;
+    db.serialize(() => {
+        db.run("DELETE FROM reworks WHERE pcb_id = ?", [pcbId]);
+        db.run("DELETE FROM pcb_tags WHERE pcb_id = ?", [pcbId]);
+        db.run("DELETE FROM pcbs WHERE id = ?", [pcbId], function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ deleted: this.changes });
+        });
     });
 });
 
