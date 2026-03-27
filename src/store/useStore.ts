@@ -56,10 +56,22 @@ export const useStore = create<NavigationState>((set) => ({
         selectedId: id 
     }),
 
-    addItem: (page, prefillId) => set({ 
-        page, 
-        selectedId: prefillId || null 
-    }),
+    addItem: (page, prefillId) => {
+        const baseTab = page.split('_')[0];
+        if (typeof window !== 'undefined' && useStore.getState().activeTab !== baseTab) {
+            window.history.pushState({}, '', `/${baseTab}`);
+            set({ 
+                activeTab: baseTab,
+                page, 
+                selectedId: prefillId || null 
+            });
+            return;
+        }
+        set({ 
+            page, 
+            selectedId: prefillId || null 
+        });
+    },
 
     goBack: () => set((state) => ({ 
         page: state.activeTab as Page, 
