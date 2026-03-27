@@ -128,7 +128,10 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                                     pcb.project === p.name && 
                                     (selectedRevisions.length === 0 || selectedRevisions.some(rev => pcb.product && pcb.product.includes(rev)))
                                 ).length;
-                                if (count === 0 && selectedRevisions.length === 0) return null;
+                                
+                                // Only hide projects if we are actively filtering by a revision that this project doesn't have boards for
+                                if (selectedRevisions.length > 0 && count === 0) return null;
+                                
                                 return <option key={p.id} value={p.id.toString()}>{p.name} ({count})</option>;
                             })}
                         </select>
