@@ -13,6 +13,7 @@ interface NavigationState {
     selectedId: string | number | null;
     isMobile: boolean;
     expandedProject: string | null;
+    expandedPcb: string | null;
     
     // Actions
     setPage: (page: Page) => void;
@@ -22,7 +23,17 @@ interface NavigationState {
     goBack: () => void;
     setIsMobile: (isMobile: boolean) => void;
     setExpandedProject: (name: string | null) => void;
+    setExpandedPcb: (name: string | null) => void;
 }
+
+const getInitialExpandedPcb = (): string | null => {
+    if (typeof window === 'undefined') return null;
+    const rawPath = window.location.pathname;
+    if (rawPath.startsWith('/pcbs/') && !rawPath.startsWith('/pcbs_')) {
+        return decodeURIComponent(rawPath.replace('/pcbs/', ''));
+    }
+    return null;
+};
 
 const getInitialExpandedProject = (): string | null => {
     if (typeof window === 'undefined') return null;
@@ -37,6 +48,7 @@ const getInitialPage = (): Page => {
     if (typeof window === 'undefined') return 'projects';
     const rawPath = window.location.pathname;
     if (rawPath.startsWith('/projects/')) return 'projects';
+    if (rawPath.startsWith('/pcbs/') && !rawPath.startsWith('/pcbs_')) return 'pcbs';
     const path = rawPath.replace('/', '') || 'projects';
     const validPages: Page[] = ['projects', 'pcbs', 'reworks', 'owners', 'tags'];
     if (validPages.includes(path as Page)) return path as Page;
@@ -51,6 +63,7 @@ export const useStore = create<NavigationState>((set) => ({
     selectedId: null,
     isMobile: typeof window !== 'undefined' ? window.innerWidth <= 768 : false,
     expandedProject: getInitialExpandedProject(),
+    expandedPcb: getInitialExpandedPcb(),
 
     setPage: (page) => set({ page }),
     
@@ -65,6 +78,17 @@ export const useStore = create<NavigationState>((set) => ({
         set({ expandedProject: name });
     },
 
+    setExpandedPcb: (name) => {
+        if (typeof window !== 'undefined') {
+            if (name) {
+                window.history.pushState({}, '', `/pcbs/${encodeURIComponent(name)}`);
+            } else {
+                window.history.pushState({}, '', `/pcbs`);
+            }
+        }
+        set({ expandedPcb: name });
+    },
+
     setActiveTab: (tab) => {
         if (typeof window !== 'undefined') {
             window.history.pushState({}, '', `/${tab}`);
@@ -73,7 +97,8 @@ export const useStore = create<NavigationState>((set) => ({
             activeTab: tab, 
             page: tab as Page, // When we switch tabs, we go to the main list page
             selectedId: null,
-            expandedProject: null
+            expandedProject: null,
+            expandedPcb: null
         });
     },
 
@@ -127,6 +152,15 @@ if (typeof window !== 'undefined') {
             });
             return;
         }
+        if (rawPath.startsWith('/pcbs/') && !rawPath.startsWith('/pcbs_')) {
+            useStore.setState({
+                activeTab: 'pcbs',
+                page: 'pcbs',
+                selectedId: null,
+                expandedPcb: decodeURIComponent(rawPath.replace('/pcbs/', ''))
+            });
+            return;
+        }
 
         const path = rawPath.replace('/', '') || 'projects';
         const validPages = ['projects', 'pcbs', 'reworks', 'owners', 'tags'];
@@ -135,7 +169,8 @@ if (typeof window !== 'undefined') {
                 activeTab: path,
                 page: path as Page,
                 selectedId: null,
-                expandedProject: null
+                expandedProject: null,
+                expandedPcb: null
             });
         }
     });
