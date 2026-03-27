@@ -4,6 +4,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { API_BASE } from '../api';
 import { useReworkStore } from '../store/storeRework';
 import { useStore } from '../store/useStore';
+import { useOwnerStore } from '../store/storeOwner';
 
 interface AddReworkProps {
     onBack: () => void;
@@ -15,11 +16,13 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
     const [pcbs, setPcbs] = useState<any[]>([]);
     const [selectedPcb, setSelectedPcb] = useState('');
     const [description, setDescription] = useState('');
-    const [status, setStatus] = useState('Completed');
+    const [ownerId, setOwnerId] = useState('-1');
     const [images, setImages] = useState<File[]>([]);
     const { addRework, loading } = useReworkStore();
+    const { owners, fetchOwners } = useOwnerStore();
 
     useEffect(() => {
+        fetchOwners();
         fetch(`${API_BASE}/pcbs`)
             .then(res => res.json())
             .then(data => {
@@ -39,7 +42,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
         const formData = new FormData();
         formData.append('pcb_id', selectedPcb || '');
         formData.append('description', description);
-        formData.append('status', status);
+        formData.append('owner_id', ownerId);
         images.forEach(img => {
             formData.append('images', img);
         });
@@ -83,11 +86,10 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="status">Resulting Status</label>
-                    <select id="status" value={status} onChange={(e) => setStatus(e.target.value)}>
-                        <option value="Completed">Completed</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Failed">Failed</option>
+                    <label htmlFor="owner">Assigned Owner</label>
+                    <select id="owner" value={ownerId} onChange={(e) => setOwnerId(e.target.value)}>
+                        <option value="-1">-- Unassigned --</option>
+                        {owners.map(o => <option key={o.id} value={o.id.toString()}>{o.name}</option>)}
                     </select>
                 </div>
                 <div className="form-group" style={{ marginBottom: '24px' }}>

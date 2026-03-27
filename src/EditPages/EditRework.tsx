@@ -3,6 +3,7 @@ import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE } from '../api';
 import { useReworkStore } from '../store/storeRework';
+import { useOwnerStore } from '../store/storeOwner';
 
 interface EditReworkProps {
     id: string | number;
@@ -14,12 +15,14 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
     const [pcbs, setPcbs] = useState<any[]>([]);
     const [selectedPcb, setSelectedPcb] = useState('');
     const [description, setDescription] = useState('');
-    const [status, setStatus] = useState('Completed');
+    const [ownerId, setOwnerId] = useState('-1');
     const [loading, setLoading] = useState(true);
     const { updateRework, deleteRework } = useReworkStore();
+    const { owners, fetchOwners } = useOwnerStore();
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
+        fetchOwners();
         Promise.all([
             fetch(`${API_BASE}/pcbs`).then(res => res.json()),
             fetch(`${API_BASE}/reworks/${id}`).then(res => res.json())
@@ -28,7 +31,7 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
             if (rework) {
                 setSelectedPcb(rework.pcb_id.toString());
                 setDescription(rework.description);
-                setStatus(rework.status);
+                setOwnerId(rework.owner_id ? rework.owner_id.toString() : '-1');
             }
             setLoading(false);
         }).catch(err => {
@@ -43,7 +46,7 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
         const success = await updateRework(id, {
             pcb_id: selectedPcb ? parseInt(selectedPcb) : null,
             description,
-            status
+            owner_id: ownerId
         });
         if (success) onSuccess();
         setSaving(false);
@@ -94,11 +97,10 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="status">Status</label>
-                    <select id="status" value={status} onChange={(e) => setStatus(e.target.value)}>
-                        <option value="Completed">Completed</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Failed">Failed</option>
+                    <label htmlFor="owner">Assigned Owner</label>
+                    <select id="owner" value={ownerId} onChange={(e) => setOwnerId(e.target.value)}>
+                        <option value="-1">-- Unassigned --</option>
+                        {owners.map(o => <option key={o.id} value={o.id.toString()}>{o.name}</option>)}
                     </select>
                 </div>
                 <button type="submit" className="submit-button" disabled={saving}>

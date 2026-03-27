@@ -6,8 +6,11 @@ export interface Rework {
     pcb_id: number;
     description: string;
     timestamp: string;
-    status: string;
+    owner_id: number | null;
+    owner_name: string | null;
     pcb_board_number: string;
+    image_path?: string;
+    rework_name?: string;
 }
 
 interface ReworkState {
@@ -15,8 +18,8 @@ interface ReworkState {
     loading: boolean;
     error: string | null;
     fetchReworks: () => Promise<void>;
-    addRework: (data: FormData | { pcb_id: number | null; description: string; status: string }) => Promise<boolean>;
-    updateRework: (id: number | string, data: { pcb_id: number | null; description: string; status: string }) => Promise<boolean>;
+    addRework: (data: FormData | { pcb_id: number | null; description: string; owner_id: string | null }) => Promise<boolean>;
+    updateRework: (id: number | string, data: { pcb_id: number | null; description: string; owner_id: string | null }) => Promise<boolean>;
     deleteRework: (id: number | string) => Promise<boolean>;
 }
 

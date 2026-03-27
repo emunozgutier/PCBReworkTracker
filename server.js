@@ -224,9 +224,10 @@ app.post('/api/tags', (req, res) => {
 // Reworks API
 app.get('/api/reworks', (req, res) => {
     const query = `
-        SELECT reworks.*, pcbs.board_number 
+        SELECT reworks.*, pcbs.board_number, owners.name as owner_name 
         FROM reworks 
         LEFT JOIN pcbs ON reworks.pcb_id = pcbs.id
+        LEFT JOIN owners ON reworks.owner_id = owners.id
         ORDER BY timestamp DESC
     `;
     db.all(query, [], (err, rows) => {
@@ -236,7 +237,7 @@ app.get('/api/reworks', (req, res) => {
 });
 
 app.post('/api/reworks', upload.any(), (req, res) => {
-    const { pcb_id, description, status } = req.body;
+    const { pcb_id, description, owner_id } = req.body;
     
     // 1. Get the PCB board_number
     db.get("SELECT board_number FROM pcbs WHERE id = ?", [pcb_id], (err, row) => {
@@ -283,8 +284,9 @@ app.post('/api/reworks', upload.any(), (req, res) => {
             const image_path = finalPaths.length > 0 ? JSON.stringify(finalPaths) : null;
             
             // 3. Insert new rework
-            const query = "INSERT INTO reworks (pcb_id, rework_name, description, status, image_path) VALUES (?, ?, ?, ?, ?)";
-            db.run(query, [pcb_id, reworkName, description, status || 'Completed', image_path], function(err) {
+            const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
+            const insertQuery = "INSERT INTO reworks (pcb_id, rework_name, description, owner_id, image_path) VALUES (?, ?, ?, ?, ?)";
+            db.run(insertQuery, [pcb_id, reworkName, description, finalOwnerId, image_path], function(err) {
                 if (err) return res.status(500).json({ error: err.message });
                 res.status(201).json({ id: this.lastID, pcb_id, rework_name: reworkName, image_path });
             });
@@ -407,8 +409,9 @@ app.get('/api/reworks/:id', (req, res) => {
 });
 
 app.put('/api/reworks/:id', (req, res) => {
-    const { pcb_id, description, status } = req.body;
-    db.run("UPDATE reworks SET pcb_id = ?, description = ?, status = ? WHERE id = ?", [pcb_id, description, status, req.params.id], function(err) {
+    const { pcb_id, description, owner_id } = req.body;
+    const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
+    db.run("UPDATE reworks SET pcb_id = ?, description = ?, owner_id = ? WHERE id = ?", [pcb_id, description, finalOwnerId, req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ updated: this.changes });
     });

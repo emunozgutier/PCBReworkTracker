@@ -114,8 +114,10 @@ const initDb = () => {
             description TEXT NOT NULL,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             status TEXT DEFAULT 'Completed',
+            owner_id INTEGER,
             image_path TEXT,
-            FOREIGN KEY (pcb_id) REFERENCES pcbs (id)
+            FOREIGN KEY (pcb_id) REFERENCES pcbs (id),
+            FOREIGN KEY (owner_id) REFERENCES owners (id)
         )`, (err) => {
             if (!err) {
                 db.run(`ALTER TABLE reworks ADD COLUMN rework_name TEXT`, (err) => {
@@ -128,6 +130,11 @@ const initDb = () => {
                 db.run(`ALTER TABLE reworks ADD COLUMN image_path TEXT`, (err) => {
                     if (err && !err.message.includes('duplicate column name')) {
                         console.error('Migration error (reworks.image_path):', err.message);
+                    }
+                });
+                db.run(`ALTER TABLE reworks ADD COLUMN owner_id INTEGER REFERENCES owners(id)`, (err) => {
+                    if (err && !err.message.includes('duplicate column name')) {
+                        console.error('Migration error (reworks.owner_id):', err.message);
                     }
                 });
             }

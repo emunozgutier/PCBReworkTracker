@@ -146,7 +146,7 @@ describe('Store and Database Integration Tests', () => {
         const success = await store.addRework({
             pcb_id: pcbId,
             description: 'Test rework action',
-            status: 'Completed'
+            owner_id: ownerId ? ownerId.toString() : '-1'
         });
         expect(success).toBe(true);
     });

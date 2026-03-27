@@ -30,8 +30,8 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, onEdit }: Rewor
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         PCB: {rework.pcb_board_number}
                     </span>
-                    <span className={`status-pill ${rework.status?.toLowerCase().replace(' ', '-') || 'unknown'}`} style={{ transform: 'scale(0.8)', transformOrigin: 'left center' }}>
-                        {rework.status}
+                    <span style={{ fontSize: '0.8rem', background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: '12px', color: 'var(--text)', whiteSpace: 'nowrap' }}>
+                        🧑‍🔧 {rework.owner_name ? rework.owner_name : 'Unassigned'}
                     </span>
                 </div>
             </div>
