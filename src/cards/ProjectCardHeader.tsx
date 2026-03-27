@@ -32,11 +32,35 @@ export function ProjectCardHeader({ project, isExpanded, onToggle, onEdit }: Pro
                 <span className="board-num" style={{ margin: 0 }}>{project.project_key} - {project.name}</span>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1rem', color: 'inherit', fontFamily: 'inherit' }}>
-                    <span>{project.formfactors?.length || 0} Flavors</span>
-                    <span>{project.revisions?.length || 0} Revs</span>
-                    <span>{project.pcb_count} PCBs</span>
+            <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', fontSize: '0.85rem', marginRight: '8px' }}>
+                    <span style={{ 
+                        backgroundColor: 'var(--bg-element)', 
+                        border: '1px solid var(--border-color)', 
+                        padding: '4px 12px', 
+                        borderRadius: '16px',
+                        color: 'var(--text-muted)',
+                        margin: '0 6px'
+                    }}>
+                        {project.revisions?.length || 0} Revs
+                    </span>
+                    <span style={{ 
+                        backgroundColor: 'var(--bg-element)', 
+                        border: '1px solid var(--border-color)', 
+                        padding: '4px 12px', 
+                        borderRadius: '16px', 
+                        display: 'flex', 
+                        gap: '6px',
+                        alignItems: 'center',
+                        color: 'var(--text-muted)',
+                        margin: '0 6px'
+                    }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text)' }}>PCBs</span>
+                        <span style={{ opacity: 0.3 }}>|</span>
+                        <span>{project.formfactors?.length || 0} Flavors</span>
+                        <span style={{ opacity: 0.3 }}>|</span>
+                        <span>{project.pcb_count} Count</span>
+                    </span>
                 </div>
                 <div className="expand-indicator" style={{ display: 'flex' }}>
                     {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
