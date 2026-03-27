@@ -326,7 +326,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                                             <span className="board-num">{item.name}</span>
                                         </div>
                                         <div className="card-details">
-                                            <p>Active Owner</p>
+                                            <p>{item.username ? `@${item.username}` : 'No username'}</p>
                                         </div>
                                     </>
                                 )}
@@ -342,7 +342,11 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                                                     }} 
                                                 />
                                                 <span className="board-num" style={{ fontSize: '1rem' }}>
-                                                    {item.owner_name ? `${item.owner_name}-${item.name}` : `Unassigned-${item.name}`}
+                                                    {item.owner_username 
+                                                        ? `${item.owner_username}-${item.name}` 
+                                                        : item.owner_name 
+                                                            ? `${item.owner_name}-${item.name}` 
+                                                            : `Unassigned-${item.name}`}
                                                 </span>
                                             </div>
                                             

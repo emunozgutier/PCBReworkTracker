@@ -10,11 +10,12 @@ interface AddUserProps {
 
 export function AddUser({ onBack, onSuccess }: AddUserProps) {
     const [name, setName] = useState('');
+    const [username, setUsername] = useState('');
     const { addOwner, loading } = useOwnerStore();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const success = await addOwner({ name });
+        const success = await addOwner({ name, username });
         if (success) {
             onSuccess();
         }
@@ -31,13 +32,26 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
 
             <form onSubmit={handleSubmit} className="add-form">
                 <div className="form-group">
-                    <label htmlFor="name">Owner Name</label>
+                    <label htmlFor="name">Full Name</label>
                     <input 
                         id="name"
                         type="text" 
                         value={name} 
                         onChange={(e) => setName(e.target.value)} 
                         placeholder="e.g. Jane Smith"
+                        required 
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="username">Username (No spaces)</label>
+                    <input 
+                        id="username"
+                        type="text" 
+                        value={username} 
+                        onChange={(e) => setUsername(e.target.value)} 
+                        placeholder="e.g. jsmith"
+                        pattern="^\S+$"
+                        title="Username cannot contain spaces"
                         required 
                     />
                 </div>

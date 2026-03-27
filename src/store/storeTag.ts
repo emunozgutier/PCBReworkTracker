@@ -7,6 +7,7 @@ export interface Tag {
     color: string;
     owner_id?: number | null;
     owner_name?: string | null;
+    owner_username?: string | null;
     pcb_count?: number;
 }
 

@@ -12,6 +12,7 @@ interface EditUserProps {
 
 export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
     const [name, setName] = useState('');
+    const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(true);
     const { updateOwner, deleteOwner } = useOwnerStore();
     const [saving, setSaving] = useState(false);
@@ -20,7 +21,10 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
         fetch(`${API_BASE}/owners/${id}`)
             .then(res => res.json())
             .then(data => {
-                if (data) setName(data.name);
+                if (data) {
+                    setName(data.name);
+                    setUsername(data.username || '');
+                }
                 setLoading(false);
             })
             .catch(err => {
@@ -32,7 +36,7 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        const success = await updateOwner(id, { name });
+        const success = await updateOwner(id, { name, username });
         if (success) onSuccess();
         setSaving(false);
     };
@@ -61,12 +65,24 @@ export function EditUser({ id, onBack, onSuccess }: EditUserProps) {
 
             <form onSubmit={handleUpdate} className="add-form">
                 <div className="form-group">
-                    <label htmlFor="name">Owner Name</label>
+                    <label htmlFor="name">Full Name</label>
                     <input 
                         id="name"
                         type="text" 
                         value={name} 
                         onChange={(e) => setName(e.target.value)} 
+                        required 
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="username">Username (No spaces)</label>
+                    <input 
+                        id="username"
+                        type="text" 
+                        value={username} 
+                        onChange={(e) => setUsername(e.target.value)} 
+                        pattern="^\S+$"
+                        title="Username cannot contain spaces"
                         required 
                     />
                 </div>

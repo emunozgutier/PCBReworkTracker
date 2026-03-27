@@ -198,17 +198,23 @@ app.get('/api/owners', (req, res) => {
 });
 
 app.post('/api/owners', (req, res) => {
-    const { name } = req.body;
-    db.run("INSERT INTO owners (name) VALUES (?)", [name], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.status(201).json({ id: this.lastID, name });
+    const { name, username } = req.body;
+    const cleanUsername = username ? username.replace(/\s+/g, '') : null;
+    db.run("INSERT INTO owners (name, username) VALUES (?, ?)", [name, cleanUsername], function(err) {
+        if (err) {
+            if (err.message.includes('UNIQUE constraint failed')) {
+                return res.status(400).json({ error: `Username "${cleanUsername}" is already taken.` });
+            }
+            return res.status(500).json({ error: err.message });
+        }
+        res.status(201).json({ id: this.lastID, name, username: cleanUsername });
     });
 });
 
 // Tags API
 app.get('/api/tags', (req, res) => {
     const query = `
-        SELECT tags.*, owners.name as owner_name, COUNT(pcb_tags.pcb_id) as pcb_count
+        SELECT tags.*, owners.name as owner_name, owners.username as owner_username, COUNT(pcb_tags.pcb_id) as pcb_count
         FROM tags
         LEFT JOIN owners ON tags.owner_id = owners.id
         LEFT JOIN pcb_tags ON tags.id = pcb_tags.tag_id
@@ -371,9 +377,15 @@ app.get('/api/owners/:id', (req, res) => {
 });
 
 app.put('/api/owners/:id', (req, res) => {
-    const { name } = req.body;
-    db.run("UPDATE owners SET name = ? WHERE id = ?", [name, req.params.id], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
+    const { name, username } = req.body;
+    const cleanUsername = username ? username.replace(/\s+/g, '') : null;
+    db.run("UPDATE owners SET name = ?, username = ? WHERE id = ?", [name, cleanUsername, req.params.id], function(err) {
+        if (err) {
+            if (err.message.includes('UNIQUE constraint failed')) {
+                return res.status(400).json({ error: `Username "${cleanUsername}" is already in use.` });
+            }
+            return res.status(500).json({ error: err.message });
+        }
         res.json({ updated: this.changes });
     });
 });

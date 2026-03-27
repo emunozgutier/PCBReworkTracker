@@ -4,6 +4,7 @@ import { API_BASE } from '../api';
 export interface Owner {
     id: number;
     name: string;
+    username: string;
 }
 
 interface OwnerState {
@@ -11,8 +12,8 @@ interface OwnerState {
     loading: boolean;
     error: string | null;
     fetchOwners: () => Promise<void>;
-    addOwner: (data: { name: string }) => Promise<boolean>;
-    updateOwner: (id: number | string, data: { name: string }) => Promise<boolean>;
+    addOwner: (data: { name: string; username: string }) => Promise<boolean>;
+    updateOwner: (id: number | string, data: { name: string; username: string }) => Promise<boolean>;
     deleteOwner: (id: number | string) => Promise<boolean>;
 }
 

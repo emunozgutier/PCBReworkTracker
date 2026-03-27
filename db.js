@@ -63,8 +63,19 @@ const initDb = () => {
         // Owners Table
         db.run(`CREATE TABLE IF NOT EXISTS owners (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL
-        )`);
+            name TEXT NOT NULL,
+            username TEXT UNIQUE
+        )`, (err) => {
+            if (!err) {
+                db.run(`ALTER TABLE owners ADD COLUMN username TEXT`, (err) => {
+                    if (err && !err.message.includes('duplicate column name')) {
+                        console.error('Migration error (owners.username):', err.message);
+                    } else if (!err) {
+                        db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_owners_username ON owners(username)`);
+                    }
+                });
+            }
+        });
 
         // Tags Table
         db.run(`CREATE TABLE IF NOT EXISTS tags (
