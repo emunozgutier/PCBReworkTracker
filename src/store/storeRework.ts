@@ -15,7 +15,7 @@ interface ReworkState {
     loading: boolean;
     error: string | null;
     fetchReworks: () => Promise<void>;
-    addRework: (data: { pcb_id: number | null; description: string; status: string }) => Promise<boolean>;
+    addRework: (data: FormData | { pcb_id: number | null; description: string; status: string }) => Promise<boolean>;
     updateRework: (id: number | string, data: { pcb_id: number | null; description: string; status: string }) => Promise<boolean>;
     deleteRework: (id: number | string) => Promise<boolean>;
 }
@@ -37,13 +37,14 @@ export const useReworkStore = create<ReworkState>((set, get) => ({
         }
     },
 
-    addRework: async (data) => {
+    addRework: async (data: any) => {
         set({ loading: true, error: null });
         try {
+            const isFormData = data instanceof FormData;
             const res = await fetch(`${API_BASE}/reworks`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                ...(isFormData ? {} : { headers: { 'Content-Type': 'application/json' } }),
+                body: isFormData ? data : JSON.stringify(data)
             });
             const result = await res.json();
             

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useReworkStore } from '../store/storeRework';
 import { useStore } from '../store/useStore';
+import { API_BASE } from '../api';
 import { Plus } from 'lucide-react';
 
 interface PcbCardBodyProps {
@@ -57,6 +58,15 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                             <div style={{ fontSize: '0.9rem', color: 'var(--text)', marginBottom: '6px' }}>
                                 {rework.description}
                             </div>
+                            {rework.image_path && (
+                                <div style={{ marginBottom: '8px', cursor: 'pointer' }} onClick={() => window.open(`${API_BASE}${rework.image_path}`, '_blank')}>
+                                    <img 
+                                        src={`${API_BASE}${rework.image_path}`} 
+                                        alt="Rework attachment" 
+                                        style={{ maxWidth: '100%', maxHeight: '120px', borderRadius: '6px', border: '1px solid var(--border)', objectFit: 'contain', background: 'rgba(0,0,0,0.2)' }} 
+                                    />
+                                </div>
+                            )}
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                                 {new Date(rework.timestamp).toLocaleString()}
                             </div>
