@@ -1,10 +1,22 @@
-import { API_BASE } from '../api';
+import { useState } from 'react';
+import { PictureCard } from '../components/PictureCard';
 
 interface ReworkCardBodyProps {
     rework: any;
 }
 
 export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
+    const [showGallery, setShowGallery] = useState(false);
+
+    let imagePaths: string[] = [];
+    if (rework.image_path) {
+        try {
+            imagePaths = JSON.parse(rework.image_path);
+        } catch (e) {
+            imagePaths = [rework.image_path];
+        }
+    }
+
     return (
         <div className="card-expanded-content">
             <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '12px' }}>Rework Details</h4>
@@ -18,23 +30,31 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                         </p>
                     </div>
 
-                    {rework.image_path && (
+                    {imagePaths.length > 0 && (
                         <div>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, display: 'block', marginBottom: '8px' }}>Attached Photos</span>
-                            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                                {(() => {
-                                    let paths = [];
-                                    try { paths = JSON.parse(rework.image_path); } catch(e) { paths = [rework.image_path]; }
-                                    return paths.map((p: string, i: number) => (
-                                        <div key={i} style={{ cursor: 'zoom-in' }} onClick={() => window.open(`${API_BASE}${p}`, '_blank')}>
-                                            <img 
-                                                src={`${API_BASE}${p}`} 
-                                                alt={`Rework attachment ${i+1}`} 
-                                                style={{ maxWidth: '100%', height: '200px', borderRadius: '8px', border: '1px solid var(--border)', objectFit: 'cover', background: 'rgba(0,0,0,0.2)' }} 
-                                            />
-                                        </div>
-                                    ));
-                                })()}
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, display: 'block', marginBottom: '8px' }}>Visual Evidence</span>
+                            <div 
+                                onClick={() => setShowGallery(true)}
+                                style={{ 
+                                    display: 'inline-flex', 
+                                    alignItems: 'center', 
+                                    gap: '8px', 
+                                    padding: '8px 16px', 
+                                    background: 'rgba(99, 102, 241, 0.1)', 
+                                    color: 'var(--accent)', 
+                                    borderRadius: '8px', 
+                                    cursor: 'pointer', 
+                                    fontWeight: 600, 
+                                    fontSize: '0.9rem',
+                                    border: '1px dashed var(--accent)',
+                                    transition: 'all 0.2s ease'
+                                }}
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+                                    <circle cx="12" cy="13" r="3"></circle>
+                                </svg>
+                                {imagePaths.length} Photo{imagePaths.length > 1 ? 's' : ''} Attached (View)
                             </div>
                         </div>
                     )}
@@ -55,6 +75,13 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                     </div>
                 </div>
             </div>
+            {showGallery && imagePaths.length > 0 && (
+                <PictureCard 
+                    images={imagePaths} 
+                    title={rework.rework_name || "Rework"} 
+                    onClose={() => setShowGallery(false)} 
+                />
+            )}
         </div>
     );
 }

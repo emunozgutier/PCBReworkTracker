@@ -38,7 +38,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/pictures', express.static(path.join(__dirname, 'pictures')));
+app.use('/api/pictures', express.static(path.join(__dirname, 'pictures')));
 
 // Initialize Database
 initDb();
