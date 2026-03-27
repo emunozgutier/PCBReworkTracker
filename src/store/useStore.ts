@@ -27,8 +27,8 @@ interface NavigationState {
 const getInitialExpandedProject = (): string | null => {
     if (typeof window === 'undefined') return null;
     const rawPath = window.location.pathname;
-    if (rawPath.startsWith('/PCB/')) {
-        return decodeURIComponent(rawPath.replace('/PCB/', ''));
+    if (rawPath.startsWith('/projects/')) {
+        return decodeURIComponent(rawPath.replace('/projects/', ''));
     }
     return null;
 };
@@ -36,7 +36,7 @@ const getInitialExpandedProject = (): string | null => {
 const getInitialPage = (): Page => {
     if (typeof window === 'undefined') return 'projects';
     const rawPath = window.location.pathname;
-    if (rawPath.startsWith('/PCB/')) return 'projects';
+    if (rawPath.startsWith('/projects/')) return 'projects';
     const path = rawPath.replace('/', '') || 'projects';
     const validPages: Page[] = ['projects', 'pcbs', 'reworks', 'owners', 'tags'];
     if (validPages.includes(path as Page)) return path as Page;
@@ -57,7 +57,7 @@ export const useStore = create<NavigationState>((set) => ({
     setExpandedProject: (name) => {
         if (typeof window !== 'undefined') {
             if (name) {
-                window.history.pushState({}, '', `/PCB/${encodeURIComponent(name)}`);
+                window.history.pushState({}, '', `/projects/${encodeURIComponent(name)}`);
             } else {
                 window.history.pushState({}, '', `/projects`);
             }
@@ -118,12 +118,12 @@ if (typeof window !== 'undefined') {
 
     window.addEventListener('popstate', () => {
         const rawPath = window.location.pathname;
-        if (rawPath.startsWith('/PCB/')) {
+        if (rawPath.startsWith('/projects/')) {
             useStore.setState({
                 activeTab: 'projects',
                 page: 'projects',
                 selectedId: null,
-                expandedProject: decodeURIComponent(rawPath.replace('/PCB/', ''))
+                expandedProject: decodeURIComponent(rawPath.replace('/projects/', ''))
             });
             return;
         }
