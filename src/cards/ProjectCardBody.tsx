@@ -57,10 +57,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                             <PcbCardHeader 
                                 pcb={pcb} 
                                 isExpanded={false}
-                                onToggle={() => {
-                                    setSelectedProjects([project.id.toString()]);
-                                    setActiveTab('pcbs');
-                                }}
+                                onToggle={() => {}}
                                 onEdit={(id) => editItem('pcbs_edit', id)}
                             />
                         </div>
