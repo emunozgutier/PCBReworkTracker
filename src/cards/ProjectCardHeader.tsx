@@ -33,27 +33,25 @@ export function ProjectCardHeader({ project, isExpanded, onToggle, onEdit }: Pro
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', fontSize: '0.85rem', marginRight: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', fontSize: '0.85rem', marginRight: '8px', gap: '8px' }}>
                     <span style={{ 
-                        backgroundColor: 'var(--bg-element)', 
-                        border: '1px solid var(--border-color)', 
+                        backgroundColor: 'rgba(255, 255, 255, 0.06)', 
+                        border: '1px solid rgba(255, 255, 255, 0.12)', 
                         padding: '4px 12px', 
                         borderRadius: '16px',
-                        color: 'var(--text-muted)',
-                        margin: '0 6px'
+                        color: 'var(--text-muted)'
                     }}>
                         {project.revisions?.length || 0} Revs
                     </span>
                     <span style={{ 
-                        backgroundColor: 'var(--bg-element)', 
-                        border: '1px solid var(--border-color)', 
+                        backgroundColor: 'rgba(255, 255, 255, 0.06)', 
+                        border: '1px solid rgba(255, 255, 255, 0.12)', 
                         padding: '4px 12px', 
                         borderRadius: '16px', 
                         display: 'flex', 
                         gap: '6px',
                         alignItems: 'center',
-                        color: 'var(--text-muted)',
-                        margin: '0 6px'
+                        color: 'var(--text-muted)'
                     }}>
                         <span style={{ fontWeight: 600, color: 'var(--text)' }}>PCBs</span>
                         <span style={{ opacity: 0.3 }}>|</span>
