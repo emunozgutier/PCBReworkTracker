@@ -3,6 +3,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 
 import { API_BASE } from '../api';
 import { useReworkStore } from '../store/storeRework';
+import { useStore } from '../store/useStore';
 
 interface AddReworkProps {
     onBack: () => void;
@@ -10,6 +11,7 @@ interface AddReworkProps {
 }
 
 export function AddRework({ onBack, onSuccess }: AddReworkProps) {
+    const { selectedId } = useStore();
     const [pcbs, setPcbs] = useState<any[]>([]);
     const [selectedPcb, setSelectedPcb] = useState('');
     const [description, setDescription] = useState('');
@@ -21,7 +23,11 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
             .then(res => res.json())
             .then(data => {
                 setPcbs(data);
-                if (data.length > 0) setSelectedPcb(data[0].id.toString());
+                if (selectedId) {
+                    setSelectedPcb(selectedId.toString());
+                } else if (data.length > 0) {
+                    setSelectedPcb(data[0].id.toString());
+                }
             })
             .catch(err => console.error('Failed to fetch PCBs:', err));
     }, []);

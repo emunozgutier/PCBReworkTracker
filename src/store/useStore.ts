@@ -17,7 +17,7 @@ interface NavigationState {
     setPage: (page: Page) => void;
     setActiveTab: (tab: string) => void;
     editItem: (page: Page, id: string | number) => void;
-    addItem: (page: Page) => void;
+    addItem: (page: Page, prefillId?: string | number) => void;
     goBack: () => void;
     setIsMobile: (isMobile: boolean) => void;
 }
@@ -56,9 +56,9 @@ export const useStore = create<NavigationState>((set) => ({
         selectedId: id 
     }),
 
-    addItem: (page) => set({ 
+    addItem: (page, prefillId) => set({ 
         page, 
-        selectedId: null 
+        selectedId: prefillId || null 
     }),
 
     goBack: () => set((state) => ({ 

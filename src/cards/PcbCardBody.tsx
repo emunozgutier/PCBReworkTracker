@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useReworkStore } from '../store/storeRework';
+import { useStore } from '../store/useStore';
+import { Plus } from 'lucide-react';
 
 interface PcbCardBodyProps {
     pcb: any;
@@ -7,6 +9,7 @@ interface PcbCardBodyProps {
 
 export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const { reworks, fetchReworks } = useReworkStore();
+    const { addItem } = useStore();
 
     useEffect(() => {
         if (reworks.length === 0) fetchReworks();
@@ -16,6 +19,28 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
 
     return (
         <div className="card-expanded-content">
+            <button 
+                onClick={(e) => { e.stopPropagation(); addItem('reworks_add', pcb.id); }}
+                style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    gap: '8px', 
+                    background: 'rgba(99, 102, 241, 0.15)', 
+                    color: '#818cf8', 
+                    border: '1px solid rgba(99, 102, 241, 0.5)', 
+                    padding: '10px 16px', 
+                    borderRadius: '8px', 
+                    fontSize: '0.9rem', 
+                    fontWeight: 600, 
+                    cursor: 'pointer',
+                    width: '100%',
+                    marginBottom: '16px',
+                    transition: 'all 0.2s ease'
+                }}
+            >
+                <Plus size={18} /> Add Rework log for this PCB
+            </button>
             <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>Recent Rework History</h4>
             {pcbReworks.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
