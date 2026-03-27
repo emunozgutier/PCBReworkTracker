@@ -110,11 +110,22 @@ const initDb = () => {
         db.run(`CREATE TABLE IF NOT EXISTS reworks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             pcb_id INTEGER,
+            rework_name TEXT UNIQUE,
             description TEXT NOT NULL,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             status TEXT DEFAULT 'Completed',
             FOREIGN KEY (pcb_id) REFERENCES pcbs (id)
-        )`);
+        )`, (err) => {
+            if (!err) {
+                db.run(`ALTER TABLE reworks ADD COLUMN rework_name TEXT`, (err) => {
+                    if (err && !err.message.includes('duplicate column name')) {
+                        console.error('Migration error (reworks.rework_name):', err.message);
+                    } else if (!err) {
+                        db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_reworks_name ON reworks(rework_name)`);
+                    }
+                });
+            }
+        });
 
         // PCB_Tags Join Table
         db.run(`CREATE TABLE IF NOT EXISTS pcb_tags (

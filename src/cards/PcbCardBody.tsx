@@ -45,12 +45,17 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
             {pcbReworks.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {pcbReworks.slice(0, 5).map((rework: any, index: number) => (
-                        <div key={index} style={{ padding: '8px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', border: '1px solid var(--border)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{rework.description}</span>
+                        <div key={index} style={{ padding: '12px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent)' }}>
+                                    {rework.rework_name || `Rework #${rework.id}`}
+                                </span>
                                 <span className={`status-pill ${rework.status?.toLowerCase().replace(' ', '-') || 'unknown'}`} style={{ fontSize: '0.65rem', padding: '2px 6px' }}>
                                     {rework.status}
                                 </span>
+                            </div>
+                            <div style={{ fontSize: '0.9rem', color: 'var(--text)', marginBottom: '6px' }}>
+                                {rework.description}
                             </div>
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                                 {new Date(rework.timestamp).toLocaleString()}

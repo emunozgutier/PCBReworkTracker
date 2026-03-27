@@ -296,12 +296,15 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                                 )}
                                 {type === 'reworks' && (
                                     <>
-                                        <div className="card-title">
-                                            <span className="board-num">PCB #{item.pcb_board_number}</span>
-                                            <span className="status-pill">{item.status}</span>
+                                        <div className="card-title" style={{ marginBottom: '8px' }}>
+                                            <span className="board-num" style={{ color: 'var(--accent)' }}>
+                                                {item.rework_name || `Rework #${item.id}`}
+                                            </span>
+                                            <span className={`status-pill ${item.status?.toLowerCase().replace(' ', '-') || 'unknown'}`}>{item.status}</span>
                                         </div>
                                         <div className="card-details">
-                                            <p>{item.description}</p>
+                                            <p style={{ fontWeight: 600, color: 'var(--text)', marginBottom: '4px' }}>PCB: {item.pcb_board_number}</p>
+                                            <p style={{ marginBottom: '8px' }}>{item.description}</p>
                                             <p><small>{new Date(item.timestamp).toLocaleString()}</small></p>
                                         </div>
                                     </>

@@ -212,10 +212,36 @@ app.get('/api/reworks', (req, res) => {
 
 app.post('/api/reworks', (req, res) => {
     const { pcb_id, description, status } = req.body;
-    const query = "INSERT INTO reworks (pcb_id, description, status) VALUES (?, ?, ?)";
-    db.run(query, [pcb_id, description, status || 'Completed'], function(err) {
+    
+    // 1. Get the PCB board_number
+    db.get("SELECT board_number FROM pcbs WHERE id = ?", [pcb_id], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.status(201).json({ id: this.lastID, pcb_id });
+        if (!row) return res.status(404).json({ error: "PCB not found" });
+        
+        const boardName = row.board_number;
+        
+        // 2. Query existing reworks to find the next sequence
+        db.get("SELECT rework_name FROM reworks WHERE pcb_id = ? ORDER BY id DESC LIMIT 1", [pcb_id], (err, lastRework) => {
+            if (err) return res.status(500).json({ error: err.message });
+            
+            let sequence = 1;
+            if (lastRework && lastRework.rework_name) {
+                // Extract sequence from format XXX-XXX-R-###
+                const parts = lastRework.rework_name.split('-R-');
+                if (parts.length === 2 && !isNaN(parseInt(parts[1]))) {
+                    sequence = parseInt(parts[1]) + 1;
+                }
+            }
+            
+            const reworkName = `${boardName}-R-${String(sequence).padStart(3, '0')}`;
+            
+            // 3. Insert new rework
+            const query = "INSERT INTO reworks (pcb_id, rework_name, description, status) VALUES (?, ?, ?, ?)";
+            db.run(query, [pcb_id, reworkName, description, status || 'Completed'], function(err) {
+                if (err) return res.status(500).json({ error: err.message });
+                res.status(201).json({ id: this.lastID, pcb_id, rework_name: reworkName });
+            });
+        });
     });
 });
 
