@@ -91,7 +91,32 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                     </select>
                 </div>
                 <div className="form-group" style={{ marginBottom: '24px' }}>
-                    <label htmlFor="image" style={{ display: 'block', fontWeight: 600, marginBottom: '8px' }}>Attach Photo</label>
+                    <label style={{ display: 'block', fontWeight: 600, marginBottom: '8px' }}>Attach Photo Evidence</label>
+                    <label 
+                        htmlFor="image" 
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '12px',
+                            background: image ? 'rgba(34, 197, 94, 0.1)' : 'rgba(99, 102, 241, 0.1)',
+                            color: image ? '#22c55e' : 'var(--accent)',
+                            border: `2px dashed ${image ? '#22c55e' : 'var(--accent)'}`,
+                            padding: '20px',
+                            borderRadius: '12px',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            fontSize: '1.05rem',
+                            textAlign: 'center',
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+                            <circle cx="12" cy="13" r="3"></circle>
+                        </svg>
+                        {image ? 'Photo Attached (Tap to Retake)' : 'Open Camera & Take Photo'}
+                    </label>
                     <input 
                         type="file" 
                         id="image" 
@@ -102,14 +127,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                                 setImage(e.target.files[0]);
                             }
                         }} 
-                        style={{ 
-                            width: '100%', 
-                            padding: '12px', 
-                            background: 'var(--bg-panel)', 
-                            border: '1px solid var(--border)', 
-                            borderRadius: '8px', 
-                            color: 'var(--text)' 
-                        }}
+                        style={{ display: 'none' }}
                     />
                 </div>
                 <button type="submit" className="submit-button" disabled={loading}>
