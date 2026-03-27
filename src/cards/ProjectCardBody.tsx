@@ -8,6 +8,7 @@ interface ProjectCardBodyProps {
         id: number;
         name: string;
         description: string;
+        pcb_count: number;
         pcbs: string[];
         revisions: string[];
         formfactors?: { name: string; revisions: string[] }[];
@@ -23,6 +24,32 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
 
     return (
         <div className="card-expanded-content" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {/* Project Summary Row */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '8px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: '120px' }}>
+                    <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Silicon Versions</span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {project.revisions?.length > 0 ? project.revisions.map((rev, i) => (
+                            <span key={i} className="pcb-pill" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>{rev}</span>
+                        )) : <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>None defined</span>}
+                    </div>
+                </div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: '120px' }}>
+                    <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>PCB Flavors</span>
+                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {project.formfactors && project.formfactors.length > 0 ? project.formfactors.map((ff, i) => (
+                            <span key={i} className="pcb-pill" style={{ padding: '2px 8px' }}>{ff.name}</span>
+                        )) : <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>None assigned</span>}
+                    </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '80px', alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Total Count</span>
+                    <span style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--text)', lineHeight: '1', marginTop: '2px' }}>{project.pcb_count}</span>
+                </div>
+            </div>
+
             <button 
                 onClick={() => {
                     setSelectedProjects([project.id.toString()]);
