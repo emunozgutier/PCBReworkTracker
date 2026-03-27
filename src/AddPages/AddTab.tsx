@@ -52,13 +52,14 @@ export function AddTab({ onBack, onSuccess }: AddTabProps) {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="owner">Tag Owner (Optional)</label>
+                    <label htmlFor="owner">Tag Owner</label>
                     <select 
                         id="owner"
                         value={ownerId} 
                         onChange={(e) => setOwnerId(e.target.value)} 
+                        required
                     >
-                        <option value="">Unassigned</option>
+                        <option value="">Select an Owner...</option>
                         {owners.map(o => (
                             <option key={o.id} value={o.id}>{o.name}</option>
                         ))}

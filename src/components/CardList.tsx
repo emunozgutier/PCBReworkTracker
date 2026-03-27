@@ -296,7 +296,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                 </div>
             )}
 
-            <div className={`cards-grid ${['projects', 'pcbs', 'reworks'].includes(type) ? 'single-column' : ''}`}>
+            <div className={`cards-grid ${['projects', 'pcbs', 'reworks', 'tags'].includes(type) ? 'single-column' : ''}`}>
                 {items.length === 0 ? (
                     <div className="empty-state">No {type} found.</div>
                 ) : (
@@ -331,15 +331,38 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                                     </>
                                 )}
                                 {type === 'tags' && (
-                                    <div className="card-title" style={{ marginBottom: 0 }}>
-                                        <span className="board-num">{item.name}</span>
-                                        <div 
-                                            style={{ 
-                                                width: 16, height: 16, borderRadius: '50%', 
-                                                backgroundColor: item.color || '#818cf8' 
-                                            }} 
-                                        />
-                                    </div>
+                                    <>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 0 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                <div 
+                                                    style={{ 
+                                                        width: 14, height: 14, borderRadius: '4px', 
+                                                        backgroundColor: item.color || '#818cf8',
+                                                        boxShadow: `0 0 10px ${item.color || '#818cf8'}40`
+                                                    }} 
+                                                />
+                                                <span className="board-num" style={{ fontSize: '1rem' }}>
+                                                    {item.owner_name ? `${item.owner_name}-${item.name}` : `Unassigned-${item.name}`}
+                                                </span>
+                                            </div>
+                                            
+                                            <div style={{ 
+                                                backgroundColor: 'rgba(255, 255, 255, 0.05)', 
+                                                border: '1px solid rgba(255, 255, 255, 0.1)', 
+                                                padding: '4px 12px', 
+                                                borderRadius: '16px', 
+                                                display: 'flex', 
+                                                gap: '6px',
+                                                alignItems: 'center',
+                                                color: 'var(--text-muted)',
+                                                fontSize: '0.85rem'
+                                            }}>
+                                                <span style={{ fontWeight: 600, color: 'var(--text)' }}>PCBs</span>
+                                                <span style={{ opacity: 0.3 }}>|</span>
+                                                <span>{item.pcb_count || 0} Tagged</span>
+                                            </div>
+                                        </div>
+                                    </>
                                 )}
                             </div>
                         );

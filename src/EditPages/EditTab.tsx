@@ -3,6 +3,7 @@ import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE } from '../api';
 import { useTagStore } from '../store/storeTag';
+import { useOwnerStore } from '../store/storeOwner';
 
 interface EditTabProps {
     id: string | number;
@@ -13,9 +14,15 @@ interface EditTabProps {
 export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
     const [name, setName] = useState('');
     const [color, setColor] = useState('#818cf8');
+    const [ownerId, setOwnerId] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const { updateTag, deleteTag } = useTagStore();
+    const { owners, fetchOwners } = useOwnerStore();
     const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        if (owners.length === 0) fetchOwners();
+    }, [owners.length, fetchOwners]);
 
     useEffect(() => {
         fetch(`${API_BASE}/tags/${id}`)
@@ -24,6 +31,7 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
                 if (data) {
                     setName(data.name);
                     setColor(data.color || '#818cf8');
+                    setOwnerId(data.owner_id ? data.owner_id.toString() : '');
                 }
                 setLoading(false);
             })
@@ -36,7 +44,7 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        const success = await updateTag(id, { name, color });
+        const success = await updateTag(id, { name, color, owner_id: ownerId });
         if (success) onSuccess();
         setSaving(false);
     };
@@ -75,6 +83,20 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
                         onChange={(e) => setName(e.target.value)} 
                         required 
                     />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="owner">Tag Owner</label>
+                    <select 
+                        id="owner"
+                        value={ownerId} 
+                        onChange={(e) => setOwnerId(e.target.value)} 
+                        required
+                    >
+                        <option value="">Select an Owner...</option>
+                        {owners.map(o => (
+                            <option key={o.id} value={o.id}>{o.name}</option>
+                        ))}
+                    </select>
                 </div>
                 <div className="form-group">
                     <label>Choose Color</label>
