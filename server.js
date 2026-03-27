@@ -235,9 +235,13 @@ app.get('/api/reworks', (req, res) => {
     });
 });
 
-app.post('/api/reworks', upload.single('image'), (req, res) => {
+app.post('/api/reworks', upload.array('images', 3), (req, res) => {
     const { pcb_id, description, status } = req.body;
-    const image_path = req.file ? `/pictures/${req.file.filename}` : null;
+    let paths = [];
+    if (req.files && req.files.length > 0) {
+        paths = req.files.map(file => `/pictures/${file.filename}`);
+    }
+    const image_path = paths.length > 0 ? JSON.stringify(paths) : null;
     
     // 1. Get the PCB board_number
     db.get("SELECT board_number FROM pcbs WHERE id = ?", [pcb_id], (err, row) => {

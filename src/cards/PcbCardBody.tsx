@@ -59,12 +59,20 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                 {rework.description}
                             </div>
                             {rework.image_path && (
-                                <div style={{ marginBottom: '8px', cursor: 'pointer' }} onClick={() => window.open(`${API_BASE}${rework.image_path}`, '_blank')}>
-                                    <img 
-                                        src={`${API_BASE}${rework.image_path}`} 
-                                        alt="Rework attachment" 
-                                        style={{ maxWidth: '100%', maxHeight: '120px', borderRadius: '6px', border: '1px solid var(--border)', objectFit: 'contain', background: 'rgba(0,0,0,0.2)' }} 
-                                    />
+                                <div style={{ marginBottom: '8px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                    {(() => {
+                                        let paths = [];
+                                        try { paths = JSON.parse(rework.image_path); } catch(e) { paths = [rework.image_path]; }
+                                        return paths.map((p: string, i: number) => (
+                                            <div key={i} style={{ cursor: 'pointer' }} onClick={() => window.open(`${API_BASE}${p}`, '_blank')}>
+                                                <img 
+                                                    src={`${API_BASE}${p}`} 
+                                                    alt={`Rework attachment ${i+1}`} 
+                                                    style={{ maxWidth: '100%', height: '120px', borderRadius: '6px', border: '1px solid var(--border)', objectFit: 'cover', background: 'rgba(0,0,0,0.2)' }} 
+                                                />
+                                            </div>
+                                        ));
+                                    })()}
                                 </div>
                             )}
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>

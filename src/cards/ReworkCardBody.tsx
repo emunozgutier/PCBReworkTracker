@@ -20,13 +20,21 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
 
                     {rework.image_path && (
                         <div>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, display: 'block', marginBottom: '8px' }}>Attached Photo</span>
-                            <div style={{ cursor: 'zoom-in' }} onClick={() => window.open(`${API_BASE}${rework.image_path}`, '_blank')}>
-                                <img 
-                                    src={`${API_BASE}${rework.image_path}`} 
-                                    alt="Rework attachment" 
-                                    style={{ maxWidth: '100%', maxHeight: '250px', borderRadius: '8px', border: '1px solid var(--border)', objectFit: 'contain', background: 'rgba(0,0,0,0.2)' }} 
-                                />
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, display: 'block', marginBottom: '8px' }}>Attached Photos</span>
+                            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                                {(() => {
+                                    let paths = [];
+                                    try { paths = JSON.parse(rework.image_path); } catch(e) { paths = [rework.image_path]; }
+                                    return paths.map((p: string, i: number) => (
+                                        <div key={i} style={{ cursor: 'zoom-in' }} onClick={() => window.open(`${API_BASE}${p}`, '_blank')}>
+                                            <img 
+                                                src={`${API_BASE}${p}`} 
+                                                alt={`Rework attachment ${i+1}`} 
+                                                style={{ maxWidth: '100%', height: '200px', borderRadius: '8px', border: '1px solid var(--border)', objectFit: 'cover', background: 'rgba(0,0,0,0.2)' }} 
+                                            />
+                                        </div>
+                                    ));
+                                })()}
                             </div>
                         </div>
                     )}
