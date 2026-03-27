@@ -100,9 +100,9 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                     />
                 </div>
                 <div className="form-group">
-                    <label>PCB Formfactors & Revisions</label>
+                    <label>PCB Flavors & Revisions</label>
                     <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '-4px', marginBottom: '8px' }}>
-                        Define specific formfactors (e.g., Demo, Validation) and their allowed revisions.
+                        Define specific flavors (e.g., Demo, Validation) and their allowed revisions.
                     </p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {formfactors.map((ff, idx) => (
@@ -133,7 +133,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                     type="button" 
                                     onClick={() => setFormfactors(formfactors.filter((_, i) => i !== idx))}
                                     style={{ padding: '8px 12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '4px', cursor: 'pointer', color: '#ef4444' }}
-                                    title="Remove Formfactor"
+                                    title="Remove Flavor"
                                 >
                                     ✕
                                 </button>
@@ -145,7 +145,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                         onClick={() => setFormfactors([...formfactors, { name: '', revisions: '' }])} 
                         style={{ marginTop: '8px', padding: '6px 12px', background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-muted)' }}
                     >
-                        + Add Formfactor
+                        + Add Flavor
                     </button>
                 </div>
                 {error && <div className="error-message" style={{ color: '#ef4444', marginBottom: '1rem', padding: '0.5rem', backgroundColor: '#fee2e2', borderRadius: '4px' }}>{error}</div>}
