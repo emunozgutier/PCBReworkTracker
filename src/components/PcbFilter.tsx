@@ -48,7 +48,7 @@ export function PcbFilter() {
             </PcbFilterElement>
 
             {/* (2) Silicon Revisions Box */}
-            <PcbFilterElement title="Silicon Revisions" value={selectedRevisions} onChange={setSelectedRevisions}>
+            <PcbFilterElement title="Silicon Revisions" value={selectedRevisions} onChange={setSelectedRevisions} width="160px">
                 {(() => {
                     const activeProjects = selectedProjects.length > 0 
                         ? projects.filter(p => selectedProjects.includes(p.id.toString()))
@@ -75,7 +75,7 @@ export function PcbFilter() {
             </PcbFilterElement>
 
             {/* (3) PCB Flavors Box */}
-            <PcbFilterElement title="PCB Flavors" value={selectedFlavors} onChange={setSelectedFlavors}>
+            <PcbFilterElement title="PCB Flavors" value={selectedFlavors} onChange={setSelectedFlavors} width="180px">
                 {(() => {
                     const activeProjects = selectedProjects.length > 0 
                         ? projects.filter(p => selectedProjects.includes(p.id.toString()))
@@ -102,7 +102,7 @@ export function PcbFilter() {
             </PcbFilterElement>
 
             {/* (4) PCB Revs Box */}
-            <PcbFilterElement title="PCB Revs" value={selectedPcbRevs} onChange={setSelectedPcbRevs}>
+            <PcbFilterElement title="PCB Revs" value={selectedPcbRevs} onChange={setSelectedPcbRevs} width="120px">
                 {(() => {
                     const allPcbRevs = new Set<string>();
                     pcbs.forEach(pcb => {
@@ -135,7 +135,7 @@ export function PcbFilter() {
             </PcbFilterElement>
 
             {/* (5) Tags Box */}
-            <PcbFilterElement title="Tags" value={selectedTags} onChange={setSelectedTags}>
+            <PcbFilterElement title="Tags" value={selectedTags} onChange={setSelectedTags} width="240px">
                 {tags.map(tag => {
                     const count = pcbs.filter(pcb => 
                         (pcb.tag_ids && pcb.tag_ids.includes(tag.id)) &&
@@ -151,7 +151,7 @@ export function PcbFilter() {
             </PcbFilterElement>
 
             {/* (6) Owner Box */}
-            <PcbFilterElement title="Owner" value={selectedOwners} onChange={setSelectedOwners}>
+            <PcbFilterElement title="Owner" value={selectedOwners} onChange={setSelectedOwners} width="180px">
                 {owners.map(owner => {
                     const count = pcbs.filter(pcb => 
                         pcb.owner === owner.name &&
