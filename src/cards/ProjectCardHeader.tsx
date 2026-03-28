@@ -19,21 +19,10 @@ export function ProjectCardHeader({ project, isExpanded, onToggle, onEdit }: Pro
         <div 
             className="card-header-main" 
             onClick={onToggle}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}
+            style={{ display: 'flex', flexDirection: 'column', padding: '12px 16px', gap: '12px' }}
         >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                <button 
-                    className="edit-button" 
-                    onClick={(e) => { e.stopPropagation(); onEdit(project.id); }}
-                    style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
-                >
-                    <Edit2 size={16} />
-                </button>
-                <span className="board-num" style={{ margin: 0 }}>{project.project_key} - {project.name}</span>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', fontSize: '0.85rem', marginRight: '8px', gap: '8px' }}>
+            {isExpanded && (
+                <div style={{ display: 'flex', alignItems: 'center', fontSize: '0.85rem', gap: '8px', flexWrap: 'wrap' }}>
                     <span style={{ 
                         backgroundColor: 'rgba(255, 255, 255, 0.06)', 
                         border: '1px solid rgba(255, 255, 255, 0.12)', 
@@ -60,7 +49,20 @@ export function ProjectCardHeader({ project, isExpanded, onToggle, onEdit }: Pro
                         <span>{project.pcb_count} Count</span>
                     </span>
                 </div>
-                <div className="expand-indicator" style={{ display: 'flex' }}>
+            )}
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                    <button 
+                        className="edit-button" 
+                        onClick={(e) => { e.stopPropagation(); onEdit(project.id); }}
+                        style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
+                    >
+                        <Edit2 size={16} />
+                    </button>
+                    <span className="board-num" style={{ margin: 0 }}>{project.project_key} - {project.name}</span>
+                </div>
+                <div className="expand-indicator" style={{ display: 'flex', position: 'static', transform: 'none' }}>
                     {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                 </div>
             </div>

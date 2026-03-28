@@ -21,25 +21,14 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, onEdit }: Rewor
         <div 
             className="card-header-main" 
             onClick={onToggle}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', gap: '16px' }}
+            style={{ display: 'flex', flexDirection: 'column', padding: '12px 16px', gap: '10px' }}
         >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                <button 
-                    className="edit-button" 
-                    onClick={(e) => { e.stopPropagation(); onEdit(rework.id); }}
-                    style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
-                    title="Edit Rework"
-                >
-                    <Edit2 size={16} />
-                </button>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', minWidth: 0 }}>
-                    <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap', color: 'var(--accent)' }}>
-                        {rework.title ? `${rework.title} (${rework.rework_name})` : (rework.rework_name || `Rework #${rework.id}`)}
-                    </span>
+            {isExpanded && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         PCB: {rework.pcb_board_number}
                     </span>
-                    <span style={{ fontSize: '0.8rem', background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: '12px', color: 'var(--text)', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: '0.8rem', background: 'var(--card-bg)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: '12px', color: 'var(--text)', whiteSpace: 'nowrap' }}>
                         🧑‍🔧 {rework.owner_name ? rework.owner_name : 'Unassigned'}
                     </span>
                     {imagePaths.length > 0 && (
@@ -53,10 +42,24 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, onEdit }: Rewor
                         </span>
                     )}
                 </div>
-            </div>
+            )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-                <div className="expand-indicator" style={{ display: 'flex', position: 'static', transform: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                    <button 
+                        className="edit-button" 
+                        onClick={(e) => { e.stopPropagation(); onEdit(rework.id); }}
+                        style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
+                        title="Edit Rework"
+                    >
+                        <Edit2 size={16} />
+                    </button>
+                    <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap', color: 'var(--accent)' }}>
+                        {rework.title ? `${rework.title} (${rework.rework_name})` : (rework.rework_name || `Rework #${rework.id}`)}
+                    </span>
+                </div>
+
+                <div className="expand-indicator" style={{ display: 'flex', position: 'static', transform: 'none', flexShrink: 0 }}>
                     {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                 </div>
             </div>
