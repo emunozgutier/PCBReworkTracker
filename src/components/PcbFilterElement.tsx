@@ -10,8 +10,18 @@ interface PcbFilterElementProps {
 
 export function PcbFilterElement({ title, value, onChange, width = '110px', children }: PcbFilterElementProps) {
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>{title}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: width }}>
+            <span style={{ 
+                fontSize: '0.85rem', 
+                fontWeight: 600, 
+                color: 'var(--text-muted)',
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
+                minHeight: '2.4em',
+                lineHeight: 1.2
+            }}>
+                {title}
+            </span>
             <select 
                 multiple 
                 value={value}
@@ -20,7 +30,7 @@ export function PcbFilterElement({ title, value, onChange, width = '110px', chil
                     onChange(selected);
                 }}
                 style={{ 
-                    width: width, 
+                    width: '100%', 
                     height: '140px', 
                     padding: '6px', 
                     borderRadius: '4px', 
