@@ -8,6 +8,7 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  base: '/PCBReworkTracker/',
   define: {
     __LOCAL_IP__: JSON.stringify('192.168.1.152'),
     __PORT__: 5001

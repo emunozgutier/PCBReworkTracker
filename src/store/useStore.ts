@@ -30,9 +30,21 @@ interface NavigationState {
     setQrModalBoard: (board: string | null) => void;
 }
 
+const getNormalizedPath = () => {
+    if (typeof window === 'undefined') return '/';
+    let path = window.location.pathname;
+    let base = import.meta.env.BASE_URL || '/';
+    if (base.endsWith('/')) base = base.slice(0, -1);
+    if (path.startsWith(base)) {
+        path = path.slice(base.length);
+    }
+    if (!path.startsWith('/')) path = '/' + path;
+    return path;
+};
+
 const getInitialExpandedPcb = (): string | null => {
     if (typeof window === 'undefined') return null;
-    const rawPath = window.location.pathname;
+    const rawPath = getNormalizedPath();
     if (rawPath.startsWith('/pcbs/') && !rawPath.startsWith('/pcbs_')) {
         let board = decodeURIComponent(rawPath.replace('/pcbs/', ''));
         if (board.endsWith('/view')) {
@@ -45,12 +57,12 @@ const getInitialExpandedPcb = (): string | null => {
 
 const getInitialIsolatedView = (): boolean => {
     if (typeof window === 'undefined') return false;
-    return window.location.pathname.endsWith('/view');
+    return getNormalizedPath().endsWith('/view');
 };
 
 const getInitialExpandedProject = (): string | null => {
     if (typeof window === 'undefined') return null;
-    const rawPath = window.location.pathname;
+    const rawPath = getNormalizedPath();
     if (rawPath.startsWith('/projects/')) {
         return decodeURIComponent(rawPath.replace('/projects/', ''));
     }
@@ -59,7 +71,7 @@ const getInitialExpandedProject = (): string | null => {
 
 const getInitialPage = (): Page => {
     if (typeof window === 'undefined') return 'projects';
-    const rawPath = window.location.pathname;
+    const rawPath = getNormalizedPath();
     if (rawPath.startsWith('/projects/')) return 'projects';
     if (rawPath.startsWith('/pcbs/') && !rawPath.startsWith('/pcbs_')) return 'pcbs';
     const path = rawPath.replace('/', '') || 'projects';
@@ -85,10 +97,12 @@ export const useStore = create<NavigationState>((set) => ({
     
     setExpandedProject: (name) => {
         if (typeof window !== 'undefined') {
+            let base = import.meta.env.BASE_URL || '/';
+            if (base.endsWith('/')) base = base.slice(0, -1);
             if (name) {
-                window.history.pushState({}, '', `/projects/${encodeURIComponent(name)}`);
+                window.history.pushState({}, '', `${base}/projects/${encodeURIComponent(name)}`);
             } else {
-                window.history.pushState({}, '', `/projects`);
+                window.history.pushState({}, '', `${base}/projects`);
             }
         }
         set({ expandedProject: name });
@@ -96,11 +110,13 @@ export const useStore = create<NavigationState>((set) => ({
 
     setExpandedPcb: (name) => {
         if (typeof window !== 'undefined') {
+            let base = import.meta.env.BASE_URL || '/';
+            if (base.endsWith('/')) base = base.slice(0, -1);
             if (name) {
                 const isolated = useStore.getState().isolatedView;
-                window.history.pushState({}, '', `/pcbs/${encodeURIComponent(name)}${isolated ? '/view' : ''}`);
+                window.history.pushState({}, '', `${base}/pcbs/${encodeURIComponent(name)}${isolated ? '/view' : ''}`);
             } else {
-                window.history.pushState({}, '', `/pcbs`);
+                window.history.pushState({}, '', `${base}/pcbs`);
             }
         }
         set({ expandedPcb: name });
@@ -110,7 +126,9 @@ export const useStore = create<NavigationState>((set) => ({
 
     setActiveTab: (tab) => {
         if (typeof window !== 'undefined') {
-            window.history.pushState({}, '', `/${tab}`);
+            let base = import.meta.env.BASE_URL || '/';
+            if (base.endsWith('/')) base = base.slice(0, -1);
+            window.history.pushState({}, '', `${base}/${tab}`);
         }
         set({ 
             activeTab: tab, 
@@ -129,7 +147,9 @@ export const useStore = create<NavigationState>((set) => ({
     addItem: (page, prefillId) => {
         const baseTab = page.split('_')[0];
         if (typeof window !== 'undefined' && useStore.getState().activeTab !== baseTab) {
-            window.history.pushState({}, '', `/${baseTab}`);
+            let base = import.meta.env.BASE_URL || '/';
+            if (base.endsWith('/')) base = base.slice(0, -1);
+            window.history.pushState({}, '', `${base}/${baseTab}`);
             set({ 
                 activeTab: baseTab,
                 page, 
@@ -161,7 +181,7 @@ if (typeof window !== 'undefined') {
     });
 
     window.addEventListener('popstate', () => {
-        const rawPath = window.location.pathname;
+        const rawPath = getNormalizedPath();
         if (rawPath.startsWith('/projects/')) {
             useStore.setState({
                 activeTab: 'projects',
