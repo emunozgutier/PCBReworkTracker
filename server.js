@@ -354,6 +354,38 @@ app.get('/api/pcbs/:id', (req, res) => {
     });
 });
 
+// PCB Tags Association API
+app.get('/api/pcbs/:id/tags', (req, res) => {
+    const query = `
+        SELECT tags.*, owners.username as owner_username, owners.name as owner_name 
+        FROM tags 
+        JOIN pcb_tags ON tags.id = pcb_tags.tag_id 
+        LEFT JOIN owners ON tags.owner_id = owners.id
+        WHERE pcb_tags.pcb_id = ?
+    `;
+    db.all(query, [req.params.id], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+app.post('/api/pcbs/:id/tags', express.json(), (req, res) => {
+    const pcbId = req.params.id;
+    const tagId = req.body.tag_id;
+    if (!tagId) return res.status(400).json({ error: 'tag_id is required' });
+    db.run("INSERT OR IGNORE INTO pcb_tags (pcb_id, tag_id) VALUES (?, ?)", [pcbId, tagId], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, changes: this.changes });
+    });
+});
+
+app.delete('/api/pcbs/:id/tags/:tag_id', (req, res) => {
+    db.run("DELETE FROM pcb_tags WHERE pcb_id = ? AND tag_id = ?", [req.params.id, req.params.tag_id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ deleted: this.changes });
+    });
+});
+
 app.put('/api/pcbs/:id', (req, res) => {
     const { board_number, status, product_name_and_rev, project_id, owner_id } = req.body;
     const query = "UPDATE pcbs SET board_number = ?, status = ?, product_name_and_rev = ?, project_id = ?, owner_id = ? WHERE id = ?";
