@@ -5,6 +5,9 @@ export interface Owner {
     id: number;
     name: string;
     username: string;
+    pcb_count?: number;
+    rework_count?: number;
+    tag_count?: number;
 }
 
 interface OwnerState {

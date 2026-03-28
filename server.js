@@ -191,7 +191,14 @@ app.post('/api/pcbs', (req, res) => {
 
 // Owners API
 app.get('/api/owners', (req, res) => {
-    db.all("SELECT * FROM owners", [], (err, rows) => {
+    const query = `
+        SELECT owners.*,
+            (SELECT COUNT(*) FROM pcbs WHERE pcbs.owner_id = owners.id) AS pcb_count,
+            (SELECT COUNT(*) FROM reworks WHERE reworks.owner_id = owners.id) AS rework_count,
+            (SELECT COUNT(*) FROM tags WHERE tags.owner_id = owners.id) AS tag_count
+        FROM owners
+    `;
+    db.all(query, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });

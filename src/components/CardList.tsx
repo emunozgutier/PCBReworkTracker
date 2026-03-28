@@ -328,6 +328,17 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                                         <div className="card-details">
                                             <p>{item.username ? `@${item.username}` : 'No username'}</p>
                                         </div>
+                                        <div className="pcb-mini-list" style={{ marginTop: '12px' }}>
+                                            <span className="pcb-pill" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>
+                                                {item.pcb_count || 0} PCBs
+                                            </span>
+                                            <span className="pcb-pill" style={{ borderColor: '#f43f5e', color: '#f43f5e' }}>
+                                                {item.rework_count || 0} Reworks
+                                            </span>
+                                            <span className="pcb-pill" style={{ borderColor: '#10b981', color: '#10b981' }}>
+                                                {item.tag_count || 0} Tags
+                                            </span>
+                                        </div>
                                     </>
                                 )}
                                 {type === 'tags' && (
