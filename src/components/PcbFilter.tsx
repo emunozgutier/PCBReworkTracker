@@ -76,7 +76,7 @@ export function PcbFilter() {
                         setSelectedRevisions(selected);
                     }}
                     style={{ 
-                        width: '220px', 
+                        width: '110px', 
                         height: '140px', 
                         padding: '6px', 
                         borderRadius: '4px', 
@@ -123,7 +123,7 @@ export function PcbFilter() {
                         setSelectedFlavors(selected);
                     }}
                     style={{ 
-                        width: '220px', 
+                        width: '110px', 
                         height: '140px', 
                         padding: '6px', 
                         borderRadius: '4px', 
@@ -170,7 +170,7 @@ export function PcbFilter() {
                         setSelectedCorners(selected);
                     }}
                     style={{ 
-                        width: '220px', 
+                        width: '110px', 
                         height: '140px', 
                         padding: '6px', 
                         borderRadius: '4px', 
@@ -218,7 +218,7 @@ export function PcbFilter() {
                         setSelectedPcbRevs(selected);
                     }}
                     style={{ 
-                        width: '220px', 
+                        width: '110px', 
                         height: '140px', 
                         padding: '6px', 
                         borderRadius: '4px', 
