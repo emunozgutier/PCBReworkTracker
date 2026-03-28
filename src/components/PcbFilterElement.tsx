@@ -44,6 +44,23 @@ export function PcbFilterElement({ title, value, onChange, width = '110px', chil
             >
                 {children}
             </select>
+            {value && value.length > 0 && (
+                <button 
+                    onClick={() => onChange([])}
+                    style={{ 
+                        background: 'none', 
+                        border: 'none', 
+                        color: 'var(--accent)', 
+                        fontSize: '0.75rem', 
+                        cursor: 'pointer',
+                        padding: '2px 0 0 0',
+                        alignSelf: 'flex-start',
+                        fontWeight: 500
+                    }}
+                >
+                    Clear
+                </button>
+            )}
         </div>
     );
 }

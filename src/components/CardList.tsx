@@ -74,6 +74,12 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
             if (selectedRevisions.length > 0) {
                 items = items.filter(pcb => selectedRevisions.some(rev => pcb.product && pcb.product.includes(rev)));
             }
+            if (selectedCorners.length > 0) {
+                items = items.filter(pcb => {
+                    const projectData = projects.find(p => p.name === pcb.project);
+                    return projectData && projectData.silicon_corners && selectedCorners.some(corner => projectData.silicon_corners?.includes(corner));
+                });
+            }
             if (selectedFlavors.length > 0) {
                 items = items.filter(pcb => selectedFlavors.some(ff => pcb.product && pcb.product.includes(ff)));
             }
