@@ -398,9 +398,17 @@ app.put('/api/owners/:id', (req, res) => {
 });
 
 app.delete('/api/owners/:id', (req, res) => {
-    db.run("DELETE FROM owners WHERE id = ?", [req.params.id], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ deleted: this.changes });
+    const ownerId = req.params.id;
+    // Automatically detach the owner from all dependencies to bypass Foreign Key constraint restrictions safely
+    db.serialize(() => {
+        db.run("UPDATE pcbs SET owner_id = NULL WHERE owner_id = ?", [ownerId]);
+        db.run("UPDATE reworks SET owner_id = NULL WHERE owner_id = ?", [ownerId]);
+        db.run("UPDATE tags SET owner_id = NULL WHERE owner_id = ?", [ownerId]);
+
+        db.run("DELETE FROM owners WHERE id = ?", [ownerId], function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ deleted: this.changes });
+        });
     });
 });
 
