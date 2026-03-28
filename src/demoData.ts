@@ -6,6 +6,17 @@ import type { Tag } from './store/storeTag';
 
 export const demoProjects: Project[] = [
     {
+        id: 4,
+        name: 'Io',
+        description: 'Jupiter Moon Project',
+        pcb_count: 1,
+        pcbs: ['IO-001'],
+        revisions: ['A0'],
+        project_key: 'IO',
+        formfactors: [],
+        silicon_corners: 'TT'
+    },
+    {
         id: 1,
         name: 'Titan',
         description: 'Saturn Moon Project',
@@ -37,17 +48,6 @@ export const demoProjects: Project[] = [
         project_key: 'ARI',
         formfactors: [],
         silicon_corners: 'TT, SS, FF'
-    },
-    {
-        id: 4,
-        name: 'Io',
-        description: 'Jupiter Moon Project',
-        pcb_count: 1,
-        pcbs: ['IO-001'],
-        revisions: ['A0'],
-        project_key: 'IO',
-        formfactors: [],
-        silicon_corners: 'TT'
     },
     {
         id: 5,
@@ -85,10 +85,10 @@ export const demoProjects: Project[] = [
 ];
 
 export const demoPcbs: Pcb[] = [
+    { id: 4, board_number: 'IO-001', status: 'Working', project: 'Io', owner: 'Bob', product: 'Io - Rev A0' },
     { id: 1, board_number: 'TIT-001', status: 'Working', project: 'Titan', owner: 'Alice', product: 'Titan - Rev A0' },
     { id: 2, board_number: 'TIT-002', status: 'In Rework', project: 'Titan', owner: 'Bob', product: 'Titan - Rev B0' },
-    { id: 3, board_number: 'ATL-001', status: 'Dead', project: 'Atlas', owner: 'Alice', product: 'Atlas - Rev A0' },
-    { id: 4, board_number: 'IO-001', status: 'Working', project: 'Io', owner: 'Bob', product: 'Io - Rev A0' }
+    { id: 3, board_number: 'ATL-001', status: 'Dead', project: 'Atlas', owner: 'Alice', product: 'Atlas - Rev A0' }
 ];
 
 export const demoOwners: Owner[] = [
