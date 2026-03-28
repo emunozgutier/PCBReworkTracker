@@ -96,7 +96,7 @@ const initDb = () => {
         });
 
         // PCBs Table
-        db.run(`CREATE TABLE IF NOT EXISTS pcbs_new (
+        db.run(`CREATE TABLE IF NOT EXISTS pcbs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             board_number TEXT NOT NULL,
             status TEXT DEFAULT 'In Progress',
@@ -107,24 +107,7 @@ const initDb = () => {
             FOREIGN KEY (owner_id) REFERENCES owners (id)
         )`, (err) => {
             if (!err) {
-                // Migration: migrate old data if old table exists
-                db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='pcbs'", (err, row) => {
-                    if (row) {
-                        try {
-                            db.run("INSERT OR IGNORE INTO pcbs_new SELECT * FROM pcbs", () => {
-                                db.run("DROP TABLE pcbs", () => {
-                                    db.run("ALTER TABLE pcbs_new RENAME TO pcbs", () => {
-                                        db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_pcbs_project_board_nocase ON pcbs(project_id, board_number COLLATE NOCASE)`);
-                                    });
-                                });
-                            });
-                        } catch (e) {}
-                    } else {
-                        db.run("ALTER TABLE pcbs_new RENAME TO pcbs", () => {
-                            db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_pcbs_project_board_nocase ON pcbs(project_id, board_number COLLATE NOCASE)`);
-                        });
-                    }
-                });
+                db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_pcbs_project_board_nocase ON pcbs(project_id, board_number COLLATE NOCASE)`);
             }
         });
 
