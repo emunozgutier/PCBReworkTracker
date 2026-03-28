@@ -7,9 +7,26 @@ export function NetworkQRCode() {
     const [qrDataUrl, setQrDataUrl] = useState<string>('');
     const { qrModalBoard, setQrModalBoard } = useStore();
     
-    const localIp = typeof __LOCAL_IP__ !== 'undefined' ? __LOCAL_IP__ : window.location.hostname;
-    const port = typeof __PORT__ !== 'undefined' ? __PORT__ : window.location.port;
-    const url = qrModalBoard ? `http://${localIp}:${port}/pcbs/${qrModalBoard}` : '';
+    let url = '';
+    let displayDomain = '';
+    let displayPath = '';
+
+    if (qrModalBoard) {
+        if (typeof window !== 'undefined' && window.location.hostname.includes('github.io')) {
+            const base = import.meta.env.BASE_URL || '/';
+            const cleanBase = base.endsWith('/') ? base : base + '/';
+            displayDomain = window.location.origin;
+            displayPath = `/${cleanBase}pcbs/${encodeURIComponent(qrModalBoard)}/view`.replace(/\/\//g, '/');
+            url = displayDomain + displayPath;
+        } else {
+            const localIp = typeof __LOCAL_IP__ !== 'undefined' ? __LOCAL_IP__ : window.location.hostname;
+            const port = typeof __PORT__ !== 'undefined' ? __PORT__ : window.location.port;
+            const portSuffix = port ? `:${port}` : '';
+            displayDomain = `http://${localIp}${portSuffix}`;
+            displayPath = `/pcbs/${encodeURIComponent(qrModalBoard)}/view`;
+            url = displayDomain + displayPath;
+        }
+    }
 
     useEffect(() => {
         if (!url) return;
@@ -107,8 +124,8 @@ export function NetworkQRCode() {
                         borderRadius: '6px',
                         lineHeight: '1.4'
                     }}>
-                        <div style={{ wordBreak: 'break-all' }}>http://{localIp}:{port}</div>
-                        <div style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '2px' }}>/pcbs/{qrModalBoard}</div>
+                        <div style={{ wordBreak: 'break-all' }}>{displayDomain}</div>
+                        <div style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '2px' }}>{displayPath}</div>
                     </code>
                 </div>
             </div>
