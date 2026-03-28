@@ -10,7 +10,7 @@ interface PcbFilterElementProps {
 
 export function PcbFilterElement({ title, value, onChange, width = '110px', children }: PcbFilterElementProps) {
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: width }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: width, minWidth: width, flexShrink: 0 }}>
             <span style={{ 
                 fontSize: '0.85rem', 
                 fontWeight: 600, 
