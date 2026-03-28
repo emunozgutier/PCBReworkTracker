@@ -67,7 +67,7 @@ export function PictureCard({ images, title, onClose }: PictureCardProps) {
             {/* Modal Card */}
             <div 
                 style={{
-                    backgroundColor: 'var(--bg-panel)',
+                    backgroundColor: 'var(--bg)',
                     borderRadius: '16px',
                     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
                     width: '100%',
@@ -75,14 +75,14 @@ export function PictureCard({ images, title, onClose }: PictureCardProps) {
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
-                    border: '1px solid var(--border-color)'
+                    border: '1px solid var(--border)'
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderBottom: '1px solid var(--border)', backgroundColor: 'var(--card-bg)' }}>
                     <h3 style={{ margin: 0, color: 'var(--text)', fontSize: '1.2rem', fontWeight: 600 }}>{title} Evidence</h3>
-                    <button onClick={onClose} style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    <button onClick={onClose} style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                         <X size={18} />
                     </button>
                 </div>
@@ -93,7 +93,7 @@ export function PictureCard({ images, title, onClose }: PictureCardProps) {
                     {images.length > 1 && (
                         <button 
                             onClick={handlePrev} 
-                            style={{ position: 'absolute', left: '24px', top: '50%', transform: 'translateY(-50%)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text)', borderRadius: '50%', padding: '10px', cursor: 'pointer', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            style={{ position: 'absolute', left: '24px', top: '50%', transform: 'translateY(-50%)', background: 'var(--card-bg)', border: '1px solid var(--border)', color: 'var(--text)', borderRadius: '50%', padding: '10px', cursor: 'pointer', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                             title="Previous Image"
                         >
                             <ChevronLeft size={24} />
@@ -112,7 +112,7 @@ export function PictureCard({ images, title, onClose }: PictureCardProps) {
                         <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '3px' }}>
                             REWORK
                         </div>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: '12px', wordBreak: 'break-all', padding: '8px 12px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: '12px', wordBreak: 'break-all', padding: '8px 12px', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '8px' }}>
                             {images[currentIndex]}
                         </div>
                     </div>
@@ -120,7 +120,7 @@ export function PictureCard({ images, title, onClose }: PictureCardProps) {
                     {images.length > 1 && (
                         <button 
                             onClick={handleNext} 
-                            style={{ position: 'absolute', right: '24px', top: '50%', transform: 'translateY(-50%)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text)', borderRadius: '50%', padding: '10px', cursor: 'pointer', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            style={{ position: 'absolute', right: '24px', top: '50%', transform: 'translateY(-50%)', background: 'var(--card-bg)', border: '1px solid var(--border)', color: 'var(--text)', borderRadius: '50%', padding: '10px', cursor: 'pointer', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                             title="Next Image"
                         >
                             <ChevronRight size={24} />
@@ -130,7 +130,7 @@ export function PictureCard({ images, title, onClose }: PictureCardProps) {
 
                 {/* Thumbnails Footer */}
                 {images.length > 1 && (
-                    <div style={{ padding: '16px 24px', display: 'flex', justifyContent: 'center', gap: '16px', background: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
+                    <div style={{ padding: '16px 24px', display: 'flex', justifyContent: 'center', gap: '16px', background: 'var(--card-bg)', borderTop: '1px solid var(--border)' }}>
                         {images.map((img, idx) => (
                             <div
                                 key={idx}
@@ -157,7 +157,7 @@ export function PictureCard({ images, title, onClose }: PictureCardProps) {
                                         }}
                                     />
                                 ) : (
-                                    <div style={{ width: '54px', height: '54px', background: 'var(--bg-panel)', borderRadius: '8px', border: '1px solid var(--border-color)' }} />
+                                    <div style={{ width: '54px', height: '54px', background: 'var(--bg)', borderRadius: '8px', border: '1px solid var(--border)' }} />
                                 )}
                             </div>
                         ))}
