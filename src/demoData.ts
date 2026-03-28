@@ -13,7 +13,9 @@ export const demoProjects: Project[] = [
         pcbs: ['IO-001'],
         revisions: ['A0'],
         project_key: 'IO',
-        formfactors: [],
+        formfactors: [
+            { name: 'Validation', revisions: ['1.0', '1.1', '2.0'] }
+        ],
         silicon_corners: 'TT'
     },
     {
@@ -24,7 +26,11 @@ export const demoProjects: Project[] = [
         pcbs: ['TIT-001', 'TIT-002', 'TIT-003', 'TIT-004', 'TIT-005'],
         revisions: ['A0', 'B0', 'A1', 'C0'],
         project_key: 'TIT',
-        formfactors: [{ name: 'ATX', revisions: ['A0'] }],
+        formfactors: [
+            { name: 'Validation', revisions: ['1.0', '1.1', '2.0'] },
+            { name: 'Demo', revisions: ['1.0', '1.1', '2.0'] },
+            { name: 'Chamber', revisions: ['1.0', '1.1', '2.0'] }
+        ],
         silicon_corners: 'TT, SS, FF'
     },
     {
@@ -35,7 +41,11 @@ export const demoProjects: Project[] = [
         pcbs: ['ATL-001', 'ATL-002'],
         revisions: ['A0', 'B0', 'B1'],
         project_key: 'ATL',
-        formfactors: [],
+        formfactors: [
+            { name: 'Validation', revisions: ['1.0', '1.1', '2.0'] },
+            { name: 'Demo', revisions: ['1.0', '1.1', '2.0'] },
+            { name: 'Chamber', revisions: ['1.0', '1.1', '2.0'] }
+        ],
         silicon_corners: 'TT, SS, FF'
     },
     {
@@ -46,7 +56,11 @@ export const demoProjects: Project[] = [
         pcbs: ['ARI-001', 'ARI-002', 'ARI-003'],
         revisions: ['A0', 'B0', 'C0'],
         project_key: 'ARI',
-        formfactors: [],
+        formfactors: [
+            { name: 'Validation', revisions: ['1.0', '1.1', '2.0'] },
+            { name: 'Demo', revisions: ['1.0', '1.1', '2.0'] },
+            { name: 'Chamber', revisions: ['1.0', '1.1', '2.0'] }
+        ],
         silicon_corners: 'TT, SS, FF'
     },
     {
@@ -57,7 +71,11 @@ export const demoProjects: Project[] = [
         pcbs: ['LED-001', 'LED-002'],
         revisions: ['A0', 'B0', 'A1'],
         project_key: 'LED',
-        formfactors: [],
+        formfactors: [
+            { name: 'Validation', revisions: ['1.0', '1.1', '2.0'] },
+            { name: 'Demo', revisions: ['1.0', '1.1', '2.0'] },
+            { name: 'Chamber', revisions: ['1.0', '1.1', '2.0'] }
+        ],
         silicon_corners: 'TT, SS, FF'
     },
     {
@@ -68,7 +86,11 @@ export const demoProjects: Project[] = [
         pcbs: ['PAN-001', 'PAN-002'],
         revisions: ['A0', 'B0', 'B1', 'C0'],
         project_key: 'PAN',
-        formfactors: [],
+        formfactors: [
+            { name: 'Validation', revisions: ['1.0', '1.1', '2.0'] },
+            { name: 'Demo', revisions: ['1.0', '1.1', '2.0'] },
+            { name: 'Chamber', revisions: ['1.0', '1.1', '2.0'] }
+        ],
         silicon_corners: 'TT, SS, FF'
     },
     {
@@ -79,7 +101,11 @@ export const demoProjects: Project[] = [
         pcbs: ['MIR-001', 'MIR-002'],
         revisions: ['A0', 'B0', 'A1', 'B1'],
         project_key: 'MIR',
-        formfactors: [],
+        formfactors: [
+            { name: 'Validation', revisions: ['1.0', '1.1', '2.0'] },
+            { name: 'Demo', revisions: ['1.0', '1.1', '2.0'] },
+            { name: 'Chamber', revisions: ['1.0', '1.1', '2.0'] }
+        ],
         silicon_corners: 'TT, SS, FF'
     }
 ];
@@ -94,6 +120,11 @@ export const demoPcbs: Pcb[] = [
 export const demoOwners: Owner[] = [
     { id: 1, name: 'Alice Smith', username: 'asmith', pcb_count: 2, rework_count: 5, tag_count: 1 },
     { id: 2, name: 'Bob Jones', username: 'bjones', pcb_count: 1, rework_count: 2, tag_count: 0 },
+    { id: 3, name: 'Charlie Brown', username: 'cbrown', pcb_count: 0, rework_count: 1, tag_count: 2 },
+    { id: 4, name: 'Diana Prince', username: 'dprince', pcb_count: 4, rework_count: 0, tag_count: 0 },
+    { id: 5, name: 'Ethan Hunt', username: 'ehunt', pcb_count: 1, rework_count: 3, tag_count: 1 },
+    { id: 6, name: 'Fiona Gallagher', username: 'fgallagher', pcb_count: 0, rework_count: 0, tag_count: 0 },
+    { id: 7, name: 'George Costanza', username: 'gcostanza', pcb_count: 2, rework_count: 1, tag_count: 1 },
 ];
 
 export const demoReworks: Rework[] = [
@@ -101,6 +132,8 @@ export const demoReworks: Rework[] = [
 ];
 
 export const demoTags: Tag[] = [
-    { id: 1, name: 'High Priority', color: '#ff0000', owner_id: null, pcb_count: 1 },
-    { id: 2, name: 'Needs Testing', color: '#ffaa00', owner_id: null, pcb_count: 2 },
+    { id: 1, name: 'Team Alpha', color: '#3b82f6', owner_id: 1, pcb_count: 0 },
+    { id: 2, name: 'Team Beta', color: '#8b5cf6', owner_id: 2, pcb_count: 0 },
+    { id: 3, name: 'Broken', color: '#ef4444', owner_id: 1, pcb_count: 0 },
+    { id: 4, name: 'Silicon Not Installed', color: '#f59e0b', owner_id: 2, pcb_count: 0 },
 ];

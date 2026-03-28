@@ -123,7 +123,13 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
     }
     
     if (localPath.startsWith('/tags')) {
-        if (method === 'GET') return createResponse(internalTags);
+        if (method === 'GET') {
+            const tagsWithOwners = internalTags.map(tag => {
+                const owner = internalOwners.find(o => o.id === tag.owner_id);
+                return owner ? { ...tag, owner_name: owner.name, owner_username: owner.username } : tag;
+            });
+            return createResponse(tagsWithOwners);
+        }
         if (method === 'POST') {
             const newTag = { id: Date.now(), ...body, pcb_count: 0 };
             internalTags.push(newTag);
