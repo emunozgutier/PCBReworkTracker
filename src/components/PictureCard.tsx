@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { API_BASE } from '../api';
+import QRCode from 'qrcode';
 
 interface PictureCardProps {
     images: string[];
@@ -10,12 +10,31 @@ interface PictureCardProps {
 
 export function PictureCard({ images, title, onClose }: PictureCardProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [qrUrls, setQrUrls] = useState<Record<string, string>>({});
 
     // Prevent body scroll when modal is open
     useEffect(() => {
         document.body.style.overflow = 'hidden';
         return () => { document.body.style.overflow = 'auto'; };
     }, []);
+
+    // Generate QRs
+    useEffect(() => {
+        const generateAll = async () => {
+            const newUrls: Record<string, string> = {};
+            for (const img of images) {
+                try {
+                    newUrls[img] = await QRCode.toDataURL(img, { 
+                        margin: 2, 
+                        width: 300, 
+                        color: { dark: '#000000', light: '#ffffff' } 
+                    });
+                } catch (e) { }
+            }
+            setQrUrls(newUrls);
+        };
+        generateAll();
+    }, [images]);
 
     if (!images || images.length === 0) return null;
 
@@ -81,17 +100,35 @@ export function PictureCard({ images, title, onClose }: PictureCardProps) {
                     </button>
                 )}
                 
-                <img 
-                    src={`${API_BASE}${images[currentIndex]}`} 
-                    alt={`Photo ${currentIndex + 1}`} 
-                    style={{ 
-                        maxHeight: '70vh', 
-                        maxWidth: '100%', 
-                        objectFit: 'contain', 
-                        borderRadius: '12px',
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
-                    }} 
-                />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ background: '#fff', padding: '16px', borderRadius: '12px', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
+                        {qrUrls[images[currentIndex]] ? (
+                            <img 
+                                src={qrUrls[images[currentIndex]]} 
+                                alt={`Photo ${currentIndex + 1}`} 
+                                style={{ 
+                                    maxHeight: '50vh', 
+                                    maxWidth: '100%', 
+                                    objectFit: 'contain', 
+                                    borderRadius: '8px'
+                                }} 
+                            />
+                        ) : (
+                            <div style={{ width: '250px', height: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>
+                                Generating QR...
+                            </div>
+                        )}
+                    </div>
+                    
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '4px', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+                            REWORK
+                        </div>
+                        <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', fontFamily: 'monospace', marginTop: '8px' }}>
+                            {images[currentIndex]}
+                        </div>
+                    </div>
+                </div>
 
                 {images.length > 1 && (
                     <button 
@@ -104,23 +141,35 @@ export function PictureCard({ images, title, onClose }: PictureCardProps) {
             </div>
 
             {images.length > 1 && (
-                <div style={{ padding: '24px', display: 'flex', justifyContent: 'center', gap: '12px', background: 'linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%)' }}>
+               <div style={{ padding: '24px', display: 'flex', justifyContent: 'center', gap: '16px', background: 'linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%)' }}>
                     {images.map((img, idx) => (
-                        <img 
+                        <div
                             key={idx}
-                            src={`${API_BASE}${img}`}
                             onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
                             style={{ 
-                                width: '60px', 
-                                height: '60px', 
-                                objectFit: 'cover', 
-                                borderRadius: '8px', 
                                 cursor: 'pointer',
-                                border: currentIndex === idx ? '3px solid var(--accent)' : '2px solid transparent',
-                                opacity: currentIndex === idx ? 1 : 0.5,
-                                transition: 'all 0.2s ease'
+                                transition: 'all 0.2s ease',
+                                transform: currentIndex === idx ? 'scale(1.1)' : 'scale(1)',
+                                filter: currentIndex === idx ? 'none' : 'grayscale(100%) opacity(50%)'
                             }}
-                        />
+                        >
+                            {qrUrls[img] ? (
+                                <img 
+                                    src={qrUrls[img]}
+                                    style={{ 
+                                        width: '60px', 
+                                        height: '60px', 
+                                        objectFit: 'contain', 
+                                        borderRadius: '8px', 
+                                        background: '#fff',
+                                        padding: '4px',
+                                        border: currentIndex === idx ? '2px solid var(--accent)' : '2px solid transparent'
+                                    }}
+                                />
+                            ) : (
+                                <div style={{ width: '60px', height: '60px', background: '#ccc', borderRadius: '8px' }} />
+                            )}
+                        </div>
                     ))}
                 </div>
             )}

@@ -11,6 +11,7 @@ import { usePcbStore } from '../store/storePcb';
 import { useReworkStore } from '../store/storeRework';
 import { useOwnerStore } from '../store/storeOwner';
 import { useTagStore } from '../store/storeTag';
+import { useStore } from '../store/useStore';
 
 interface CardListProps {
     type: 'projects' | 'pcbs' | 'reworks' | 'tags' | 'owners';
@@ -25,6 +26,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
     const { reworks, loading: reworksLoading, fetchReworks, selectedBoards, setSelectedBoards } = useReworkStore();
     const { owners, loading: ownersLoading, fetchOwners } = useOwnerStore();
     const { tags, loading: tagsLoading, fetchTags } = useTagStore();
+    const { expandedProject, expandedPcb } = useStore();
 
     useEffect(() => {
         if (type === 'projects') fetchProjects();
@@ -63,9 +65,19 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
     }, [activeFilterCount]);
 
     switch (type) {
-        case 'projects': items = projects; loading = projectsLoading; break;
+        case 'projects': 
+            items = [...projects]; 
+            loading = projectsLoading; 
+            if (expandedProject) {
+                items.sort((a, b) => {
+                    if (a.name === expandedProject) return -1;
+                    if (b.name === expandedProject) return 1;
+                    return 0;
+                });
+            }
+            break;
         case 'pcbs': 
-            items = pcbs; 
+            items = [...pcbs]; 
             loading = pcbsLoading || projectsLoading;
             if (selectedProjects.length > 0) {
                 const projNames = selectedProjects.map(id => projects.find(p => p.id.toString() === id)?.name);
@@ -93,6 +105,13 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                 items = items.filter(pcb => {
                     const ownerObj = owners.find(o => o.name === pcb.owner);
                     return ownerObj && selectedOwners.includes(ownerObj.username || '');
+                });
+            }
+            if (expandedPcb) {
+                items.sort((a, b) => {
+                    if (a.board_number === expandedPcb) return -1;
+                    if (b.board_number === expandedPcb) return 1;
+                    return 0;
                 });
             }
             break;
