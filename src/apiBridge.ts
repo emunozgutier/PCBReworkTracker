@@ -1,5 +1,4 @@
 import { useDemoStore } from './store/useDemoStore';
-import { API_BASE } from './api';
 import { demoProjects, demoPcbs, demoOwners, demoReworks, demoTags } from './demoData';
 
 let internalProjects = [...demoProjects];
@@ -18,15 +17,21 @@ function createResponse(data: any, status = 200) {
     } as Response;
 }
 
-export async function apiFetch(path: string, options?: RequestInit): Promise<Response> {
+export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<Response> {
     const isDemoMode = useDemoStore.getState().isDemoMode;
     
     if (!isDemoMode) {
-        return fetch(`${API_BASE}${path}`, options);
+        return fetch(fullUrl, options);
     }
     
     // DEMO MODE MOCK LOGIC
     await delay(300); // Simulate network latency
+    
+    // Extract just the path from fullUrl (e.g. "http://localhost:5002/api/projects" -> "/projects")
+    let localPath = fullUrl;
+    if (fullUrl.includes('/api/')) {
+        localPath = '/' + fullUrl.split('/api/')[1];
+    }
     
     const method = options?.method || 'GET';
     let body: any = null;
@@ -41,7 +46,7 @@ export async function apiFetch(path: string, options?: RequestInit): Promise<Res
     }
     
     // Route matching
-    if (path.startsWith('/projects')) {
+    if (localPath.startsWith('/projects')) {
         if (method === 'GET') return createResponse(internalProjects);
         if (method === 'POST') {
             const newProject = { id: Date.now(), ...body, pcb_count: 0, pcbs: [] };
@@ -49,18 +54,18 @@ export async function apiFetch(path: string, options?: RequestInit): Promise<Res
             return createResponse(newProject, 201);
         }
         if (method === 'PUT') {
-            const id = parseInt(path.split('/').pop() || '0');
+            const id = parseInt(localPath.split('/').pop() || '0');
             internalProjects = internalProjects.map(p => p.id === id ? { ...p, ...body } : p);
             return createResponse({ message: 'Project updated' });
         }
         if (method === 'DELETE') {
-            const id = parseInt(path.split('/').pop() || '0');
+            const id = parseInt(localPath.split('/').pop() || '0');
             internalProjects = internalProjects.filter(p => p.id !== id);
             return createResponse({ message: 'Project deleted' });
         }
     }
     
-    if (path.startsWith('/pcbs')) {
+    if (localPath.startsWith('/pcbs')) {
         if (method === 'GET') return createResponse(internalPcbs);
         if (method === 'POST') {
             const newPcb = { id: Date.now(), ...body };
@@ -68,18 +73,18 @@ export async function apiFetch(path: string, options?: RequestInit): Promise<Res
             return createResponse(newPcb, 201);
         }
         if (method === 'PUT') {
-            const id = parseInt(path.split('/').pop() || '0');
+            const id = parseInt(localPath.split('/').pop() || '0');
             internalPcbs = internalPcbs.map(p => p.id === id ? { ...p, ...body } : p);
             return createResponse({ message: 'PCB updated' });
         }
         if (method === 'DELETE') {
-            const id = parseInt(path.split('/').pop() || '0');
+            const id = parseInt(localPath.split('/').pop() || '0');
             internalPcbs = internalPcbs.filter(p => p.id !== id);
             return createResponse({ message: 'PCB deleted' });
         }
     }
     
-    if (path.startsWith('/owners')) {
+    if (localPath.startsWith('/owners')) {
         if (method === 'GET') return createResponse(internalOwners);
         if (method === 'POST') {
             const newOwner = { id: Date.now(), ...body, pcb_count: 0, rework_count: 0, tag_count: 0 };
@@ -87,18 +92,18 @@ export async function apiFetch(path: string, options?: RequestInit): Promise<Res
             return createResponse(newOwner, 201);
         }
         if (method === 'PUT') {
-            const id = parseInt(path.split('/').pop() || '0');
+            const id = parseInt(localPath.split('/').pop() || '0');
             internalOwners = internalOwners.map(p => p.id === id ? { ...p, ...body } : p);
             return createResponse({ message: 'Owner updated' });
         }
         if (method === 'DELETE') {
-            const id = parseInt(path.split('/').pop() || '0');
+            const id = parseInt(localPath.split('/').pop() || '0');
             internalOwners = internalOwners.filter(p => p.id !== id);
             return createResponse({ message: 'Owner deleted' });
         }
     }
     
-    if (path.startsWith('/reworks')) {
+    if (localPath.startsWith('/reworks')) {
         if (method === 'GET') return createResponse(internalReworks);
         if (method === 'POST') {
             const newRework = { id: Date.now(), timestamp: new Date().toISOString(), ...body };
@@ -106,18 +111,18 @@ export async function apiFetch(path: string, options?: RequestInit): Promise<Res
             return createResponse(newRework, 201);
         }
         if (method === 'PUT') {
-            const id = parseInt(path.split('/').pop() || '0');
+            const id = parseInt(localPath.split('/').pop() || '0');
             internalReworks = internalReworks.map(p => p.id === id ? { ...p, ...body } : p);
             return createResponse({ message: 'Rework updated' });
         }
         if (method === 'DELETE') {
-            const id = parseInt(path.split('/').pop() || '0');
+            const id = parseInt(localPath.split('/').pop() || '0');
             internalReworks = internalReworks.filter(p => p.id !== id);
             return createResponse({ message: 'Rework deleted' });
         }
     }
     
-    if (path.startsWith('/tags')) {
+    if (localPath.startsWith('/tags')) {
         if (method === 'GET') return createResponse(internalTags);
         if (method === 'POST') {
             const newTag = { id: Date.now(), ...body, pcb_count: 0 };
@@ -125,12 +130,12 @@ export async function apiFetch(path: string, options?: RequestInit): Promise<Res
             return createResponse(newTag, 201);
         }
         if (method === 'PUT') {
-            const id = parseInt(path.split('/').pop() || '0');
+            const id = parseInt(localPath.split('/').pop() || '0');
             internalTags = internalTags.map(p => p.id === id ? { ...p, ...body } : p);
             return createResponse({ message: 'Tag updated' });
         }
         if (method === 'DELETE') {
-            const id = parseInt(path.split('/').pop() || '0');
+            const id = parseInt(localPath.split('/').pop() || '0');
             internalTags = internalTags.filter(p => p.id !== id);
             return createResponse({ message: 'Tag deleted' });
         }
