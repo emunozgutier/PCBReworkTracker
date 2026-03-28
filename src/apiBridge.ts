@@ -1,11 +1,12 @@
 import { useDemoStore } from './store/useDemoStore';
-import { demoProjects, demoPcbs, demoOwners, demoReworks, demoTags } from './demoData';
+import { demoProjects, demoPcbs, demoOwners, demoReworks, demoTags, demoPcbTags } from './demoData';
 
 let internalProjects = [...demoProjects];
 let internalPcbs = [...demoPcbs];
 let internalOwners = [...demoOwners];
 let internalReworks = [...demoReworks];
 let internalTags = [...demoTags];
+let internalPcbTags = { ...demoPcbTags };
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -66,7 +67,27 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
     }
     
     if (localPath.startsWith('/pcbs')) {
-        if (method === 'GET') return createResponse(internalPcbs);
+        if (method === 'GET') {
+            const parts = localPath.split('/');
+            // Check for /pcbs/:id/tags
+            if (parts.length === 4 && parts[3] === 'tags') {
+                const pcbId = parseInt(parts[2]);
+                const tagIds = internalPcbTags[pcbId] || [];
+                const tagsForPcb = internalTags
+                    .filter(t => tagIds.includes(t.id))
+                    .map(tag => {
+                        const owner = internalOwners.find(o => o.id === tag.owner_id);
+                        return owner ? { ...tag, owner_name: owner.name, owner_username: owner.username } : tag;
+                    });
+                return createResponse(tagsForPcb);
+            }
+            // Return internalPcbs with tag_ids joined
+            const pcbsWithTags = internalPcbs.map(pcb => ({
+                ...pcb,
+                tag_ids: internalPcbTags[pcb.id] || []
+            }));
+            return createResponse(pcbsWithTags);
+        }
         if (method === 'POST') {
             const newPcb = { id: Date.now(), ...body };
             internalPcbs.push(newPcb);

@@ -1,5 +1,7 @@
 import { usePcbStore } from '../store/storePcb';
 import { useProjectStore } from '../store/storeProject';
+import { useTagStore } from '../store/storeTag';
+import { useOwnerStore } from '../store/storeOwner';
 import { PcbFilterElement } from './PcbFilterElement';
 
 export function PcbFilter() {
@@ -9,10 +11,13 @@ export function PcbFilter() {
         selectedRevisions, setSelectedRevisions, 
         selectedFlavors, setSelectedFlavors,
         selectedPcbRevs, setSelectedPcbRevs,
-        selectedCorners, setSelectedCorners
+        selectedTags, setSelectedTags,
+        selectedOwners, setSelectedOwners
     } = usePcbStore();
     
     const { projects } = useProjectStore();
+    const { tags } = useTagStore();
+    const { owners } = useOwnerStore();
 
     return (
         <div className="pcb-filters" style={{  
@@ -25,28 +30,24 @@ export function PcbFilter() {
             paddingBottom: '8px'
         }}>
             
-            {/* Projects DigiKey-style Select */}
-            {/* Projects DigiKey-style Select */}
+            {/* (1) Projects Box */}
             <PcbFilterElement title="Projects" value={selectedProjects} onChange={setSelectedProjects} width="220px">
                 {projects.map(p => {
-                    // Count how many pcbs belong to this project AND match the selected revisions and flavors
                     const count = pcbs.filter(pcb => 
                         pcb.project === p.name && 
                         (selectedRevisions.length === 0 || selectedRevisions.some(rev => pcb.product && pcb.product.includes(rev))) &&
                         (selectedFlavors.length === 0 || selectedFlavors.some(ff => pcb.product && pcb.product.includes(ff))) &&
-                        (selectedCorners.length === 0 || selectedCorners.some(corner => p.silicon_corners && p.silicon_corners.includes(corner))) &&
-                        (selectedPcbRevs.length === 0 || selectedPcbRevs.some(pr => pcb.product && pcb.product.includes(pr)))
+                        (selectedPcbRevs.length === 0 || selectedPcbRevs.some(pr => pcb.product && pcb.product.includes(pr))) &&
+                        (selectedTags.length === 0 || selectedTags.some(tagId => pcb.tag_ids?.includes(parseInt(tagId)))) &&
+                        (selectedOwners.length === 0 || selectedOwners.includes(pcb.owner))
                     ).length;
                     
-                    // Only hide projects if we are actively filtering by a revision/flavor that this project doesn't have boards for
-                    if ((selectedRevisions.length > 0 || selectedFlavors.length > 0 || selectedCorners.length > 0 || selectedPcbRevs.length > 0) && count === 0) return null;
-                    
+                    if ((selectedRevisions.length > 0 || selectedFlavors.length > 0 || selectedPcbRevs.length > 0 || selectedTags.length > 0 || selectedOwners.length > 0) && count === 0) return null;
                     return <option key={p.id} value={p.id.toString()}>{p.name} ({count})</option>;
                 })}
             </PcbFilterElement>
 
-            {/* Silicon Revisions Box */}
-            {/* Silicon Revisions Box */}
+            {/* (2) Silicon Revisions Box */}
             <PcbFilterElement title="Silicon Revisions" value={selectedRevisions} onChange={setSelectedRevisions}>
                 {(() => {
                     const activeProjects = selectedProjects.length > 0 
@@ -63,16 +64,17 @@ export function PcbFilter() {
                             (pcb.product && pcb.product.includes(rev)) &&
                             (selectedProjects.length === 0 || selectedProjects.includes(projects.find(p => p.name === pcb.project)?.id.toString() || '')) &&
                             (selectedFlavors.length === 0 || selectedFlavors.some(ff => pcb.product && pcb.product.includes(ff))) &&
-                            (selectedPcbRevs.length === 0 || selectedPcbRevs.some(pr => pcb.product && pcb.product.includes(pr)))
+                            (selectedPcbRevs.length === 0 || selectedPcbRevs.some(pr => pcb.product && pcb.product.includes(pr))) &&
+                            (selectedTags.length === 0 || selectedTags.some(tagId => pcb.tag_ids?.includes(parseInt(tagId)))) &&
+                            (selectedOwners.length === 0 || selectedOwners.includes(pcb.owner))
                         ).length;
-                        if (count === 0 && selectedProjects.length > 0) return null;
+                        if (count === 0 && (selectedProjects.length > 0 || selectedFlavors.length > 0 || selectedPcbRevs.length > 0 || selectedTags.length > 0 || selectedOwners.length > 0)) return null;
                         return <option key={rev} value={rev}>{rev} ({count})</option>;
                     });
                 })()}
             </PcbFilterElement>
 
-            {/* PCB Flavors Box */}
-            {/* PCB Flavors Box */}
+            {/* (3) PCB Flavors Box */}
             <PcbFilterElement title="PCB Flavors" value={selectedFlavors} onChange={setSelectedFlavors}>
                 {(() => {
                     const activeProjects = selectedProjects.length > 0 
@@ -89,46 +91,19 @@ export function PcbFilter() {
                             (pcb.product && pcb.product.includes(ff)) &&
                             (selectedProjects.length === 0 || selectedProjects.includes(projects.find(p => p.name === pcb.project)?.id.toString() || '')) &&
                             (selectedRevisions.length === 0 || selectedRevisions.some(rev => pcb.product && pcb.product.includes(rev))) &&
-                            (selectedPcbRevs.length === 0 || selectedPcbRevs.some(pr => pcb.product && pcb.product.includes(pr)))
+                            (selectedPcbRevs.length === 0 || selectedPcbRevs.some(pr => pcb.product && pcb.product.includes(pr))) &&
+                            (selectedTags.length === 0 || selectedTags.some(tagId => pcb.tag_ids?.includes(parseInt(tagId)))) &&
+                            (selectedOwners.length === 0 || selectedOwners.includes(pcb.owner))
                         ).length;
-                        if (count === 0 && selectedProjects.length > 0) return null;
+                        if (count === 0 && (selectedProjects.length > 0 || selectedRevisions.length > 0 || selectedPcbRevs.length > 0 || selectedTags.length > 0 || selectedOwners.length > 0)) return null;
                         return <option key={ff} value={ff}>{ff} ({count})</option>;
                     });
                 })()}
             </PcbFilterElement>
 
-            {/* Silicon Corners Box */}
-            {/* Silicon Corners Box */}
-            <PcbFilterElement title="Silicon Corners" value={selectedCorners} onChange={setSelectedCorners}>
-                {(() => {
-                    const activeProjects = selectedProjects.length > 0 
-                        ? projects.filter(p => selectedProjects.includes(p.id.toString()))
-                        : projects;
-                    
-                    const allCorners = new Set<string>();
-                    activeProjects.forEach((p: any) => {
-                        if (p.silicon_corners) p.silicon_corners.split(',').forEach((c: string) => allCorners.add(c.trim()));
-                    });
-
-                    return Array.from(allCorners).filter(Boolean).sort().map(corner => {
-                        const count = pcbs.filter(pcb => {
-                            const p = projects.find(proj => proj.name === pcb.project);
-                            return p && p.silicon_corners && p.silicon_corners.includes(corner) &&
-                            (selectedProjects.length === 0 || selectedProjects.includes(p.id.toString())) &&
-                            (selectedRevisions.length === 0 || selectedRevisions.some(rev => pcb.product && pcb.product.includes(rev))) &&
-                            (selectedFlavors.length === 0 || selectedFlavors.some(ff => pcb.product && pcb.product.includes(ff)));
-                        }).length;
-                        if (count === 0 && selectedProjects.length > 0) return null;
-                        return <option key={corner} value={corner}>{corner} ({count})</option>;
-                    });
-                })()}
-            </PcbFilterElement>
-
-            {/* PCB Revs Box */}
-            {/* PCB Revs Box */}
+            {/* (4) PCB Revs Box */}
             <PcbFilterElement title="PCB Revs" value={selectedPcbRevs} onChange={setSelectedPcbRevs}>
                 {(() => {
-                    // Extract unique PCB Revs from the "product_name_and_rev" string
                     const allPcbRevs = new Set<string>();
                     pcbs.forEach(pcb => {
                         if (!pcb.product) return;
@@ -147,19 +122,53 @@ export function PcbFilter() {
                             (pcb.product && pcb.product.includes(pr)) &&
                             (selectedProjects.length === 0 || selectedProjects.includes(projects.find(p => p.name === pcb.project)?.id.toString() || '')) &&
                             (selectedRevisions.length === 0 || selectedRevisions.some(rev => pcb.product && pcb.product.includes(rev))) &&
-                            (selectedFlavors.length === 0 || selectedFlavors.some(ff => pcb.product && pcb.product.includes(ff)))
+                            (selectedFlavors.length === 0 || selectedFlavors.some(ff => pcb.product && pcb.product.includes(ff))) &&
+                            (selectedTags.length === 0 || selectedTags.some(tagId => pcb.tag_ids?.includes(parseInt(tagId)))) &&
+                            (selectedOwners.length === 0 || selectedOwners.includes(pcb.owner))
                         ).length;
-                        if (count === 0 && selectedProjects.length > 0) return null;
+                        if (count === 0 && (selectedProjects.length > 0 || selectedRevisions.length > 0 || selectedFlavors.length > 0 || selectedTags.length > 0 || selectedOwners.length > 0)) return null;
                         return <option key={pr} value={pr}>{pr} ({count})</option>;
                     });
                 })()}
             </PcbFilterElement>
 
+            {/* (5) Tags Box */}
+            <PcbFilterElement title="Tags" value={selectedTags} onChange={setSelectedTags}>
+                {tags.map(tag => {
+                    const count = pcbs.filter(pcb => 
+                        (pcb.tag_ids && pcb.tag_ids.includes(tag.id)) &&
+                        (selectedProjects.length === 0 || selectedProjects.includes(projects.find(p => p.name === pcb.project)?.id.toString() || '')) &&
+                        (selectedRevisions.length === 0 || selectedRevisions.some(rev => pcb.product && pcb.product.includes(rev))) &&
+                        (selectedFlavors.length === 0 || selectedFlavors.some(ff => pcb.product && pcb.product.includes(ff))) &&
+                        (selectedPcbRevs.length === 0 || selectedPcbRevs.some(pr => pcb.product && pcb.product.includes(pr))) &&
+                        (selectedOwners.length === 0 || selectedOwners.includes(pcb.owner))
+                    ).length;
+                    if (count === 0 && (selectedProjects.length > 0 || selectedRevisions.length > 0 || selectedFlavors.length > 0 || selectedPcbRevs.length > 0 || selectedOwners.length > 0)) return null;
+                    return <option key={tag.id} value={tag.id.toString()}>{tag.name} ({count})</option>;
+                })}
+            </PcbFilterElement>
+
+            {/* (6) Owner Box */}
+            <PcbFilterElement title="Owner" value={selectedOwners} onChange={setSelectedOwners}>
+                {owners.map(owner => {
+                    const count = pcbs.filter(pcb => 
+                        pcb.owner === owner.name &&
+                        (selectedProjects.length === 0 || selectedProjects.includes(projects.find(p => p.name === pcb.project)?.id.toString() || '')) &&
+                        (selectedRevisions.length === 0 || selectedRevisions.some(rev => pcb.product && pcb.product.includes(rev))) &&
+                        (selectedFlavors.length === 0 || selectedFlavors.some(ff => pcb.product && pcb.product.includes(ff))) &&
+                        (selectedPcbRevs.length === 0 || selectedPcbRevs.some(pr => pcb.product && pcb.product.includes(pr))) &&
+                        (selectedTags.length === 0 || selectedTags.some(tagId => pcb.tag_ids?.includes(parseInt(tagId))))
+                    ).length;
+                    if (count === 0 && (selectedProjects.length > 0 || selectedRevisions.length > 0 || selectedFlavors.length > 0 || selectedPcbRevs.length > 0 || selectedTags.length > 0)) return null;
+                    return <option key={owner.id} value={owner.name}>{owner.name} ({count})</option>;
+                })}
+            </PcbFilterElement>
+
             {/* Clear Filters Button */}
-            {(selectedProjects.length > 0 || selectedRevisions.length > 0 || selectedFlavors.length > 0 || selectedCorners.length > 0 || selectedPcbRevs.length > 0) && (
+            {(selectedProjects.length > 0 || selectedRevisions.length > 0 || selectedFlavors.length > 0 || selectedTags.length > 0 || selectedOwners.length > 0 || selectedPcbRevs.length > 0) && (
                 <div style={{ alignSelf: 'flex-start', marginTop: '26px' }}>
                     <button 
-                        onClick={() => { setSelectedProjects([]); setSelectedRevisions([]); setSelectedFlavors([]); setSelectedCorners([]); setSelectedPcbRevs([]); }}
+                        onClick={() => { setSelectedProjects([]); setSelectedRevisions([]); setSelectedFlavors([]); setSelectedPcbRevs([]); setSelectedTags([]); setSelectedOwners([]); }}
                         style={{ 
                             padding: '6px 12px', 
                             backgroundColor: 'transparent', 

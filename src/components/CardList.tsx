@@ -31,6 +31,8 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
         if (type === 'pcbs') {
             fetchPcbs();
             fetchProjects(); // needed to know the project names and revisions
+            fetchTags();
+            fetchOwners();
         }
         if (type === 'reworks') fetchReworks();
         if (type === 'owners') fetchOwners();
@@ -45,18 +47,20 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
         selectedRevisions,
         selectedFlavors,
         selectedCorners,
-        selectedPcbRevs
+        selectedPcbRevs,
+        selectedTags,
+        selectedOwners
     } = usePcbStore();
     
-    const [showFilters, setShowFilters] = useState<boolean>(
-        selectedProjects.length > 0 || selectedRevisions.length > 0 || selectedFlavors.length > 0 || selectedCorners.length > 0 || selectedPcbRevs.length > 0
-    );
+    const activeFilterCount = selectedProjects.length + selectedRevisions.length + selectedFlavors.length + selectedCorners.length + selectedPcbRevs.length + selectedTags.length + selectedOwners.length;
+
+    const [showFilters, setShowFilters] = useState<boolean>(activeFilterCount > 0);
 
     useEffect(() => {
-        if (selectedProjects.length > 0 || selectedRevisions.length > 0 || selectedFlavors.length > 0 || selectedCorners.length > 0 || selectedPcbRevs.length > 0) {
+        if (activeFilterCount > 0) {
             setShowFilters(true);
         }
-    }, [selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs]);
+    }, [activeFilterCount]);
 
     switch (type) {
         case 'projects': items = projects; loading = projectsLoading; break;
@@ -73,14 +77,14 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
             if (selectedFlavors.length > 0) {
                 items = items.filter(pcb => selectedFlavors.some(ff => pcb.product && pcb.product.includes(ff)));
             }
-            if (selectedCorners.length > 0) {
-                items = items.filter(pcb => {
-                    const projectData = projects.find(p => p.name === pcb.project);
-                    return projectData && projectData.silicon_corners && selectedCorners.some(corner => projectData.silicon_corners?.includes(corner));
-                });
-            }
             if (selectedPcbRevs.length > 0) {
                 items = items.filter(pcb => selectedPcbRevs.some(pr => pcb.product && pcb.product.includes(pr)));
+            }
+            if (selectedTags.length > 0) {
+                items = items.filter(pcb => selectedTags.some(tagId => pcb.tag_ids?.includes(parseInt(tagId))));
+            }
+            if (selectedOwners.length > 0) {
+                items = items.filter(pcb => selectedOwners.includes(pcb.owner));
             }
             break;
         case 'reworks': 
@@ -95,8 +99,6 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
     }
 
     if (loading) return <div className="loading">Loading {title}...</div>;
-
-    const activeFilterCount = selectedProjects.length + selectedRevisions.length + selectedFlavors.length + selectedCorners.length + selectedPcbRevs.length;
 
     return (
         <div className="card-list-container">
