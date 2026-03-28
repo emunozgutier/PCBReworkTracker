@@ -452,6 +452,20 @@ app.get('/api/tags/:id', (req, res) => {
     });
 });
 
+app.get('/api/tags/:id/pcbs', (req, res) => {
+    const query = `
+        SELECT pcbs.*, projects.project_key 
+        FROM pcbs 
+        JOIN pcb_tags ON pcbs.id = pcb_tags.pcb_id 
+        LEFT JOIN projects ON pcbs.project_id = projects.id
+        WHERE pcb_tags.tag_id = ?
+    `;
+    db.all(query, [req.params.id], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
 app.put('/api/tags/:id', (req, res) => {
     const { name, color, owner_id } = req.body;
     const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;

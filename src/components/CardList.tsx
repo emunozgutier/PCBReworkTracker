@@ -3,6 +3,7 @@ import { Plus, Edit2 } from 'lucide-react';
 import { ProjectCard } from '../cards/ProjectCard';
 import { PcbCard } from '../cards/PcbCard';
 import { ReworkCard } from '../cards/ReworkCard';
+import { TagCard } from '../cards/TagCard';
 
 import { useProjectStore } from '../store/storeProject';
 import { usePcbStore } from '../store/storePcb';
@@ -342,42 +343,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                                     </>
                                 )}
                                 {type === 'tags' && (
-                                    <>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 0 }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                <div 
-                                                    style={{ 
-                                                        width: 14, height: 14, borderRadius: '4px', 
-                                                        backgroundColor: item.color || '#818cf8',
-                                                        boxShadow: `0 0 10px ${item.color || '#818cf8'}40`
-                                                    }} 
-                                                />
-                                                <span className="board-num" style={{ fontSize: '1rem' }}>
-                                                    {item.owner_username 
-                                                        ? `${item.owner_username}-${item.name}` 
-                                                        : item.owner_name 
-                                                            ? `${item.owner_name}-${item.name}` 
-                                                            : `Unassigned-${item.name}`}
-                                                </span>
-                                            </div>
-                                            
-                                            <div style={{ 
-                                                backgroundColor: 'rgba(255, 255, 255, 0.05)', 
-                                                border: '1px solid rgba(255, 255, 255, 0.1)', 
-                                                padding: '4px 12px', 
-                                                borderRadius: '16px', 
-                                                display: 'flex', 
-                                                gap: '6px',
-                                                alignItems: 'center',
-                                                color: 'var(--text-muted)',
-                                                fontSize: '0.85rem'
-                                            }}>
-                                                <span style={{ fontWeight: 600, color: 'var(--text)' }}>PCBs</span>
-                                                <span style={{ opacity: 0.3 }}>|</span>
-                                                <span>{item.pcb_count || 0} Tagged</span>
-                                            </div>
-                                        </div>
-                                    </>
+                                    <TagCard tag={item} onEdit={(id) => editItem('tags_edit', id)} />
                                 )}
                             </div>
                         );
