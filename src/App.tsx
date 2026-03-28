@@ -14,11 +14,9 @@ import { EditRework } from './EditPages/EditRework'
 import { EditTab } from './EditPages/EditTab'
 
 import { useStore } from './store/useStore'
-import { useDemoStore } from './store/useDemoStore'
 
 function App() {
   const { page, selectedId, editItem, addItem, goBack, isMobile } = useStore();
-  const { isDemoMode, toggleDemoMode } = useDemoStore();
 
   const handleSuccess = () => {
     // Refresh data and go back
@@ -65,23 +63,25 @@ function App() {
       </a>
       <header className="app-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px' }}>
         <h1>PCB Rework Tracker</h1>
-        <button 
-          onClick={toggleDemoMode}
-          title="Toggle Demo DB"
-          style={{
-            background: isDemoMode ? 'var(--accent)' : 'transparent',
-            color: isDemoMode ? 'var(--bg-panel)' : 'var(--text-secondary)',
-            border: '1px solid var(--accent)',
-            padding: '4px 12px',
-            borderRadius: '16px',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            fontWeight: 'bold',
-            transition: 'all 0.2s'
-          }}
-        >
-          {isDemoMode ? 'Demo: ON' : 'Demo: OFF'}
-        </button>
+        {typeof window !== 'undefined' && window.location.hostname.includes('github.io') && (
+          <div 
+            className="demo-indicator"
+            title="Running in Demo Data Mode"
+            style={{
+              background: 'var(--accent)',
+              color: 'var(--bg-panel)',
+              border: '1px solid var(--accent)',
+              padding: '6px 14px',
+              borderRadius: '20px',
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em'
+            }}
+          >
+            DEMO MODE
+          </div>
+        )}
       </header>
       
       <TabBar />
