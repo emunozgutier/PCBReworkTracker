@@ -1,12 +1,12 @@
 import { useDemoStore } from './store/useDemoStore';
-import { demoProjects, demoPcbs, demoOwners, demoReworks, demoTags, demoPcbTags } from './demoData';
+import demoData from './demoData.json';
 
-let internalProjects = [...demoProjects];
-let internalPcbs = [...demoPcbs];
-let internalOwners = [...demoOwners];
-let internalReworks = [...demoReworks];
-let internalTags = [...demoTags];
-let internalPcbTags = { ...demoPcbTags };
+let internalProjects = [...demoData.demoProjects] as any[];
+let internalPcbs = [...demoData.demoPcbs] as any[];
+let internalOwners = [...demoData.demoOwners] as any[];
+let internalReworks = [...demoData.demoReworks] as any[];
+let internalTags = [...demoData.demoTags] as any[];
+let internalPcbTags = { ...demoData.demoPcbTags } as any;
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
