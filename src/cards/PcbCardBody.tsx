@@ -17,7 +17,6 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
 
     const [attachedTags, setAttachedTags] = useState<any[]>([]);
     const [isAssigningTag, setIsAssigningTag] = useState(false);
-    const [selectedTagId, setSelectedTagId] = useState('');
 
     const fetchAttachedTags = async () => {
         try {
@@ -34,18 +33,16 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
         fetchAttachedTags();
     }, [reworks.length, tags.length, fetchReworks, fetchTags, pcb.id]);
 
-    const handleAssignTag = async () => {
-        if (!selectedTagId) return setIsAssigningTag(false);
+    const handleAssignTagDirect = async (tagId: string | number) => {
         try {
             await fetch(`${API_BASE}/pcbs/${pcb.id}/tags`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tag_id: selectedTagId })
+                body: JSON.stringify({ tag_id: tagId })
             });
             await fetchAttachedTags();
         } catch (err) { }
         setIsAssigningTag(false);
-        setSelectedTagId('');
     };
 
     const handleRemoveTag = async (tagId: number | string) => {
@@ -82,20 +79,37 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                     <Plus size={18} /> Add Rework log
                 </button>
                 {isAssigningTag ? (
-                    <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <select 
-                            value={selectedTagId}
-                            onChange={(e) => setSelectedTagId(e.target.value)}
-                            style={{ flex: 1, background: 'rgba(0,0,0,0.5)', border: '1px solid var(--border)', color: 'var(--text)', padding: '10px', borderRadius: '8px', outline: 'none' }}
-                            autoFocus
-                        >
-                            <option value="">Select a tag...</option>
+                    <div style={{ flex: '1 1 100%', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Select Tag to Attach:</span>
+                            <button onClick={(e) => { e.stopPropagation(); setIsAssigningTag(false); }} style={{ background: 'transparent', color: 'var(--text-muted)', border: 'none', cursor: 'pointer' }}><X size={18} /></button>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '8px' }}>
                             {tags.filter(t => !attachedTags.some(at => at.id === t.id)).map(tag => (
-                                <option key={tag.id} value={tag.id}>{tag.name}</option>
+                                <div 
+                                    key={tag.id} 
+                                    onClick={(e) => { e.stopPropagation(); handleAssignTagDirect(tag.id); }}
+                                    style={{ 
+                                        display: 'flex', alignItems: 'center', gap: '6px', 
+                                        background: `${tag.color}20`, color: tag.color, 
+                                        border: `1px solid ${tag.color}40`, padding: '8px 12px', 
+                                        borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, 
+                                        cursor: 'pointer', transition: 'all 0.2s',
+                                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                                    }}
+                                    onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                                    onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                >
+                                    <TagIcon size={14} style={{ flexShrink: 0 }} />
+                                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {tag.owner_username ? `${tag.owner_username}-${tag.name}` : tag.name}
+                                    </span>
+                                </div>
                             ))}
-                        </select>
-                        <button onClick={handleAssignTag} style={{ padding: '10px 16px', background: 'var(--accent)', color: 'white', borderRadius: '8px', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Add</button>
-                        <button onClick={() => setIsAssigningTag(false)} style={{ padding: '10px 12px', background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }}><X size={18} /></button>
+                        </div>
+                        {tags.filter(t => !attachedTags.some(at => at.id === t.id)).length === 0 && (
+                            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>All available tags are already attached.</p>
+                        )}
                     </div>
                 ) : (
                     <button 
