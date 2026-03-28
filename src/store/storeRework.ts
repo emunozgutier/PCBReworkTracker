@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { API_BASE } from '../api';
+import { apiFetch } from '../apiBridge';
 
 export interface Rework {
     id: number;
@@ -37,7 +38,7 @@ export const useReworkStore = create<ReworkState>((set, get) => ({
     fetchReworks: async () => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/reworks`);
+            const res = await apiFetch(`${API_BASE}/reworks`);
             if (!res.ok) throw new Error('Failed to fetch reworks');
             const data = await res.json();
             set({ reworks: data, loading: false });
@@ -50,7 +51,7 @@ export const useReworkStore = create<ReworkState>((set, get) => ({
         set({ loading: true, error: null });
         try {
             const isFormData = data instanceof FormData;
-            const res = await fetch(`${API_BASE}/reworks`, {
+            const res = await apiFetch(`${API_BASE}/reworks`, {
                 method: 'POST',
                 ...(isFormData ? {} : { headers: { 'Content-Type': 'application/json' } }),
                 body: isFormData ? data : JSON.stringify(data)
@@ -73,7 +74,7 @@ export const useReworkStore = create<ReworkState>((set, get) => ({
     updateRework: async (id, data) => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/reworks/${id}`, {
+            const res = await apiFetch(`${API_BASE}/reworks/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -96,7 +97,7 @@ export const useReworkStore = create<ReworkState>((set, get) => ({
     deleteRework: async (id) => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/reworks/${id}`, { method: 'DELETE' });
+            const res = await apiFetch(`${API_BASE}/reworks/${id}`, { method: 'DELETE' });
             if (!res.ok) {
                 set({ error: 'Failed to delete rework', loading: false });
                 return false;

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { API_BASE } from '../api';
+import { apiFetch } from '../apiBridge';
 
 export interface Owner {
     id: number;
@@ -28,7 +29,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
     fetchOwners: async () => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/owners`);
+            const res = await apiFetch(`${API_BASE}/owners`);
             if (!res.ok) throw new Error('Failed to fetch owners');
             const data = await res.json();
             set({ owners: data, loading: false });
@@ -40,7 +41,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
     addOwner: async (data) => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/owners`, {
+            const res = await apiFetch(`${API_BASE}/owners`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -63,7 +64,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
     updateOwner: async (id, data) => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/owners/${id}`, {
+            const res = await apiFetch(`${API_BASE}/owners/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -86,7 +87,7 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
     deleteOwner: async (id) => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/owners/${id}`, { method: 'DELETE' });
+            const res = await apiFetch(`${API_BASE}/owners/${id}`, { method: 'DELETE' });
             if (!res.ok) {
                 set({ error: 'Failed to delete owner', loading: false });
                 return false;

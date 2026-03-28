@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { API_BASE } from '../api';
+import { apiFetch } from '../apiBridge';
 
 export interface Tag {
     id: number;
@@ -29,7 +30,7 @@ export const useTagStore = create<TagState>((set, get) => ({
     fetchTags: async () => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/tags`);
+            const res = await apiFetch(`${API_BASE}/tags`);
             if (!res.ok) throw new Error('Failed to fetch tags');
             const data = await res.json();
             set({ tags: data, loading: false });
@@ -41,7 +42,7 @@ export const useTagStore = create<TagState>((set, get) => ({
     addTag: async (data) => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/tags`, {
+            const res = await apiFetch(`${API_BASE}/tags`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -64,7 +65,7 @@ export const useTagStore = create<TagState>((set, get) => ({
     updateTag: async (id, data) => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/tags/${id}`, {
+            const res = await apiFetch(`${API_BASE}/tags/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -87,7 +88,7 @@ export const useTagStore = create<TagState>((set, get) => ({
     deleteTag: async (id) => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/tags/${id}`, { method: 'DELETE' });
+            const res = await apiFetch(`${API_BASE}/tags/${id}`, { method: 'DELETE' });
             if (!res.ok) {
                 set({ error: 'Failed to delete tag', loading: false });
                 return false;

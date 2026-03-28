@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { API_BASE } from '../api';
+import { apiFetch } from '../apiBridge';
 
 export interface Formfactor {
     name: string;
@@ -36,7 +37,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     fetchProjects: async () => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/projects`);
+            const res = await apiFetch(`${API_BASE}/projects`);
             if (!res.ok) throw new Error('Failed to fetch projects');
             const data = await res.json();
             set({ projects: data, loading: false });
@@ -48,7 +49,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     addProject: async (data) => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/projects`, {
+            const res = await apiFetch(`${API_BASE}/projects`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -72,7 +73,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     updateProject: async (id, data) => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/projects/${id}`, {
+            const res = await apiFetch(`${API_BASE}/projects/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -96,7 +97,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     deleteProject: async (id) => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/projects/${id}`, { method: 'DELETE' });
+            const res = await apiFetch(`${API_BASE}/projects/${id}`, { method: 'DELETE' });
             if (!res.ok) {
                 set({ error: 'Failed to delete project', loading: false });
                 return false;

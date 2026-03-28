@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { API_BASE } from '../api';
+import { apiFetch } from '../apiBridge';
 
 export interface Pcb {
     id: number;
@@ -49,7 +50,7 @@ export const usePcbStore = create<PcbState>((set, get) => ({
     fetchPcbs: async () => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/pcbs`);
+            const res = await apiFetch(`${API_BASE}/pcbs`);
             if (!res.ok) throw new Error('Failed to fetch pcbs');
             const data = await res.json();
             set({ pcbs: data, loading: false });
@@ -61,7 +62,7 @@ export const usePcbStore = create<PcbState>((set, get) => ({
     addPcb: async (data) => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/pcbs`, {
+            const res = await apiFetch(`${API_BASE}/pcbs`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -84,7 +85,7 @@ export const usePcbStore = create<PcbState>((set, get) => ({
     updatePcb: async (id, data) => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/pcbs/${id}`, {
+            const res = await apiFetch(`${API_BASE}/pcbs/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -107,7 +108,7 @@ export const usePcbStore = create<PcbState>((set, get) => ({
     deletePcb: async (id) => {
         set({ loading: true, error: null });
         try {
-            const res = await fetch(`${API_BASE}/pcbs/${id}`, { method: 'DELETE' });
+            const res = await apiFetch(`${API_BASE}/pcbs/${id}`, { method: 'DELETE' });
             if (!res.ok) {
                 set({ error: 'Failed to delete pcb', loading: false });
                 return false;
