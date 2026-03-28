@@ -343,7 +343,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                                     </>
                                 )}
                                 {type === 'tags' && (
-                                    <TagCard tag={item} onEdit={(id) => editItem('tags_edit', id)} />
+                                    <TagCard tag={item} onEdit={(id) => onEdit(id)} />
                                 )}
                             </div>
                         );
