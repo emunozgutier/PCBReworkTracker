@@ -115,6 +115,7 @@ const initDb = () => {
         db.run(`CREATE TABLE IF NOT EXISTS reworks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             pcb_id INTEGER,
+            title TEXT,
             rework_name TEXT UNIQUE,
             description TEXT NOT NULL,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -125,6 +126,11 @@ const initDb = () => {
             FOREIGN KEY (owner_id) REFERENCES owners (id)
         )`, (err) => {
             if (!err) {
+                db.run(`ALTER TABLE reworks ADD COLUMN title TEXT`, (err) => {
+                    if (err && !err.message.includes('duplicate column name')) {
+                        console.error('Migration error (reworks.title):', err.message);
+                    }
+                });
                 db.run(`ALTER TABLE reworks ADD COLUMN rework_name TEXT`, (err) => {
                     if (err && !err.message.includes('duplicate column name')) {
                         console.error('Migration error (reworks.rework_name):', err.message);

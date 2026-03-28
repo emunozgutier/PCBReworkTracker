@@ -25,7 +25,7 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, onEdit }: Rewor
                 </button>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', minWidth: 0 }}>
                     <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap', color: 'var(--accent)' }}>
-                        {rework.rework_name || `Rework #${rework.id}`}
+                        {rework.title ? `${rework.title} (${rework.rework_name})` : (rework.rework_name || `Rework #${rework.id}`)}
                     </span>
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         PCB: {rework.pcb_board_number}

@@ -14,6 +14,7 @@ interface EditReworkProps {
 export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
     const [pcbs, setPcbs] = useState<any[]>([]);
     const [selectedPcb, setSelectedPcb] = useState('');
+    const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [ownerId, setOwnerId] = useState('-1');
     const [loading, setLoading] = useState(true);
@@ -30,6 +31,7 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
             setPcbs(pcbData);
             if (rework) {
                 setSelectedPcb(rework.pcb_id.toString());
+                setTitle(rework.title || '');
                 setDescription(rework.description);
                 setOwnerId(rework.owner_id ? rework.owner_id.toString() : '-1');
             }
@@ -45,6 +47,7 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
         setSaving(true);
         const success = await updateRework(id, {
             pcb_id: selectedPcb ? parseInt(selectedPcb) : null,
+            title,
             description,
             owner_id: ownerId
         });
@@ -85,6 +88,16 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
                     >
                         {pcbs.map(p => <option key={p.id} value={p.id}>{p.board_number}</option>)}
                     </select>
+                </div>
+                <div className="form-group">
+                    <label htmlFor="title">Rework Title (Optional)</label>
+                    <input 
+                        type="text"
+                        id="title"
+                        value={title} 
+                        onChange={(e) => setTitle(e.target.value)} 
+                        placeholder="E.g. Resistor R12 Replacement"
+                    />
                 </div>
                 <div className="form-group">
                     <label htmlFor="description">Rework Description</label>

@@ -4,6 +4,7 @@ import { API_BASE } from '../api';
 export interface Rework {
     id: number;
     pcb_id: number;
+    title?: string;
     description: string;
     timestamp: string;
     owner_id: number | null;
@@ -18,8 +19,8 @@ interface ReworkState {
     loading: boolean;
     error: string | null;
     fetchReworks: () => Promise<void>;
-    addRework: (data: FormData | { pcb_id: number | null; description: string; owner_id: string | null }) => Promise<boolean>;
-    updateRework: (id: number | string, data: { pcb_id: number | null; description: string; owner_id: string | null }) => Promise<boolean>;
+    addRework: (data: FormData | { pcb_id: number | null; title?: string; description: string; owner_id: string | null }) => Promise<boolean>;
+    updateRework: (id: number | string, data: { pcb_id: number | null; title?: string; description: string; owner_id: string | null }) => Promise<boolean>;
     deleteRework: (id: number | string) => Promise<boolean>;
     selectedBoards: string[];
     setSelectedBoards: (boards: string[]) => void;

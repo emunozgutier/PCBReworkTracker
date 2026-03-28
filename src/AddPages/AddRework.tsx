@@ -15,6 +15,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
     const { selectedId } = useStore();
     const [pcbs, setPcbs] = useState<any[]>([]);
     const [selectedPcb, setSelectedPcb] = useState('');
+    const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [ownerId, setOwnerId] = useState('-1');
     const [images, setImages] = useState<File[]>([]);
@@ -41,6 +42,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
         
         const formData = new FormData();
         formData.append('pcb_id', selectedPcb || '');
+        formData.append('title', title);
         formData.append('description', description);
         formData.append('owner_id', ownerId);
         images.forEach(img => {
@@ -73,6 +75,16 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                     >
                         {pcbs.map(p => <option key={p.id} value={p.id}>{p.board_number}</option>)}
                     </select>
+                </div>
+                <div className="form-group">
+                    <label htmlFor="title">Rework Title (Optional)</label>
+                    <input 
+                        type="text"
+                        id="title"
+                        value={title} 
+                        onChange={(e) => setTitle(e.target.value)} 
+                        placeholder="E.g. Resistor R12 Replacement"
+                    />
                 </div>
                 <div className="form-group">
                     <label htmlFor="description">Rework Description</label>
