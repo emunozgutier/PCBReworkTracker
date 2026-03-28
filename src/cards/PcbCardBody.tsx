@@ -45,13 +45,6 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
         setIsAssigningTag(false);
     };
 
-    const handleRemoveTag = async (tagId: number | string) => {
-        try {
-            await fetch(`${API_BASE}/pcbs/${pcb.id}/tags/${tagId}`, { method: 'DELETE' });
-            await fetchAttachedTags();
-        } catch (err) { }
-    };
-
     const pcbReworks = reworks.filter((r: any) => r.pcb_id === pcb.id);
 
     return (
@@ -186,7 +179,6 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                         <div key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: `${tag.color}20`, color: tag.color, border: `1px solid ${tag.color}40`, padding: '4px 10px', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 600 }}>
                             <TagIcon size={12} />
                             {tag.owner_username ? `${tag.owner_username}-${tag.name}` : tag.name}
-                            <X size={14} style={{ cursor: 'pointer', marginLeft: '4px', opacity: 0.7 }} onClick={(e) => { e.stopPropagation(); handleRemoveTag(tag.id); }} />
                         </div>
                     ))}
                 </div>
