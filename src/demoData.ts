@@ -10,9 +10,9 @@ export const demoProjects: Project[] = [
         name: 'Titan',
         description: 'Saturn Moon Project',
         pcb_count: 5,
-        pcbs: ['TITAN-001', 'TITAN-002', 'TITAN-003', 'TITAN-004', 'TITAN-005'],
+        pcbs: ['TIT-001', 'TIT-002', 'TIT-003', 'TIT-004', 'TIT-005'],
         revisions: ['A0', 'B0', 'A1', 'C0'],
-        project_key: 'TITAN',
+        project_key: 'TIT',
         formfactors: [{ name: 'ATX', revisions: ['A0'] }],
         silicon_corners: 'TT, SS, FF'
     },
@@ -21,9 +21,9 @@ export const demoProjects: Project[] = [
         name: 'Atlas',
         description: 'Saturn Moon Project',
         pcb_count: 2,
-        pcbs: ['ATLAS-001', 'ATLAS-002'],
+        pcbs: ['ATL-001', 'ATL-002'],
         revisions: ['A0', 'B0', 'B1'],
-        project_key: 'ATLAS',
+        project_key: 'ATL',
         formfactors: [],
         silicon_corners: 'TT, SS, FF'
     },
@@ -32,9 +32,9 @@ export const demoProjects: Project[] = [
         name: 'Ariel',
         description: 'Uranus Moon Project',
         pcb_count: 3,
-        pcbs: ['ARIEL-001', 'ARIEL-002', 'ARIEL-003'],
+        pcbs: ['ARI-001', 'ARI-002', 'ARI-003'],
         revisions: ['A0', 'B0', 'C0'],
-        project_key: 'ARIEL',
+        project_key: 'ARI',
         formfactors: [],
         silicon_corners: 'TT, SS, FF'
     },
@@ -54,9 +54,9 @@ export const demoProjects: Project[] = [
         name: 'Leda',
         description: 'Jupiter Moon Project',
         pcb_count: 2,
-        pcbs: ['LEDA-001', 'LEDA-002'],
+        pcbs: ['LED-001', 'LED-002'],
         revisions: ['A0', 'B0', 'A1'],
-        project_key: 'LEDA',
+        project_key: 'LED',
         formfactors: [],
         silicon_corners: 'TT, SS, FF'
     },
@@ -76,18 +76,18 @@ export const demoProjects: Project[] = [
         name: 'Miranda',
         description: 'Uranus Moon Project',
         pcb_count: 2,
-        pcbs: ['MIRANDA-001', 'MIRANDA-002'],
+        pcbs: ['MIR-001', 'MIR-002'],
         revisions: ['A0', 'B0', 'A1', 'B1'],
-        project_key: 'MIRANDA',
+        project_key: 'MIR',
         formfactors: [],
         silicon_corners: 'TT, SS, FF'
     }
 ];
 
 export const demoPcbs: Pcb[] = [
-    { id: 1, board_number: 'TITAN-001', status: 'Working', project: 'Titan', owner: 'Alice', product: 'Titan - Rev A0' },
-    { id: 2, board_number: 'TITAN-002', status: 'In Rework', project: 'Titan', owner: 'Bob', product: 'Titan - Rev B0' },
-    { id: 3, board_number: 'ATLAS-001', status: 'Dead', project: 'Atlas', owner: 'Alice', product: 'Atlas - Rev A0' },
+    { id: 1, board_number: 'TIT-001', status: 'Working', project: 'Titan', owner: 'Alice', product: 'Titan - Rev A0' },
+    { id: 2, board_number: 'TIT-002', status: 'In Rework', project: 'Titan', owner: 'Bob', product: 'Titan - Rev B0' },
+    { id: 3, board_number: 'ATL-001', status: 'Dead', project: 'Atlas', owner: 'Alice', product: 'Atlas - Rev A0' },
     { id: 4, board_number: 'IO-001', status: 'Working', project: 'Io', owner: 'Bob', product: 'Io - Rev A0' }
 ];
 
@@ -97,7 +97,7 @@ export const demoOwners: Owner[] = [
 ];
 
 export const demoReworks: Rework[] = [
-    { id: 1, pcb_id: 2, title: 'Replaced U12', description: 'Chip was overheating', timestamp: new Date().toISOString(), owner_id: 2, owner_name: 'Bob Jones', pcb_board_number: 'TITAN-002' },
+    { id: 1, pcb_id: 2, title: 'Replaced U12', description: 'Chip was overheating', timestamp: new Date().toISOString(), owner_id: 2, owner_name: 'Bob Jones', pcb_board_number: 'TIT-002' },
 ];
 
 export const demoTags: Tag[] = [
