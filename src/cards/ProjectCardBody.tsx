@@ -25,7 +25,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     return (
         <div className="card-expanded-content" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {/* Project Summary Row */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '8px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '8px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid var(--border)' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: '120px' }}>
                     <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Silicon Versions</span>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
@@ -80,7 +80,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
             {projectPcbs.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {projectPcbs.map((pcb, index) => (
-                        <div key={index} style={{ border: '1px solid var(--border-color)', borderRadius: '8px', background: 'var(--bg-element)' }}>
+                        <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--bg-element)' }}>
                             <PcbCardHeader 
                                 pcb={pcb} 
                                 isExpanded={false}
