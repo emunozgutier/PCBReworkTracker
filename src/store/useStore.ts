@@ -14,6 +14,7 @@ interface NavigationState {
     isMobile: boolean;
     expandedProject: string | null;
     expandedPcb: string | null;
+    isolatedView: boolean;
     qrModalBoard: string | null;
     
     // Actions
@@ -25,6 +26,7 @@ interface NavigationState {
     setIsMobile: (isMobile: boolean) => void;
     setExpandedProject: (name: string | null) => void;
     setExpandedPcb: (name: string | null) => void;
+    setIsolatedView: (isolatedView: boolean) => void;
     setQrModalBoard: (board: string | null) => void;
 }
 
@@ -32,9 +34,18 @@ const getInitialExpandedPcb = (): string | null => {
     if (typeof window === 'undefined') return null;
     const rawPath = window.location.pathname;
     if (rawPath.startsWith('/pcbs/') && !rawPath.startsWith('/pcbs_')) {
-        return decodeURIComponent(rawPath.replace('/pcbs/', ''));
+        let board = decodeURIComponent(rawPath.replace('/pcbs/', ''));
+        if (board.endsWith('/view')) {
+            board = board.replace('/view', '');
+        }
+        return board;
     }
     return null;
+};
+
+const getInitialIsolatedView = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    return window.location.pathname.endsWith('/view');
 };
 
 const getInitialExpandedProject = (): string | null => {
@@ -66,9 +77,11 @@ export const useStore = create<NavigationState>((set) => ({
     isMobile: typeof window !== 'undefined' ? window.innerWidth <= 768 : false,
     expandedProject: getInitialExpandedProject(),
     expandedPcb: getInitialExpandedPcb(),
+    isolatedView: getInitialIsolatedView(),
     qrModalBoard: null,
 
     setPage: (page) => set({ page }),
+    setIsolatedView: (isolatedView) => set({ isolatedView }),
     
     setExpandedProject: (name) => {
         if (typeof window !== 'undefined') {
@@ -84,7 +97,8 @@ export const useStore = create<NavigationState>((set) => ({
     setExpandedPcb: (name) => {
         if (typeof window !== 'undefined') {
             if (name) {
-                window.history.pushState({}, '', `/pcbs/${encodeURIComponent(name)}`);
+                const isolated = useStore.getState().isolatedView;
+                window.history.pushState({}, '', `/pcbs/${encodeURIComponent(name)}${isolated ? '/view' : ''}`);
             } else {
                 window.history.pushState({}, '', `/pcbs`);
             }
@@ -158,11 +172,18 @@ if (typeof window !== 'undefined') {
             return;
         }
         if (rawPath.startsWith('/pcbs/') && !rawPath.startsWith('/pcbs_')) {
+            let board = decodeURIComponent(rawPath.replace('/pcbs/', ''));
+            let isolated = false;
+            if (board.endsWith('/view')) {
+                board = board.replace('/view', '');
+                isolated = true;
+            }
             useStore.setState({
                 activeTab: 'pcbs',
                 page: 'pcbs',
                 selectedId: null,
-                expandedPcb: decodeURIComponent(rawPath.replace('/pcbs/', ''))
+                expandedPcb: board,
+                isolatedView: isolated
             });
             return;
         }

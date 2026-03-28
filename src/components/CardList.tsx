@@ -11,6 +11,7 @@ import { usePcbStore } from '../store/storePcb';
 import { useReworkStore } from '../store/storeRework';
 import { useOwnerStore } from '../store/storeOwner';
 import { useTagStore } from '../store/storeTag';
+import { useStore } from '../store/useStore';
 
 interface CardListProps {
     type: 'projects' | 'pcbs' | 'reworks' | 'tags' | 'owners';
@@ -25,6 +26,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
     const { reworks, loading: reworksLoading, fetchReworks, selectedBoards, setSelectedBoards } = useReworkStore();
     const { owners, loading: ownersLoading, fetchOwners } = useOwnerStore();
     const { tags, loading: tagsLoading, fetchTags } = useTagStore();
+    const { expandedPcb, isolatedView } = useStore();
 
     useEffect(() => {
         if (type === 'projects') fetchProjects();
@@ -50,12 +52,23 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
         selectedPcbRevs,
         selectedTags,
         selectedOwners,
-        selectedBoardNumbers
+        selectedBoardNumbers,
+        setSelectedBoardNumbers
     } = usePcbStore();
     
     const activeFilterCount = selectedProjects.length + selectedRevisions.length + selectedFlavors.length + selectedCorners.length + selectedPcbRevs.length + selectedTags.length + selectedOwners.length + selectedBoardNumbers.length;
 
     const [showFilters, setShowFilters] = useState<boolean>(activeFilterCount > 0);
+    const [hasAutoFiltered, setHasAutoFiltered] = useState(false);
+
+    useEffect(() => {
+        if (type === 'pcbs' && expandedPcb && isolatedView && !hasAutoFiltered) {
+            if (selectedBoardNumbers.length === 0) {
+                setSelectedBoardNumbers([expandedPcb]);
+            }
+            setHasAutoFiltered(true);
+        }
+    }, [expandedPcb, isolatedView, type, hasAutoFiltered, selectedBoardNumbers, setSelectedBoardNumbers]);
 
     useEffect(() => {
         if (activeFilterCount > 0) {
