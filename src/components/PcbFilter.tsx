@@ -13,7 +13,8 @@ export function PcbFilter() {
         selectedFlavors, setSelectedFlavors,
         selectedPcbRevs, setSelectedPcbRevs,
         selectedTags, setSelectedTags,
-        selectedOwners, setSelectedOwners
+        selectedOwners, setSelectedOwners,
+        selectedBoardNumbers, setSelectedBoardNumbers
     } = usePcbStore();
     
     const { projects } = useProjectStore();
@@ -21,7 +22,7 @@ export function PcbFilter() {
     const { owners } = useOwnerStore();
 
     // Helper to evaluate a PCB against all filters except the one currently generating options
-    const matchPcb = (pcb: any, ignoreField: 'project' | 'revision' | 'corner' | 'flavor' | 'pcbrev' | 'tag' | 'owner') => {
+    const matchPcb = (pcb: any, ignoreField: 'project' | 'revision' | 'corner' | 'flavor' | 'pcbrev' | 'tag' | 'owner' | 'boardnum') => {
         if (ignoreField !== 'project' && selectedProjects.length > 0) {
             const pObj = projects.find(p => p.name === pcb.project);
             if (!pObj || !selectedProjects.includes(pObj.id.toString())) return false;
@@ -45,6 +46,9 @@ export function PcbFilter() {
         if (ignoreField !== 'owner' && selectedOwners.length > 0) {
             if (!selectedOwners.includes(pcb.owner)) return false;
         }
+        if (ignoreField !== 'boardnum' && selectedBoardNumbers.length > 0) {
+            if (!selectedBoardNumbers.includes(pcb.board_number)) return false;
+        }
         return true;
     };
 
@@ -56,7 +60,8 @@ export function PcbFilter() {
             flavor: selectedFlavors.length > 0,
             pcbrev: selectedPcbRevs.length > 0,
             tag: selectedTags.length > 0,
-            owner: selectedOwners.length > 0
+            owner: selectedOwners.length > 0,
+            boardnum: selectedBoardNumbers.length > 0
         };
         // @ts-ignore
         filters[ignoreField] = false;
@@ -172,11 +177,22 @@ export function PcbFilter() {
                 })}
             </PcbFilterElement>
 
+            {/* (8) PCB Name Box */}
+            <PcbFilterElement title="PCB Name" value={selectedBoardNumbers} onChange={setSelectedBoardNumbers} width="160px">
+                {pcbs
+                    .filter(pcb => matchPcb(pcb, 'boardnum'))
+                    .sort((a,b) => a.board_number.localeCompare(b.board_number))
+                    .map(pcb => (
+                        <option key={pcb.id} value={pcb.board_number}>{pcb.board_number}</option>
+                    ))
+                }
+            </PcbFilterElement>
+
             {/* Clear Filters Button */}
-            {(selectedProjects.length > 0 || selectedRevisions.length > 0 || selectedFlavors.length > 0 || selectedTags.length > 0 || selectedOwners.length > 0 || selectedPcbRevs.length > 0 || selectedCorners.length > 0) && (
+            {(selectedProjects.length > 0 || selectedRevisions.length > 0 || selectedFlavors.length > 0 || selectedTags.length > 0 || selectedOwners.length > 0 || selectedPcbRevs.length > 0 || selectedCorners.length > 0 || selectedBoardNumbers.length > 0) && (
                 <div style={{ alignSelf: 'flex-start', marginTop: '26px' }}>
                     <button 
-                        onClick={() => { setSelectedProjects([]); setSelectedRevisions([]); setSelectedCorners([]); setSelectedFlavors([]); setSelectedPcbRevs([]); setSelectedTags([]); setSelectedOwners([]); }}
+                        onClick={() => { setSelectedProjects([]); setSelectedRevisions([]); setSelectedCorners([]); setSelectedFlavors([]); setSelectedPcbRevs([]); setSelectedTags([]); setSelectedOwners([]); setSelectedBoardNumbers([]); }}
                         style={{ 
                             padding: '6px 12px', 
                             backgroundColor: 'transparent', 

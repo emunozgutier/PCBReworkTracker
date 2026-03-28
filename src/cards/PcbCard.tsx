@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { PcbCardHeader } from './PcbCardHeader';
 import { PcbCardBody } from './PcbCardBody';
 import { useStore } from '../store/useStore';
@@ -10,6 +11,15 @@ interface PcbCardProps {
 export function PcbCard({ pcb, onEdit }: PcbCardProps) {
     const { expandedPcb, setExpandedPcb } = useStore();
     const isExpanded = expandedPcb === pcb.board_number;
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (isExpanded && cardRef.current) {
+            setTimeout(() => {
+                cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+    }, [isExpanded]);
 
     const handleToggle = () => {
         if (isExpanded) {
@@ -20,7 +30,7 @@ export function PcbCard({ pcb, onEdit }: PcbCardProps) {
     };
 
     return (
-        <div className={`item-card project-card ${isExpanded ? 'active' : ''}`}>
+        <div ref={cardRef} className={`item-card project-card ${isExpanded ? 'active' : ''}`}>
             <PcbCardHeader 
                 pcb={pcb} 
                 isExpanded={isExpanded} 

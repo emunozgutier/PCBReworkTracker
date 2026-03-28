@@ -27,6 +27,7 @@ interface PcbState {
     selectedCorners: string[];
     selectedTags: string[];
     selectedOwners: string[];
+    selectedBoardNumbers: string[];
     setSelectedProjects: (projects: string[]) => void;
     setSelectedRevisions: (revisions: string[]) => void;
     setSelectedFlavors: (flavors: string[]) => void;
@@ -34,6 +35,7 @@ interface PcbState {
     setSelectedCorners: (corners: string[]) => void;
     setSelectedTags: (tags: string[]) => void;
     setSelectedOwners: (owners: string[]) => void;
+    setSelectedBoardNumbers: (boardNumbers: string[]) => void;
 }
 
 export const usePcbStore = create<PcbState>((set, get) => ({
@@ -47,6 +49,7 @@ export const usePcbStore = create<PcbState>((set, get) => ({
     selectedCorners: [],
     selectedTags: [],
     selectedOwners: [],
+    selectedBoardNumbers: [],
 
     setSelectedProjects: (projects) => set({ selectedProjects: projects }),
     setSelectedRevisions: (revisions) => set({ selectedRevisions: revisions }),
@@ -55,6 +58,7 @@ export const usePcbStore = create<PcbState>((set, get) => ({
     setSelectedCorners: (corners) => set({ selectedCorners: corners }),
     setSelectedTags: (tags) => set({ selectedTags: tags }),
     setSelectedOwners: (owners) => set({ selectedOwners: owners }),
+    setSelectedBoardNumbers: (boardNumbers) => set({ selectedBoardNumbers: boardNumbers }),
 
     fetchPcbs: async () => {
         set({ loading: true, error: null });

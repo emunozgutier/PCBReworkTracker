@@ -11,7 +11,6 @@ import { usePcbStore } from '../store/storePcb';
 import { useReworkStore } from '../store/storeRework';
 import { useOwnerStore } from '../store/storeOwner';
 import { useTagStore } from '../store/storeTag';
-import { useStore } from '../store/useStore';
 
 interface CardListProps {
     type: 'projects' | 'pcbs' | 'reworks' | 'tags' | 'owners';
@@ -26,7 +25,6 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
     const { reworks, loading: reworksLoading, fetchReworks, selectedBoards, setSelectedBoards } = useReworkStore();
     const { owners, loading: ownersLoading, fetchOwners } = useOwnerStore();
     const { tags, loading: tagsLoading, fetchTags } = useTagStore();
-    const { expandedProject, expandedPcb } = useStore();
 
     useEffect(() => {
         if (type === 'projects') fetchProjects();
@@ -51,10 +49,11 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
         selectedCorners,
         selectedPcbRevs,
         selectedTags,
-        selectedOwners
+        selectedOwners,
+        selectedBoardNumbers
     } = usePcbStore();
     
-    const activeFilterCount = selectedProjects.length + selectedRevisions.length + selectedFlavors.length + selectedCorners.length + selectedPcbRevs.length + selectedTags.length + selectedOwners.length;
+    const activeFilterCount = selectedProjects.length + selectedRevisions.length + selectedFlavors.length + selectedCorners.length + selectedPcbRevs.length + selectedTags.length + selectedOwners.length + selectedBoardNumbers.length;
 
     const [showFilters, setShowFilters] = useState<boolean>(activeFilterCount > 0);
 
@@ -68,13 +67,6 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
         case 'projects': 
             items = [...projects]; 
             loading = projectsLoading; 
-            if (expandedProject) {
-                items.sort((a, b) => {
-                    if (a.name === expandedProject) return -1;
-                    if (b.name === expandedProject) return 1;
-                    return 0;
-                });
-            }
             break;
         case 'pcbs': 
             items = [...pcbs]; 
@@ -107,12 +99,8 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                     return ownerObj && selectedOwners.includes(ownerObj.username || '');
                 });
             }
-            if (expandedPcb) {
-                items.sort((a, b) => {
-                    if (a.board_number === expandedPcb) return -1;
-                    if (b.board_number === expandedPcb) return 1;
-                    return 0;
-                });
+            if (selectedBoardNumbers && selectedBoardNumbers.length > 0) {
+                items = items.filter(pcb => selectedBoardNumbers.includes(pcb.board_number));
             }
             break;
         case 'reworks': 

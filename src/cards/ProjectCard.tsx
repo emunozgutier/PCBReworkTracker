@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { ProjectCardHeader } from './ProjectCardHeader';
 import { ProjectCardBody } from './ProjectCardBody';
 import { useStore } from '../store/useStore';
@@ -18,6 +19,15 @@ interface ProjectCardProps {
 export function ProjectCard({ project, onEdit }: ProjectCardProps) {
     const { expandedProject, setExpandedProject } = useStore();
     const isExpanded = expandedProject === project.name;
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (isExpanded && cardRef.current) {
+            setTimeout(() => {
+                cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+    }, [isExpanded]);
 
     const handleToggle = () => {
         if (isExpanded) {
@@ -28,7 +38,7 @@ export function ProjectCard({ project, onEdit }: ProjectCardProps) {
     };
 
     return (
-        <div className={`item-card project-card ${isExpanded ? 'active' : ''}`}>
+        <div ref={cardRef} className={`item-card project-card ${isExpanded ? 'active' : ''}`}>
             <ProjectCardHeader 
                 project={project} 
                 isExpanded={isExpanded} 
