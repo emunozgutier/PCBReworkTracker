@@ -15,6 +15,7 @@ export interface Project {
     revisions: string[];
     project_key: string;
     formfactors: Formfactor[];
+    silicon_corners?: string;
 }
 
 interface ProjectState {
@@ -22,8 +23,8 @@ interface ProjectState {
     loading: boolean;
     error: string | null;
     fetchProjects: () => Promise<void>;
-    addProject: (data: { name: string; description: string; revisions: string; project_key: string; formfactors?: Formfactor[] }) => Promise<boolean>;
-    updateProject: (id: number | string, data: { name: string; description: string; revisions: string; project_key: string; formfactors?: Formfactor[] }) => Promise<boolean>;
+    addProject: (data: { name: string; description: string; revisions: string; project_key: string; formfactors?: Formfactor[]; silicon_corners?: string }) => Promise<boolean>;
+    updateProject: (id: number | string, data: { name: string; description: string; revisions: string; project_key: string; formfactors?: Formfactor[]; silicon_corners?: string }) => Promise<boolean>;
     deleteProject: (id: number | string) => Promise<boolean>;
 }
 

@@ -12,6 +12,7 @@ interface ProjectCardBodyProps {
         pcbs: string[];
         revisions: string[];
         formfactors?: { name: string; revisions: string[] }[];
+        silicon_corners?: string;
     };
 }
 
@@ -31,6 +32,15 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {project.revisions?.length > 0 ? project.revisions.map((rev, i) => (
                             <span key={i} className="pcb-pill" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>{rev}</span>
+                        )) : <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>None defined</span>}
+                    </div>
+                </div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: '120px' }}>
+                    <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Silicon Corners</span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {project.silicon_corners ? project.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean).map((sc: string, i: number) => (
+                            <span key={i} className="pcb-pill" style={{ borderColor: '#f59e0b', color: '#f59e0b' }}>{sc}</span>
                         )) : <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>None defined</span>}
                     </div>
                 </div>

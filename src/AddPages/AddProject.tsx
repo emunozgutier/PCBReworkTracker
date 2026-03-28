@@ -11,6 +11,7 @@ interface AddProjectProps {
 export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [name, setName] = useState('');
     const [revisions, setRevisions] = useState('');
+    const [siliconCorners, setSiliconCorners] = useState('');
     const [projectKey, setProjectKey] = useState('');
     const [formfactors, setFormfactors] = useState([{ name: '', revisions: '' }]);
     
@@ -40,7 +41,10 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                 name: f.name.trim(),
                 revisions: f.revisions.split(',').map(r => r.trim()).filter(Boolean)
             }));
-        const success = await addProject({ name, description: '', revisions, project_key: projectKey, formfactors: payloadFormfactors });
+        const success = await addProject({ 
+            name, description: '', revisions, project_key: projectKey, 
+            formfactors: payloadFormfactors, silicon_corners: siliconCorners 
+        });
         if (success) {
             onSuccess();
         }
@@ -97,6 +101,16 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                         value={revisions} 
                         onChange={(e) => setRevisions(e.target.value)} 
                         placeholder="e.g. A0, A1, B0, B1"
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="silicon_corners">Silicon Corners (Optional)</label>
+                    <input 
+                        id="silicon_corners"
+                        type="text" 
+                        value={siliconCorners} 
+                        onChange={(e) => setSiliconCorners(e.target.value)} 
+                        placeholder="e.g. TT, FF, SS"
                     />
                 </div>
                 <div className="form-group">

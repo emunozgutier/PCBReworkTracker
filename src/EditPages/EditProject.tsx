@@ -14,6 +14,7 @@ interface EditProjectProps {
 export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
     const [name, setName] = useState('');
     const [revisions, setRevisions] = useState('');
+    const [siliconCorners, setSiliconCorners] = useState('');
     const [projectKey, setProjectKey] = useState('');
     const [formfactors, setFormfactors] = useState<{name: string, revisions: string}[]>([]);
     const [loading, setLoading] = useState(true);
@@ -34,6 +35,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
         if (existingProject) {
             setName(existingProject.name);
             setRevisions(Array.isArray(existingProject.revisions) ? existingProject.revisions.join(', ') : (existingProject.revisions || ''));
+            setSiliconCorners(existingProject.silicon_corners || '');
             setProjectKey(existingProject.project_key || '');
             if (existingProject.formfactors && existingProject.formfactors.length > 0) {
                 setFormfactors(existingProject.formfactors.map((f: any) => ({ name: f.name, revisions: f.revisions.join(', ') })));
@@ -49,6 +51,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                     if (project) {
                         setName(project.name);
                         setRevisions(Array.isArray(project.revisions) ? project.revisions.join(', ') : (project.revisions || ''));
+                        setSiliconCorners(project.silicon_corners || '');
                         setProjectKey(project.project_key || '');
                         if (project.formfactors && project.formfactors.length > 0) {
                             setFormfactors(project.formfactors.map((f: any) => ({ name: f.name, revisions: f.revisions.join(', ') })));
@@ -74,7 +77,10 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                 name: f.name.trim(),
                 revisions: f.revisions.split(',').map(r => r.trim()).filter(Boolean)
             }));
-        const success = await updateProject(id, { name, description: '', revisions, project_key: projectKey, formfactors: payloadFormfactors });
+        const success = await updateProject(id, { 
+            name, description: '', revisions, project_key: projectKey, 
+            formfactors: payloadFormfactors, silicon_corners: siliconCorners 
+        });
         if (success) {
             onSuccess();
         }
@@ -141,6 +147,16 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                         value={revisions} 
                         onChange={(e) => setRevisions(e.target.value)} 
                         placeholder="e.g. A0, A1, B0, B1"
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="silicon_corners">Silicon Corners (Optional)</label>
+                    <input 
+                        id="silicon_corners"
+                        type="text" 
+                        value={siliconCorners} 
+                        onChange={(e) => setSiliconCorners(e.target.value)} 
+                        placeholder="e.g. TT, FF, SS"
                     />
                 </div>
                 <div className="form-group">

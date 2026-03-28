@@ -57,6 +57,12 @@ const initDb = () => {
                 db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_name ON projects(name COLLATE NOCASE)`, (err) => {
                     if (err) console.error('Migration error (projects.name unique):', err.message);
                 });
+                // Migration: Add silicon_corners column
+                db.run(`ALTER TABLE projects ADD COLUMN silicon_corners TEXT`, (err) => {
+                    if (err && !err.message.includes('duplicate column name')) {
+                        console.error('Migration error (projects.silicon_corners):', err.message);
+                    }
+                });
             }
         });
 
