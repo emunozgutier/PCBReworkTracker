@@ -18,39 +18,39 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
     }
 
     return (
-        <div className="card-expanded-content">
-            <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '12px' }}>Rework Details</h4>
+        <div className="card-expanded-content" style={{ marginTop: '12px', paddingTop: '12px' }}>
+            <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>Rework Details</h4>
             
-            <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '12px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <div>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Description</span>
-                        <p style={{ margin: '4px 0 0 0', fontSize: '0.95rem', color: 'var(--text)', whiteSpace: 'pre-wrap' }}>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Description</span>
+                        <p style={{ margin: '2px 0 0 0', fontSize: '0.9rem', color: 'var(--text)', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
                             {rework.description}
                         </p>
                     </div>
 
                     {imagePaths.length > 0 && (
                         <div>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, display: 'block', marginBottom: '8px' }}>Visual Evidence</span>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, display: 'block', marginBottom: '6px' }}>Visual Evidence</span>
                             <div 
                                 onClick={() => setShowGallery(true)}
                                 style={{ 
                                     display: 'inline-flex', 
                                     alignItems: 'center', 
-                                    gap: '8px', 
-                                    padding: '8px 16px', 
+                                    gap: '6px', 
+                                    padding: '6px 12px', 
                                     background: 'rgba(99, 102, 241, 0.1)', 
                                     color: 'var(--accent)', 
-                                    borderRadius: '8px', 
+                                    borderRadius: '6px', 
                                     cursor: 'pointer', 
                                     fontWeight: 600, 
-                                    fontSize: '0.9rem',
+                                    fontSize: '0.85rem',
                                     border: '1px dashed var(--accent)',
                                     transition: 'all 0.2s ease'
                                 }}
                             >
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
                                     <circle cx="12" cy="13" r="3"></circle>
                                 </svg>
@@ -59,16 +59,16 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                         </div>
                     )}
 
-                    <div style={{ display: 'flex', gap: '24px' }}>
+                    <div style={{ display: 'flex', gap: '16px' }}>
                         <div>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Timestamp</span>
-                            <div style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text)' }}>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Timestamp</span>
+                            <div style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text)' }}>
                                 {new Date(rework.timestamp).toLocaleString()}
                             </div>
                         </div>
                         <div>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Database ID</span>
-                            <div style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text)' }}>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Database ID</span>
+                            <div style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text)' }}>
                                 #{rework.id}
                             </div>
                         </div>
