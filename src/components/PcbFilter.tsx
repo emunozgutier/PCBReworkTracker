@@ -107,13 +107,15 @@ export function PcbFilter() {
                     const allPcbRevs = new Set<string>();
                     pcbs.forEach(pcb => {
                         if (!pcb.product) return;
-                        const p = projects.find(proj => proj.name === pcb.project);
-                        let revStr = pcb.product;
-                        if (p) {
-                            if (p.formfactors) p.formfactors.forEach((ff: any) => { revStr = revStr.replace(ff.name, ''); });
-                            if (p.revisions) p.revisions.forEach((r: string) => { revStr = revStr.replace(r, ''); });
+                        
+                        // Extract just the revision number (e.g., from "Ariel - Rev 1.0" to "1.0")
+                        let cleanRev = pcb.product;
+                        if (pcb.product.includes('Rev ')) {
+                            cleanRev = pcb.product.split('Rev ')[1].trim();
+                        } else if (pcb.product.includes('- ')) {
+                            cleanRev = pcb.product.split('- ').pop()?.trim() || cleanRev;
                         }
-                        const cleanRev = revStr.trim();
+                        
                         if (cleanRev) allPcbRevs.add(cleanRev);
                     });
 
@@ -160,7 +162,7 @@ export function PcbFilter() {
                         (selectedTags.length === 0 || selectedTags.some(tagId => pcb.tag_ids?.includes(parseInt(tagId))))
                     ).length;
                     if (count === 0 && (selectedProjects.length > 0 || selectedRevisions.length > 0 || selectedFlavors.length > 0 || selectedPcbRevs.length > 0 || selectedTags.length > 0)) return null;
-                    return <option key={owner.id} value={owner.name}>{owner.name} ({count})</option>;
+                    return <option key={owner.id} value={owner.username}>{owner.username} ({count})</option>;
                 })}
             </PcbFilterElement>
 

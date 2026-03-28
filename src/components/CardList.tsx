@@ -84,7 +84,10 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                 items = items.filter(pcb => selectedTags.some(tagId => pcb.tag_ids?.includes(parseInt(tagId))));
             }
             if (selectedOwners.length > 0) {
-                items = items.filter(pcb => selectedOwners.includes(pcb.owner));
+                items = items.filter(pcb => {
+                    const ownerObj = owners.find(o => o.name === pcb.owner);
+                    return ownerObj && selectedOwners.includes(ownerObj.username || '');
+                });
             }
             break;
         case 'reworks': 
