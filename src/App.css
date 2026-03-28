@@ -201,6 +201,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 20px;
+  scroll-margin-top: 140px;
 }
 
 .card-title {
