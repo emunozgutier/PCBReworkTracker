@@ -9,6 +9,7 @@ export interface Pcb {
     project: string;
     owner: string;
     product: string;
+    bom?: string;
     tag_ids?: number[];
 }
 
@@ -17,8 +18,8 @@ interface PcbState {
     loading: boolean;
     error: string | null;
     fetchPcbs: () => Promise<void>;
-    addPcb: (data: { board_number: string; status: string; product_name_and_rev: string; project_id: number | null; owner_id: number | null }) => Promise<boolean>;
-    updatePcb: (id: number | string, data: { board_number: string; status: string; product_name_and_rev: string; project_id: number | null; owner_id: number | null }) => Promise<boolean>;
+    addPcb: (data: { board_number: string; status: string; product_name_and_rev: string; bom?: string; project_id: number | null; owner_id: number | null }) => Promise<boolean>;
+    updatePcb: (id: number | string, data: { board_number: string; status: string; product_name_and_rev: string; bom?: string; project_id: number | null; owner_id: number | null }) => Promise<boolean>;
     deletePcb: (id: number | string) => Promise<boolean>;
     selectedProjects: string[];
     selectedRevisions: string[];

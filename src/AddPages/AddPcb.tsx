@@ -13,6 +13,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const [boardNumber, setBoardNumber] = useState('');
     const [status] = useState('In Progress');
     const [pcbRev, setPcbRev] = useState('');
+    const [bom, setBom] = useState('');
     const [noPartYet, setNoPartYet] = useState(false);
     const [selectedRevision, setSelectedRevision] = useState('');
     const [selectedFormfactor, setSelectedFormfactor] = useState('');
@@ -90,6 +91,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
             board_number: finalBoardName,
             status,
             product_name_and_rev: combinedProduct,
+            bom: bom.trim(),
             project_id: selectedProject ? parseInt(selectedProject) : null,
             owner_id: selectedOwner ? parseInt(selectedOwner) : null
         });
@@ -208,6 +210,17 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                             {owners.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
                         </select>
                     </div>
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="bom">BOM (Optional)</label>
+                    <input 
+                        id="bom"
+                        type="text" 
+                        value={bom} 
+                        onChange={(e) => setBom(e.target.value)} 
+                        placeholder="e.g. BOM1"
+                    />
                 </div>
                 <button type="submit" className="submit-button" disabled={loading}>
                     <Save size={18} />

@@ -18,7 +18,7 @@ export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions }: PcbCar
                 <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap' }}>{pcb.board_number}</span>
 
                 <div style={{ display: 'flex', fontSize: '0.85rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.03)', padding: '4px 10px', borderRadius: '8px', border: '1px solid var(--border)', whiteSpace: 'nowrap' }}>
-                    {pcb.product || 'No Rev'} • {pcb.owner || 'Unassigned'}
+                    {pcb.product || 'No Rev'} {pcb.bom ? ` • ${pcb.bom}` : ''} • {pcb.owner || 'Unassigned'}
                 </div>
             </div>
 

@@ -14,6 +14,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     const [boardNumber, setBoardNumber] = useState('');
     const [status, setStatus] = useState('In Progress');
     const [pcbRev, setPcbRev] = useState('');
+    const [bom, setBom] = useState('');
     const [noPartYet, setNoPartYet] = useState(false);
     const [selectedRevision, setSelectedRevision] = useState('');
     const [selectedFormfactor, setSelectedFormfactor] = useState('');
@@ -55,6 +56,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                 const hexPart = parts.length > 1 ? parts.slice(1).join('-') : pcb.board_number;
                 setBoardNumber(hexPart);
                 setStatus(pcb.status);
+                setBom(pcb.bom || '');
                 
                 // Try to split product_name_and_rev
                 const project = projData.find((p: any) => p.id === pcb.project_id);
@@ -137,6 +139,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
             board_number: finalBoardName,
             status,
             product_name_and_rev: combinedProduct,
+            bom: bom.trim(),
             project_id: selectedProject ? parseInt(selectedProject) : null,
             owner_id: selectedOwner ? parseInt(selectedOwner) : null
         });
@@ -275,6 +278,17 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                         <option value="">Unassigned</option>
                         {owners.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
                     </select>
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="bom">BOM (Optional)</label>
+                    <input 
+                        id="bom"
+                        type="text" 
+                        value={bom} 
+                        onChange={(e) => setBom(e.target.value)} 
+                        placeholder="e.g. BOM1"
+                    />
                 </div>
                 <button type="submit" className="submit-button" disabled={saving}>
                     <Save size={18} />

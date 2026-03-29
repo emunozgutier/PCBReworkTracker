@@ -107,6 +107,7 @@ const initDb = () => {
             board_number TEXT NOT NULL,
             status TEXT DEFAULT 'In Progress',
             product_name_and_rev TEXT,
+            bom TEXT,
             project_id INTEGER,
             owner_id INTEGER,
             FOREIGN KEY (project_id) REFERENCES projects (id),
@@ -114,6 +115,13 @@ const initDb = () => {
         )`, (err) => {
             if (!err) {
                 db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_pcbs_project_board_nocase ON pcbs(project_id, board_number COLLATE NOCASE)`);
+
+                // Migration: Add bom column if it doesn't exist
+                db.run(`ALTER TABLE pcbs ADD COLUMN bom TEXT`, (err) => {
+                    if (err && !err.message.includes('duplicate column name')) {
+                        console.error('Migration error (pcbs.bom):', err.message);
+                    }
+                });
             }
         });
 
@@ -175,8 +183,8 @@ const initDb = () => {
                 db.run("INSERT INTO tags (name, color) VALUES (?, ?)", ['Urgent', '#ef4444']);
                 db.run("INSERT INTO tags (name, color) VALUES (?, ?)", ['Validation', '#3b82f6']);
                 
-                db.run(`INSERT INTO pcbs (board_number, status, product_name_and_rev, project_id, owner_id) 
-                    VALUES (?, ?, ?, ?, ?)`, ['ARES-001', 'In Progress', 'ARES-A.1', 1, 1]);
+                db.run(`INSERT INTO pcbs (board_number, status, product_name_and_rev, bom, project_id, owner_id) 
+                    VALUES (?, ?, ?, ?, ?, ?)`, ['ARES-001', 'In Progress', 'ARES-A.1', 'BOM1', 1, 1]);
                 db.run("INSERT INTO reworks (pcb_id, description) VALUES (?, ?)", [1, 'Replaced faulty capacitor C12']);
                 db.run("INSERT INTO pcb_tags (pcb_id, tag_id) VALUES (?, ?)", [1, 1]);
             }

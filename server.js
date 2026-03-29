@@ -175,15 +175,16 @@ app.get('/api/pcbs', (req, res) => {
             status: row.status,
             project: row.project_name,
             owner: row.owner_name || 'Unassigned',
-            product: row.product_name_and_rev
+            product: row.product_name_and_rev,
+            bom: row.bom
         })));
     });
 });
 
 app.post('/api/pcbs', (req, res) => {
-    const { board_number, status, product_name_and_rev, project_id, owner_id } = req.body;
-    const query = "INSERT INTO pcbs (board_number, status, product_name_and_rev, project_id, owner_id) VALUES (?, ?, ?, ?, ?)";
-    db.run(query, [board_number, status, product_name_and_rev, project_id, owner_id], function(err) {
+    const { board_number, status, product_name_and_rev, bom, project_id, owner_id } = req.body;
+    const query = "INSERT INTO pcbs (board_number, status, product_name_and_rev, bom, project_id, owner_id) VALUES (?, ?, ?, ?, ?, ?)";
+    db.run(query, [board_number, status, product_name_and_rev, bom, project_id, owner_id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.status(201).json({ id: this.lastID, board_number });
     });
@@ -387,9 +388,9 @@ app.delete('/api/pcbs/:id/tags/:tag_id', (req, res) => {
 });
 
 app.put('/api/pcbs/:id', (req, res) => {
-    const { board_number, status, product_name_and_rev, project_id, owner_id } = req.body;
-    const query = "UPDATE pcbs SET board_number = ?, status = ?, product_name_and_rev = ?, project_id = ?, owner_id = ? WHERE id = ?";
-    db.run(query, [board_number, status, product_name_and_rev, project_id, owner_id, req.params.id], function(err) {
+    const { board_number, status, product_name_and_rev, bom, project_id, owner_id } = req.body;
+    const query = "UPDATE pcbs SET board_number = ?, status = ?, product_name_and_rev = ?, bom = ?, project_id = ?, owner_id = ? WHERE id = ?";
+    db.run(query, [board_number, status, product_name_and_rev, bom, project_id, owner_id, req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ updated: this.changes });
     });
