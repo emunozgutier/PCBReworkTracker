@@ -56,7 +56,7 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, onEdit }: Rewor
                     </button>
                     <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap', color: 'var(--accent)' }}>
                         {rework.title 
-                            ? `${rework.rework_name || `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R-${String(rework.id).padStart(3, '0')}`} - ${rework.title}`
+                            ? `${rework.rework_name || `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R-${String(rework.id).padStart(3, '0')}`}: ${rework.title}`
                             : (rework.rework_name || `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R-${String(rework.id).padStart(3, '0')}`)}
                     </span>
                 </div>
