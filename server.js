@@ -6,7 +6,6 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { db, initDb } from './db.js';
-import https from 'https';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -508,10 +507,6 @@ app.delete('/api/reworks/:id', (req, res) => {
 });
 
 // Start Server
-const options = {
-    key: fs.readFileSync(path.join(__dirname, 'key.pem')),
-    cert: fs.readFileSync(path.join(__dirname, 'cert.pem'))
-};
-https.createServer(options, app).listen(port, '0.0.0.0', () => {
-    console.log(`Server running at https://0.0.0.0:${port}`);
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running at http://0.0.0.0:${port}`);
 });
