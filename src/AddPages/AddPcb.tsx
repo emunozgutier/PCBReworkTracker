@@ -139,7 +139,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                             </select>
                         </div>
                         <div className="form-group flex-1">
-                            <label htmlFor="revision">Project Rev</label>
+                            <label htmlFor="revision">Silicon Rev</label>
                             <select 
                                 id="revision"
                                 value={selectedRevision}
