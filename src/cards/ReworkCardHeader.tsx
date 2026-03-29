@@ -26,7 +26,7 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, onEdit }: Rewor
             {isExpanded && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        PCB: {rework.pcb_board_number}
+                        PCB: {rework.board_number || rework.pcb_board_number}
                     </span>
                     <span style={{ fontSize: '0.8rem', background: 'var(--card-bg)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: '12px', color: 'var(--text)', whiteSpace: 'nowrap' }}>
                         🧑‍🔧 {rework.owner_name ? rework.owner_name : 'Unassigned'}
@@ -55,7 +55,9 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, onEdit }: Rewor
                         <Edit2 size={16} />
                     </button>
                     <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap', color: 'var(--accent)' }}>
-                        {rework.title ? `${rework.title} (${rework.rework_name})` : (rework.rework_name || `Rework #${rework.id}`)}
+                        {rework.title 
+                            ? `${rework.rework_name || `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R-${String(rework.id).padStart(3, '0')}`} - ${rework.title}`
+                            : (rework.rework_name || `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R-${String(rework.id).padStart(3, '0')}`)}
                     </span>
                 </div>
 
