@@ -150,6 +150,32 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                             ))}
                         </select>
                     </div>
+                    <div className="form-group flex-1">
+                        <label htmlFor="pcb_rev">PCB Rev Number</label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <input 
+                                id="pcb_rev"
+                                type="number" 
+                                step="any"
+                                value={pcbRev} 
+                                onChange={(e) => setPcbRev(e.target.value)} 
+                                disabled={noPartYet}
+                                required={!noPartYet}
+                                style={{ flex: 1, minWidth: '80px' }}
+                            />
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'normal', fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={noPartYet} 
+                                    onChange={(e) => {
+                                        setNoPartYet(e.target.checked);
+                                        if (e.target.checked) setPcbRev('');
+                                    }} 
+                                />
+                                No part yet
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Row 2: Flavor, Revision, BOM */}
@@ -170,32 +196,6 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                 <option key={ff.name} value={ff.name}>{ff.name}</option>
                             ))}
                         </select>
-                    </div>
-                    <div className="form-group flex-1">
-                        <label htmlFor="pcb_rev">PCB Rev Number</label>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <input 
-                                id="pcb_rev"
-                                type="number" 
-                                step="any"
-                                value={pcbRev} 
-                                onChange={(e) => setPcbRev(e.target.value)} 
-                                placeholder="e.g. 1.2"
-                                disabled={noPartYet}
-                                required={!noPartYet}
-                            />
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'normal', fontSize: '0.9rem', cursor: 'pointer' }}>
-                                <input 
-                                    type="checkbox" 
-                                    checked={noPartYet} 
-                                    onChange={(e) => {
-                                        setNoPartYet(e.target.checked);
-                                        if (e.target.checked) setPcbRev('');
-                                    }} 
-                                />
-                                No part yet
-                            </label>
-                        </div>
                     </div>
                     <div className="form-group flex-1">
                         <label htmlFor="revision">Project Rev</label>
