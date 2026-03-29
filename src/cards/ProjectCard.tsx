@@ -43,7 +43,6 @@ export function ProjectCard({ project, onEdit }: ProjectCardProps) {
                 project={project} 
                 isExpanded={isExpanded} 
                 onToggle={handleToggle} 
-                onEdit={onEdit} 
             />
             {isExpanded && <ProjectCardBody project={project} />}
         </div>

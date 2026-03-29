@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { PictureCard } from '../components/PictureCard';
+import { useStore } from '../store/useStore';
+import { Edit2 } from 'lucide-react';
 
 interface ReworkCardBodyProps {
     rework: any;
@@ -7,6 +9,7 @@ interface ReworkCardBodyProps {
 
 export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
     const [showGallery, setShowGallery] = useState(false);
+    const { editItem } = useStore();
 
     let imagePaths: string[] = [];
     if (rework.image_path) {
@@ -59,6 +62,27 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                             <span title="Timestamp">🕒 {new Date(rework.timestamp).toLocaleString()}</span>
                             <span title="Database ID">#️⃣ ID: {rework.id}</span>
                         </div>
+
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); editItem('reworks_edit', rework.id); }}
+                            style={{ 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                gap: '6px', 
+                                padding: '4px 8px', 
+                                background: 'transparent', 
+                                color: 'var(--text)', 
+                                borderRadius: '6px', 
+                                cursor: 'pointer', 
+                                fontWeight: 600, 
+                                fontSize: '0.75rem',
+                                border: '1px solid var(--border-color)',
+                                transition: 'all 0.2s ease',
+                                marginLeft: 'auto'
+                            }}
+                        >
+                            <Edit2 size={12} /> Edit
+                        </button>
                     </div>
                 </div>
             </div>

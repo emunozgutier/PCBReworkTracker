@@ -64,7 +64,6 @@ export function TagCardBody({ tag }: TagCardBodyProps) {
                                 pcb={pcb} 
                                 isExpanded={false}
                                 onToggle={() => {}}
-                                onEdit={(id) => editItem('pcbs_edit', id)}
                                 hideActions={true}
                             />
                         </div>

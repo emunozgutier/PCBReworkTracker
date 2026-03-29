@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Edit2 } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ProjectCardHeaderProps {
     project: {
@@ -11,10 +11,9 @@ interface ProjectCardHeaderProps {
     };
     isExpanded: boolean;
     onToggle: () => void;
-    onEdit: (id: number) => void;
 }
 
-export function ProjectCardHeader({ project, isExpanded, onToggle, onEdit }: ProjectCardHeaderProps) {
+export function ProjectCardHeader({ project, isExpanded, onToggle }: ProjectCardHeaderProps) {
     return (
         <div 
             className="card-header-main" 
@@ -53,13 +52,7 @@ export function ProjectCardHeader({ project, isExpanded, onToggle, onEdit }: Pro
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                    <button 
-                        className="edit-button" 
-                        onClick={(e) => { e.stopPropagation(); onEdit(project.id); }}
-                        style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
-                    >
-                        <Edit2 size={16} />
-                    </button>
+
                     <span className="board-num" style={{ margin: 0 }}>{project.project_key} - {project.name}</span>
                 </div>
                 <div className="expand-indicator" style={{ display: 'flex', position: 'static', transform: 'none' }}>

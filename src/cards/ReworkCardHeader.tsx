@@ -1,13 +1,12 @@
-import { ChevronDown, ChevronUp, Edit2 } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ReworkCardHeaderProps {
     rework: any;
     isExpanded: boolean;
     onToggle: () => void;
-    onEdit: (id: number | string) => void;
 }
 
-export function ReworkCardHeader({ rework, isExpanded, onToggle, onEdit }: ReworkCardHeaderProps) {
+export function ReworkCardHeader({ rework, isExpanded, onToggle }: ReworkCardHeaderProps) {
     let imagePaths: string[] = [];
     if (rework.image_path) {
         try {
@@ -46,14 +45,7 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, onEdit }: Rewor
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                    <button 
-                        className="edit-button" 
-                        onClick={(e) => { e.stopPropagation(); onEdit(rework.id); }}
-                        style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
-                        title="Edit Rework"
-                    >
-                        <Edit2 size={16} />
-                    </button>
+
                     <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap', color: 'var(--accent)' }}>
                         {rework.title 
                             ? `${rework.rework_name || `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R-${String(rework.id).padStart(3, '0')}`}: ${rework.title}`

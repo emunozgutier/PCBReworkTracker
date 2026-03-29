@@ -1,4 +1,4 @@
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Edit2 } from 'lucide-react';
 import { usePcbStore } from '../store/storePcb';
 import { useStore } from '../store/useStore';
 import { PcbCardHeader } from './PcbCardHeader';
@@ -28,32 +28,55 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
         <div className="card-expanded-content" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <ProjectCardSummary project={project} />
 
-            <button 
-                onClick={() => {
-                    setSelectedProjects([project.id.toString()]);
-                    setActiveTab('pcbs');
-                }}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    background: 'transparent',
-                    border: '1px solid var(--accent)',
-                    color: 'var(--accent)',
-                    fontSize: '0.9rem',
-                    cursor: 'pointer',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    transition: 'all 0.2s',
-                    marginBottom: '12px'
-                }}
-                className="view-pcbs-btn"
-            >
-                <span>View Detailed PCBs Info</span>
-                <ExternalLink size={16} />
-            </button>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                <button 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedProjects([project.id.toString()]);
+                        setActiveTab('pcbs');
+                    }}
+                    style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        background: 'transparent',
+                        border: '1px solid var(--accent)',
+                        color: 'var(--accent)',
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        fontWeight: 600,
+                        transition: 'all 0.2s'
+                    }}
+                    className="view-pcbs-btn"
+                >
+                    <ExternalLink size={16} /> View PCBs Info
+                </button>
+                <button 
+                    onClick={(e) => { e.stopPropagation(); editItem('projects_edit', project.id); }}
+                    style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        background: 'transparent',
+                        border: '1px solid var(--border-color)',
+                        color: 'var(--text)',
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        fontWeight: 600,
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    <Edit2 size={16} /> Edit Project
+                </button>
+            </div>
 
             {projectPcbs.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -63,7 +86,6 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                                 pcb={pcb} 
                                 isExpanded={false}
                                 onToggle={() => {}}
-                                onEdit={(id) => editItem('pcbs_edit', id)}
                                 hideActions={true}
                             />
                         </div>

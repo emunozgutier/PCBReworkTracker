@@ -3,7 +3,7 @@ import { useReworkStore } from '../store/storeRework';
 import { useTagStore } from '../store/storeTag';
 import { useStore } from '../store/useStore';
 import { API_BASE } from '../api';
-import { Plus, ExternalLink, QrCode as QrCodeIcon, Tag as TagIcon, X } from 'lucide-react';
+import { Plus, ExternalLink, QrCode as QrCodeIcon, Tag as TagIcon, X, Edit2 } from 'lucide-react';
 import { ReworkCardHeader } from './ReworkCardHeader';
 
 interface PcbCardBodyProps {
@@ -50,6 +50,27 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     return (
         <div className="card-expanded-content">
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                <button 
+                    onClick={(e) => { e.stopPropagation(); editItem('pcbs_edit', pcb.id); }}
+                    style={{ 
+                        flex: 1,
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        gap: '8px', 
+                        background: 'transparent', 
+                        color: 'var(--text)', 
+                        border: '1px solid var(--border-color)', 
+                        padding: '10px 16px', 
+                        borderRadius: '8px', 
+                        fontSize: '0.9rem', 
+                        fontWeight: 600, 
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                    }}
+                >
+                    <Edit2 size={18} /> Edit PCB
+                </button>
                 <button 
                     onClick={(e) => { e.stopPropagation(); addItem('reworks_add', pcb.id); }}
                     style={{ 
@@ -193,7 +214,6 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                 rework={rework} 
                                 isExpanded={false}
                                 onToggle={() => {}}
-                                onEdit={(id) => editItem('reworks_edit', id)}
                             />
                         </div>
                     ))}

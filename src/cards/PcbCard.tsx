@@ -5,10 +5,9 @@ import { useStore } from '../store/useStore';
 
 interface PcbCardProps {
     pcb: any;
-    onEdit: (id: number | string) => void;
 }
 
-export function PcbCard({ pcb, onEdit }: PcbCardProps) {
+export function PcbCard({ pcb }: PcbCardProps) {
     const { expandedPcb, setExpandedPcb } = useStore();
     const isExpanded = expandedPcb === pcb.board_number;
     const cardRef = useRef<HTMLDivElement>(null);
@@ -35,7 +34,6 @@ export function PcbCard({ pcb, onEdit }: PcbCardProps) {
                 pcb={pcb} 
                 isExpanded={isExpanded} 
                 onToggle={handleToggle} 
-                onEdit={onEdit} 
             />
             {isExpanded && <PcbCardBody pcb={pcb} />}
         </div>
