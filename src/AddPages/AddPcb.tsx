@@ -3,6 +3,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 
 import { API_BASE } from '../apiBridge';
 import { usePcbStore } from '../store/storePcb';
+import { FormGroup } from '../forms/FormGroup';
 
 interface AddPCBProps {
     onBack: () => void;
@@ -125,135 +126,138 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
             </header>
 
             <form onSubmit={handleSubmit} className="add-form">
-                {/* Row 1: Project & Silicon Version */}
-                <div className="form-row">
-                    <div className="form-group flex-1">
-                        <label htmlFor="project">Project *</label>
-                        <select 
-                            id="project" 
-                            value={selectedProject} 
-                            onChange={(e) => handleProjectChange(e.target.value)}
-                        >
-                            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                        </select>
+                <FormGroup title="Silicon">
+                    <div className="form-row">
+                        <div className="form-group flex-1">
+                            <label htmlFor="project">Project *</label>
+                            <select 
+                                id="project" 
+                                value={selectedProject} 
+                                onChange={(e) => handleProjectChange(e.target.value)}
+                            >
+                                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                            </select>
+                        </div>
+                        <div className="form-group flex-1">
+                            <label htmlFor="revision">Project Rev</label>
+                            <select 
+                                id="revision"
+                                value={selectedRevision}
+                                onChange={(e) => setSelectedRevision(e.target.value)}
+                            >
+                                <option value="">N/A</option>
+                                {availableRevisions.map((rev: string) => (
+                                    <option key={rev} value={rev}>{rev}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="form-group flex-1">
+                            <label htmlFor="silicon_version">Silicon Corner</label>
+                            <select 
+                                id="silicon_version"
+                                value={siliconVersion}
+                                onChange={(e) => setSiliconVersion(e.target.value)}
+                            >
+                                <option value="">N/A</option>
+                                {availableSiliconVersions.map((v: string) => (
+                                    <option key={v} value={v}>{v}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
-                    <div className="form-group flex-1">
-                        <label htmlFor="silicon_version">Silicon Version</label>
-                        <select 
-                            id="silicon_version"
-                            value={siliconVersion}
-                            onChange={(e) => setSiliconVersion(e.target.value)}
-                        >
-                            <option value="">N/A</option>
-                            {availableSiliconVersions.map((v: string) => (
-                                <option key={v} value={v}>{v}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="form-group flex-1">
-                        <label htmlFor="pcb_rev">PCB Rev Number</label>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <input 
-                                id="pcb_rev"
-                                type="number" 
-                                step="any"
-                                value={pcbRev} 
-                                onChange={(e) => setPcbRev(e.target.value)} 
-                                disabled={noPartYet}
-                                required={!noPartYet}
-                                style={{ flex: 1, minWidth: '80px' }}
-                            />
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'normal', fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                </FormGroup>
+
+                <FormGroup title="PCB">
+                    <div className="form-row">
+                        <div className="form-group flex-1">
+                            <label htmlFor="formfactor">PCB Flavor</label>
+                            <select 
+                                id="formfactor"
+                                value={selectedFormfactor}
+                                onChange={(e) => {
+                                    setSelectedFormfactor(e.target.value);
+                                    const ff = availableFormfactors.find((f: any) => f.name === e.target.value);
+                                    setSelectedRevision(ff && ff.revisions.length > 0 ? ff.revisions[0] : '');
+                                }}
+                            >
+                                <option value="">N/A</option>
+                                {availableFormfactors.map((ff: any) => (
+                                    <option key={ff.name} value={ff.name}>{ff.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="form-group flex-1">
+                            <label htmlFor="pcb_rev">PCB Rev Number</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <input 
-                                    type="checkbox" 
-                                    checked={noPartYet} 
-                                    onChange={(e) => {
-                                        setNoPartYet(e.target.checked);
-                                        if (e.target.checked) setPcbRev('');
-                                    }} 
+                                    id="pcb_rev"
+                                    type="number" 
+                                    step="any"
+                                    value={pcbRev} 
+                                    onChange={(e) => setPcbRev(e.target.value)} 
+                                    disabled={noPartYet}
+                                    required={!noPartYet}
+                                    style={{ flex: 1, minWidth: '80px' }}
                                 />
-                                No part yet
-                            </label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'normal', fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={noPartYet} 
+                                        onChange={(e) => {
+                                            setNoPartYet(e.target.checked);
+                                            if (e.target.checked) setPcbRev('');
+                                        }} 
+                                    />
+                                    No part yet
+                                </label>
+                            </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Row 2: Flavor, Revision, BOM */}
-                <div className="form-row">
-                    <div className="form-group flex-1">
-                        <label htmlFor="formfactor">PCB Flavor</label>
-                        <select 
-                            id="formfactor"
-                            value={selectedFormfactor}
-                            onChange={(e) => {
-                                setSelectedFormfactor(e.target.value);
-                                const ff = availableFormfactors.find((f: any) => f.name === e.target.value);
-                                setSelectedRevision(ff && ff.revisions.length > 0 ? ff.revisions[0] : '');
-                            }}
-                        >
-                            <option value="">N/A</option>
-                            {availableFormfactors.map((ff: any) => (
-                                <option key={ff.name} value={ff.name}>{ff.name}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="form-group flex-1">
-                        <label htmlFor="revision">Project Rev</label>
-                        <select 
-                            id="revision"
-                            value={selectedRevision}
-                            onChange={(e) => setSelectedRevision(e.target.value)}
-                        >
-                            <option value="">N/A</option>
-                            {availableRevisions.map((rev: string) => (
-                                <option key={rev} value={rev}>{rev}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="form-group flex-1">
-                        <label htmlFor="bom">BOM (Optional)</label>
-                        <input 
-                            id="bom"
-                            type="text" 
-                            value={bom} 
-                            onChange={(e) => setBom(e.target.value)} 
-                            placeholder="e.g. BOM1"
-                        />
-                    </div>
-                </div>
-
-                {/* Row 3: Auto assigned PCB name + Owner */}
-                <div className="form-row">
-                    <div className="form-group flex-1">
-                        <label htmlFor="board_number">Auto Assigned PCB Name</label>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--accent)' }}>
-                                {selectedProjectKey}-
-                            </span>
+                        <div className="form-group flex-1">
+                            <label htmlFor="bom">BOM (Optional)</label>
                             <input 
-                                id="board_number"
+                                id="bom"
                                 type="text" 
-                                maxLength={4}
-                                value={boardNumber} 
-                                onChange={handleHexChange} 
-                                placeholder="e.g. 00A1"
-                                style={{ textTransform: 'uppercase', width: '120px' }}
-                                required 
+                                value={bom} 
+                                onChange={(e) => setBom(e.target.value)} 
+                                placeholder="e.g. BOM1"
                             />
                         </div>
                     </div>
-                    <div className="form-group flex-1">
-                        <label htmlFor="owner">Owner</label>
-                        <select 
-                            id="owner" 
-                            value={selectedOwner} 
-                            onChange={(e) => setSelectedOwner(e.target.value)}
-                        >
-                            <option value="">Unassigned</option>
-                            {owners.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-                        </select>
+                </FormGroup>
+
+                <FormGroup title="Rest">
+                    <div className="form-row">
+                        <div className="form-group flex-1">
+                            <label htmlFor="board_number">Auto Assigned PCB Name</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--accent)' }}>
+                                    {selectedProjectKey}-
+                                </span>
+                                <input 
+                                    id="board_number"
+                                    type="text" 
+                                    maxLength={4}
+                                    value={boardNumber} 
+                                    onChange={handleHexChange} 
+                                    placeholder="e.g. 00A1"
+                                    style={{ textTransform: 'uppercase', width: '120px' }}
+                                    required 
+                                />
+                            </div>
+                        </div>
+                        <div className="form-group flex-1">
+                            <label htmlFor="owner">Owner</label>
+                            <select 
+                                id="owner" 
+                                value={selectedOwner} 
+                                onChange={(e) => setSelectedOwner(e.target.value)}
+                            >
+                                <option value="">Unassigned</option>
+                                {owners.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                            </select>
+                        </div>
                     </div>
-                </div>
+                </FormGroup>
 
                 <button type="submit" className="submit-button" disabled={loading}>
                     <Save size={18} />
