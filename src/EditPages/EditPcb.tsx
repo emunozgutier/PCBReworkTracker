@@ -20,6 +20,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     const [selectedFormfactor, setSelectedFormfactor] = useState('');
     const [selectedProject, setSelectedProject] = useState('');
     const [selectedOwner, setSelectedOwner] = useState('');
+    const [siliconVersion, setSiliconVersion] = useState('');
     
     const [projects, setProjects] = useState<any[]>([]);
     const [owners, setOwners] = useState<any[]>([]);
@@ -29,6 +30,8 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
 
     const selectedProjData = projects.find(p => p.id.toString() === selectedProject);
     const availableFormfactors = selectedProjData?.formfactors || [];
+    const availableSiliconVersions = selectedProjData?.silicon_corners ? selectedProjData.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+    
     let availableRevisions: string[] = [];
     if (selectedFormfactor) {
         const ff = availableFormfactors.find((f: any) => f.name === selectedFormfactor);
@@ -37,11 +40,6 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
         availableRevisions = selectedProjData?.revisions || [];
     }
     const selectedProjectKey = selectedProjData?.project_key || 'XXX';
-
-    const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value.replace(/[^0-9A-Fa-f]/g, '').toUpperCase().slice(0, 4);
-        setBoardNumber(val);
-    };
 
     useEffect(() => {
         Promise.all([
@@ -63,8 +61,21 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                 let rawProduct = pcb.product_name_and_rev || '';
                 let foundRev = '';
                 let foundFormfactor = '';
+                let foundSilicon = '';
                 
                 if (project) {
+                    // Extract Silicon Corner if present at the end
+                    if (project.silicon_corners) {
+                        const corners = project.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean);
+                        for (const corner of corners) {
+                            if (rawProduct.endsWith(` ${corner}`) || rawProduct === corner) {
+                                foundSilicon = corner;
+                                rawProduct = rawProduct.slice(0, rawProduct.length - corner.length).trim();
+                                break;
+                            }
+                        }
+                    }
+
                     if (project.formfactors && project.formfactors.length > 0) {
                         for (const ff of project.formfactors) {
                             if (rawProduct.startsWith(ff.name)) {
@@ -99,6 +110,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                     setNoPartYet(false);
                     setPcbRev(rawProduct);
                 }
+                setSiliconVersion(foundSilicon);
                 setSelectedFormfactor(foundFormfactor);
                 setSelectedRevision(foundRev);
                 setSelectedProject(pcb.project_id.toString());
@@ -114,6 +126,14 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     const handleProjectChange = (id: string) => {
         setSelectedProject(id);
         const project = projects.find(p => p.id.toString() === id);
+        
+        if (project && project.silicon_corners) {
+            const corners = project.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean);
+            setSiliconVersion(corners.length > 0 ? corners[0] : '');
+        } else {
+            setSiliconVersion('');
+        }
+
         if (project && project.formfactors && project.formfactors.length > 0) {
             setSelectedFormfactor(project.formfactors[0].name);
             setSelectedRevision(project.formfactors[0].revisions[0] || '');
@@ -132,7 +152,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
         const finalPcbRev = noPartYet ? "No part yet" : pcbRev;
         const revPart = selectedRevision ? selectedRevision : '';
         const ffPart = selectedFormfactor ? selectedFormfactor : '';
-        const combinedProduct = [ffPart, finalPcbRev, revPart].filter(Boolean).join(' ').trim();
+        const combinedProduct = [ffPart, finalPcbRev, revPart, siliconVersion].filter(Boolean).join(' ').trim();
         const finalBoardName = `${selectedProjectKey}-${boardNumber.toUpperCase()}`;
         
         const success = await updatePcb(id, {
@@ -170,26 +190,52 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
             </header>
 
             <form onSubmit={handleUpdate} className="add-form">
-                <div className="form-group">
-                    <label htmlFor="board_number">Board Number (4-Digit Hex)</label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--accent)' }}>
-                            {selectedProjectKey}-
-                        </span>
-                        <input 
-                            id="board_number"
-                            type="text" 
-                            maxLength={4}
-                            value={boardNumber} 
-                            onChange={handleHexChange} 
-                            placeholder="e.g. 00A1"
-                            style={{ textTransform: 'uppercase', width: '120px' }}
-                            required 
-                        />
+                {/* Row 1: Project & Silicon Version */}
+                <div className="form-row">
+                    <div className="form-group flex-1">
+                        <label htmlFor="project">Project *</label>
+                        <select 
+                            id="project" 
+                            value={selectedProject} 
+                            onChange={(e) => handleProjectChange(e.target.value)}
+                        >
+                            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        </select>
+                    </div>
+                    <div className="form-group flex-1">
+                        <label htmlFor="silicon_version">Silicon Version</label>
+                        <select 
+                            id="silicon_version"
+                            value={siliconVersion}
+                            onChange={(e) => setSiliconVersion(e.target.value)}
+                        >
+                            <option value="">N/A</option>
+                            {availableSiliconVersions.map((v: string) => (
+                                <option key={v} value={v}>{v}</option>
+                            ))}
+                        </select>
                     </div>
                 </div>
-                
+
+                {/* Row 2: Flavor, Revision, BOM */}
                 <div className="form-row">
+                    <div className="form-group flex-1">
+                        <label htmlFor="formfactor">PCB Flavor</label>
+                        <select 
+                            id="formfactor"
+                            value={selectedFormfactor}
+                            onChange={(e) => {
+                                setSelectedFormfactor(e.target.value);
+                                const ff = availableFormfactors.find((f: any) => f.name === e.target.value);
+                                setSelectedRevision(ff && ff.revisions.length > 0 ? ff.revisions[0] : '');
+                            }}
+                        >
+                            <option value="">N/A</option>
+                            {availableFormfactors.map((ff: any) => (
+                                <option key={ff.name} value={ff.name}>{ff.name}</option>
+                            ))}
+                        </select>
+                    </div>
                     <div className="form-group flex-1">
                         <label htmlFor="pcb_rev">PCB Rev Number</label>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -216,23 +262,6 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                         </div>
                     </div>
                     <div className="form-group flex-1">
-                        <label htmlFor="formfactor">PCB Flavor</label>
-                        <select 
-                            id="formfactor"
-                            value={selectedFormfactor}
-                            onChange={(e) => {
-                                setSelectedFormfactor(e.target.value);
-                                const ff = availableFormfactors.find((f: any) => f.name === e.target.value);
-                                setSelectedRevision(ff && ff.revisions.length > 0 ? ff.revisions[0] : '');
-                            }}
-                        >
-                            <option value="">N/A</option>
-                            {availableFormfactors.map((ff: any) => (
-                                <option key={ff.name} value={ff.name}>{ff.name}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="form-group flex-1">
                         <label htmlFor="revision">Project Rev</label>
                         <select 
                             id="revision"
@@ -245,17 +274,44 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                             ))}
                         </select>
                     </div>
+                    <div className="form-group flex-1">
+                        <label htmlFor="bom">BOM (Optional)</label>
+                        <input 
+                            id="bom"
+                            type="text" 
+                            value={bom} 
+                            onChange={(e) => setBom(e.target.value)} 
+                            placeholder="e.g. BOM1"
+                        />
+                    </div>
                 </div>
 
+                {/* Row 3: Auto assigned PCB name + Owner + Status */}
                 <div className="form-row">
                     <div className="form-group flex-1">
-                        <label htmlFor="project">Project</label>
+                        <label htmlFor="board_number">Assigned PCB Name</label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
+                                {selectedProjectKey}-
+                            </span>
+                            <input 
+                                id="board_number"
+                                type="text" 
+                                value={boardNumber} 
+                                disabled={true}
+                                style={{ width: '120px', backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}
+                            />
+                        </div>
+                    </div>
+                    <div className="form-group flex-1">
+                        <label htmlFor="owner">Owner</label>
                         <select 
-                            id="project" 
-                            value={selectedProject} 
-                            onChange={(e) => handleProjectChange(e.target.value)}
+                            id="owner" 
+                            value={selectedOwner} 
+                            onChange={(e) => setSelectedOwner(e.target.value)}
                         >
-                            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                            <option value="">Unassigned</option>
+                            {owners.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
                         </select>
                     </div>
                     <div className="form-group flex-1">
@@ -268,28 +324,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                         </select>
                     </div>
                 </div>
-                <div className="form-group">
-                    <label htmlFor="owner">Owner</label>
-                    <select 
-                        id="owner" 
-                        value={selectedOwner} 
-                        onChange={(e) => setSelectedOwner(e.target.value)}
-                    >
-                        <option value="">Unassigned</option>
-                        {owners.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-                    </select>
-                </div>
 
-                <div className="form-group">
-                    <label htmlFor="bom">BOM (Optional)</label>
-                    <input 
-                        id="bom"
-                        type="text" 
-                        value={bom} 
-                        onChange={(e) => setBom(e.target.value)} 
-                        placeholder="e.g. BOM1"
-                    />
-                </div>
                 <button type="submit" className="submit-button" disabled={saving}>
                     <Save size={18} />
                     <span>{saving ? 'Saving...' : 'Update PCB Board'}</span>

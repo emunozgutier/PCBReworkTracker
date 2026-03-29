@@ -19,6 +19,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const [selectedFormfactor, setSelectedFormfactor] = useState('');
     const [selectedProject, setSelectedProject] = useState('');
     const [selectedOwner, setSelectedOwner] = useState('');
+    const [siliconVersion, setSiliconVersion] = useState('');
     
     const [projects, setProjects] = useState<any[]>([]);
     const [owners, setOwners] = useState<any[]>([]);
@@ -26,6 +27,8 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
 
     const selectedProjData = projects.find(p => p.id.toString() === selectedProject);
     const availableFormfactors = selectedProjData?.formfactors || [];
+    const availableSiliconVersions = selectedProjData?.silicon_corners ? selectedProjData.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+    
     let availableRevisions: string[] = [];
     if (selectedFormfactor) {
         const ff = availableFormfactors.find((f: any) => f.name === selectedFormfactor);
@@ -51,6 +54,10 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
             if (projData.length > 0) {
                 const firstProj = projData[0];
                 setSelectedProject(firstProj.id.toString());
+                if (firstProj.silicon_corners) {
+                    const corners = firstProj.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean);
+                    setSiliconVersion(corners.length > 0 ? corners[0] : '');
+                }
                 if (firstProj.formfactors && firstProj.formfactors.length > 0) {
                     setSelectedFormfactor(firstProj.formfactors[0].name);
                     setSelectedRevision(firstProj.formfactors[0].revisions[0] || '');
@@ -66,6 +73,14 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const handleProjectChange = (id: string) => {
         setSelectedProject(id);
         const project = projects.find(p => p.id.toString() === id);
+        
+        if (project && project.silicon_corners) {
+            const corners = project.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean);
+            setSiliconVersion(corners.length > 0 ? corners[0] : '');
+        } else {
+            setSiliconVersion('');
+        }
+
         if (project && project.formfactors && project.formfactors.length > 0) {
             setSelectedFormfactor(project.formfactors[0].name);
             setSelectedRevision(project.formfactors[0].revisions[0] || '');
@@ -84,7 +99,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         const finalPcbRev = noPartYet ? "No part yet" : pcbRev;
         const revPart = selectedRevision ? selectedRevision : '';
         const ffPart = selectedFormfactor ? selectedFormfactor : '';
-        const combinedProduct = [ffPart, finalPcbRev, revPart].filter(Boolean).join(' ').trim();
+        const combinedProduct = [ffPart, finalPcbRev, revPart, siliconVersion].filter(Boolean).join(' ').trim();
         const finalBoardName = `${selectedProjectKey}-${boardNumber.toUpperCase()}`;
         
         const success = await addPcb({
@@ -110,26 +125,52 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
             </header>
 
             <form onSubmit={handleSubmit} className="add-form">
-                <div className="form-group">
-                    <label htmlFor="board_number">Board Number (4-Digit Hex)</label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--accent)' }}>
-                            {selectedProjectKey}-
-                        </span>
-                        <input 
-                            id="board_number"
-                            type="text" 
-                            maxLength={4}
-                            value={boardNumber} 
-                            onChange={handleHexChange} 
-                            placeholder="e.g. 00A1"
-                            style={{ textTransform: 'uppercase', width: '120px' }}
-                            required 
-                        />
+                {/* Row 1: Project & Silicon Version */}
+                <div className="form-row">
+                    <div className="form-group flex-1">
+                        <label htmlFor="project">Project *</label>
+                        <select 
+                            id="project" 
+                            value={selectedProject} 
+                            onChange={(e) => handleProjectChange(e.target.value)}
+                        >
+                            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        </select>
+                    </div>
+                    <div className="form-group flex-1">
+                        <label htmlFor="silicon_version">Silicon Version</label>
+                        <select 
+                            id="silicon_version"
+                            value={siliconVersion}
+                            onChange={(e) => setSiliconVersion(e.target.value)}
+                        >
+                            <option value="">N/A</option>
+                            {availableSiliconVersions.map((v: string) => (
+                                <option key={v} value={v}>{v}</option>
+                            ))}
+                        </select>
                     </div>
                 </div>
-                
+
+                {/* Row 2: Flavor, Revision, BOM */}
                 <div className="form-row">
+                    <div className="form-group flex-1">
+                        <label htmlFor="formfactor">PCB Flavor</label>
+                        <select 
+                            id="formfactor"
+                            value={selectedFormfactor}
+                            onChange={(e) => {
+                                setSelectedFormfactor(e.target.value);
+                                const ff = availableFormfactors.find((f: any) => f.name === e.target.value);
+                                setSelectedRevision(ff && ff.revisions.length > 0 ? ff.revisions[0] : '');
+                            }}
+                        >
+                            <option value="">N/A</option>
+                            {availableFormfactors.map((ff: any) => (
+                                <option key={ff.name} value={ff.name}>{ff.name}</option>
+                            ))}
+                        </select>
+                    </div>
                     <div className="form-group flex-1">
                         <label htmlFor="pcb_rev">PCB Rev Number</label>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -157,23 +198,6 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                         </div>
                     </div>
                     <div className="form-group flex-1">
-                        <label htmlFor="formfactor">PCB Flavor</label>
-                        <select 
-                            id="formfactor"
-                            value={selectedFormfactor}
-                            onChange={(e) => {
-                                setSelectedFormfactor(e.target.value);
-                                const ff = availableFormfactors.find((f: any) => f.name === e.target.value);
-                                setSelectedRevision(ff && ff.revisions.length > 0 ? ff.revisions[0] : '');
-                            }}
-                        >
-                            <option value="">N/A</option>
-                            {availableFormfactors.map((ff: any) => (
-                                <option key={ff.name} value={ff.name}>{ff.name}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="form-group flex-1">
                         <label htmlFor="revision">Project Rev</label>
                         <select 
                             id="revision"
@@ -186,18 +210,37 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                             ))}
                         </select>
                     </div>
+                    <div className="form-group flex-1">
+                        <label htmlFor="bom">BOM (Optional)</label>
+                        <input 
+                            id="bom"
+                            type="text" 
+                            value={bom} 
+                            onChange={(e) => setBom(e.target.value)} 
+                            placeholder="e.g. BOM1"
+                        />
+                    </div>
                 </div>
 
+                {/* Row 3: Auto assigned PCB name + Owner */}
                 <div className="form-row">
                     <div className="form-group flex-1">
-                        <label htmlFor="project">Project</label>
-                        <select 
-                            id="project" 
-                            value={selectedProject} 
-                            onChange={(e) => handleProjectChange(e.target.value)}
-                        >
-                            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                        </select>
+                        <label htmlFor="board_number">Auto Assigned PCB Name</label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--accent)' }}>
+                                {selectedProjectKey}-
+                            </span>
+                            <input 
+                                id="board_number"
+                                type="text" 
+                                maxLength={4}
+                                value={boardNumber} 
+                                onChange={handleHexChange} 
+                                placeholder="e.g. 00A1"
+                                style={{ textTransform: 'uppercase', width: '120px' }}
+                                required 
+                            />
+                        </div>
                     </div>
                     <div className="form-group flex-1">
                         <label htmlFor="owner">Owner</label>
@@ -212,16 +255,6 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                     </div>
                 </div>
 
-                <div className="form-group">
-                    <label htmlFor="bom">BOM (Optional)</label>
-                    <input 
-                        id="bom"
-                        type="text" 
-                        value={bom} 
-                        onChange={(e) => setBom(e.target.value)} 
-                        placeholder="e.g. BOM1"
-                    />
-                </div>
                 <button type="submit" className="submit-button" disabled={loading}>
                     <Save size={18} />
                     <span>{loading ? 'Saving...' : 'Save PCB Board'}</span>
