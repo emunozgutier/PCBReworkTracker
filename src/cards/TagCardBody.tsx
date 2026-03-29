@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { API_BASE } from '../api';
+import { API_BASE } from '../apiBridge';
 import { PcbCardHeader } from './PcbCardHeader';
 import { useStore } from '../store/useStore';
 import { ExternalLink } from 'lucide-react';

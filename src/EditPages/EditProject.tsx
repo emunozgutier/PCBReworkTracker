@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2, HelpCircle } from 'lucide-react';
 
-import { API_BASE } from '../api';
+import { API_BASE } from '../apiBridge';
 import { useProjectStore } from '../store/storeProject';
 import { usePcbStore } from '../store/storePcb';
 

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { API_BASE } from '../api';
+import { API_BASE } from '../apiBridge';
 import { apiFetch } from '../apiBridge';
 
 export interface Rework {

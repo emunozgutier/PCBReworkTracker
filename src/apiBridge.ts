@@ -1,6 +1,9 @@
 import { useDemoStore } from './store/useDemoStore';
 import demoData from './demoData.json';
 
+export const API_BASE = `http://${window.location.hostname}:5002/api`;
+
+
 let internalProjects = [...demoData.demoProjects] as any[];
 let internalPcbs = [...demoData.demoPcbs] as any[];
 let internalOwners = [...demoData.demoOwners] as any[];

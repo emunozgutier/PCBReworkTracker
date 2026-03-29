@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
-import { API_BASE } from '../api';
+import { API_BASE } from '../apiBridge';
 import { useReworkStore } from '../store/storeRework';
 import { useOwnerStore } from '../store/storeOwner';
 

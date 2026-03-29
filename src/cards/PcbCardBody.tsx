@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useReworkStore } from '../store/storeRework';
 import { useTagStore } from '../store/storeTag';
 import { useStore } from '../store/useStore';
-import { API_BASE } from '../api';
+import { API_BASE } from '../apiBridge';
 import { Plus, ExternalLink, QrCode as QrCodeIcon, Tag as TagIcon, X, Edit2 } from 'lucide-react';
 import { ReworkCardHeader } from './ReworkCardHeader';
 
