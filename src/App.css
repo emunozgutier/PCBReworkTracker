@@ -395,6 +395,7 @@ body {
 .form-row {
   display: flex;
   gap: 16px;
+  flex-wrap: wrap;
 }
 
 .flex-1 { flex: 1; }

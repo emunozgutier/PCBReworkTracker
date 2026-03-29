@@ -13,7 +13,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [revisions, setRevisions] = useState('');
     const [siliconCorners, setSiliconCorners] = useState('');
     const [projectKey, setProjectKey] = useState('');
-    const [formfactors, setFormfactors] = useState([{ name: '', revisions: '' }]);
+    const [formfactors, setFormfactors] = useState([{ name: '', revisions: '', boms: '' }]);
     
     const { addProject, loading, projects, error } = useProjectStore();
 
@@ -35,12 +35,11 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const payloadFormfactors = formfactors
-            .filter(f => f.name.trim())
-            .map(f => ({
-                name: f.name.trim(),
-                revisions: f.revisions.split(',').map(r => r.trim()).filter(Boolean)
-            }));
+        const payloadFormfactors = formfactors.filter(f => f.name.trim() !== '').map(f => ({
+            name: f.name.trim(),
+            revisions: f.revisions.split(',').map(r => r.trim()).filter(Boolean),
+            boms: f.boms ? f.boms.split(',').map(b => b.trim()).filter(Boolean) : []
+        }));
         const success = await addProject({ 
             name, description: '', revisions, project_key: projectKey, 
             formfactors: payloadFormfactors, silicon_corners: siliconCorners 
@@ -130,7 +129,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                         newFf[idx].name = e.target.value;
                                         setFormfactors(newFf);
                                     }}
-                                    style={{ flex: 1 }}
+                                    style={{ flex: 1.5 }}
                                 />
                                 <input 
                                     type="text" 
@@ -139,6 +138,17 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                     onChange={e => {
                                         const newFf = [...formfactors];
                                         newFf[idx].revisions = e.target.value;
+                                        setFormfactors(newFf);
+                                    }}
+                                    style={{ flex: 2 }}
+                                />
+                                <input 
+                                    type="text" 
+                                    placeholder="BOMs (e.g. 1, 2)" 
+                                    value={ff.boms || ''} 
+                                    onChange={e => {
+                                        const newFf = [...formfactors];
+                                        newFf[idx].boms = e.target.value;
                                         setFormfactors(newFf);
                                     }}
                                     style={{ flex: 2 }}
@@ -156,7 +166,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                     </div>
                     <button 
                         type="button" 
-                        onClick={() => setFormfactors([...formfactors, { name: '', revisions: '' }])} 
+                        onClick={() => setFormfactors([...formfactors, { name: '', revisions: '', boms: '' }])} 
                         style={{ marginTop: '8px', padding: '6px 12px', background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-muted)' }}
                     >
                         + Add Flavor

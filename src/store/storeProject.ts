@@ -5,6 +5,7 @@ import { apiFetch } from '../apiBridge';
 export interface Formfactor {
     name: string;
     revisions: string[];
+    boms?: string[];
 }
 
 export interface Project {

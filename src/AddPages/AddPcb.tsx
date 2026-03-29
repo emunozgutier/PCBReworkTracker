@@ -30,12 +30,13 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const availableFormfactors = selectedProjData?.formfactors || [];
     const availableSiliconVersions = selectedProjData?.silicon_corners ? selectedProjData.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
     
-    let availableRevisions: string[] = [];
-    if (selectedFormfactor) {
+    const availableSiliconRevisions = selectedProjData?.revisions || [];
+    let availablePcbRevisions: string[] = [];
+    let availableBoms: string[] = [];
+    if (selectedProject && selectedFormfactor) {
         const ff = availableFormfactors.find((f: any) => f.name === selectedFormfactor);
-        availableRevisions = ff ? ff.revisions : [];
-    } else {
-        availableRevisions = selectedProjData?.revisions || [];
+        availablePcbRevisions = ff ? ff.revisions : [];
+        availableBoms = ff && ff.boms ? ff.boms : [];
     }
     const selectedProjectKey = selectedProjData?.project_key || 'XXX';
 
@@ -97,10 +98,11 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        const finalPcbRev = noPartYet ? "No part yet" : pcbRev;
-        const revPart = selectedRevision ? selectedRevision : '';
+        const finalPcbRev = pcbRev;
+        const revPart = noPartYet ? "No part yet" : (selectedRevision ? selectedRevision : '');
+        const cornerPart = noPartYet ? "" : siliconVersion;
         const ffPart = selectedFormfactor ? selectedFormfactor : '';
-        const combinedProduct = [ffPart, finalPcbRev, revPart, siliconVersion].filter(Boolean).join(' ').trim();
+        const combinedProduct = [ffPart, finalPcbRev, revPart, cornerPart].filter(Boolean).join(' ').trim();
         const finalBoardName = `${selectedProjectKey}-${boardNumber.toUpperCase()}`;
         
         const success = await addPcb({
@@ -143,10 +145,10 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                             <select 
                                 id="revision"
                                 value={selectedRevision}
-                                onChange={(e) => setSelectedRevision(e.target.value)}
+                                onChange={(e) => setSelectedRevision(e.target.value)} disabled={noPartYet}
                             >
                                 <option value="">N/A</option>
-                                {availableRevisions.map((rev: string) => (
+                                {availableSiliconRevisions.map((rev: string) => (
                                     <option key={rev} value={rev}>{rev}</option>
                                 ))}
                             </select>
@@ -156,7 +158,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                             <select 
                                 id="silicon_version"
                                 value={siliconVersion}
-                                onChange={(e) => setSiliconVersion(e.target.value)}
+                                onChange={(e) => setSiliconVersion(e.target.value)} disabled={noPartYet}
                             >
                                 <option value="">N/A</option>
                                 {availableSiliconVersions.map((v: string) => (
@@ -164,6 +166,22 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                 ))}
                             </select>
                         </div>
+                    </div>
+                    <div className="form-row">
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'normal', fontSize: '1rem', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                            <input 
+                                type="checkbox" 
+                                checked={noPartYet} 
+                                onChange={(e) => {
+                                    setNoPartYet(e.target.checked);
+                                    if (e.target.checked) {
+                                        setSelectedRevision('');
+                                        setSiliconVersion('');
+                                    }
+                                }} 
+                            />
+                            No part yet
+                        </label>
                     </div>
                 </FormGroup>
 
@@ -177,7 +195,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                 onChange={(e) => {
                                     setSelectedFormfactor(e.target.value);
                                     const ff = availableFormfactors.find((f: any) => f.name === e.target.value);
-                                    setSelectedRevision(ff && ff.revisions.length > 0 ? ff.revisions[0] : '');
+                                    setPcbRev(ff && ff.revisions.length > 0 ? ff.revisions[0] : '');
                                 }}
                             >
                                 <option value="">N/A</option>
@@ -187,45 +205,57 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                             </select>
                         </div>
                         <div className="form-group flex-1">
-                            <label htmlFor="pcb_rev">Rev Number</label>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <label htmlFor="pcb_rev">Rev Number *</label>
+                            {availablePcbRevisions.length > 0 ? (
+                                <select 
+                                    id="pcb_rev"
+                                    value={pcbRev}
+                                    onChange={(e) => setPcbRev(e.target.value)}
+                                    required
+                                >
+                                    <option value="">Select Rev</option>
+                                    {availablePcbRevisions.map((rev) => (
+                                        <option key={rev} value={rev}>{rev}</option>
+                                    ))}
+                                </select>
+                            ) : (
                                 <input 
                                     id="pcb_rev"
                                     type="number" 
                                     step="any"
                                     value={pcbRev} 
                                     onChange={(e) => setPcbRev(e.target.value)} 
-                                    disabled={noPartYet}
-                                    required={!noPartYet}
-                                    style={{ flex: 1, minWidth: '80px' }}
+                                    required
                                 />
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'normal', fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                    <input 
-                                        type="checkbox" 
-                                        checked={noPartYet} 
-                                        onChange={(e) => {
-                                            setNoPartYet(e.target.checked);
-                                            if (e.target.checked) setPcbRev('');
-                                        }} 
-                                    />
-                                    No part yet
-                                </label>
-                            </div>
+                            )}
                         </div>
                         <div className="form-group flex-1">
                             <label htmlFor="bom">BOM (Optional)</label>
-                            <input 
-                                id="bom"
-                                type="text" 
-                                value={bom} 
-                                onChange={(e) => setBom(e.target.value)} 
-                                placeholder="e.g. BOM1"
-                            />
+                            {availableBoms.length > 0 ? (
+                                <select 
+                                    id="bom"
+                                    value={bom}
+                                    onChange={(e) => setBom(e.target.value)}
+                                >
+                                    <option value="">Select BOM</option>
+                                    {availableBoms.map((b) => (
+                                        <option key={b} value={b}>{b}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <input 
+                                    id="bom"
+                                    type="text" 
+                                    value={bom} 
+                                    onChange={(e) => setBom(e.target.value)} 
+                                    placeholder="e.g. BOM1"
+                                />
+                            )}
                         </div>
                     </div>
                 </FormGroup>
 
-                <FormGroup title="Rest">
+                <FormGroup title="New Instance">
                     <div className="form-row">
                         <div className="form-group flex-1">
                             <label htmlFor="board_number">Assigned Name</label>

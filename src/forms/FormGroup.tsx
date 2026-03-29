@@ -12,10 +12,12 @@ export function FormGroup({ title, children }: FormGroupProps) {
             boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
             borderRadius: '10px', 
             padding: '20px 16px 16px 16px', 
-            marginBottom: '20px',
+            margin: '12px 0 20px 0',
             backgroundColor: 'var(--bg-panel)',
             position: 'relative',
-            marginTop: '12px'
+            width: '100%',
+            boxSizing: 'border-box',
+            minWidth: 0
         }}>
             <legend style={{ 
                 padding: '0 8px', 
