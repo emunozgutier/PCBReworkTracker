@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { usePcbStore } from './storePcb';
+import { useReworkStore } from './storeRework';
 
 type Page = 
     | 'projects' | 'projects_add' | 'projects_edit'
@@ -130,6 +132,10 @@ export const useStore = create<NavigationState>((set) => ({
             if (base.endsWith('/')) base = base.slice(0, -1);
             window.history.pushState({}, '', `${base}/${tab}`);
         }
+        
+        if (tab !== 'pcbs') usePcbStore.getState().resetFilters();
+        if (tab !== 'reworks') useReworkStore.getState().resetFilters();
+
         set({ 
             activeTab: tab, 
             page: tab as Page, // When we switch tabs, we go to the main list page
@@ -183,6 +189,8 @@ if (typeof window !== 'undefined') {
     window.addEventListener('popstate', () => {
         const rawPath = getNormalizedPath();
         if (rawPath.startsWith('/projects/')) {
+            usePcbStore.getState().resetFilters();
+            useReworkStore.getState().resetFilters();
             useStore.setState({
                 activeTab: 'projects',
                 page: 'projects',
@@ -192,6 +200,7 @@ if (typeof window !== 'undefined') {
             return;
         }
         if (rawPath.startsWith('/pcbs/') && !rawPath.startsWith('/pcbs_')) {
+            useReworkStore.getState().resetFilters();
             let board = decodeURIComponent(rawPath.replace('/pcbs/', ''));
             let isolated = false;
             if (board.endsWith('/view')) {
@@ -211,6 +220,8 @@ if (typeof window !== 'undefined') {
         const path = rawPath.replace('/', '') || 'projects';
         const validPages = ['projects', 'pcbs', 'reworks', 'owners', 'tags'];
         if (validPages.includes(path)) {
+            if (path !== 'pcbs') usePcbStore.getState().resetFilters();
+            if (path !== 'reworks') useReworkStore.getState().resetFilters();
             useStore.setState({
                 activeTab: path,
                 page: path as Page,

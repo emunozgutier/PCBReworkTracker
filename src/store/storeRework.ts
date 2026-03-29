@@ -25,6 +25,7 @@ interface ReworkState {
     deleteRework: (id: number | string) => Promise<boolean>;
     selectedBoards: string[];
     setSelectedBoards: (boards: string[]) => void;
+    resetFilters: () => void;
 }
 
 export const useReworkStore = create<ReworkState>((set, get) => ({
@@ -34,6 +35,7 @@ export const useReworkStore = create<ReworkState>((set, get) => ({
     selectedBoards: [],
 
     setSelectedBoards: (boards) => set({ selectedBoards: boards }),
+    resetFilters: () => set({ selectedBoards: [] }),
 
     fetchReworks: async () => {
         set({ loading: true, error: null });
