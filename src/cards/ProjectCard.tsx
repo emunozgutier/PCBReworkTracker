@@ -13,10 +13,9 @@ interface ProjectCardProps {
         revisions: string[];
         project_key: string;
     };
-    onEdit: (id: number) => void;
 }
 
-export function ProjectCard({ project, onEdit }: ProjectCardProps) {
+export function ProjectCard({ project }: ProjectCardProps) {
     const { expandedProject, setExpandedProject } = useStore();
     const isExpanded = expandedProject === project.name;
     const cardRef = useRef<HTMLDivElement>(null);

@@ -12,7 +12,7 @@ interface TagCardBodyProps {
 export function TagCardBody({ tag }: TagCardBodyProps) {
     const [taggedPcbs, setTaggedPcbs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const { editItem, setActiveTab } = useStore();
+    const { setActiveTab } = useStore();
     const { setSelectedProjects } = usePcbStore();
 
     useEffect(() => {

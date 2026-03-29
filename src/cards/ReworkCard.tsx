@@ -4,10 +4,9 @@ import { ReworkCardBody } from './ReworkCardBody';
 
 interface ReworkCardProps {
     rework: any;
-    onEdit: (id: number | string) => void;
 }
 
-export function ReworkCard({ rework, onEdit }: ReworkCardProps) {
+export function ReworkCard({ rework }: ReworkCardProps) {
     const [isExpanded, setIsExpanded] = useState(false);
 
     return (
@@ -16,7 +15,6 @@ export function ReworkCard({ rework, onEdit }: ReworkCardProps) {
                 rework={rework} 
                 isExpanded={isExpanded} 
                 onToggle={() => setIsExpanded(!isExpanded)} 
-                onEdit={onEdit} 
             />
             {isExpanded && <ReworkCardBody rework={rework} />}
         </div>

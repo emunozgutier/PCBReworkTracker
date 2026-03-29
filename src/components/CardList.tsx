@@ -186,14 +186,14 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                 ) : (
                     items.map((item) => {
                         if (type === 'projects') {
-                            return <ProjectCard key={item.id} project={item} onEdit={onEdit} />;
+                            return <ProjectCard key={item.id} project={item} />;
                         }
                         if (type === 'pcbs') {
-                            return <PcbCard key={item.id} pcb={item} onEdit={onEdit} />;
+                            return <PcbCard key={item.id} pcb={item} />;
                         }
 
                         if (type === 'reworks') {
-                            return <ReworkCard key={item.id} rework={item} onEdit={onEdit} />;
+                            return <ReworkCard key={item.id} rework={item} />;
                         }
 
                         if (type === 'tags') {
