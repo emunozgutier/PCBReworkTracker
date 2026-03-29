@@ -204,7 +204,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                             </select>
                         </div>
                         <div className="form-group flex-1">
-                            <label htmlFor="revision">Silicon Rev</label>
+                            <label htmlFor="revision">Rev</label>
                             <select 
                                 id="revision"
                                 value={selectedRevision}
@@ -217,7 +217,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                             </select>
                         </div>
                         <div className="form-group flex-1">
-                            <label htmlFor="silicon_version">Silicon Corner</label>
+                            <label htmlFor="silicon_version">Corner</label>
                             <select 
                                 id="silicon_version"
                                 value={siliconVersion}
@@ -235,7 +235,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                 <FormGroup title="PCB">
                     <div className="form-row">
                         <div className="form-group flex-1">
-                            <label htmlFor="formfactor">PCB Flavor</label>
+                            <label htmlFor="formfactor">Flavor</label>
                             <select 
                                 id="formfactor"
                                 value={selectedFormfactor}
@@ -252,7 +252,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                             </select>
                         </div>
                         <div className="form-group flex-1">
-                            <label htmlFor="pcb_rev">PCB Rev Number</label>
+                            <label htmlFor="pcb_rev">Rev Number</label>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <input 
                                     id="pcb_rev"
@@ -293,7 +293,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                 <FormGroup title="Rest">
                     <div className="form-row">
                         <div className="form-group flex-1">
-                            <label htmlFor="board_number">Assigned PCB Name</label>
+                            <label htmlFor="board_number">Assigned Name</label>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
                                     {selectedProjectKey}-

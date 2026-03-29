@@ -8,8 +8,9 @@ interface FormGroupProps {
 export function FormGroup({ title, children }: FormGroupProps) {
     return (
         <fieldset style={{ 
-            border: '1px solid var(--border-color)', 
-            borderRadius: '8px', 
+            border: '2px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+            borderRadius: '10px', 
             padding: '20px 16px 16px 16px', 
             marginBottom: '20px',
             backgroundColor: 'var(--bg-panel)',
@@ -22,8 +23,8 @@ export function FormGroup({ title, children }: FormGroupProps) {
                 color: 'var(--accent)',
                 fontSize: '1.2rem',
                 backgroundColor: 'var(--bg-element)',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)'
+                borderRadius: '8px',
+                border: '2px solid rgba(255, 255, 255, 0.1)'
             }}>
                 {title}
             </legend>
