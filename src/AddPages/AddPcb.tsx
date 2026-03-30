@@ -24,7 +24,12 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     
     const [projects, setProjects] = useState<any[]>([]);
     const [owners, setOwners] = useState<any[]>([]);
-    const { addPcb, loading } = usePcbStore();
+    const { addPcb, pcbs, fetchPcbs, loading } = usePcbStore();
+    const [lastAutoFilledProject, setLastAutoFilledProject] = useState('');
+
+    useEffect(() => {
+        if (pcbs.length === 0) fetchPcbs();
+    }, [fetchPcbs, pcbs.length]);
 
     const selectedProjData = projects.find(p => p.id.toString() === selectedProject);
     const availableFormfactors = selectedProjData?.formfactors || [];
@@ -40,10 +45,31 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     }
     const selectedProjectKey = selectedProjData?.project_key || 'XXX';
 
-    const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value.replace(/[^0-9A-Fa-f]/g, '').toUpperCase().slice(0, 4);
-        setBoardNumber(val);
-    };
+    useEffect(() => {
+        // Trigger autofill of the next hex number when the selected project changes
+        if (selectedProjData && selectedProject !== lastAutoFilledProject && pcbs) {
+            // Check if there are PCBs matching this project
+            const projectPcbs = pcbs.filter(p => p.project === selectedProjData.name);
+            let nextHex = '0001';
+            
+            if (projectPcbs.length > 0) {
+                const hexValues = projectPcbs.map(p => {
+                    const parts = p.board_number.split('-');
+                    if (parts.length > 1) {
+                        return parseInt(parts.slice(-1)[0], 16);
+                    }
+                    return NaN;
+                }).filter(n => !isNaN(n));
+                
+                if (hexValues.length > 0) {
+                    const maxHex = Math.max(...hexValues);
+                    nextHex = (maxHex + 1).toString(16).toUpperCase().padStart(4, '0');
+                }
+            }
+            setBoardNumber(nextHex);
+            setLastAutoFilledProject(selectedProject);
+        }
+    }, [selectedProject, selectedProjData, pcbs, lastAutoFilledProject]);
 
     useEffect(() => {
         // Fetch projects and owners for dropdowns
@@ -254,24 +280,12 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                     </div>
                 </FormGroup>
 
-                <FormGroup title="New Instance">
+                <FormGroup title="Instance">
                     <div className="form-row">
                         <div className="form-group flex-1">
-                            <label htmlFor="board_number">Assigned Name</label>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--accent)' }}>
-                                    {selectedProjectKey}-
-                                </span>
-                                <input 
-                                    id="board_number"
-                                    type="text" 
-                                    maxLength={4}
-                                    value={boardNumber} 
-                                    onChange={handleHexChange} 
-                                    placeholder="e.g. 00A1"
-                                    style={{ textTransform: 'uppercase', width: '120px' }}
-                                    required 
-                                />
+                            <label>Assigned Name</label>
+                            <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-panel)', borderRadius: '4px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, textTransform: 'uppercase', border: '1px solid var(--border-color)' }}>
+                                {selectedProjectKey}-{boardNumber}
                             </div>
                         </div>
                         <div className="form-group flex-1">

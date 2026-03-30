@@ -322,18 +322,9 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                 <FormGroup title="Instance">
                     <div className="form-row">
                         <div className="form-group flex-1">
-                            <label htmlFor="board_number">Assigned Name</label>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
-                                    {selectedProjectKey}-
-                                </span>
-                                <input 
-                                    id="board_number"
-                                    type="text" 
-                                    value={boardNumber} 
-                                    disabled={true}
-                                    style={{ width: '120px', backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}
-                                />
+                            <label>Assigned Name</label>
+                            <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-panel)', borderRadius: '4px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, textTransform: 'uppercase', border: '1px solid var(--border-color)' }}>
+                                {selectedProjectKey}-{boardNumber}
                             </div>
                         </div>
                         <div className="form-group flex-1">
