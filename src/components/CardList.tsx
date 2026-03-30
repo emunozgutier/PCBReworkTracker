@@ -63,6 +63,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
 
     const [showFilters, setShowFilters] = useState<boolean>(activeFilterCount > 0);
     const [hasAutoFiltered, setHasAutoFiltered] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         if (type === 'pcbs' && expandedPcb && isolatedView && !hasAutoFiltered) {
@@ -115,6 +116,14 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
             if (selectedBoardNumbers && selectedBoardNumbers.length > 0) {
                 items = items.filter(pcb => selectedBoardNumbers.includes(pcb.board_number));
             }
+            if (searchQuery) {
+                const sq = searchQuery.toLowerCase();
+                items = items.filter(pcb => 
+                    pcb.board_number.toLowerCase().includes(sq) || 
+                    (pcb.product && pcb.product.toLowerCase().includes(sq)) ||
+                    (pcb.project && pcb.project.toLowerCase().includes(sq))
+                );
+            }
             break;
         case 'reworks': 
             items = reworks; 
@@ -133,7 +142,39 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
         <div className="card-list-container">
             <div className="list-header" style={{ marginBottom: type === 'pcbs' ? '12px' : '24px' }}>
                 <h2>{title}</h2>
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {type === 'pcbs' && (
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <svg style={{ position: 'absolute', left: '10px', color: 'var(--text-muted)' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input 
+                                type="text"
+                                placeholder="Search PCBs..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                style={{
+                                    padding: '8px 12px 8px 34px',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--border-color)',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                    color: 'var(--text)',
+                                    fontSize: '0.85rem',
+                                    width: '200px',
+                                    outline: 'none',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onFocus={(e) => {
+                                    e.target.style.borderColor = 'var(--accent)';
+                                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                                    e.target.style.boxShadow = '0 0 0 2px rgba(99, 102, 241, 0.2)';
+                                }}
+                                onBlur={(e) => {
+                                    e.target.style.borderColor = 'var(--border-color)';
+                                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+                                    e.target.style.boxShadow = 'none';
+                                }}
+                            />
+                        </div>
+                    )}
                     {type === 'pcbs' && activeFilterCount > 0 && (
                         <button 
                             className="secondary-button" 
