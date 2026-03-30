@@ -568,11 +568,11 @@ body {
 }
 
 @keyframes slowBlink {
-  0% { background-color: transparent !important; box-shadow: none !important; color: var(--accent) !important; border-color: var(--accent) !important; }
-  50% { background-color: var(--accent) !important; box-shadow: 0 0 20px var(--accent) !important; color: #ffffff !important; border-color: var(--accent) !important; }
-  100% { background-color: transparent !important; box-shadow: none !important; color: var(--accent) !important; border-color: var(--accent) !important; }
+  0% { background-color: transparent !important; transform: scale(1); box-shadow: none !important; color: var(--accent) !important; border-color: var(--accent) !important; }
+  50% { background-color: var(--accent) !important; transform: scale(1.05); box-shadow: 0 0 20px var(--accent) !important; color: #ffffff !important; border-color: var(--accent) !important; }
+  100% { background-color: transparent !important; transform: scale(1); box-shadow: none !important; color: var(--accent) !important; border-color: var(--accent) !important; }
 }
 
 .blink-button {
-  animation: slowBlink 0.8s ease-in-out 4 !important;
+  animation: slowBlink 0.6s ease-in-out 4 !important;
 }
