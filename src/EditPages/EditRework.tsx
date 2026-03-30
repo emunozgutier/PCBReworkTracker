@@ -17,6 +17,7 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [ownerId, setOwnerId] = useState('-1');
+    const [reworkType, setReworkType] = useState('Minor');
     const [loading, setLoading] = useState(true);
     const { updateRework, deleteRework } = useReworkStore();
     const { owners, fetchOwners } = useOwnerStore();
@@ -34,6 +35,7 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
                 setTitle(rework.title || '');
                 setDescription(rework.description);
                 setOwnerId(rework.owner_id ? rework.owner_id.toString() : '-1');
+                setReworkType(rework.rework_type || 'Minor');
             }
             setLoading(false);
         }).catch(err => {
@@ -49,7 +51,8 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
             pcb_id: selectedPcb ? parseInt(selectedPcb) : null,
             title,
             description,
-            owner_id: ownerId
+            owner_id: ownerId,
+            rework_type: reworkType
         });
         if (success) onSuccess();
         setSaving(false);
@@ -114,6 +117,14 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
                     <select id="owner" value={ownerId} onChange={(e) => setOwnerId(e.target.value)}>
                         <option value="-1">-- Unassigned --</option>
                         {owners.map(o => <option key={o.id} value={o.id.toString()}>{o.name}</option>)}
+                    </select>
+                </div>
+                <div className="form-group">
+                    <label htmlFor="rework_type">Rework Type</label>
+                    <select id="rework_type" value={reworkType} onChange={(e) => setReworkType(e.target.value)}>
+                        <option value="Minor">Minor</option>
+                        <option value="Major">Major</option>
+                        <option value="Silicon Swap">Silicon Swap</option>
                     </select>
                 </div>
                 <button type="submit" className="submit-button" disabled={saving}>

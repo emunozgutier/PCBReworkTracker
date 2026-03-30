@@ -142,6 +142,7 @@ const initDb = () => {
             status TEXT DEFAULT 'Completed',
             owner_id INTEGER,
             image_path TEXT,
+            rework_type TEXT DEFAULT 'Minor',
             FOREIGN KEY (pcb_id) REFERENCES pcbs (id),
             FOREIGN KEY (owner_id) REFERENCES owners (id)
         )`, (err) => {
@@ -156,6 +157,11 @@ const initDb = () => {
                         console.error('Migration error (reworks.rework_name):', err.message);
                     } else if (!err) {
                         db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_reworks_name ON reworks(rework_name)`);
+                    }
+                });
+                db.run(`ALTER TABLE reworks ADD COLUMN rework_type TEXT DEFAULT 'Minor'`, (err) => {
+                    if (err && !err.message.includes('duplicate column name')) {
+                        console.error('Migration error (reworks.rework_type):', err.message);
                     }
                 });
                 db.run(`ALTER TABLE reworks ADD COLUMN image_path TEXT`, (err) => {

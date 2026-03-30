@@ -18,6 +18,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [ownerId, setOwnerId] = useState('-1');
+    const [reworkType, setReworkType] = useState('Minor');
     const [images, setImages] = useState<File[]>([]);
     const { addRework, loading } = useReworkStore();
     const { owners, fetchOwners } = useOwnerStore();
@@ -45,6 +46,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
         formData.append('title', title);
         formData.append('description', description);
         formData.append('owner_id', ownerId);
+        formData.append('rework_type', reworkType);
         images.forEach(img => {
             formData.append('images', img);
         });
@@ -102,6 +104,14 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                     <select id="owner" value={ownerId} onChange={(e) => setOwnerId(e.target.value)}>
                         <option value="-1">-- Unassigned --</option>
                         {owners.map(o => <option key={o.id} value={o.id.toString()}>{o.name}</option>)}
+                    </select>
+                </div>
+                <div className="form-group">
+                    <label htmlFor="rework_type">Rework Type</label>
+                    <select id="rework_type" value={reworkType} onChange={(e) => setReworkType(e.target.value)}>
+                        <option value="Minor">Minor</option>
+                        <option value="Major">Major</option>
+                        <option value="Silicon Swap">Silicon Swap</option>
                     </select>
                 </div>
                 <div className="form-group" style={{ marginBottom: '24px' }}>
