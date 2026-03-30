@@ -74,20 +74,60 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                 )}
             </div>
 
-            <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    
+                    <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '110px' }}>
+                            <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Logged At</span>
+                            <span style={{ fontSize: '0.9rem', color: 'var(--text)', fontWeight: 600 }}>
+                                {new Date(rework.timestamp).toLocaleDateString()}
+                            </span>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                {new Date(rework.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                        </div>
+
+                        <div style={{ width: '1px', background: 'var(--border)', alignSelf: 'stretch', opacity: 0.6 }}></div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Rework Type</span>
+                            <div style={{ 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                padding: '4px 12px', 
+                                background: rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.1)' 
+                                          : rework.rework_type === 'Silicon Swap' ? 'rgba(168, 85, 247, 0.1)' 
+                                          : 'rgba(59, 130, 246, 0.1)', 
+                                color: rework.rework_type === 'Major' ? '#ef4444' 
+                                     : rework.rework_type === 'Silicon Swap' ? '#a855f7' 
+                                     : '#3b82f6', 
+                                borderRadius: '16px', 
+                                fontSize: '0.75rem', 
+                                fontWeight: 700,
+                                border: `1px solid ${
+                                    rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.2)' 
+                                  : rework.rework_type === 'Silicon Swap' ? 'rgba(168, 85, 247, 0.2)' 
+                                  : 'rgba(59, 130, 246, 0.2)'
+                                }`
+                            }}>
+                                {rework.rework_type || 'Minor'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ width: '100%', height: '1px', background: 'var(--border)', opacity: 0.6 }}></div>
+
                     <div>
-                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Description</span>
-                        <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text)', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Description</span>
+                        <p style={{ margin: '8px 0 0 0', fontSize: '0.9rem', color: 'var(--text)', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
                             {rework.description || <span style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>No description provided.</span>}
                         </p>
                     </div>
 
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed var(--border)' }}>
-                        <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            <span title="Timestamp">🕒 {new Date(rework.timestamp).toLocaleString()}</span>
-                            <span title="Database ID">#️⃣ ID: {rework.id}</span>
-                        </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }} title="Database ID">#️⃣ DB-ID: {rework.id}</span>
                     </div>
                 </div>
             </div>
