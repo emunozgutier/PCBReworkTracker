@@ -33,7 +33,9 @@ export function TagCardHeader({ tag, isExpanded, onToggle, onEdit }: TagCardHead
                     }} 
                 />
                 <span className="board-num" style={{ fontSize: '1rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                    {tag.owner_username || tag.owner_name ? formatTagName(tag) : `Unassigned/${formatTagName(tag)}`}
+                    {tag.type === 'public' 
+                        ? formatTagName(tag) 
+                        : (tag.owner_username || tag.owner_name ? formatTagName(tag) : `Unassigned/${formatTagName(tag)}`)}
                 </span>
             </div>
             
