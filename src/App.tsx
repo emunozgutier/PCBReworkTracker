@@ -13,6 +13,7 @@ import { EditUser } from './EditPages/EditUser'
 import { EditRework } from './EditPages/EditRework'
 import { EditTab } from './EditPages/EditTab'
 import { UrlManager } from './components/UrlManager'
+import { TestBoardTypo } from './components/UrlManager/TestBoardTypo'
 import { WrongUrl } from './WrongPage/WrongUrl'
 import { FixedUrl } from './WrongPage/FixedUrl'
 
@@ -42,6 +43,7 @@ function App() {
       
       case 'wrong_url': return <WrongUrl />;
       case 'fixed_url': return <FixedUrl />;
+      case 'test_typo': return <TestBoardTypo />;
       
       case 'projects':
         return <CardList type="projects" title="Projects" onAdd={() => addItem('projects_add')} onEdit={(id) => editItem('projects_edit', id)} />;
@@ -69,7 +71,9 @@ function App() {
         </svg>
       </a>
       <header className="app-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px' }}>
-        <h1>PCB Rework Tracker</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <h1>PCB Rework Tracker</h1>
+        </div>
         {typeof window !== 'undefined' && window.location.hostname.includes('github.io') && (
           <div 
             className="demo-indicator"

@@ -76,6 +76,12 @@ export function UrlManager() {
 
             // Base Tabs
             const path = rawPath.replace('/', '') || 'projects';
+            
+            if (path === 'test') {
+                useStore.getState().setPage('test_typo');
+                return;
+            }
+            
             const validPages = ['project', 'projects', 'pcb', 'pcbs', 'rework', 'reworks', 'owners', 'tags'];
             
             if (validPages.includes(path)) {
@@ -114,7 +120,9 @@ export function UrlManager() {
 
         let targetUrl = `${base}/${activeTab}`;
         
-        if (activeTab === 'projects' && expandedProject) {
+        if (page === 'test_typo') {
+            targetUrl = `${base}/test`;
+        } else if (activeTab === 'projects' && expandedProject) {
             targetUrl = `${base}/projects/${encodeURIComponent(expandedProject)}`;
         } else if (activeTab === 'pcbs' && expandedPcb) {
             targetUrl = `${base}/pcbs/${encodeURIComponent(expandedPcb)}${isolatedView ? '/view' : ''}`;
