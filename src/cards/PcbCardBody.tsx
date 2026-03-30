@@ -97,32 +97,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                     <QrCodeIcon size={18} /> QR Code
                 </button>
                 
-                {activeTabName === 'Rework' && (
-                    <button 
-                        onClick={(e) => { 
-                            e.stopPropagation(); 
-                            setSelectedBoards([pcb.id.toString()]);
-                            setActiveTab('reworks'); 
-                        }}
-                        style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                            gap: '8px', 
-                            background: 'transparent', 
-                            color: 'var(--text)', 
-                            border: '1px solid var(--border-color)', 
-                            padding: '10px 16px', 
-                            borderRadius: '8px', 
-                            fontSize: '0.9rem', 
-                            fontWeight: 600, 
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease'
-                        }}
-                    >
-                        <ExternalLink size={18} /> View All Reworks
-                    </button>
-                )}
+                
             </div>
 
             <div style={{ marginTop: '20px' }}>
@@ -138,25 +113,50 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                     <>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                             <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>Recent Rework History</h4>
-                            <button 
-                                onClick={(e) => { e.stopPropagation(); addItem('reworks_add', pcb.id); }}
-                                style={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    gap: '6px', 
-                                    padding: '6px 12px', 
-                                    background: 'rgba(99, 102, 241, 0.15)', 
-                                    color: '#818cf8', 
-                                    border: '1px solid rgba(99, 102, 241, 0.5)', 
-                                    borderRadius: '6px', 
-                                    fontSize: '0.85rem', 
-                                    fontWeight: 600, 
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease'
-                                }}
-                            >
-                                <Plus size={16} /> Add Rework log
-                            </button>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <button 
+                                    onClick={(e) => { 
+                                        e.stopPropagation(); 
+                                        setSelectedBoards([pcb.id.toString()]);
+                                        setActiveTab('reworks'); 
+                                    }}
+                                    style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        gap: '6px', 
+                                        background: 'transparent', 
+                                        color: 'var(--text)', 
+                                        border: '1px solid var(--border-color)', 
+                                        padding: '6px 12px', 
+                                        borderRadius: '6px', 
+                                        fontSize: '0.85rem', 
+                                        fontWeight: 600, 
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                >
+                                    <ExternalLink size={16} /> View All Reworks
+                                </button>
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); addItem('reworks_add', pcb.id); }}
+                                    style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        gap: '6px', 
+                                        padding: '6px 12px', 
+                                        background: 'rgba(99, 102, 241, 0.15)', 
+                                        color: '#818cf8', 
+                                        border: '1px solid rgba(99, 102, 241, 0.5)', 
+                                        borderRadius: '6px', 
+                                        fontSize: '0.85rem', 
+                                        fontWeight: 600, 
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                >
+                                    <Plus size={16} /> Add Rework log
+                                </button>
+                            </div>
                         </div>
                         {pcbReworks.length > 0 ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
