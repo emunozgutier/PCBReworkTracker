@@ -18,7 +18,7 @@ export function ProjectCardHeader({ project, isExpanded, onToggle }: ProjectCard
         <div 
             className="card-header-main" 
             onClick={onToggle}
-            style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '12px 16px', gap: '12px' }}
+            style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', padding: '12px 16px', gap: '12px' }}
         >
             <div style={{ display: 'flex', flex: 1, flexWrap: 'wrap', alignItems: 'center', gap: '12px', minWidth: 0 }}>
                 <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap' }}>{project.project_key} - {project.name}</span>
@@ -40,16 +40,16 @@ export function ProjectCardHeader({ project, isExpanded, onToggle }: ProjectCard
                         padding: '4px 12px', 
                         borderRadius: '16px', 
                         display: 'flex', 
+                        flexWrap: 'wrap',
                         gap: '6px',
                         alignItems: 'center',
-                        color: 'var(--text-muted)',
-                        whiteSpace: 'nowrap'
+                        color: 'var(--text-muted)'
                     }}>
-                        <span style={{ fontWeight: 600, color: 'var(--text)' }}>PCBs</span>
+                        <span style={{ fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap' }}>PCBs</span>
                         <span style={{ opacity: 0.3 }}>|</span>
-                        <span>{project.formfactors?.length || 0} Flavors</span>
+                        <span style={{ whiteSpace: 'nowrap' }}>{project.formfactors?.length || 0} Flavors</span>
                         <span style={{ opacity: 0.3 }}>|</span>
-                        <span>{project.pcb_count} Count</span>
+                        <span style={{ whiteSpace: 'nowrap' }}>{project.pcb_count} Count</span>
                     </span>
                 </div>
             </div>
