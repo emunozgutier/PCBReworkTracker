@@ -94,9 +94,6 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                         </p>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }} title="Database ID">#️⃣ DB-ID: {rework.id}</span>
-                    </div>
                 </div>
             </div>
             {showGallery && imagePaths.length > 0 && (

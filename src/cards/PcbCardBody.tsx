@@ -22,6 +22,12 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const [activeTabIndex, setActiveTabIndex] = useState(0);
     const tabsList = ['Rework', 'Public Tags', 'Personal Tags'];
     const activeTabName = tabsList[activeTabIndex];
+    
+    const [isBlinking, setIsBlinking] = useState(false);
+    const handleReworkClick = () => {
+        setIsBlinking(true);
+        setTimeout(() => setIsBlinking(false), 2000);
+    };
 
     const fetchAttachedTags = async () => {
         try {
@@ -87,6 +93,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                         setSelectedBoards([pcb.id.toString()]);
                                         setActiveTab('reworks'); 
                                     }}
+                                    className={isBlinking ? 'blink-button' : ''}
                                     label="View All Reworks"
                                     style={{ flex: 'none' }}
                                 />
@@ -104,7 +111,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                         <ReworkCardHeader 
                                             rework={rework} 
                                             isExpanded={false}
-                                            onToggle={() => {}}
+                                            onToggle={() => handleReworkClick()}
                                         />
                                     </div>
                                 ))}
