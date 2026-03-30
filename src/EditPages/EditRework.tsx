@@ -4,6 +4,7 @@ import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 import { API_BASE } from '../apiBridge';
 import { useReworkStore } from '../store/storeRework';
 import { useOwnerStore } from '../store/storeOwner';
+import { FormGroup } from '../forms/FormGroup';
 
 interface EditReworkProps {
     id: string | number;
@@ -13,11 +14,15 @@ interface EditReworkProps {
 
 export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
     const [pcbs, setPcbs] = useState<any[]>([]);
+    const [projects, setProjects] = useState<any[]>([]);
     const [selectedPcb, setSelectedPcb] = useState('');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [ownerId, setOwnerId] = useState('-1');
     const [reworkType, setReworkType] = useState('Minor');
+    const [selectedRevision, setSelectedRevision] = useState('');
+    const [siliconVersion, setSiliconVersion] = useState('');
+    const [noPartYet, setNoPartYet] = useState(false);
     const [loading, setLoading] = useState(true);
     const { updateRework, deleteRework } = useReworkStore();
     const { owners, fetchOwners } = useOwnerStore();
@@ -27,9 +32,11 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
         fetchOwners();
         Promise.all([
             fetch(`${API_BASE}/pcbs`).then(res => res.json()),
+            fetch(`${API_BASE}/projects`).then(res => res.json()),
             fetch(`${API_BASE}/reworks/${id}`).then(res => res.json())
-        ]).then(([pcbData, rework]) => {
+        ]).then(([pcbData, projData, rework]) => {
             setPcbs(pcbData);
+            setProjects(projData);
             if (rework) {
                 setSelectedPcb(rework.pcb_id.toString());
                 setTitle(rework.title || '');
@@ -42,17 +49,50 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
             console.error(err);
             setLoading(false);
         });
-    }, [id]);
+    }, [id, fetchOwners]);
+
+    const activePcb = pcbs.find(p => p.id.toString() === selectedPcb);
+    const selectedProjData = projects.find(p => p.id === activePcb?.project_id);
+    const availableSiliconVersions = selectedProjData?.silicon_corners ? selectedProjData.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+    const availableSiliconRevisions = selectedProjData?.revisions || [];
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
+        let new_product = undefined;
+        if (reworkType === 'Silicon Swap' && activePcb && selectedProjData) {
+            let rawProduct = activePcb.product || '';
+            let foundFormfactor = '';
+            let finalPcbRev = '';
+
+            if (selectedProjData.formfactors && selectedProjData.formfactors.length > 0) {
+                for (const ff of selectedProjData.formfactors) {
+                    if (rawProduct.startsWith(ff.name)) {
+                        foundFormfactor = ff.name;
+                        rawProduct = rawProduct.slice(ff.name.length).trim();
+                        for (const rev of ff.revisions) {
+                            if (rawProduct.startsWith(rev)) {
+                                finalPcbRev = rev;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            const cornerPart = noPartYet ? "" : siliconVersion;
+            const revPart = noPartYet ? "No part yet" : (selectedRevision ? selectedRevision : '');
+            new_product = [foundFormfactor, finalPcbRev, revPart, cornerPart].filter(Boolean).join(' ').trim();
+        }
+
         const success = await updateRework(id, {
             pcb_id: selectedPcb ? parseInt(selectedPcb) : null,
             title,
             description,
             owner_id: ownerId,
-            rework_type: reworkType
+            rework_type: reworkType,
+            new_product
         });
         if (success) onSuccess();
         setSaving(false);
@@ -127,6 +167,55 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
                         <option value="Silicon Swap">Silicon Swap</option>
                     </select>
                 </div>
+                
+                {reworkType === 'Silicon Swap' && (
+                    <FormGroup title="New Silicon Data">
+                        <div className="form-row">
+                            <div className="form-group flex-1">
+                                <label htmlFor="revision">Rev</label>
+                                <select 
+                                    id="revision"
+                                    value={selectedRevision}
+                                    onChange={(e) => setSelectedRevision(e.target.value)} disabled={noPartYet}
+                                >
+                                    <option value="">N/A</option>
+                                    {availableSiliconRevisions.map((rev: string) => (
+                                        <option key={rev} value={rev}>{rev}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group flex-1">
+                                <label htmlFor="silicon_version">Corner</label>
+                                <select 
+                                    id="silicon_version"
+                                    value={siliconVersion}
+                                    onChange={(e) => setSiliconVersion(e.target.value)} disabled={noPartYet}
+                                >
+                                    <option value="">N/A</option>
+                                    {availableSiliconVersions.map((v: string) => (
+                                        <option key={v} value={v}>{v}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="form-row">
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'normal', fontSize: '1rem', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={noPartYet} 
+                                    onChange={(e) => {
+                                        setNoPartYet(e.target.checked);
+                                        if (e.target.checked) {
+                                            setSelectedRevision('');
+                                            setSiliconVersion('');
+                                        }
+                                    }} 
+                                />
+                                No part yet
+                            </label>
+                        </div>
+                    </FormGroup>
+                )}
                 <button type="submit" className="submit-button" disabled={saving}>
                     <Save size={18} />
                     <span>{saving ? 'Saving...' : 'Update Rework'}</span>

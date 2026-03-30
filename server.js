@@ -174,6 +174,7 @@ app.get('/api/pcbs', (req, res) => {
             board_number: row.board_number,
             status: row.status,
             project: row.project_name,
+            project_id: row.project_id,
             owner: row.owner_name || 'Unassigned',
             product: row.product_name_and_rev,
             bom: row.bom
@@ -259,7 +260,7 @@ app.get('/api/reworks', (req, res) => {
 });
 
 app.post('/api/reworks', upload.any(), (req, res) => {
-    const { pcb_id, title, description, owner_id, rework_type } = req.body;
+    const { pcb_id, title, description, owner_id, rework_type, new_product } = req.body;
     
     // 1. Get the PCB board_number
     db.get("SELECT board_number FROM pcbs WHERE id = ?", [pcb_id], (err, row) => {
@@ -310,7 +311,16 @@ app.post('/api/reworks', upload.any(), (req, res) => {
             const insertQuery = "INSERT INTO reworks (pcb_id, rework_name, title, description, owner_id, image_path, rework_type) VALUES (?, ?, ?, ?, ?, ?, ?)";
             db.run(insertQuery, [pcb_id, reworkName, title || null, description, finalOwnerId, image_path, rework_type || 'Minor'], function(err) {
                 if (err) return res.status(500).json({ error: err.message });
-                res.status(201).json({ id: this.lastID, pcb_id, rework_name: reworkName, title: title || null, rework_type: rework_type || 'Minor', image_path });
+                const reworkId = this.lastID;
+                
+                // 4. Update PCB if it's a Silicon Swap
+                if (rework_type === 'Silicon Swap' && new_product) {
+                    db.run("UPDATE pcbs SET product_name_and_rev = ? WHERE id = ?", [new_product, pcb_id], function(updateErr) {
+                        return res.status(201).json({ id: reworkId, pcb_id, rework_name: reworkName, title: title || null, rework_type: rework_type || 'Minor', image_path });
+                    });
+                } else {
+                    res.status(201).json({ id: reworkId, pcb_id, rework_name: reworkName, title: title || null, rework_type: rework_type || 'Minor', image_path });
+                }
             });
         });
     });
@@ -492,11 +502,19 @@ app.get('/api/reworks/:id', (req, res) => {
 });
 
 app.put('/api/reworks/:id', (req, res) => {
-    const { pcb_id, title, description, owner_id, rework_type } = req.body;
+    const { pcb_id, title, description, owner_id, rework_type, new_product } = req.body;
     const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
     db.run("UPDATE reworks SET pcb_id = ?, title = ?, description = ?, owner_id = ?, rework_type = ? WHERE id = ?", [pcb_id, title || null, description, finalOwnerId, rework_type || 'Minor', req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
-        res.json({ updated: this.changes });
+        
+        let changes = this.changes;
+        if (rework_type === 'Silicon Swap' && new_product) {
+            db.run("UPDATE pcbs SET product_name_and_rev = ? WHERE id = ?", [new_product, pcb_id], function(updateErr) {
+                return res.json({ updated: changes });
+            });
+        } else {
+            res.json({ updated: changes });
+        }
     });
 });
 

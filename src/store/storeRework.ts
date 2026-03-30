@@ -21,8 +21,8 @@ interface ReworkState {
     loading: boolean;
     error: string | null;
     fetchReworks: () => Promise<void>;
-    addRework: (data: FormData | { pcb_id: number | null; title?: string; description: string; owner_id: string | null; rework_type?: string }) => Promise<boolean>;
-    updateRework: (id: number | string, data: { pcb_id: number | null; title?: string; description: string; owner_id: string | null; rework_type?: string }) => Promise<boolean>;
+    addRework: (data: FormData | { pcb_id: number | null; title?: string; description: string; owner_id: string | null; rework_type?: string; new_product?: string }) => Promise<boolean>;
+    updateRework: (id: number | string, data: { pcb_id: number | null; title?: string; description: string; owner_id: string | null; rework_type?: string; new_product?: string }) => Promise<boolean>;
     deleteRework: (id: number | string) => Promise<boolean>;
     selectedBoards: string[];
     setSelectedBoards: (boards: string[]) => void;

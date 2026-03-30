@@ -5,6 +5,7 @@ import { API_BASE } from '../apiBridge';
 import { useReworkStore } from '../store/storeRework';
 import { useStore } from '../store/useStore';
 import { useOwnerStore } from '../store/storeOwner';
+import { FormGroup } from '../forms/FormGroup';
 
 interface AddReworkProps {
     onBack: () => void;
@@ -14,29 +15,41 @@ interface AddReworkProps {
 export function AddRework({ onBack, onSuccess }: AddReworkProps) {
     const { selectedId } = useStore();
     const [pcbs, setPcbs] = useState<any[]>([]);
+    const [projects, setProjects] = useState<any[]>([]);
     const [selectedPcb, setSelectedPcb] = useState('');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [ownerId, setOwnerId] = useState('-1');
     const [reworkType, setReworkType] = useState('Minor');
+    const [selectedRevision, setSelectedRevision] = useState('');
+    const [siliconVersion, setSiliconVersion] = useState('');
+    const [noPartYet, setNoPartYet] = useState(false);
     const [images, setImages] = useState<File[]>([]);
     const { addRework, loading } = useReworkStore();
     const { owners, fetchOwners } = useOwnerStore();
 
     useEffect(() => {
         fetchOwners();
-        fetch(`${API_BASE}/pcbs`)
-            .then(res => res.json())
-            .then(data => {
-                setPcbs(data);
-                if (selectedId) {
-                    setSelectedPcb(selectedId.toString());
-                } else if (data.length > 0) {
-                    setSelectedPcb(data[0].id.toString());
-                }
-            })
-            .catch(err => console.error('Failed to fetch PCBs:', err));
-    }, []);
+        Promise.all([
+            fetch(`${API_BASE}/pcbs`).then(res => res.json()),
+            fetch(`${API_BASE}/projects`).then(res => res.json())
+        ])
+        .then(([pcbData, projData]) => {
+            setPcbs(pcbData);
+            setProjects(projData);
+            if (selectedId) {
+                setSelectedPcb(selectedId.toString());
+            } else if (pcbData.length > 0) {
+                setSelectedPcb(pcbData[0].id.toString());
+            }
+        })
+        .catch(err => console.error('Failed to fetch data:', err));
+    }, [selectedId, fetchOwners]);
+
+    const activePcb = pcbs.find(p => p.id.toString() === selectedPcb);
+    const selectedProjData = projects.find(p => p.id === activePcb?.project_id);
+    const availableSiliconVersions = selectedProjData?.silicon_corners ? selectedProjData.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+    const availableSiliconRevisions = selectedProjData?.revisions || [];
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -47,6 +60,33 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
         formData.append('description', description);
         formData.append('owner_id', ownerId);
         formData.append('rework_type', reworkType);
+
+        if (reworkType === 'Silicon Swap' && activePcb && selectedProjData) {
+            let rawProduct = activePcb.product || '';
+            let foundFormfactor = '';
+            let finalPcbRev = '';
+
+            if (selectedProjData.formfactors && selectedProjData.formfactors.length > 0) {
+                for (const ff of selectedProjData.formfactors) {
+                    if (rawProduct.startsWith(ff.name)) {
+                        foundFormfactor = ff.name;
+                        rawProduct = rawProduct.slice(ff.name.length).trim();
+                        for (const rev of ff.revisions) {
+                            if (rawProduct.startsWith(rev)) {
+                                finalPcbRev = rev;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            const cornerPart = noPartYet ? "" : siliconVersion;
+            const revPart = noPartYet ? "No part yet" : (selectedRevision ? selectedRevision : '');
+            const new_product = [foundFormfactor, finalPcbRev, revPart, cornerPart].filter(Boolean).join(' ').trim();
+            formData.append('new_product', new_product);
+        }
         images.forEach(img => {
             formData.append('images', img);
         });
@@ -114,6 +154,55 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                         <option value="Silicon Swap">Silicon Swap</option>
                     </select>
                 </div>
+                
+                {reworkType === 'Silicon Swap' && (
+                    <FormGroup title="New Silicon Data">
+                        <div className="form-row">
+                            <div className="form-group flex-1">
+                                <label htmlFor="revision">Rev</label>
+                                <select 
+                                    id="revision"
+                                    value={selectedRevision}
+                                    onChange={(e) => setSelectedRevision(e.target.value)} disabled={noPartYet}
+                                >
+                                    <option value="">N/A</option>
+                                    {availableSiliconRevisions.map((rev: string) => (
+                                        <option key={rev} value={rev}>{rev}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group flex-1">
+                                <label htmlFor="silicon_version">Corner</label>
+                                <select 
+                                    id="silicon_version"
+                                    value={siliconVersion}
+                                    onChange={(e) => setSiliconVersion(e.target.value)} disabled={noPartYet}
+                                >
+                                    <option value="">N/A</option>
+                                    {availableSiliconVersions.map((v: string) => (
+                                        <option key={v} value={v}>{v}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="form-row">
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'normal', fontSize: '1rem', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={noPartYet} 
+                                    onChange={(e) => {
+                                        setNoPartYet(e.target.checked);
+                                        if (e.target.checked) {
+                                            setSelectedRevision('');
+                                            setSiliconVersion('');
+                                        }
+                                    }} 
+                                />
+                                No part yet
+                            </label>
+                        </div>
+                    </FormGroup>
+                )}
                 <div className="form-group" style={{ marginBottom: '24px' }}>
                     <label style={{ display: 'block', fontWeight: 600, marginBottom: '8px' }}>Attach Photo Evidence (Up to 3)</label>
                     
