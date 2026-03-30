@@ -130,7 +130,7 @@ export function PcbFilter() {
 
             {/* PCB Group */}
             <PcbFilterGroup title="PCB Filters" color="#8b5cf6">
-                <PcbFilterElement title="PCB Name" value={selectedBoardNumbers} onChange={setSelectedBoardNumbers} width="160px">
+                <PcbFilterElement title="Name" value={selectedBoardNumbers} onChange={setSelectedBoardNumbers} width="160px">
                     {pcbs
                         .filter(pcb => matchPcb(pcb, 'boardnum'))
                         .sort((a,b) => a.board_number.localeCompare(b.board_number))
@@ -140,7 +140,7 @@ export function PcbFilter() {
                     }
                 </PcbFilterElement>
 
-                <PcbFilterElement title="PCB Flavors" value={selectedFlavors} onChange={setSelectedFlavors} width="180px">
+                <PcbFilterElement title="Flavors" value={selectedFlavors} onChange={setSelectedFlavors} width="180px">
                     {(() => {
                         const activeProjects = selectedProjects.length > 0 ? projects.filter(p => selectedProjects.includes(p.id.toString())) : projects;
                         const allFlavors = new Set<string>();
@@ -154,18 +154,18 @@ export function PcbFilter() {
                     })()}
                 </PcbFilterElement>
 
-                <PcbFilterElement title="PCB Revs" value={selectedPcbRevs} onChange={setSelectedPcbRevs} width="120px">
+                <PcbFilterElement title="Revs" value={selectedPcbRevs} onChange={setSelectedPcbRevs} width="120px">
                     {(() => {
+                        const activeProjects = selectedProjects.length > 0 ? projects.filter(p => selectedProjects.includes(p.id.toString())) : projects;
                         const allPcbRevs = new Set<string>();
-                        pcbs.forEach(pcb => {
-                            if (!pcb.product) return;
-                            let cleanRev = pcb.product;
-                            if (pcb.product.includes('Rev ')) {
-                                cleanRev = pcb.product.split('Rev ')[1].trim();
-                            } else if (pcb.product.includes('- ')) {
-                                cleanRev = pcb.product.split('- ').pop()?.trim() || cleanRev;
+                        activeProjects.forEach((p: any) => { 
+                            if (p.formfactors) {
+                                p.formfactors.forEach((ff: any) => {
+                                    if (ff.revisions) {
+                                        ff.revisions.forEach((r: string) => allPcbRevs.add(r));
+                                    }
+                                });
                             }
-                            if (cleanRev) allPcbRevs.add(cleanRev);
                         });
 
                         return Array.from(allPcbRevs).sort().map(pr => {
