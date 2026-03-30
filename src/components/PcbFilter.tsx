@@ -1,6 +1,6 @@
 import { usePcbStore } from '../store/storePcb';
 import { useProjectStore } from '../store/storeProject';
-import { useTagStore } from '../store/storeTag';
+import { useTagStore, formatTagName } from '../store/storeTag';
 import { useOwnerStore } from '../store/storeOwner';
 import { PcbFilterElement } from './PcbFilterElement';
 
@@ -164,7 +164,7 @@ export function PcbFilter() {
                 {tags.map(tag => {
                     const count = pcbs.filter(pcb => pcb.tag_ids && pcb.tag_ids.includes(tag.id) && matchPcb(pcb, 'tag')).length;
                     if (count === 0 && hasAnyOtherFilter('tag')) return null;
-                    return <option key={tag.id} value={tag.id.toString()}>{tag.name} ({count})</option>;
+                    return <option key={tag.id} value={tag.id.toString()}>{formatTagName(tag)} ({count})</option>;
                 })}
             </PcbFilterElement>
 

@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronUp, Edit2 } from 'lucide-react';
+import { formatTagName } from '../store/storeTag';
 
 interface TagCardHeaderProps {
     tag: any;
@@ -32,11 +33,7 @@ export function TagCardHeader({ tag, isExpanded, onToggle, onEdit }: TagCardHead
                     }} 
                 />
                 <span className="board-num" style={{ fontSize: '1rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                    {tag.owner_username 
-                        ? `${tag.owner_username}-${tag.name}` 
-                        : tag.owner_name 
-                            ? `${tag.owner_name}-${tag.name}` 
-                            : `Unassigned-${tag.name}`}
+                    {tag.owner_username || tag.owner_name ? formatTagName(tag) : `Unassigned/${formatTagName(tag)}`}
                 </span>
             </div>
             

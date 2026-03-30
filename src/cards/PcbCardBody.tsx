@@ -4,7 +4,9 @@ import { useTagStore } from '../store/storeTag';
 import { useStore } from '../store/useStore';
 import { API_BASE } from '../apiBridge';
 import { FormTabs } from '../forms/FormTabs';
-import { Tag as TagIcon, X } from 'lucide-react';
+import { Trash2, Link, Copy, Eye, ArchiveRestore, Tag as TagIcon, X } from 'lucide-react';
+import { BoardName } from '../components/BoardName';
+import { formatTagName } from '../store/storeTag';
 import { EditButton, ViewButton, AddButton, QrButton } from '../forms/ActionButtons';
 import { ReworkCardHeader } from './ReworkCardHeader';
 
@@ -160,7 +162,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                                     >
                                                         <TagIcon size={14} style={{ flexShrink: 0 }} />
                                                         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                            {tag.owner_username ? `${tag.owner_username}-${tag.name}` : tag.name}
+                                                            {formatTagName(tag)}
                                                         </span>
                                                     </div>
                                                 ))}
@@ -182,7 +184,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                             {filteredAttached.map(tag => (
                                                 <div key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: `${tag.color}20`, color: tag.color, border: `1px solid ${tag.color}40`, padding: '4px 10px', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 600 }}>
                                                     <TagIcon size={12} />
-                                                    {tag.owner_username ? `${tag.owner_username}-${tag.name}` : tag.name}
+                                                    {formatTagName(tag)}
                                                 </div>
                                             ))}
                                         </div>
