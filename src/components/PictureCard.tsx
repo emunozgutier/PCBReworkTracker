@@ -1,37 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-
-const PatternImage = ({ id, width, height, borderRadius }: { id: string, width: string, height: string, borderRadius?: string }) => {
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) hash = Math.imul(31, hash) + id.charCodeAt(i) | 0;
-
-    const h1 = Math.abs(hash) % 360;
-    const h2 = (h1 + 120 + (Math.abs(hash) % 60)) % 360; 
-    const h3 = (h2 + 120 + (Math.abs(hash) % 30)) % 360;
-    
-    const [c1, c2, c3] = [
-        `hsl(${h1}, 80%, 65%)`,
-        `hsl(${h2}, 85%, 55%)`,
-        `hsl(${h3}, 75%, 45%)`
-    ];
-
-    const pixels = [];
-    for (let row = 0; row < 4; row++) {
-        for (let col = 0; col < 2; col++) {
-            const bit = (Math.abs(hash) >> (row * 2 + col)) % 3;
-            const color = bit === 0 ? c1 : bit === 1 ? c2 : c3;
-            pixels.push(<rect key={`${row}-${col}-L`} x={col * 25} y={row * 25} width="25" height="25" fill={color} />);
-            pixels.push(<rect key={`${row}-${col}-R`} x={(3 - col) * 25} y={row * 25} width="25" height="25" fill={color} />);
-        }
-    }
-
-    return (
-        <svg viewBox="0 0 100 100" style={{ width, height, borderRadius: borderRadius || '8px', display: 'block', boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}>
-            <rect width="100" height="100" fill={c1} opacity={0.15} />
-            {pixels}
-        </svg>
-    );
-};
+import { API_BASE } from '../apiBridge';
 
 interface PictureCardProps {
     images: string[];
@@ -82,8 +51,9 @@ export function PictureCard({ images, title, onClose }: PictureCardProps) {
                     backgroundColor: 'var(--bg)',
                     borderRadius: '16px',
                     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                    width: '100%',
-                    maxWidth: '550px',
+                    width: '90%',
+                    maxWidth: '800px',
+                    height: '90vh',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
@@ -100,7 +70,7 @@ export function PictureCard({ images, title, onClose }: PictureCardProps) {
                 </div>
 
                 {/* Body Centerpiece */}
-                <div style={{ padding: '40px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', position: 'relative' }}>
+                <div style={{ flex: 1, minHeight: 0, padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', position: 'relative' }}>
                     
                     {images.length > 1 && (
                         <button 
@@ -112,8 +82,16 @@ export function PictureCard({ images, title, onClose }: PictureCardProps) {
                         </button>
                     )}
 
-                    <div style={{ background: 'var(--card-bg)', padding: '16px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.4)', flexShrink: 0, border: '1px solid var(--border)' }}>
-                        <PatternImage id={images[currentIndex] || ''} width="240px" height="240px" borderRadius="12px" />
+                    <div style={{ flex: 1, minHeight: 0, width: '100%', background: 'var(--bg)', borderRadius: '12px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                        <img 
+                            src={`${API_BASE.replace('/api', '')}/api${images[currentIndex]}`} 
+                            alt={`Evidence ${currentIndex + 1}`} 
+                            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '12px', backgroundColor: '#000' }}
+                            onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.parentElement!.innerHTML = '<div style="color:var(--text-muted);display:flex;flex-direction:column;align-items:center;gap:8px;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg><span>Image Not Found</span></div>';
+                            }}
+                        />
                     </div>
 
                     <div style={{ textAlign: 'center', maxWidth: '350px' }}>
@@ -153,7 +131,17 @@ export function PictureCard({ images, title, onClose }: PictureCardProps) {
                                     boxShadow: currentIndex === idx ? '0 4px 12px rgba(99, 102, 241, 0.3)' : 'none'
                                 }}
                             >
-                                <PatternImage id={img} width="54px" height="54px" borderRadius="6px" />
+                                <div style={{ width: '54px', height: '54px', overflow: 'hidden', borderRadius: '6px' }}>
+                                    <img 
+                                        src={`${API_BASE.replace('/api', '')}/api${img}`} 
+                                        alt={`Thumb ${idx + 1}`} 
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                            e.currentTarget.parentElement!.innerHTML = '<div style="width:100%;height:100%;background:var(--card-bg);display:flex;align-items:center;justify-content:center;color:var(--text-muted)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div>';
+                                        }}
+                                    />
+                                </div>
                             </div>
                         ))}
                     </div>
