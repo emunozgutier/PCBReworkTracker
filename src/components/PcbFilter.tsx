@@ -33,8 +33,7 @@ export function PcbFilter() {
             if (!pcb.product || !selectedRevisions.some((rev: string) => pcb.product.includes(rev))) return false;
         }
         if (ignoreField !== 'corner' && selectedCorners.length > 0) {
-            const projObj = projects.find(p => p.name === pcb.project);
-            if (!projObj || !projObj.silicon_corners || !selectedCorners.some((corner: string) => projObj.silicon_corners?.includes(corner))) return false;
+            if (!pcb.product || !selectedCorners.some((corner: string) => pcb.product.includes(corner))) return false;
         }
         if (ignoreField !== 'flavor' && selectedFlavors.length > 0) {
             if (!pcb.product || !selectedFlavors.some((ff: string) => pcb.product.includes(ff))) return false;
@@ -116,10 +115,7 @@ export function PcbFilter() {
                         activeProjects.forEach((p: any) => { if (p.silicon_corners) p.silicon_corners.split(',').forEach((c: string) => allCorners.add(c.trim())); });
 
                         return Array.from(allCorners).filter(Boolean).sort().map(corner => {
-                            const count = pcbs.filter(pcb => {
-                                const p = projects.find(proj => proj.name === pcb.project);
-                                return p && p.silicon_corners && p.silicon_corners.includes(corner) && matchPcb(pcb, 'corner');
-                            }).length;
+                            const count = pcbs.filter(pcb => pcb.product && pcb.product.includes(corner) && matchPcb(pcb, 'corner')).length;
                             if (count === 0 && hasAnyOtherFilter('corner')) return null;
                             return <option key={corner} value={corner}>{corner} ({count})</option>;
                         });
