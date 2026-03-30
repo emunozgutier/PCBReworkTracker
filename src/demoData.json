@@ -6,36 +6,36 @@
             "description": "Saturn Moon Project",
             "pcb_count": 30,
             "pcbs": [
-                "DIO-001",
-                "DIO-002",
-                "DIO-003",
-                "DIO-004",
-                "DIO-005",
-                "DIO-006",
-                "DIO-007",
-                "DIO-008",
-                "DIO-009",
-                "DIO-010",
-                "DIO-011",
-                "DIO-012",
-                "DIO-013",
-                "DIO-014",
-                "DIO-015",
-                "DIO-016",
-                "DIO-017",
-                "DIO-018",
-                "DIO-019",
-                "DIO-020",
-                "DIO-021",
-                "DIO-022",
-                "DIO-023",
-                "DIO-024",
-                "DIO-025",
-                "DIO-026",
-                "DIO-027",
-                "DIO-028",
-                "DIO-029",
-                "DIO-030"
+                "DIO-0001U",
+                "DIO-0002D",
+                "DIO-0003N",
+                "DIO-0004W",
+                "DIO-0005F",
+                "DIO-0006Q",
+                "DIO-0007Y",
+                "DIO-0008H",
+                "DIO-0009S",
+                "DIO-0010T",
+                "DIO-0011C",
+                "DIO-0012M",
+                "DIO-0013V",
+                "DIO-0014E",
+                "DIO-0015P",
+                "DIO-0016X",
+                "DIO-0017G",
+                "DIO-0018R",
+                "DIO-0019A",
+                "DIO-0020B",
+                "DIO-0021K",
+                "DIO-0022U",
+                "DIO-0023D",
+                "DIO-0024N",
+                "DIO-0025W",
+                "DIO-0026F",
+                "DIO-0027Q",
+                "DIO-0028Y",
+                "DIO-0029H",
+                "DIO-0030J"
             ],
             "revisions": [
                 "A0"
@@ -59,18 +59,18 @@
             "description": "Saturn Moon Project",
             "pcb_count": 12,
             "pcbs": [
-                "TIT-001",
-                "TIT-002",
-                "TIT-003",
-                "TIT-004",
-                "TIT-005",
-                "TIT-006",
-                "TIT-007",
-                "TIT-008",
-                "TIT-009",
-                "TIT-010",
-                "TIT-011",
-                "TIT-012"
+                "TIT-0001E",
+                "TIT-0002P",
+                "TIT-0003X",
+                "TIT-0004G",
+                "TIT-0005R",
+                "TIT-0006A",
+                "TIT-0007J",
+                "TIT-0008T",
+                "TIT-0009C",
+                "TIT-0010D",
+                "TIT-0011N",
+                "TIT-0012W"
             ],
             "revisions": [
                 "A0",
@@ -113,32 +113,32 @@
             "description": "Saturn Moon Project",
             "pcb_count": 26,
             "pcbs": [
-                "ATL-001",
-                "ATL-002",
-                "ATL-003",
-                "ATL-004",
-                "ATL-005",
-                "ATL-006",
-                "ATL-007",
-                "ATL-008",
-                "ATL-009",
-                "ATL-010",
-                "ATL-011",
-                "ATL-012",
-                "ATL-013",
-                "ATL-014",
-                "ATL-015",
-                "ATL-016",
-                "ATL-017",
-                "ATL-018",
-                "ATL-019",
-                "ATL-020",
-                "ATL-021",
-                "ATL-022",
-                "ATL-023",
-                "ATL-024",
-                "ATL-025",
-                "ATL-026"
+                "ATL-0001F",
+                "ATL-0002Q",
+                "ATL-0003Y",
+                "ATL-0004H",
+                "ATL-0005S",
+                "ATL-0006B",
+                "ATL-0007K",
+                "ATL-0008U",
+                "ATL-0009D",
+                "ATL-0010E",
+                "ATL-0011P",
+                "ATL-0012X",
+                "ATL-0013G",
+                "ATL-0014R",
+                "ATL-0015A",
+                "ATL-0016J",
+                "ATL-0017T",
+                "ATL-0018C",
+                "ATL-0019M",
+                "ATL-0020N",
+                "ATL-0021W",
+                "ATL-0022F",
+                "ATL-0023Q",
+                "ATL-0024Y",
+                "ATL-0025H",
+                "ATL-0026S"
             ],
             "revisions": [
                 "A0",
@@ -178,7 +178,7 @@
     "demoPcbs": [
         {
             "id": 1,
-            "board_number": "DIO-001",
+            "board_number": "DIO-0001U",
             "status": "Working",
             "project": "Dione",
             "owner": "Ethan Hunt",
@@ -186,7 +186,7 @@
         },
         {
             "id": 2,
-            "board_number": "DIO-002",
+            "board_number": "DIO-0002D",
             "status": "Testing",
             "project": "Dione",
             "owner": "Alice Smith",
@@ -194,7 +194,7 @@
         },
         {
             "id": 3,
-            "board_number": "DIO-003",
+            "board_number": "DIO-0003N",
             "status": "Testing",
             "project": "Dione",
             "owner": "Fiona Gallagher",
@@ -202,7 +202,7 @@
         },
         {
             "id": 4,
-            "board_number": "DIO-004",
+            "board_number": "DIO-0004W",
             "status": "In Rework",
             "project": "Dione",
             "owner": "Elena Miller",
@@ -210,7 +210,7 @@
         },
         {
             "id": 5,
-            "board_number": "DIO-005",
+            "board_number": "DIO-0005F",
             "status": "Working",
             "project": "Dione",
             "owner": "Bob Jones",
@@ -218,7 +218,7 @@
         },
         {
             "id": 6,
-            "board_number": "DIO-006",
+            "board_number": "DIO-0006Q",
             "status": "Working",
             "project": "Dione",
             "owner": "Fiona Gallagher",
@@ -226,7 +226,7 @@
         },
         {
             "id": 7,
-            "board_number": "DIO-007",
+            "board_number": "DIO-0007Y",
             "status": "Testing",
             "project": "Dione",
             "owner": "Charlie Brown",
@@ -234,7 +234,7 @@
         },
         {
             "id": 8,
-            "board_number": "DIO-008",
+            "board_number": "DIO-0008H",
             "status": "In Rework",
             "project": "Dione",
             "owner": "Alice Smith",
@@ -242,7 +242,7 @@
         },
         {
             "id": 9,
-            "board_number": "DIO-009",
+            "board_number": "DIO-0009S",
             "status": "Working",
             "project": "Dione",
             "owner": "George Costanza",
@@ -250,7 +250,7 @@
         },
         {
             "id": 10,
-            "board_number": "DIO-010",
+            "board_number": "DIO-0010T",
             "status": "In Rework",
             "project": "Dione",
             "owner": "Charlie Brown",
@@ -258,7 +258,7 @@
         },
         {
             "id": 11,
-            "board_number": "DIO-011",
+            "board_number": "DIO-0011C",
             "status": "In Rework",
             "project": "Dione",
             "owner": "George Costanza",
@@ -266,7 +266,7 @@
         },
         {
             "id": 12,
-            "board_number": "DIO-012",
+            "board_number": "DIO-0012M",
             "status": "In Rework",
             "project": "Dione",
             "owner": "Ethan Hunt",
@@ -274,7 +274,7 @@
         },
         {
             "id": 13,
-            "board_number": "DIO-013",
+            "board_number": "DIO-0013V",
             "status": "Testing",
             "project": "Dione",
             "owner": "Ethan Hunt",
@@ -282,7 +282,7 @@
         },
         {
             "id": 14,
-            "board_number": "DIO-014",
+            "board_number": "DIO-0014E",
             "status": "In Rework",
             "project": "Dione",
             "owner": "Bob Jones",
@@ -290,7 +290,7 @@
         },
         {
             "id": 15,
-            "board_number": "DIO-015",
+            "board_number": "DIO-0015P",
             "status": "Working",
             "project": "Dione",
             "owner": "Elena Miller",
@@ -298,7 +298,7 @@
         },
         {
             "id": 16,
-            "board_number": "DIO-016",
+            "board_number": "DIO-0016X",
             "status": "Testing",
             "project": "Dione",
             "owner": "Ethan Hunt",
@@ -306,7 +306,7 @@
         },
         {
             "id": 17,
-            "board_number": "DIO-017",
+            "board_number": "DIO-0017G",
             "status": "Testing",
             "project": "Dione",
             "owner": "Ethan Hunt",
@@ -314,7 +314,7 @@
         },
         {
             "id": 18,
-            "board_number": "DIO-018",
+            "board_number": "DIO-0018R",
             "status": "In Rework",
             "project": "Dione",
             "owner": "George Costanza",
@@ -322,7 +322,7 @@
         },
         {
             "id": 19,
-            "board_number": "DIO-019",
+            "board_number": "DIO-0019A",
             "status": "In Rework",
             "project": "Dione",
             "owner": "Alice Smith",
@@ -330,7 +330,7 @@
         },
         {
             "id": 20,
-            "board_number": "DIO-020",
+            "board_number": "DIO-0020B",
             "status": "Working",
             "project": "Dione",
             "owner": "Fiona Gallagher",
@@ -338,7 +338,7 @@
         },
         {
             "id": 21,
-            "board_number": "DIO-021",
+            "board_number": "DIO-0021K",
             "status": "Testing",
             "project": "Dione",
             "owner": "Alice Smith",
@@ -346,7 +346,7 @@
         },
         {
             "id": 22,
-            "board_number": "DIO-022",
+            "board_number": "DIO-0022U",
             "status": "Testing",
             "project": "Dione",
             "owner": "Fiona Gallagher",
@@ -354,7 +354,7 @@
         },
         {
             "id": 23,
-            "board_number": "DIO-023",
+            "board_number": "DIO-0023D",
             "status": "In Rework",
             "project": "Dione",
             "owner": "George Costanza",
@@ -362,7 +362,7 @@
         },
         {
             "id": 24,
-            "board_number": "DIO-024",
+            "board_number": "DIO-0024N",
             "status": "Working",
             "project": "Dione",
             "owner": "Bob Jones",
@@ -370,7 +370,7 @@
         },
         {
             "id": 25,
-            "board_number": "DIO-025",
+            "board_number": "DIO-0025W",
             "status": "In Rework",
             "project": "Dione",
             "owner": "George Costanza",
@@ -378,7 +378,7 @@
         },
         {
             "id": 26,
-            "board_number": "DIO-026",
+            "board_number": "DIO-0026F",
             "status": "Working",
             "project": "Dione",
             "owner": "Alice Smith",
@@ -386,7 +386,7 @@
         },
         {
             "id": 27,
-            "board_number": "DIO-027",
+            "board_number": "DIO-0027Q",
             "status": "Working",
             "project": "Dione",
             "owner": "Alice Smith",
@@ -394,7 +394,7 @@
         },
         {
             "id": 28,
-            "board_number": "DIO-028",
+            "board_number": "DIO-0028Y",
             "status": "Working",
             "project": "Dione",
             "owner": "Ethan Hunt",
@@ -402,7 +402,7 @@
         },
         {
             "id": 29,
-            "board_number": "DIO-029",
+            "board_number": "DIO-0029H",
             "status": "In Rework",
             "project": "Dione",
             "owner": "Bob Jones",
@@ -410,7 +410,7 @@
         },
         {
             "id": 30,
-            "board_number": "DIO-030",
+            "board_number": "DIO-0030J",
             "status": "Working",
             "project": "Dione",
             "owner": "George Costanza",
@@ -418,7 +418,7 @@
         },
         {
             "id": 31,
-            "board_number": "TIT-001",
+            "board_number": "TIT-0001E",
             "status": "Working",
             "project": "Titan",
             "owner": "George Costanza",
@@ -426,7 +426,7 @@
         },
         {
             "id": 32,
-            "board_number": "TIT-002",
+            "board_number": "TIT-0002P",
             "status": "Testing",
             "project": "Titan",
             "owner": "Alice Smith",
@@ -434,7 +434,7 @@
         },
         {
             "id": 33,
-            "board_number": "TIT-003",
+            "board_number": "TIT-0003X",
             "status": "Testing",
             "project": "Titan",
             "owner": "Ethan Hunt",
@@ -442,7 +442,7 @@
         },
         {
             "id": 34,
-            "board_number": "TIT-004",
+            "board_number": "TIT-0004G",
             "status": "Testing",
             "project": "Titan",
             "owner": "Elena Miller",
@@ -450,7 +450,7 @@
         },
         {
             "id": 35,
-            "board_number": "TIT-005",
+            "board_number": "TIT-0005R",
             "status": "Testing",
             "project": "Titan",
             "owner": "George Costanza",
@@ -458,7 +458,7 @@
         },
         {
             "id": 36,
-            "board_number": "TIT-006",
+            "board_number": "TIT-0006A",
             "status": "Testing",
             "project": "Titan",
             "owner": "Bob Jones",
@@ -466,7 +466,7 @@
         },
         {
             "id": 37,
-            "board_number": "TIT-007",
+            "board_number": "TIT-0007J",
             "status": "In Rework",
             "project": "Titan",
             "owner": "Charlie Brown",
@@ -474,7 +474,7 @@
         },
         {
             "id": 38,
-            "board_number": "TIT-008",
+            "board_number": "TIT-0008T",
             "status": "Testing",
             "project": "Titan",
             "owner": "Ethan Hunt",
@@ -482,7 +482,7 @@
         },
         {
             "id": 39,
-            "board_number": "TIT-009",
+            "board_number": "TIT-0009C",
             "status": "Testing",
             "project": "Titan",
             "owner": "Elena Miller",
@@ -490,7 +490,7 @@
         },
         {
             "id": 40,
-            "board_number": "TIT-010",
+            "board_number": "TIT-0010D",
             "status": "Testing",
             "project": "Titan",
             "owner": "Charlie Brown",
@@ -498,7 +498,7 @@
         },
         {
             "id": 41,
-            "board_number": "TIT-011",
+            "board_number": "TIT-0011N",
             "status": "Working",
             "project": "Titan",
             "owner": "Bob Jones",
@@ -506,7 +506,7 @@
         },
         {
             "id": 42,
-            "board_number": "TIT-012",
+            "board_number": "TIT-0012W",
             "status": "Testing",
             "project": "Titan",
             "owner": "Bob Jones",
@@ -514,7 +514,7 @@
         },
         {
             "id": 43,
-            "board_number": "ATL-001",
+            "board_number": "ATL-0001F",
             "status": "Testing",
             "project": "Atlas",
             "owner": "Ethan Hunt",
@@ -522,7 +522,7 @@
         },
         {
             "id": 44,
-            "board_number": "ATL-002",
+            "board_number": "ATL-0002Q",
             "status": "Working",
             "project": "Atlas",
             "owner": "Ethan Hunt",
@@ -530,7 +530,7 @@
         },
         {
             "id": 45,
-            "board_number": "ATL-003",
+            "board_number": "ATL-0003Y",
             "status": "In Rework",
             "project": "Atlas",
             "owner": "George Costanza",
@@ -538,7 +538,7 @@
         },
         {
             "id": 46,
-            "board_number": "ATL-004",
+            "board_number": "ATL-0004H",
             "status": "In Rework",
             "project": "Atlas",
             "owner": "Ethan Hunt",
@@ -546,7 +546,7 @@
         },
         {
             "id": 47,
-            "board_number": "ATL-005",
+            "board_number": "ATL-0005S",
             "status": "In Rework",
             "project": "Atlas",
             "owner": "Ethan Hunt",
@@ -554,7 +554,7 @@
         },
         {
             "id": 48,
-            "board_number": "ATL-006",
+            "board_number": "ATL-0006B",
             "status": "Working",
             "project": "Atlas",
             "owner": "Alice Smith",
@@ -562,7 +562,7 @@
         },
         {
             "id": 49,
-            "board_number": "ATL-007",
+            "board_number": "ATL-0007K",
             "status": "In Rework",
             "project": "Atlas",
             "owner": "Fiona Gallagher",
@@ -570,7 +570,7 @@
         },
         {
             "id": 50,
-            "board_number": "ATL-008",
+            "board_number": "ATL-0008U",
             "status": "Working",
             "project": "Atlas",
             "owner": "Alice Smith",
@@ -578,7 +578,7 @@
         },
         {
             "id": 51,
-            "board_number": "ATL-009",
+            "board_number": "ATL-0009D",
             "status": "Testing",
             "project": "Atlas",
             "owner": "Ethan Hunt",
@@ -586,7 +586,7 @@
         },
         {
             "id": 52,
-            "board_number": "ATL-010",
+            "board_number": "ATL-0010E",
             "status": "Testing",
             "project": "Atlas",
             "owner": "Bob Jones",
@@ -594,7 +594,7 @@
         },
         {
             "id": 53,
-            "board_number": "ATL-011",
+            "board_number": "ATL-0011P",
             "status": "Working",
             "project": "Atlas",
             "owner": "Charlie Brown",
@@ -602,7 +602,7 @@
         },
         {
             "id": 54,
-            "board_number": "ATL-012",
+            "board_number": "ATL-0012X",
             "status": "Testing",
             "project": "Atlas",
             "owner": "George Costanza",
@@ -610,7 +610,7 @@
         },
         {
             "id": 55,
-            "board_number": "ATL-013",
+            "board_number": "ATL-0013G",
             "status": "Working",
             "project": "Atlas",
             "owner": "Ethan Hunt",
@@ -618,7 +618,7 @@
         },
         {
             "id": 56,
-            "board_number": "ATL-014",
+            "board_number": "ATL-0014R",
             "status": "In Rework",
             "project": "Atlas",
             "owner": "Ethan Hunt",
@@ -626,7 +626,7 @@
         },
         {
             "id": 57,
-            "board_number": "ATL-015",
+            "board_number": "ATL-0015A",
             "status": "In Rework",
             "project": "Atlas",
             "owner": "Fiona Gallagher",
@@ -634,7 +634,7 @@
         },
         {
             "id": 58,
-            "board_number": "ATL-016",
+            "board_number": "ATL-0016J",
             "status": "In Rework",
             "project": "Atlas",
             "owner": "Bob Jones",
@@ -642,7 +642,7 @@
         },
         {
             "id": 59,
-            "board_number": "ATL-017",
+            "board_number": "ATL-0017T",
             "status": "Working",
             "project": "Atlas",
             "owner": "Ethan Hunt",
@@ -650,7 +650,7 @@
         },
         {
             "id": 60,
-            "board_number": "ATL-018",
+            "board_number": "ATL-0018C",
             "status": "Working",
             "project": "Atlas",
             "owner": "Fiona Gallagher",
@@ -658,7 +658,7 @@
         },
         {
             "id": 61,
-            "board_number": "ATL-019",
+            "board_number": "ATL-0019M",
             "status": "In Rework",
             "project": "Atlas",
             "owner": "Alice Smith",
@@ -666,7 +666,7 @@
         },
         {
             "id": 62,
-            "board_number": "ATL-020",
+            "board_number": "ATL-0020N",
             "status": "Testing",
             "project": "Atlas",
             "owner": "Alice Smith",
@@ -674,7 +674,7 @@
         },
         {
             "id": 63,
-            "board_number": "ATL-021",
+            "board_number": "ATL-0021W",
             "status": "In Rework",
             "project": "Atlas",
             "owner": "Charlie Brown",
@@ -682,7 +682,7 @@
         },
         {
             "id": 64,
-            "board_number": "ATL-022",
+            "board_number": "ATL-0022F",
             "status": "Working",
             "project": "Atlas",
             "owner": "Alice Smith",
@@ -690,7 +690,7 @@
         },
         {
             "id": 65,
-            "board_number": "ATL-023",
+            "board_number": "ATL-0023Q",
             "status": "Working",
             "project": "Atlas",
             "owner": "Ethan Hunt",
@@ -698,7 +698,7 @@
         },
         {
             "id": 66,
-            "board_number": "ATL-024",
+            "board_number": "ATL-0024Y",
             "status": "In Rework",
             "project": "Atlas",
             "owner": "Fiona Gallagher",
@@ -706,7 +706,7 @@
         },
         {
             "id": 67,
-            "board_number": "ATL-025",
+            "board_number": "ATL-0025H",
             "status": "Testing",
             "project": "Atlas",
             "owner": "Bob Jones",
@@ -714,7 +714,7 @@
         },
         {
             "id": 68,
-            "board_number": "ATL-026",
+            "board_number": "ATL-0026S",
             "status": "In Rework",
             "project": "Atlas",
             "owner": "Ethan Hunt",
@@ -788,8 +788,9 @@
             "timestamp": "2026-03-28T20:26:43.495Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
-            "pcb_board_number": "DIO-001",
-            "image_path": "[\"this is picture DIO-001-R-001-PIC-1\",\"this is picture DIO-001-R-001-PIC-2\",\"this is picture DIO-001-R-001-PIC-3\"]"
+            "pcb_board_number": "DIO-0001U",
+            "image_path": "[\"this is picture DIO-0001U-R-001-PIC-1\",\"this is picture DIO-0001U-R-001-PIC-2\",\"this is picture DIO-0001U-R-001-PIC-3\"]",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 2,
@@ -799,8 +800,9 @@
             "timestamp": "2026-03-28T20:26:43.496Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
-            "pcb_board_number": "DIO-002",
-            "image_path": "[\"this is picture DIO-002-R-001-PIC-1\",\"this is picture DIO-002-R-001-PIC-2\",\"this is picture DIO-002-R-001-PIC-3\"]"
+            "pcb_board_number": "DIO-0002D",
+            "image_path": "[\"this is picture DIO-0002D-R-001-PIC-1\",\"this is picture DIO-0002D-R-001-PIC-2\",\"this is picture DIO-0002D-R-001-PIC-3\"]",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 3,
@@ -810,7 +812,8 @@
             "timestamp": "2026-03-28T20:26:43.496Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "DIO-003"
+            "pcb_board_number": "DIO-0003N",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 4,
@@ -820,8 +823,9 @@
             "timestamp": "2026-03-28T20:26:43.496Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
-            "pcb_board_number": "DIO-004",
-            "image_path": "[\"this is picture DIO-004-R-001-PIC-1\",\"this is picture DIO-004-R-001-PIC-2\"]"
+            "pcb_board_number": "DIO-0004W",
+            "image_path": "[\"this is picture DIO-0004W-R-001-PIC-1\",\"this is picture DIO-0004W-R-001-PIC-2\"]",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 5,
@@ -831,7 +835,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
-            "pcb_board_number": "DIO-006"
+            "pcb_board_number": "DIO-0006Q",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 6,
@@ -841,7 +846,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "DIO-007"
+            "pcb_board_number": "DIO-0007Y",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 7,
@@ -851,8 +857,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
-            "pcb_board_number": "DIO-009",
-            "image_path": "[\"this is picture DIO-009-R-001-PIC-1\",\"this is picture DIO-009-R-001-PIC-2\",\"this is picture DIO-009-R-001-PIC-3\"]"
+            "pcb_board_number": "DIO-0009S",
+            "image_path": "[\"this is picture DIO-0009S-R-001-PIC-1\",\"this is picture DIO-0009S-R-001-PIC-2\",\"this is picture DIO-0009S-R-001-PIC-3\"]",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 8,
@@ -862,8 +869,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "DIO-011",
-            "image_path": "[\"this is picture DIO-011-R-001-PIC-1\",\"this is picture DIO-011-R-001-PIC-2\"]"
+            "pcb_board_number": "DIO-0011C",
+            "image_path": "[\"this is picture DIO-0011C-R-001-PIC-1\",\"this is picture DIO-0011C-R-001-PIC-2\"]",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 9,
@@ -873,7 +881,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
-            "pcb_board_number": "DIO-012"
+            "pcb_board_number": "DIO-0012M",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 10,
@@ -883,7 +892,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
-            "pcb_board_number": "DIO-014"
+            "pcb_board_number": "DIO-0014E",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 11,
@@ -893,8 +903,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
-            "pcb_board_number": "DIO-015",
-            "image_path": "[\"this is picture DIO-015-R-001-PIC-1\",\"this is picture DIO-015-R-001-PIC-2\"]"
+            "pcb_board_number": "DIO-0015P",
+            "image_path": "[\"this is picture DIO-0015P-R-001-PIC-1\",\"this is picture DIO-0015P-R-001-PIC-2\"]",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 12,
@@ -904,7 +915,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
-            "pcb_board_number": "DIO-016"
+            "pcb_board_number": "DIO-0016X",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 13,
@@ -914,8 +926,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
-            "pcb_board_number": "DIO-016",
-            "image_path": "[\"this is picture DIO-016-R-001-PIC-1\",\"this is picture DIO-016-R-001-PIC-2\",\"this is picture DIO-016-R-001-PIC-3\"]"
+            "pcb_board_number": "DIO-0016X",
+            "image_path": "[\"this is picture DIO-0016X-R-001-PIC-1\",\"this is picture DIO-0016X-R-001-PIC-2\",\"this is picture DIO-0016X-R-001-PIC-3\"]",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 14,
@@ -925,7 +938,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
-            "pcb_board_number": "DIO-016"
+            "pcb_board_number": "DIO-0016X",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 15,
@@ -935,8 +949,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "DIO-019",
-            "image_path": "[\"this is picture DIO-019-R-001-PIC-1\",\"this is picture DIO-019-R-001-PIC-2\"]"
+            "pcb_board_number": "DIO-0019A",
+            "image_path": "[\"this is picture DIO-0019A-R-001-PIC-1\",\"this is picture DIO-0019A-R-001-PIC-2\"]",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 16,
@@ -946,7 +961,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
-            "pcb_board_number": "DIO-022"
+            "pcb_board_number": "DIO-0022U",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 17,
@@ -956,7 +972,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "DIO-023"
+            "pcb_board_number": "DIO-0023D",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 18,
@@ -966,7 +983,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
-            "pcb_board_number": "DIO-027"
+            "pcb_board_number": "DIO-0027Q",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 19,
@@ -976,7 +994,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
-            "pcb_board_number": "DIO-029"
+            "pcb_board_number": "DIO-0029H",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 20,
@@ -986,8 +1005,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "TIT-001",
-            "image_path": "[\"this is picture TIT-001-R-001-PIC-1\",\"this is picture TIT-001-R-001-PIC-2\"]"
+            "pcb_board_number": "TIT-0001E",
+            "image_path": "[\"this is picture TIT-0001E-R-001-PIC-1\",\"this is picture TIT-0001E-R-001-PIC-2\"]",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 21,
@@ -997,8 +1017,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
-            "pcb_board_number": "TIT-002",
-            "image_path": "[\"this is picture TIT-002-R-001-PIC-1\",\"this is picture TIT-002-R-001-PIC-2\",\"this is picture TIT-002-R-001-PIC-3\"]"
+            "pcb_board_number": "TIT-0002P",
+            "image_path": "[\"this is picture TIT-0002P-R-001-PIC-1\",\"this is picture TIT-0002P-R-001-PIC-2\",\"this is picture TIT-0002P-R-001-PIC-3\"]",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 22,
@@ -1008,7 +1029,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
-            "pcb_board_number": "TIT-002"
+            "pcb_board_number": "TIT-0002P",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 23,
@@ -1018,8 +1040,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "TIT-002",
-            "image_path": "[\"this is picture TIT-002-R-001-PIC-1\",\"this is picture TIT-002-R-001-PIC-2\"]"
+            "pcb_board_number": "TIT-0002P",
+            "image_path": "[\"this is picture TIT-0002P-R-001-PIC-1\",\"this is picture TIT-0002P-R-001-PIC-2\"]",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 24,
@@ -1029,7 +1052,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
-            "pcb_board_number": "TIT-003"
+            "pcb_board_number": "TIT-0003X",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 25,
@@ -1039,7 +1063,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
-            "pcb_board_number": "TIT-004"
+            "pcb_board_number": "TIT-0004G",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 26,
@@ -1049,7 +1074,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
-            "pcb_board_number": "TIT-005"
+            "pcb_board_number": "TIT-0005R",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 27,
@@ -1059,7 +1085,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
-            "pcb_board_number": "TIT-005"
+            "pcb_board_number": "TIT-0005R",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 28,
@@ -1069,7 +1096,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
-            "pcb_board_number": "TIT-005"
+            "pcb_board_number": "TIT-0005R",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 29,
@@ -1079,7 +1107,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
-            "pcb_board_number": "TIT-006"
+            "pcb_board_number": "TIT-0006A",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 30,
@@ -1089,7 +1118,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
-            "pcb_board_number": "TIT-007"
+            "pcb_board_number": "TIT-0007J",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 31,
@@ -1099,7 +1129,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
-            "pcb_board_number": "TIT-007"
+            "pcb_board_number": "TIT-0007J",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 32,
@@ -1109,7 +1140,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
-            "pcb_board_number": "TIT-007"
+            "pcb_board_number": "TIT-0007J",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 33,
@@ -1119,7 +1151,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
-            "pcb_board_number": "TIT-008"
+            "pcb_board_number": "TIT-0008T",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 34,
@@ -1129,8 +1162,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
-            "pcb_board_number": "TIT-009",
-            "image_path": "[\"this is picture TIT-009-R-001-PIC-1\",\"this is picture TIT-009-R-001-PIC-2\"]"
+            "pcb_board_number": "TIT-0009C",
+            "image_path": "[\"this is picture TIT-0009C-R-001-PIC-1\",\"this is picture TIT-0009C-R-001-PIC-2\"]",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 35,
@@ -1140,7 +1174,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "TIT-010"
+            "pcb_board_number": "TIT-0010D",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 36,
@@ -1150,8 +1185,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
-            "pcb_board_number": "TIT-011",
-            "image_path": "[\"this is picture TIT-011-R-001-PIC-1\",\"this is picture TIT-011-R-001-PIC-2\"]"
+            "pcb_board_number": "TIT-0011N",
+            "image_path": "[\"this is picture TIT-0011N-R-001-PIC-1\",\"this is picture TIT-0011N-R-001-PIC-2\"]",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 37,
@@ -1161,7 +1197,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
-            "pcb_board_number": "TIT-012"
+            "pcb_board_number": "TIT-0012W",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 38,
@@ -1171,8 +1208,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
-            "pcb_board_number": "ATL-001",
-            "image_path": "[\"this is picture ATL-001-R-001-PIC-1\",\"this is picture ATL-001-R-001-PIC-2\"]"
+            "pcb_board_number": "ATL-0001F",
+            "image_path": "[\"this is picture ATL-0001F-R-001-PIC-1\",\"this is picture ATL-0001F-R-001-PIC-2\"]",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 39,
@@ -1182,8 +1220,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "ATL-002",
-            "image_path": "[\"this is picture ATL-002-R-001-PIC-1\",\"this is picture ATL-002-R-001-PIC-2\",\"this is picture ATL-002-R-001-PIC-3\"]"
+            "pcb_board_number": "ATL-0002Q",
+            "image_path": "[\"this is picture ATL-0002Q-R-001-PIC-1\",\"this is picture ATL-0002Q-R-001-PIC-2\",\"this is picture ATL-0002Q-R-001-PIC-3\"]",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 40,
@@ -1193,7 +1232,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
-            "pcb_board_number": "ATL-002"
+            "pcb_board_number": "ATL-0002Q",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 41,
@@ -1203,8 +1243,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
-            "pcb_board_number": "ATL-002",
-            "image_path": "[\"this is picture ATL-002-R-001-PIC-1\",\"this is picture ATL-002-R-001-PIC-2\"]"
+            "pcb_board_number": "ATL-0002Q",
+            "image_path": "[\"this is picture ATL-0002Q-R-001-PIC-1\",\"this is picture ATL-0002Q-R-001-PIC-2\"]",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 42,
@@ -1214,8 +1255,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
-            "pcb_board_number": "ATL-003",
-            "image_path": "[\"this is picture ATL-003-R-001-PIC-1\",\"this is picture ATL-003-R-001-PIC-2\",\"this is picture ATL-003-R-001-PIC-3\"]"
+            "pcb_board_number": "ATL-0003Y",
+            "image_path": "[\"this is picture ATL-0003Y-R-001-PIC-1\",\"this is picture ATL-0003Y-R-001-PIC-2\",\"this is picture ATL-0003Y-R-001-PIC-3\"]",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 43,
@@ -1225,7 +1267,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
-            "pcb_board_number": "ATL-004"
+            "pcb_board_number": "ATL-0004H",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 44,
@@ -1235,8 +1278,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
-            "pcb_board_number": "ATL-005",
-            "image_path": "[\"this is picture ATL-005-R-001-PIC-1\",\"this is picture ATL-005-R-001-PIC-2\",\"this is picture ATL-005-R-001-PIC-3\"]"
+            "pcb_board_number": "ATL-0005S",
+            "image_path": "[\"this is picture ATL-0005S-R-001-PIC-1\",\"this is picture ATL-0005S-R-001-PIC-2\",\"this is picture ATL-0005S-R-001-PIC-3\"]",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 45,
@@ -1246,7 +1290,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
-            "pcb_board_number": "ATL-006"
+            "pcb_board_number": "ATL-0006B",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 46,
@@ -1256,8 +1301,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
-            "pcb_board_number": "ATL-007",
-            "image_path": "[\"this is picture ATL-007-R-001-PIC-1\",\"this is picture ATL-007-R-001-PIC-2\",\"this is picture ATL-007-R-001-PIC-3\"]"
+            "pcb_board_number": "ATL-0007K",
+            "image_path": "[\"this is picture ATL-0007K-R-001-PIC-1\",\"this is picture ATL-0007K-R-001-PIC-2\",\"this is picture ATL-0007K-R-001-PIC-3\"]",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 47,
@@ -1267,7 +1313,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "ATL-007"
+            "pcb_board_number": "ATL-0007K",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 48,
@@ -1277,7 +1324,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
-            "pcb_board_number": "ATL-007"
+            "pcb_board_number": "ATL-0007K",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 49,
@@ -1287,7 +1335,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
-            "pcb_board_number": "ATL-008"
+            "pcb_board_number": "ATL-0008U",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 50,
@@ -1297,7 +1346,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
-            "pcb_board_number": "ATL-009"
+            "pcb_board_number": "ATL-0009D",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 51,
@@ -1307,7 +1357,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
-            "pcb_board_number": "ATL-010"
+            "pcb_board_number": "ATL-0010E",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 52,
@@ -1317,8 +1368,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "ATL-011",
-            "image_path": "this is picture ATL-011-R-001-PIC-1"
+            "pcb_board_number": "ATL-0011P",
+            "image_path": "this is picture ATL-0011P-R-001-PIC-1",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 53,
@@ -1328,8 +1380,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "ATL-011",
-            "image_path": "[\"this is picture ATL-011-R-001-PIC-1\",\"this is picture ATL-011-R-001-PIC-2\",\"this is picture ATL-011-R-001-PIC-3\"]"
+            "pcb_board_number": "ATL-0011P",
+            "image_path": "[\"this is picture ATL-0011P-R-001-PIC-1\",\"this is picture ATL-0011P-R-001-PIC-2\",\"this is picture ATL-0011P-R-001-PIC-3\"]",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 54,
@@ -1339,7 +1392,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "ATL-011"
+            "pcb_board_number": "ATL-0011P",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 55,
@@ -1349,8 +1403,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "ATL-012",
-            "image_path": "[\"this is picture ATL-012-R-001-PIC-1\",\"this is picture ATL-012-R-001-PIC-2\"]"
+            "pcb_board_number": "ATL-0012X",
+            "image_path": "[\"this is picture ATL-0012X-R-001-PIC-1\",\"this is picture ATL-0012X-R-001-PIC-2\"]",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 56,
@@ -1360,8 +1415,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
-            "pcb_board_number": "ATL-013",
-            "image_path": "this is picture ATL-013-R-001-PIC-1"
+            "pcb_board_number": "ATL-0013G",
+            "image_path": "this is picture ATL-0013G-R-001-PIC-1",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 57,
@@ -1371,7 +1427,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
-            "pcb_board_number": "ATL-014"
+            "pcb_board_number": "ATL-0014R",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 58,
@@ -1381,8 +1438,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
-            "pcb_board_number": "ATL-015",
-            "image_path": "[\"this is picture ATL-015-R-001-PIC-1\",\"this is picture ATL-015-R-001-PIC-2\"]"
+            "pcb_board_number": "ATL-0015A",
+            "image_path": "[\"this is picture ATL-0015A-R-001-PIC-1\",\"this is picture ATL-0015A-R-001-PIC-2\"]",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 59,
@@ -1392,7 +1450,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
-            "pcb_board_number": "ATL-016"
+            "pcb_board_number": "ATL-0016J",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 60,
@@ -1402,8 +1461,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
-            "pcb_board_number": "ATL-017",
-            "image_path": "[\"this is picture ATL-017-R-001-PIC-1\",\"this is picture ATL-017-R-001-PIC-2\"]"
+            "pcb_board_number": "ATL-0017T",
+            "image_path": "[\"this is picture ATL-0017T-R-001-PIC-1\",\"this is picture ATL-0017T-R-001-PIC-2\"]",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 61,
@@ -1413,8 +1473,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
-            "pcb_board_number": "ATL-017",
-            "image_path": "[\"this is picture ATL-017-R-001-PIC-1\",\"this is picture ATL-017-R-001-PIC-2\",\"this is picture ATL-017-R-001-PIC-3\"]"
+            "pcb_board_number": "ATL-0017T",
+            "image_path": "[\"this is picture ATL-0017T-R-001-PIC-1\",\"this is picture ATL-0017T-R-001-PIC-2\",\"this is picture ATL-0017T-R-001-PIC-3\"]",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 62,
@@ -1424,8 +1485,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "ATL-017",
-            "image_path": "[\"this is picture ATL-017-R-001-PIC-1\",\"this is picture ATL-017-R-001-PIC-2\",\"this is picture ATL-017-R-001-PIC-3\"]"
+            "pcb_board_number": "ATL-0017T",
+            "image_path": "[\"this is picture ATL-0017T-R-001-PIC-1\",\"this is picture ATL-0017T-R-001-PIC-2\",\"this is picture ATL-0017T-R-001-PIC-3\"]",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 63,
@@ -1435,8 +1497,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
-            "pcb_board_number": "ATL-018",
-            "image_path": "[\"this is picture ATL-018-R-001-PIC-1\",\"this is picture ATL-018-R-001-PIC-2\",\"this is picture ATL-018-R-001-PIC-3\"]"
+            "pcb_board_number": "ATL-0018C",
+            "image_path": "[\"this is picture ATL-0018C-R-001-PIC-1\",\"this is picture ATL-0018C-R-001-PIC-2\",\"this is picture ATL-0018C-R-001-PIC-3\"]",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 64,
@@ -1446,8 +1509,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
-            "pcb_board_number": "ATL-019",
-            "image_path": "[\"this is picture ATL-019-R-001-PIC-1\",\"this is picture ATL-019-R-001-PIC-2\",\"this is picture ATL-019-R-001-PIC-3\"]"
+            "pcb_board_number": "ATL-0019M",
+            "image_path": "[\"this is picture ATL-0019M-R-001-PIC-1\",\"this is picture ATL-0019M-R-001-PIC-2\",\"this is picture ATL-0019M-R-001-PIC-3\"]",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 65,
@@ -1457,7 +1521,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
-            "pcb_board_number": "ATL-020"
+            "pcb_board_number": "ATL-0020N",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 66,
@@ -1467,8 +1532,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
-            "pcb_board_number": "ATL-021",
-            "image_path": "[\"this is picture ATL-021-R-001-PIC-1\",\"this is picture ATL-021-R-001-PIC-2\"]"
+            "pcb_board_number": "ATL-0021W",
+            "image_path": "[\"this is picture ATL-0021W-R-001-PIC-1\",\"this is picture ATL-0021W-R-001-PIC-2\"]",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 67,
@@ -1478,8 +1544,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
-            "pcb_board_number": "ATL-022",
-            "image_path": "[\"this is picture ATL-022-R-001-PIC-1\",\"this is picture ATL-022-R-001-PIC-2\",\"this is picture ATL-022-R-001-PIC-3\"]"
+            "pcb_board_number": "ATL-0022F",
+            "image_path": "[\"this is picture ATL-0022F-R-001-PIC-1\",\"this is picture ATL-0022F-R-001-PIC-2\",\"this is picture ATL-0022F-R-001-PIC-3\"]",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 68,
@@ -1489,7 +1556,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
-            "pcb_board_number": "ATL-023"
+            "pcb_board_number": "ATL-0023Q",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 69,
@@ -1499,8 +1567,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "ATL-023",
-            "image_path": "this is picture ATL-023-R-001-PIC-1"
+            "pcb_board_number": "ATL-0023Q",
+            "image_path": "this is picture ATL-0023Q-R-001-PIC-1",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 70,
@@ -1510,7 +1579,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
-            "pcb_board_number": "ATL-023"
+            "pcb_board_number": "ATL-0023Q",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 71,
@@ -1520,8 +1590,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
-            "pcb_board_number": "ATL-024",
-            "image_path": "[\"this is picture ATL-024-R-001-PIC-1\",\"this is picture ATL-024-R-001-PIC-2\"]"
+            "pcb_board_number": "ATL-0024Y",
+            "image_path": "[\"this is picture ATL-0024Y-R-001-PIC-1\",\"this is picture ATL-0024Y-R-001-PIC-2\"]",
+            "rework_type": "Silicon Replacement"
         },
         {
             "id": 72,
@@ -1531,7 +1602,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
-            "pcb_board_number": "ATL-024"
+            "pcb_board_number": "ATL-0024Y",
+            "rework_type": "Debug / Trace Cut"
         },
         {
             "id": 73,
@@ -1541,7 +1613,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
-            "pcb_board_number": "ATL-024"
+            "pcb_board_number": "ATL-0024Y",
+            "rework_type": "Major Component Swap"
         },
         {
             "id": 74,
@@ -1551,7 +1624,8 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
-            "pcb_board_number": "ATL-025"
+            "pcb_board_number": "ATL-0025H",
+            "rework_type": "Minor Rework"
         },
         {
             "id": 75,
@@ -1561,8 +1635,9 @@
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
-            "pcb_board_number": "ATL-026",
-            "image_path": "[\"this is picture ATL-026-R-001-PIC-1\",\"this is picture ATL-026-R-001-PIC-2\"]"
+            "pcb_board_number": "ATL-0026S",
+            "image_path": "[\"this is picture ATL-0026S-R-001-PIC-1\",\"this is picture ATL-0026S-R-001-PIC-2\"]",
+            "rework_type": "Silicon Replacement"
         }
     ],
     "demoTags": [
