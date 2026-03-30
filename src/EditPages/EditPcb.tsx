@@ -184,21 +184,18 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                     </div>
                 </FormGroup>
 
-                <FormGroup title={
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        Silicon
-                        <span 
-                            title="Silicon data can only be changed by logging a Silicon Swap Rework." 
-                            style={{ 
-                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                width: '16px', height: '16px', borderRadius: '50%', background: 'var(--accent)', 
-                                color: 'white', fontSize: '10px', fontWeight: 'bold', cursor: 'help' 
-                            }}
-                        >
-                            ?
-                        </span>
+                <FormGroup title="Silicon">
+                    <div style={{ 
+                        marginBottom: '1rem', 
+                        padding: '0.75rem', 
+                        backgroundColor: 'rgba(255, 255, 255, 0.05)', 
+                        borderLeft: '3px solid var(--accent)', 
+                        borderRadius: '0 4px 4px 0',
+                        fontSize: '0.875rem',
+                        color: 'var(--text-muted)'
+                    }}>
+                        Note: To change silicon you need to fill rework on log.
                     </div>
-                }>
                     <div className="form-row">
                         <div className="form-group flex-1">
                             <label>Project</label>
