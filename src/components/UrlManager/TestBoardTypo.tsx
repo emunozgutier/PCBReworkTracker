@@ -75,18 +75,6 @@ export function TestBoardTypo() {
 
                 return (
                     <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div style={{ fontSize: '1.1rem', padding: '1.5rem', borderRadius: '8px', backgroundColor: typedUpper === validBoardName ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', border: `1px solid ${typedUpper === validBoardName ? '#10b981' : '#ef4444'}` }}>
-                            {typedUpper === validBoardName ? (
-                                <div style={{ color: '#10b981' }}>
-                                    ✅ <strong>Input Status: OK!</strong> The URL naturally matches the exact mathematically generated board string.
-                                </div>
-                            ) : (
-                                <div style={{ color: '#ef4444' }}>
-                                    ❌ <strong>Input Status: BAD!</strong> The URL explicitly contains physical typos, missing data, or a corrupted CRC validator.
-                                </div>
-                            )}
-                        </div>
-
                         <div style={{ fontSize: '1.1rem', padding: '1.5rem', borderRadius: '8px', backgroundColor: matchedBoard ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', border: `1px solid ${matchedBoard ? '#10b981' : '#ef4444'}` }}>
                             {matchedBoard ? (
                                 <div style={{ color: '#10b981', marginBottom: '1rem' }}>
