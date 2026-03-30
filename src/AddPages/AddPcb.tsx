@@ -4,7 +4,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { API_BASE } from '../apiBridge';
 import { usePcbStore } from '../store/storePcb';
 import { FormGroup } from '../forms/FormGroup';
-import { generateCRC } from '../utils/crc';
+import { generateCRC } from '../components/UrlManager/crc';
 
 interface AddPCBProps {
     onBack: () => void;

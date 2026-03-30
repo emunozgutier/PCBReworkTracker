@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { useStore } from '../store/useStore';
-import { usePcbStore } from '../store/storePcb';
-import { useReworkStore } from '../store/storeRework';
-import { findClosestBoard } from '../utils/crc';
+import { useStore } from '../../store/useStore';
+import { usePcbStore } from '../../store/storePcb';
+import { useReworkStore } from '../../store/storeRework';
+import { findClosestBoard } from './crc';
 
 const getNormalizedPath = () => {
     if (typeof window === 'undefined') return '/';

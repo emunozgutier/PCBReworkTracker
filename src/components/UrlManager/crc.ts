@@ -5,9 +5,7 @@ export function generateCRC(input: string): string {
     let sum = 0;
     for (let i = 0; i < input.length; i++) {
         const char = input[i].toUpperCase();
-        let val = CHARSET.indexOf(char);
-        if (val === -1) val = CHARSET.length - 1; // fallback for unhandled characters
-        sum += val * (i + 1);
+        sum += char.charCodeAt(0) * (i + 1);
     }
     return CHARSET[sum % CHARSET.length];
 }
