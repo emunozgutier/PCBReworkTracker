@@ -26,8 +26,8 @@ export function EditButton({ label = "Edit", icon = Edit2, style, ...props }: Ac
                 justifyContent: 'center',
                 gap: '8px', 
                 background: 'transparent', 
-                color: 'var(--text)', 
-                border: '1px solid var(--border-color, var(--border))', 
+                color: '#fbbf24', 
+                border: '1px solid rgba(245, 158, 11, 0.5)', 
                 padding: '10px 16px', 
                 borderRadius: '8px', 
                 fontSize: '0.9rem', 
@@ -124,7 +124,7 @@ export function QrButton({ label = "QR Code", icon = QrCode, style, ...props }: 
                 ...style 
             }}
             {...props}
-            className={`action-btn-hover action-btn-edit ${props.className || ''}`}
+            className={`action-btn-hover action-btn-neutral ${props.className || ''}`}
         >
             {renderIcon(icon)}
             {label}

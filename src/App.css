@@ -595,6 +595,11 @@ body {
 }
 
 .action-btn-edit:hover {
+  background: rgba(245, 158, 11, 0.1) !important;
+  border-color: rgba(245, 158, 11, 0.8) !important;
+}
+
+.action-btn-neutral:hover {
   background: rgba(255, 255, 255, 0.05) !important;
 }
 
