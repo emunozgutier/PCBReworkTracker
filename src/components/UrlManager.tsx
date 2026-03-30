@@ -134,10 +134,15 @@ export function UrlManager() {
         if (activeTab === 'pcbs' && expandedPcb && pcbs.length > 0) {
              const match = findClosestBoard(expandedPcb, pcbs);
              if (match && match !== expandedPcb) {
-                 setExpandedPcb(match);
+                 const store = useStore.getState();
+                 store.setMistypedUrl(expandedPcb);
+                 store.setCorrectedUrl(match);
+                 store.setPage('fixed_url');
+             } else if (!match) {
+                 useStore.getState().setPage('wrong_url');
              }
         }
-    }, [activeTab, expandedPcb, pcbs, setExpandedPcb]);
+    }, [activeTab, expandedPcb, pcbs]);
 
     return null;
 }

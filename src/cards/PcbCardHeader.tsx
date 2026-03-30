@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { BoardName } from '../components/BoardName';
 
 interface PcbCardHeaderProps {
     pcb: any;
@@ -15,7 +16,7 @@ export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions }: PcbCar
             style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '12px 16px', gap: '12px' }}
         >
             <div style={{ display: 'flex', flex: 1, flexWrap: 'wrap', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap' }}>{pcb.board_number}</span>
+                <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap' }}><BoardName name={pcb.board_number} /></span>
 
                 <div style={{ display: 'flex', fontSize: '0.85rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.03)', padding: '4px 10px', borderRadius: '8px', border: '1px solid var(--border)', whiteSpace: 'nowrap' }}>
                     {pcb.product || 'No Rev'} {pcb.bom ? ` • ${pcb.bom}` : ''} • {pcb.owner || 'Unassigned'}

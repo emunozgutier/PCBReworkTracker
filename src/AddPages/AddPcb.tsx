@@ -163,7 +163,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                             <label>Assigned Name</label>
                             <div style={{ padding: '0.75rem', backgroundColor: 'rgba(0, 0, 0, 0.2)', borderRadius: '12px', color: 'var(--text)', fontSize: '1rem', fontWeight: 500, textTransform: 'uppercase', border: '1px solid var(--border)', display: 'flex', alignItems: 'center' }}>
                                 <span>{selectedProjectKey}-{boardNumber}</span>
-                                <span style={{ color: 'var(--accent)', fontWeight: 800 }} title="Mathematical Checksum">
+                                <span style={{ color: '#a855f7', fontWeight: 800 }} title="Mathematical Checksum">
                                     {generateCRC(`${selectedProjectKey}-${boardNumber.toUpperCase()}`)}
                                 </span>
                             </div>

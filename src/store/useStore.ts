@@ -7,7 +7,8 @@ type Page =
     | 'pcbs' | 'pcbs_add' | 'pcbs_edit'
     | 'reworks' | 'reworks_add' | 'reworks_edit'
     | 'owners' | 'owners_add' | 'owners_edit'
-    | 'tags' | 'tags_add' | 'tags_edit';
+    | 'tags' | 'tags_add' | 'tags_edit'
+    | 'wrong_url' | 'fixed_url';
 
 interface NavigationState {
     page: Page;
@@ -19,6 +20,8 @@ interface NavigationState {
     expandedRework: string | null;
     isolatedView: boolean;
     qrModalBoard: string | null;
+    mistypedUrl: string | null;
+    correctedUrl: string | null;
     
     // Actions
     setPage: (page: Page) => void;
@@ -32,6 +35,8 @@ interface NavigationState {
     setExpandedRework: (id: string | null) => void;
     setIsolatedView: (isolatedView: boolean) => void;
     setQrModalBoard: (board: string | null) => void;
+    setMistypedUrl: (url: string | null) => void;
+    setCorrectedUrl: (url: string | null) => void;
 }
 
 export const useStore = create<NavigationState>((set) => ({
@@ -44,6 +49,8 @@ export const useStore = create<NavigationState>((set) => ({
     expandedRework: null,
     isolatedView: false,
     qrModalBoard: null,
+    mistypedUrl: null,
+    correctedUrl: null,
 
     setPage: (page) => set({ page }),
     setIsolatedView: (isolatedView) => set({ isolatedView }),
@@ -61,6 +68,8 @@ export const useStore = create<NavigationState>((set) => ({
     },
 
     setQrModalBoard: (name) => set({ qrModalBoard: name }),
+    setMistypedUrl: (url) => set({ mistypedUrl: url }),
+    setCorrectedUrl: (url) => set({ correctedUrl: url }),
 
     setActiveTab: (tab) => {
         if (tab !== 'pcbs') usePcbStore.getState().resetFilters();

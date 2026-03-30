@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { BoardName } from '../components/BoardName';
 
 interface ReworkCardHeaderProps {
     rework: any;
@@ -31,7 +32,7 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle }: ReworkCardHea
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                        PCB: {rework.board_number || rework.pcb_board_number}
+                        PCB: <BoardName name={rework.board_number || rework.pcb_board_number} />
                     </span>
                     <span style={{ fontSize: '0.8rem', background: 'var(--card-bg)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: '12px', color: 'var(--text)', whiteSpace: 'nowrap' }}>
                         🧑‍🔧 {rework.owner_name ? rework.owner_name : 'Unassigned'}

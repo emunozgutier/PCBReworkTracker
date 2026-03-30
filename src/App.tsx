@@ -13,6 +13,8 @@ import { EditUser } from './EditPages/EditUser'
 import { EditRework } from './EditPages/EditRework'
 import { EditTab } from './EditPages/EditTab'
 import { UrlManager } from './components/UrlManager'
+import { WrongUrl } from './WrongPage/WrongUrl'
+import { FixedUrl } from './WrongPage/FixedUrl'
 
 import { useStore } from './store/useStore'
 
@@ -37,6 +39,9 @@ function App() {
       case 'reworks_edit': return <EditRework id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
       case 'owners_edit': return <EditUser id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
       case 'tags_edit': return <EditTab id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
+      
+      case 'wrong_url': return <WrongUrl />;
+      case 'fixed_url': return <FixedUrl />;
       
       case 'projects':
         return <CardList type="projects" title="Projects" onAdd={() => addItem('projects_add')} onEdit={(id) => editItem('projects_edit', id)} />;
