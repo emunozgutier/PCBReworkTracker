@@ -12,6 +12,59 @@ interface AddReworkProps {
     onSuccess: () => void;
 }
 
+const compressImage = async (file: File, maxSizeMB: number = 10, maxDimension: number = 1920): Promise<File> => {
+    // If the file is small enough and we don't strictly need resizing, we can just process it to be safe,
+    // or we can pass it through. But to guarantee it's small, we'll draw it to a canvas.
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > maxDimension || height > maxDimension) {
+                    if (width > height) {
+                        height = Math.round((height * maxDimension) / width);
+                        width = maxDimension;
+                    } else {
+                        width = Math.round((width * maxDimension) / height);
+                        height = maxDimension;
+                    }
+                }
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+                
+                const fileSizeMB = file.size / (1024 * 1024);
+                // Adjust JPEG quality based on original size to aim for < maxSizeMB
+                let quality = 0.8;
+                if (fileSizeMB > maxSizeMB) quality = 0.6;
+                if (fileSizeMB > maxSizeMB * 2) quality = 0.5;
+
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const newFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpeg", {
+                            type: 'image/jpeg',
+                            lastModified: Date.now(),
+                        });
+                        resolve(newFile);
+                    } else {
+                        resolve(file); // fallback
+                    }
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = () => resolve(file); 
+        };
+        reader.onerror = () => resolve(file); 
+    });
+};
+
 export function AddRework({ onBack, onSuccess }: AddReworkProps) {
     const { selectedId } = useStore();
     const [pcbs, setPcbs] = useState<any[]>([]);
@@ -282,12 +335,14 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                         id="image" 
                         accept="image/*" 
                         capture="environment"
-                        onChange={(e) => {
+                        onChange={async (e) => {
                             if (e.target.files && e.target.files.length > 0) {
-                                setImages([...images, e.target.files[0]]);
+                                const originalFile = e.target.files[0];
+                                const processedFile = await compressImage(originalFile);
+                                setImages(prev => [...prev, processedFile]);
                                 e.target.value = ''; // reset file input safely
                             }
-                        }} 
+                        }}
                         style={{ display: 'none' }}
                     />
                 </div>
