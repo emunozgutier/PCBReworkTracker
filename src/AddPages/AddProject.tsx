@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { ArrowLeft, Save, HelpCircle } from 'lucide-react';
-import { FormTabs } from '../forms/FormTabs';import { useProjectStore } from '../store/storeProject';
+import { FormTabs } from '../forms/FormTabs';
+import { MultipleInputs } from '../forms/MultipleInputs';
+import { useProjectStore } from '../store/storeProject';
 
 interface AddProjectProps {
     onBack: () => void;
@@ -94,21 +96,17 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                 </div>
                 <div className="form-group">
                     <label htmlFor="revisions">Global Available Revisions (Optional)</label>
-                    <input 
-                        id="revisions"
-                        type="text" 
-                        value={revisions} 
-                        onChange={(e) => setRevisions(e.target.value)} 
+                    <MultipleInputs
+                        value={revisions}
+                        onChange={setRevisions}
                         placeholder="e.g. A0, A1, B0, B1"
                     />
                 </div>
                 <div className="form-group">
                     <label htmlFor="silicon_corners">Silicon Corners (Optional)</label>
-                    <input 
-                        id="silicon_corners"
-                        type="text" 
-                        value={siliconCorners} 
-                        onChange={(e) => setSiliconCorners(e.target.value)} 
+                    <MultipleInputs
+                        value={siliconCorners}
+                        onChange={setSiliconCorners}
                         placeholder="e.g. TT, FF, SS"
                     />
                 </div>
@@ -149,30 +147,26 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                 </div>
                                 <div>
                                     <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>PCB Revisions</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="e.g. 1.0, 1.1" 
-                                        value={formfactors[activeTab].revisions} 
-                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)', transition: 'border-color 0.2s ease' }}
-                                        onChange={e => {
+                                    <MultipleInputs
+                                        value={formfactors[activeTab].revisions}
+                                        onChange={(val) => {
                                             const newFf = [...formfactors];
-                                            newFf[activeTab].revisions = e.target.value;
+                                            newFf[activeTab].revisions = val;
                                             setFormfactors(newFf);
                                         }}
+                                        placeholder="e.g. 1.0, 1.1"
                                     />
                                 </div>
                                 <div>
                                     <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>BOM Options</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="e.g. BOM1, BOM2" 
-                                        value={formfactors[activeTab].boms || ''} 
-                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text-color)' }}
-                                        onChange={e => {
+                                    <MultipleInputs
+                                        value={formfactors[activeTab].boms || ''}
+                                        onChange={(val) => {
                                             const newFf = [...formfactors];
-                                            newFf[activeTab].boms = e.target.value;
+                                            newFf[activeTab].boms = val;
                                             setFormfactors(newFf);
                                         }}
+                                        placeholder="e.g. BOM1, BOM2"
                                     />
                                 </div>
                             </div>
