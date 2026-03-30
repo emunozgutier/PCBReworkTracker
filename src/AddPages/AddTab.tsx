@@ -13,6 +13,7 @@ export function AddTab({ onBack, onSuccess }: AddTabProps) {
     const [name, setName] = useState('');
     const [color, setColor] = useState('#818cf8');
     const [ownerId, setOwnerId] = useState<string>('');
+    const [type, setType] = useState<'public' | 'personal'>('public');
     const { addTag, loading } = useTagStore();
     const { owners, fetchOwners } = useOwnerStore();
 
@@ -22,7 +23,7 @@ export function AddTab({ onBack, onSuccess }: AddTabProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const success = await addTag({ name, color, owner_id: ownerId });
+        const success = await addTag({ name, color, owner_id: ownerId, type });
         if (success) {
             onSuccess();
         }
@@ -63,6 +64,18 @@ export function AddTab({ onBack, onSuccess }: AddTabProps) {
                         {owners.map(o => (
                             <option key={o.id} value={o.id}>{o.name}</option>
                         ))}
+                    </select>
+                </div>
+                <div className="form-group">
+                    <label htmlFor="type">Tag Type</label>
+                    <select 
+                        id="type"
+                        value={type} 
+                        onChange={(e) => setType(e.target.value as 'public' | 'personal')} 
+                        required
+                    >
+                        <option value="public">Public (Shared across all projects)</option>
+                        <option value="personal">Personal (Private to you)</option>
                     </select>
                 </div>
                 <div className="form-group">

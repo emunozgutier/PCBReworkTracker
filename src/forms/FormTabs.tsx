@@ -5,9 +5,9 @@ interface FormTabsProps {
     tabs: string[];
     activeTab: number;
     onTabChange: (index: number) => void;
-    onAddTab: () => void;
-    onDeleteActiveTab: () => void;
-    children: React.ReactNode;
+    onAddTab?: () => void;
+    onDeleteActiveTab?: () => void;
+    children?: React.ReactNode;
 }
 
 export function FormTabs({
@@ -75,55 +75,46 @@ export function FormTabs({
                     );
                 })}
                 
-                {/* Plus button area pushing the border all the way */}
-                <div style={{ 
-                        display: 'flex', alignItems: 'center', 
-                        flex: 1, 
-                        paddingLeft: '4px',
-                        marginBottom: '4px'
-                    }}>
-                    <button
-                        type="button"
-                        onClick={onAddTab}
-                        style={{
-                            padding: '6px 8px',
-                            background: 'transparent',
-                            color: 'var(--text-muted)',
-                            border: '1px dashed transparent',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            marginBottom: '4px' // align visually
-                        }}
-                        title="Add Tab"
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.color = 'var(--text)';
-                            e.currentTarget.style.border = '1px dashed var(--border)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.color = 'var(--text-muted)';
-                            e.currentTarget.style.border = '1px dashed transparent';
-                        }}
-                    >
-                        <Plus size={18} />
-                    </button>
-                </div>
-            </div>
+                {onAddTab && (
+                    <div style={{ 
+                            display: 'flex', alignItems: 'center', 
+                            flex: 1, 
+                            paddingLeft: '4px',
+                            marginBottom: '4px'
+                        }}>
+                        <button
+                            type="button"
+                            onClick={onAddTab}
+                            style={{
+                                padding: '6px 8px',
+                                background: 'transparent',
+                                color: 'var(--text-muted)',
+                                border: '1px dashed transparent',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                marginBottom: '4px' // align visually
+                            }}
+                            title="Add Tab"
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.color = 'var(--text)';
+                                e.currentTarget.style.border = '1px dashed var(--border)';
+                                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.color = 'var(--text-muted)';
+                                e.currentTarget.style.border = '1px dashed transparent';
+                                e.currentTarget.style.background = 'transparent';
+                            }}
+                        >
+                            <Plus size={16} />
+                        </button>
+                    </div>
+                )}
+                {children}
 
-            {/* Content Area bordered */}
-            {tabs.length > 0 && (
-                <div style={{ 
-                    border: '1px solid var(--border)',
-                    borderTop: 'none',
-                    padding: '24px',
-                    borderRadius: '0 0 8px 8px',
-                    backgroundColor: 'var(--card-bg)',
-                    position: 'relative',
-                    zIndex: 0
-                }}>
-                    {children}
-
+                {onDeleteActiveTab && tabs.length > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', paddingTop: '16px', borderTop: '1px dashed var(--border)' }}>
                         <button 
                             type="button" 
@@ -147,8 +138,8 @@ export function FormTabs({
                             Delete This Flavor
                         </button>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }

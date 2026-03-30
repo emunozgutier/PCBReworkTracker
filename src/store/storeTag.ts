@@ -10,6 +10,7 @@ export interface Tag {
     owner_name?: string | null;
     owner_username?: string | null;
     pcb_count?: number;
+    type?: 'public' | 'personal';
 }
 
 interface TagState {
@@ -17,8 +18,8 @@ interface TagState {
     loading: boolean;
     error: string | null;
     fetchTags: () => Promise<void>;
-    addTag: (data: { name: string; color: string; owner_id?: number | string | null }) => Promise<boolean>;
-    updateTag: (id: number | string, data: { name: string; color: string; owner_id?: number | string | null }) => Promise<boolean>;
+    addTag: (data: { name: string; color: string; owner_id?: number | string | null; type?: 'public' | 'personal' }) => Promise<boolean>;
+    updateTag: (id: number | string, data: { name: string; color: string; owner_id?: number | string | null; type?: 'public' | 'personal' }) => Promise<boolean>;
     deleteTag: (id: number | string) => Promise<boolean>;
 }
 

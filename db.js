@@ -88,7 +88,8 @@ const initDb = () => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             color TEXT DEFAULT '#818cf8',
-            owner_id INTEGER REFERENCES owners(id)
+            owner_id INTEGER REFERENCES owners(id),
+            type TEXT DEFAULT 'public'
         )`, (err) => {
             if (!err) {
                 db.run(`ALTER TABLE tags ADD COLUMN owner_id INTEGER REFERENCES owners(id)`, (err) => {
@@ -96,6 +97,11 @@ const initDb = () => {
                         console.error('Migration error (tags.owner_id):', err.message);
                     } else if (!err) {
                         db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_tags_owner_name ON tags(owner_id, name COLLATE NOCASE)`);
+                    }
+                });
+                db.run(`ALTER TABLE tags ADD COLUMN type TEXT DEFAULT 'public'`, (err) => {
+                    if (err && !err.message.includes('duplicate column name')) {
+                        console.error('Migration error (tags.type):', err.message);
                     }
                 });
             }

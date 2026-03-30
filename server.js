@@ -235,9 +235,9 @@ app.get('/api/tags', (req, res) => {
 });
 
 app.post('/api/tags', (req, res) => {
-    const { name, color, owner_id } = req.body;
+    const { name, color, owner_id, type } = req.body;
     const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
-    db.run("INSERT INTO tags (name, color, owner_id) VALUES (?, ?, ?)", [name, color, finalOwnerId], function(err) {
+    db.run("INSERT INTO tags (name, color, owner_id, type) VALUES (?, ?, ?, ?)", [name, color, finalOwnerId, type || 'public'], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.status(201).json({ id: this.lastID, name });
     });
@@ -468,9 +468,9 @@ app.get('/api/tags/:id/pcbs', (req, res) => {
 });
 
 app.put('/api/tags/:id', (req, res) => {
-    const { name, color, owner_id } = req.body;
+    const { name, color, owner_id, type } = req.body;
     const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
-    db.run("UPDATE tags SET name = ?, color = ?, owner_id = ? WHERE id = ?", [name, color, finalOwnerId, req.params.id], function(err) {
+    db.run("UPDATE tags SET name = ?, color = ?, owner_id = ?, type = ? WHERE id = ?", [name, color, finalOwnerId, type || 'public', req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ updated: this.changes });
     });

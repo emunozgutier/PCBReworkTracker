@@ -15,6 +15,7 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
     const [name, setName] = useState('');
     const [color, setColor] = useState('#818cf8');
     const [ownerId, setOwnerId] = useState<string>('');
+    const [type, setType] = useState<'public' | 'personal'>('public');
     const [loading, setLoading] = useState(true);
     const { updateTag, deleteTag } = useTagStore();
     const { owners, fetchOwners } = useOwnerStore();
@@ -32,6 +33,7 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
                     setName(data.name);
                     setColor(data.color || '#818cf8');
                     setOwnerId(data.owner_id ? data.owner_id.toString() : '');
+                    setType(data.type || 'public');
                 }
                 setLoading(false);
             })
@@ -44,7 +46,7 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        const success = await updateTag(id, { name, color, owner_id: ownerId });
+        const success = await updateTag(id, { name, color, owner_id: ownerId, type });
         if (success) onSuccess();
         setSaving(false);
     };
@@ -96,6 +98,18 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
                         {owners.map(o => (
                             <option key={o.id} value={o.id}>{o.name}</option>
                         ))}
+                    </select>
+                </div>
+                <div className="form-group">
+                    <label htmlFor="type">Tag Type</label>
+                    <select 
+                        id="type"
+                        value={type} 
+                        onChange={(e) => setType(e.target.value as 'public' | 'personal')} 
+                        required
+                    >
+                        <option value="public">Public (Shared across all projects)</option>
+                        <option value="personal">Personal (Private to you)</option>
                     </select>
                 </div>
                 <div className="form-group">
