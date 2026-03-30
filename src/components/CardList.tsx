@@ -29,7 +29,10 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
     const { expandedPcb, isolatedView } = useStore();
 
     useEffect(() => {
-        if (type === 'projects') fetchProjects();
+        if (type === 'projects') {
+            fetchProjects();
+            fetchPcbs();
+        }
         if (type === 'pcbs') {
             fetchPcbs();
             fetchProjects(); // needed to know the project names and revisions
