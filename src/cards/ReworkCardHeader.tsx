@@ -20,11 +20,17 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle }: ReworkCardHea
         <div 
             className="card-header-main" 
             onClick={onToggle}
-            style={{ display: 'flex', flexDirection: 'column', padding: '12px 16px', gap: '10px' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', gap: '12px', width: '100%' }}
         >
-            {isExpanded && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1, overflow: 'hidden' }}>
+                <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--accent)', flexShrink: 1 }}>
+                    {rework.title 
+                        ? `${rework.rework_name || `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R-${String(rework.id).padStart(3, '0')}`}: ${rework.title}`
+                        : (rework.rework_name || `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R-${String(rework.id).padStart(3, '0')}`)}
+                </span>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                         PCB: {rework.board_number || rework.pcb_board_number}
                     </span>
                     <span style={{ fontSize: '0.8rem', background: 'var(--card-bg)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: '12px', color: 'var(--text)', whiteSpace: 'nowrap' }}>
@@ -41,21 +47,10 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle }: ReworkCardHea
                         </span>
                     )}
                 </div>
-            )}
+            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-
-                    <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap', color: 'var(--accent)' }}>
-                        {rework.title 
-                            ? `${rework.rework_name || `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R-${String(rework.id).padStart(3, '0')}`}: ${rework.title}`
-                            : (rework.rework_name || `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R-${String(rework.id).padStart(3, '0')}`)}
-                    </span>
-                </div>
-
-                <div className="expand-indicator" style={{ display: 'flex', position: 'static', transform: 'none', flexShrink: 0 }}>
-                    {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                </div>
+            <div className="expand-indicator" style={{ display: 'flex', position: 'static', transform: 'none', flexShrink: 0 }}>
+                {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </div>
         </div>
     );
