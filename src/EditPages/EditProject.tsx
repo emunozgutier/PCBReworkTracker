@@ -36,6 +36,15 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
         return projectPcbs.filter(p => p.product && p.product.split(' ').includes(val)).length;
     };
 
+    const getFlavorRevisionUsageCount = (flavorName: string, val: string) => {
+        if (!val) return 0;
+        return projectPcbs.filter(p => {
+            if (!p.product) return false;
+            if (flavorName && !p.product.startsWith(flavorName)) return false;
+            return p.product.split(' ').includes(val);
+        }).length;
+    };
+
     const getBomUsageCount = (val: string) => {
         if (!val) return 0;
         return projectPcbs.filter(p => p.bom === val).length;
@@ -224,7 +233,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                             setFormfactors(newFf);
                                         }}
                                         placeholder="e.g. 1.0, 1.1"
-                                        usageCounts={filterCountsObj(formfactors[activeTab].revisions, getProductUsageCount)}
+                                        usageCounts={filterCountsObj(formfactors[activeTab].revisions, (val) => getFlavorRevisionUsageCount(formfactors[activeTab].name, val))}
                                     />
                                 </div>
                                 <div>
