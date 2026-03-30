@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateCRC, levenshteinDistance } from './crc';
+import { generateCRC, typoDistance } from './crc';
 
 describe('CRC Collision & Distance Analysis', () => {
     it('analyzes 1000 sequential boards to find the most dangerously close pairs', () => {
@@ -19,7 +19,7 @@ describe('CRC Collision & Distance Analysis', () => {
             for (let j = i + 1; j < boards.length; j++) {
                 const b1 = boards[i];
                 const b2 = boards[j];
-                const dist = levenshteinDistance(b1, b2);
+                const dist = typoDistance(b1, b2);
                 
                 // Track all combinations
                 results.push({ b1, b2, dist });
@@ -33,7 +33,7 @@ describe('CRC Collision & Distance Analysis', () => {
 
         console.log(`\n--- TOP 3 CLOSEST PAIRS OUT OF ${results.length.toLocaleString()} COMBINATIONS ---`);
         for (let i = 0; i < 3; i++) {
-            console.log(`#${i+1}: ${results[i].b1} vs ${results[i].b2} -> Levenshtein Distance: ${results[i].dist}`);
+            console.log(`#${i+1}: ${results[i].b1} vs ${results[i].b2} -> Typo Distance: ${results[i].dist}`);
         }
         console.log('----------------------------------------------------------------------\n');
 

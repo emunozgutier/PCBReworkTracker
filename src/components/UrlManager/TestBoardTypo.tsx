@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { generateCRC, findClosestBoard, levenshteinDistance } from './crc';
+import { generateCRC, findClosestBoard, typoDistance } from './crc';
 import { useStore } from '../../store/useStore';
 
 export function TestBoardTypo() {
@@ -69,7 +69,7 @@ export function TestBoardTypo() {
 
             {mistyped && (() => {
                 const typedUpper = mistyped.toUpperCase();
-                const matchDist = levenshteinDistance(typedUpper, validBoardName);
+                const matchDist = typoDistance(typedUpper, validBoardName);
                 const hasCrcBonus = typedUpper.length > 2 && validBoardName.slice(-1) === typedUpper.slice(-1);
                 const finalScore = hasCrcBonus ? matchDist - 2 : matchDist;
 

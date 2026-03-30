@@ -10,7 +10,7 @@ export function generateCRC(input: string): string {
     return CHARSET[sum % CHARSET.length];
 }
 
-export function levenshteinDistance(a: string, b: string): number {
+export function typoDistance(a: string, b: string): number {
     if (a.length === 0) return b.length;
     if (b.length === 0) return a.length;
 
@@ -25,15 +25,19 @@ export function levenshteinDistance(a: string, b: string): number {
 
     for (let i = 1; i <= b.length; i++) {
         for (let j = 1; j <= a.length; j++) {
-            if (b.charAt(i - 1) === a.charAt(j - 1)) {
-                matrix[i][j] = matrix[i - 1][j - 1];
-            } else {
+            const cost = (b.charAt(i - 1) === a.charAt(j - 1)) ? 0 : 1;
+            
+            matrix[i][j] = Math.min(
+                matrix[i - 1][j] + 1,        // deletion
+                matrix[i][j - 1] + 1,        // insertion
+                matrix[i - 1][j - 1] + cost  // substitution
+            );
+
+            // Damerau Transposition (swapping adjacent characters is a single typo)
+            if (i > 1 && j > 1 && b.charAt(i - 1) === a.charAt(j - 2) && b.charAt(i - 2) === a.charAt(j - 1)) {
                 matrix[i][j] = Math.min(
-                    matrix[i - 1][j - 1] + 1, // substitution
-                    Math.min(
-                        matrix[i][j - 1] + 1, // insertion
-                        matrix[i - 1][j] + 1  // deletion
-                    )
+                    matrix[i][j],
+                    matrix[i - 2][j - 2] + cost
                 );
             }
         }
@@ -52,7 +56,7 @@ export function findClosestBoard(query: string, boards: { board_number: string }
 
     for (const board of boards) {
         const bn = board.board_number.toUpperCase();
-        const dist = levenshteinDistance(query, bn);
+        const dist = typoDistance(query, bn);
         
         let score = dist;
         
