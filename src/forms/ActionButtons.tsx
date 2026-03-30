@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Edit2, ExternalLink } from 'lucide-react';
+import { Plus, Edit2, ExternalLink, QrCode } from 'lucide-react';
 
 interface ActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     label?: React.ReactNode;
@@ -96,6 +96,35 @@ export function AddButton({ label = "Add", icon = Plus, style, ...props }: Actio
             }}
             {...props}
             className={`action-btn-hover action-btn-add ${props.className || ''}`}
+        >
+            {renderIcon(icon)}
+            {label}
+        </button>
+    );
+}
+
+export function QrButton({ label = "QR Code", icon = QrCode, style, ...props }: ActionButtonProps) {
+    return (
+        <button 
+            style={{ 
+                flex: 1,
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                gap: '8px', 
+                background: 'transparent', 
+                color: 'var(--text)', 
+                border: '1px solid var(--border-color, var(--border))', 
+                padding: '10px 16px', 
+                borderRadius: '8px', 
+                fontSize: '0.9rem', 
+                fontWeight: 600, 
+                cursor: 'pointer',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                ...style 
+            }}
+            {...props}
+            className={`action-btn-hover action-btn-edit ${props.className || ''}`}
         >
             {renderIcon(icon)}
             {label}

@@ -4,8 +4,8 @@ import { useTagStore } from '../store/storeTag';
 import { useStore } from '../store/useStore';
 import { API_BASE } from '../apiBridge';
 import { FormTabs } from '../forms/FormTabs';
-import { QrCode as QrCodeIcon, Tag as TagIcon, X } from 'lucide-react';
-import { EditButton, ViewButton, AddButton } from '../forms/ActionButtons';
+import { Tag as TagIcon, X } from 'lucide-react';
+import { EditButton, ViewButton, AddButton, QrButton } from '../forms/ActionButtons';
 import { ReworkCardHeader } from './ReworkCardHeader';
 
 interface PcbCardBodyProps {
@@ -60,26 +60,9 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                     label="Edit PCB"
                 />
 
-                <button 
+                <QrButton 
                     onClick={(e) => { e.stopPropagation(); setQrModalBoard(pcb.board_number); }}
-                    style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center',
-                        gap: '8px', 
-                        background: 'transparent', 
-                        color: 'var(--text)', 
-                        border: '1px solid var(--border-color)', 
-                        padding: '10px 16px', 
-                        borderRadius: '8px', 
-                        fontSize: '0.9rem', 
-                        fontWeight: 600, 
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease'
-                    }}
-                >
-                    <QrCodeIcon size={18} /> QR Code
-                </button>
+                />
                 
                 
             </div>
