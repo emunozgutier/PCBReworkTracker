@@ -45,9 +45,12 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
         }).length;
     };
 
-    const getBomUsageCount = (val: string) => {
+    const getFlavorBomUsageCount = (flavorName: string, val: string) => {
         if (!val) return 0;
-        return projectPcbs.filter(p => p.bom === val).length;
+        return projectPcbs.filter(p => {
+            if (flavorName && p.product && !p.product.startsWith(flavorName)) return false;
+            return p.bom === val;
+        }).length;
     };
 
     const filterCountsObj = (valStr: string | undefined | null, counter: (v: string) => number) => {
@@ -202,6 +205,14 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                             setActiveTab(formfactors.length);
                         }}
                         onDeleteActiveTab={() => {
+                            const flavorName = formfactors[activeTab]?.name;
+                            if (flavorName) {
+                                const hasPcbs = projectPcbs.some(p => p.product && p.product.startsWith(flavorName));
+                                if (hasPcbs) {
+                                    alert(`Cannot delete flavor "${flavorName}" because it is currently assigned to one or more PCBs.`);
+                                    return;
+                                }
+                            }
                             const newFf = formfactors.filter((_, i) => i !== activeTab);
                             setFormfactors(newFf);
                             setActiveTab(Math.max(0, activeTab - 1));
@@ -246,7 +257,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                             setFormfactors(newFf);
                                         }}
                                         placeholder="e.g. BOM1, BOM2"
-                                        usageCounts={filterCountsObj(formfactors[activeTab].boms, getBomUsageCount)}
+                                        usageCounts={filterCountsObj(formfactors[activeTab].boms, (val) => getFlavorBomUsageCount(formfactors[activeTab].name, val))}
                                     />
                                 </div>
                             </div>
