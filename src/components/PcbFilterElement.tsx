@@ -8,9 +8,9 @@ interface PcbFilterElementProps {
     children: React.ReactNode;
 }
 
-export function PcbFilterElement({ title, value, onChange, width = '110px', children }: PcbFilterElementProps) {
+export function PcbFilterElement({ title, value, onChange, width = 'auto', children }: PcbFilterElementProps) {
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: width, minWidth: width, flexShrink: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: width, minWidth: '110px', flexShrink: 0 }}>
             <span style={{ 
                 fontSize: '0.85rem', 
                 fontWeight: 600, 

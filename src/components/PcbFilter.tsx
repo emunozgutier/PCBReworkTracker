@@ -87,7 +87,7 @@ export function PcbFilter() {
             
             {/* Silicon Group */}
             <PcbFilterGroup title="Silicon Filters" color="#8b5cf6">
-                <PcbFilterElement title="Projects" value={selectedProjects} onChange={setSelectedProjects} width="220px">
+                <PcbFilterElement title="Projects" value={selectedProjects} onChange={setSelectedProjects}>
                     {projects.map(p => {
                         const count = pcbs.filter(pcb => pcb.project === p.name && matchPcb(pcb, 'project')).length;
                         if (count === 0 && hasAnyOtherFilter('project')) return null;
@@ -95,7 +95,7 @@ export function PcbFilter() {
                     })}
                 </PcbFilterElement>
 
-                <PcbFilterElement title="Rev" value={selectedRevisions} onChange={setSelectedRevisions} width="160px">
+                <PcbFilterElement title="Rev" value={selectedRevisions} onChange={setSelectedRevisions}>
                     {(() => {
                         const activeProjects = selectedProjects.length > 0 ? projects.filter(p => selectedProjects.includes(p.id.toString())) : projects;
                         const allRevs = new Set<string>();
@@ -109,7 +109,7 @@ export function PcbFilter() {
                     })()}
                 </PcbFilterElement>
 
-                <PcbFilterElement title="Corners" value={selectedCorners} onChange={setSelectedCorners} width="160px">
+                <PcbFilterElement title="Corners" value={selectedCorners} onChange={setSelectedCorners}>
                     {(() => {
                         const activeProjects = selectedProjects.length > 0 ? projects.filter(p => selectedProjects.includes(p.id.toString())) : projects;
                         const allCorners = new Set<string>();
@@ -130,7 +130,7 @@ export function PcbFilter() {
 
             {/* PCB Group */}
             <PcbFilterGroup title="PCB Filters" color="#8b5cf6">
-                <PcbFilterElement title="Name" value={selectedBoardNumbers} onChange={setSelectedBoardNumbers} width="160px">
+                <PcbFilterElement title="Name" value={selectedBoardNumbers} onChange={setSelectedBoardNumbers}>
                     {pcbs
                         .filter(pcb => matchPcb(pcb, 'boardnum'))
                         .sort((a,b) => a.board_number.localeCompare(b.board_number))
@@ -140,7 +140,7 @@ export function PcbFilter() {
                     }
                 </PcbFilterElement>
 
-                <PcbFilterElement title="Flavors" value={selectedFlavors} onChange={setSelectedFlavors} width="180px">
+                <PcbFilterElement title="Flavors" value={selectedFlavors} onChange={setSelectedFlavors}>
                     {(() => {
                         const activeProjects = selectedProjects.length > 0 ? projects.filter(p => selectedProjects.includes(p.id.toString())) : projects;
                         const allFlavors = new Set<string>();
@@ -154,7 +154,7 @@ export function PcbFilter() {
                     })()}
                 </PcbFilterElement>
 
-                <PcbFilterElement title="Revs" value={selectedPcbRevs} onChange={setSelectedPcbRevs} width="120px">
+                <PcbFilterElement title="Revs" value={selectedPcbRevs} onChange={setSelectedPcbRevs}>
                     {(() => {
                         const activeProjects = selectedProjects.length > 0 ? projects.filter(p => selectedProjects.includes(p.id.toString())) : projects;
                         const allPcbRevs = new Set<string>();
@@ -176,7 +176,7 @@ export function PcbFilter() {
                     })()}
                 </PcbFilterElement>
 
-                <PcbFilterElement title="BOM" value={selectedBoms} onChange={setSelectedBoms} width="160px">
+                <PcbFilterElement title="BOM" value={selectedBoms} onChange={setSelectedBoms}>
                     {(() => {
                         const allBoms = new Set<string>();
                         pcbs.forEach(pcb => {
@@ -194,7 +194,7 @@ export function PcbFilter() {
 
             {/* Tags & Owner Group */}
             <PcbFilterGroup title="Organization" color="#0ea5e9">
-                <PcbFilterElement title="Tags" value={selectedTags} onChange={setSelectedTags} width="240px">
+                <PcbFilterElement title="Tags" value={selectedTags} onChange={setSelectedTags}>
                     {tags.map(tag => {
                         const count = pcbs.filter(pcb => pcb.tag_ids && pcb.tag_ids.includes(tag.id) && matchPcb(pcb, 'tag')).length;
                         if (count === 0 && hasAnyOtherFilter('tag')) return null;
@@ -202,7 +202,7 @@ export function PcbFilter() {
                     })}
                 </PcbFilterElement>
 
-                <PcbFilterElement title="Owner" value={selectedOwners} onChange={setSelectedOwners} width="180px">
+                <PcbFilterElement title="Owner" value={selectedOwners} onChange={setSelectedOwners}>
                     {owners.map(owner => {
                         const count = pcbs.filter(pcb => pcb.owner === owner.name && matchPcb(pcb, 'owner')).length;
                         if (count === 0 && hasAnyOtherFilter('owner')) return null;
