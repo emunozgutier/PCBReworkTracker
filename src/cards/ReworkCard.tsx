@@ -1,20 +1,29 @@
-import { useState } from 'react';
 import { ReworkCardHeader } from './ReworkCardHeader';
 import { ReworkCardBody } from './ReworkCardBody';
+import { useStore } from '../store/useStore';
 
 interface ReworkCardProps {
     rework: any;
 }
 
 export function ReworkCard({ rework }: ReworkCardProps) {
-    const [isExpanded, setIsExpanded] = useState(false);
+    const { expandedRework, setExpandedRework } = useStore();
+    const isExpanded = expandedRework === rework.id.toString();
+
+    const handleToggle = () => {
+        if (isExpanded) {
+            setExpandedRework(null);
+        } else {
+            setExpandedRework(rework.id.toString());
+        }
+    };
 
     return (
         <div className={`item-card project-card ${isExpanded ? 'active' : ''}`}>
             <ReworkCardHeader 
                 rework={rework} 
                 isExpanded={isExpanded} 
-                onToggle={() => setIsExpanded(!isExpanded)} 
+                onToggle={handleToggle} 
             />
             {isExpanded && <ReworkCardBody rework={rework} />}
         </div>

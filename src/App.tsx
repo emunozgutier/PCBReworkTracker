@@ -12,6 +12,7 @@ import { EditPCB } from './EditPages/EditPcb'
 import { EditUser } from './EditPages/EditUser'
 import { EditRework } from './EditPages/EditRework'
 import { EditTab } from './EditPages/EditTab'
+import { UrlManager } from './components/UrlManager'
 
 import { useStore } from './store/useStore'
 
@@ -54,6 +55,7 @@ function App() {
 
   return (
     <div className={`app-container ${isMobile ? 'mobile-state' : ''}`}>
+      <UrlManager />
       <a href="https://github.com/emunozgutier/PCBReworkTracker" target="_blank" rel="noopener noreferrer" className="github-corner" aria-label="View source on GitHub">
         <svg width="80" height="80" viewBox="0 0 250 250" style={{ fill: 'var(--accent)', color: 'var(--bg-panel)', position: 'absolute', top: 0, border: 0, right: 0, zIndex: 1000 }} aria-hidden="true">
           <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
