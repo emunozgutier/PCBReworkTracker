@@ -46,6 +46,20 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
         .catch(err => console.error('Failed to fetch data:', err));
     }, [selectedId, fetchOwners]);
 
+    useEffect(() => {
+        if (reworkType === 'Silicon Swap') {
+            if (noPartYet) {
+                setTitle('Silicon Swap (No part yet)');
+            } else {
+                const rev = selectedRevision || 'A0';
+                const corner = siliconVersion || 'TT';
+                setTitle(`Silicon Swap to ${rev} ${corner}`);
+            }
+        } else if (title.startsWith('Silicon Swap')) {
+            setTitle(''); 
+        }
+    }, [reworkType, selectedRevision, siliconVersion, noPartYet]);
+
     const activePcb = pcbs.find(p => p.id.toString() === selectedPcb);
     const selectedProjData = projects.find(p => p.id === activePcb?.project_id);
     const availableSiliconVersions = selectedProjData?.silicon_corners ? selectedProjData.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
@@ -119,34 +133,6 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                     </select>
                 </div>
                 <div className="form-group">
-                    <label htmlFor="title">Rework Title (Optional)</label>
-                    <input 
-                        type="text"
-                        id="title"
-                        value={title} 
-                        onChange={(e) => setTitle(e.target.value)} 
-                        placeholder="E.g. Resistor R12 Replacement"
-                    />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="description">Rework Description</label>
-                    <textarea 
-                        id="description"
-                        value={description} 
-                        onChange={(e) => setDescription(e.target.value)} 
-                        placeholder="Detail the repairs or modifications..."
-                        rows={4}
-                        required
-                    />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="owner">Assigned Owner</label>
-                    <select id="owner" value={ownerId} onChange={(e) => setOwnerId(e.target.value)}>
-                        <option value="-1">-- Unassigned --</option>
-                        {owners.map(o => <option key={o.id} value={o.id.toString()}>{o.name}</option>)}
-                    </select>
-                </div>
-                <div className="form-group">
                     <label htmlFor="rework_type">Rework Type</label>
                     <select id="rework_type" value={reworkType} onChange={(e) => setReworkType(e.target.value)}>
                         <option value="Minor">Minor</option>
@@ -154,7 +140,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                         <option value="Silicon Swap">Silicon Swap</option>
                     </select>
                 </div>
-                
+
                 {reworkType === 'Silicon Swap' && (
                     <FormGroup title="New Silicon Data">
                         <div className="form-row">
@@ -203,6 +189,36 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                         </div>
                     </FormGroup>
                 )}
+                <div className="form-group">
+                    <label htmlFor="title">Rework Title (Optional)</label>
+                    <input 
+                        type="text"
+                        id="title"
+                        value={title} 
+                        onChange={(e) => setTitle(e.target.value)} 
+                        placeholder="E.g. Resistor R12 Replacement"
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="description">Rework Description</label>
+                    <textarea 
+                        id="description"
+                        value={description} 
+                        onChange={(e) => setDescription(e.target.value)} 
+                        placeholder="Detail the repairs or modifications..."
+                        rows={4}
+                        required
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="owner">Assigned Owner</label>
+                    <select id="owner" value={ownerId} onChange={(e) => setOwnerId(e.target.value)}>
+                        <option value="-1">-- Unassigned --</option>
+                        {owners.map(o => <option key={o.id} value={o.id.toString()}>{o.name}</option>)}
+                    </select>
+                </div>
+
+
                 <div className="form-group" style={{ marginBottom: '24px' }}>
                     <label style={{ display: 'block', fontWeight: 600, marginBottom: '8px' }}>Attach Photo Evidence (Up to 3)</label>
                     
