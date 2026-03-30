@@ -7,6 +7,7 @@ const getNormalizedPath = () => {
     if (typeof window === 'undefined') return '/';
     let path = window.location.pathname;
     let base = import.meta.env.BASE_URL || '/';
+    if (base.endsWith('/')) base = base.slice(0, -1);
     if (path.startsWith(base)) {
         path = path.slice(base.length);
     }
