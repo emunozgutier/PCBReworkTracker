@@ -187,7 +187,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                         type="text" 
                                         placeholder="e.g. Demo" 
                                         value={formfactors[activeTab].name} 
-                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text-color)' }}
+                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)', transition: 'border-color 0.2s ease' }}
                                         onChange={e => {
                                             const newFf = [...formfactors];
                                             newFf[activeTab].name = e.target.value;
@@ -201,7 +201,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                         type="text" 
                                         placeholder="e.g. 1.0, 1.1" 
                                         value={formfactors[activeTab].revisions} 
-                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text-color)' }}
+                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)', transition: 'border-color 0.2s ease' }}
                                         onChange={e => {
                                             const newFf = [...formfactors];
                                             newFf[activeTab].revisions = e.target.value;

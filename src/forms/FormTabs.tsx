@@ -39,20 +39,34 @@ export function FormTabs({
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                padding: '8px 16px',
-                                borderRadius: '6px 6px 0 0',
-                                background: isActive ? 'var(--bg-panel)' : 'transparent',
-                                color: isActive ? 'var(--text-color)' : 'var(--text-muted)',
-                                borderTop: isActive ? '1px solid var(--border)' : '1px solid transparent',
+                                padding: '10px 20px',
+                                borderRadius: '8px 8px 0 0',
+                                background: isActive ? 'var(--card-bg)' : 'transparent',
+                                color: isActive ? 'var(--text)' : 'var(--text-muted)',
+                                borderTop: isActive ? '2px solid var(--accent)' : '1px solid transparent',
                                 borderRight: isActive ? '1px solid var(--border)' : '1px solid transparent',
                                 borderLeft: isActive ? '1px solid var(--border)' : '1px solid transparent',
-                                borderBottom: isActive ? '1px solid var(--bg-panel)' : '1px solid var(--border)',
+                                borderBottom: isActive ? '1px solid var(--card-bg)' : '1px solid var(--border)',
                                 cursor: 'pointer',
-                                fontWeight: isActive ? 600 : 400,
+                                fontWeight: isActive ? 600 : 500,
                                 whiteSpace: 'nowrap',
                                 position: 'relative',
-                                top: isActive ? '1px' : '0', // Overlaps the parent border perfectly
-                                zIndex: isActive ? 2 : 1
+                                top: isActive ? '1px' : '0',
+                                zIndex: isActive ? 2 : 1,
+                                transition: 'all 0.2s ease',
+                                opacity: isActive ? 1 : 0.6
+                            }}
+                            onMouseEnter={(e) => {
+                                if (!isActive) {
+                                    e.currentTarget.style.color = 'var(--text)';
+                                    e.currentTarget.style.opacity = '1';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (!isActive) {
+                                    e.currentTarget.style.color = 'var(--text-muted)';
+                                    e.currentTarget.style.opacity = '0.6';
+                                }
                             }}
                             onClick={() => onTabChange(idx)}
                         >
@@ -84,7 +98,7 @@ export function FormTabs({
                         }}
                         title="Add Tab"
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.color = 'var(--text-color)';
+                            e.currentTarget.style.color = 'var(--text)';
                             e.currentTarget.style.border = '1px dashed var(--border)';
                         }}
                         onMouseLeave={(e) => {
@@ -102,9 +116,9 @@ export function FormTabs({
                 <div style={{ 
                     border: '1px solid var(--border)',
                     borderTop: 'none',
-                    padding: '20px',
-                    borderRadius: '0 0 4px 4px',
-                    backgroundColor: 'var(--bg-panel)',
+                    padding: '24px',
+                    borderRadius: '0 0 8px 8px',
+                    backgroundColor: 'var(--card-bg)',
                     position: 'relative',
                     zIndex: 0
                 }}>
