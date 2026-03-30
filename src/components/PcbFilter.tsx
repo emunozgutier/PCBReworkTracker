@@ -190,8 +190,30 @@ export function PcbFilter() {
 
             {/* Tags & Owner Group */}
             <PcbFilterGroup title="Organization" color="#0ea5e9">
-                <PcbFilterElement title="Tags" value={selectedTags} onChange={setSelectedTags}>
+                <PcbFilterElement 
+                    title="Public Tags" 
+                    value={selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'public')} 
+                    onChange={(newPublic) => {
+                        const personalTagsSelected = selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'personal');
+                        setSelectedTags([...personalTagsSelected, ...newPublic]);
+                    }}
+                >
                     {tags.filter(t => t.type === 'public').map(tag => {
+                        const count = pcbs.filter(pcb => pcb.tag_ids && pcb.tag_ids.includes(tag.id) && matchPcb(pcb, 'tag')).length;
+                        if (count === 0 && hasAnyOtherFilter('tag')) return null;
+                        return <option key={tag.id} value={tag.id.toString()}>{formatTagName(tag)} ({count})</option>;
+                    })}
+                </PcbFilterElement>
+
+                <PcbFilterElement 
+                    title="Personal Tags" 
+                    value={selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'personal')} 
+                    onChange={(newPersonal) => {
+                        const publicTagsSelected = selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'public');
+                        setSelectedTags([...publicTagsSelected, ...newPersonal]);
+                    }}
+                >
+                    {tags.filter(t => t.type === 'personal').map(tag => {
                         const count = pcbs.filter(pcb => pcb.tag_ids && pcb.tag_ids.includes(tag.id) && matchPcb(pcb, 'tag')).length;
                         if (count === 0 && hasAnyOtherFilter('tag')) return null;
                         return <option key={tag.id} value={tag.id.toString()}>{formatTagName(tag)} ({count})</option>;
