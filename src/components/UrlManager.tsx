@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { usePcbStore } from '../store/storePcb';
 import { useReworkStore } from '../store/storeRework';
+import { findClosestBoard } from '../utils/crc';
 
 const getNormalizedPath = () => {
     if (typeof window === 'undefined') return '/';
@@ -29,6 +30,8 @@ export function UrlManager() {
         setExpandedRework,
         setIsolatedView
     } = useStore();
+
+    const pcbs = usePcbStore(state => state.pcbs);
 
     // 1. Listen to POPSTATE to sync URL -> Store
     useEffect(() => {
@@ -125,6 +128,16 @@ export function UrlManager() {
             window.history.pushState({}, '', targetUrl);
         }
     }, [activeTab, expandedProject, expandedPcb, expandedRework, isolatedView, page]);
+
+    // 3. Auto-correct mistyped PCBs using CRC when data loads
+    useEffect(() => {
+        if (activeTab === 'pcbs' && expandedPcb && pcbs.length > 0) {
+             const match = findClosestBoard(expandedPcb, pcbs);
+             if (match && match !== expandedPcb) {
+                 setExpandedPcb(match);
+             }
+        }
+    }, [activeTab, expandedPcb, pcbs, setExpandedPcb]);
 
     return null;
 }

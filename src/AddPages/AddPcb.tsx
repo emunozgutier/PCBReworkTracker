@@ -4,6 +4,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { API_BASE } from '../apiBridge';
 import { usePcbStore } from '../store/storePcb';
 import { FormGroup } from '../forms/FormGroup';
+import { generateCRC } from '../utils/crc';
 
 interface AddPCBProps {
     onBack: () => void;
@@ -130,9 +131,11 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         const ffPart = selectedFormfactor ? selectedFormfactor : '';
         const combinedProduct = [ffPart, finalPcbRev, revPart, cornerPart].filter(Boolean).join(' ').trim();
         const finalBoardName = `${selectedProjectKey}-${boardNumber.toUpperCase()}`;
+        const crc = generateCRC(finalBoardName);
+        const finalBoardWithCrc = `${finalBoardName}${crc}`;
         
         const success = await addPcb({
-            board_number: finalBoardName,
+            board_number: finalBoardWithCrc,
             status,
             product_name_and_rev: combinedProduct,
             bom: bom.trim(),
@@ -158,8 +161,11 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                     <div className="form-row">
                         <div className="form-group flex-1">
                             <label>Assigned Name</label>
-                            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(0, 0, 0, 0.2)', borderRadius: '12px', color: 'var(--text)', fontSize: '1rem', fontWeight: 500, textTransform: 'uppercase', border: '1px solid var(--border)' }}>
-                                {selectedProjectKey}-{boardNumber}
+                            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(0, 0, 0, 0.2)', borderRadius: '12px', color: 'var(--text)', fontSize: '1rem', fontWeight: 500, textTransform: 'uppercase', border: '1px solid var(--border)', display: 'flex', alignItems: 'center' }}>
+                                <span>{selectedProjectKey}-{boardNumber}</span>
+                                <span style={{ color: 'var(--accent)', fontWeight: 800 }} title="Mathematical Checksum">
+                                    {generateCRC(`${selectedProjectKey}-${boardNumber.toUpperCase()}`)}
+                                </span>
                             </div>
                         </div>
                         <div className="form-group flex-1">
