@@ -33,7 +33,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [siliconCorners, setSiliconCorners] = useState('TT');
     const [projectKey, setProjectKey] = useState('');
     const [formfactors, setFormfactors] = useState<{name: string, revisions: string, boms?: string}[]>([
-        { name: 'Main', revisions: '1.1', boms: 'BOM1' }
+        { name: 'Validation', revisions: '1.0', boms: 'BOM1, BOM2' }
     ]);
     const [activeTab, setActiveTab] = useState(0);
     const [isKeyManuallyEdited, setIsKeyManuallyEdited] = useState(false);
