@@ -132,8 +132,8 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                         }}
                     >
                         {formfactors[activeTab] && (
-                            <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                                <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <div>
                                     <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>Flavor Name</label>
                                     <input 
                                         type="text" 
@@ -147,7 +147,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                         }}
                                     />
                                 </div>
-                                <div style={{ flex: 1.5 }}>
+                                <div>
                                     <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>PCB Revisions</label>
                                     <input 
                                         type="text" 
@@ -161,7 +161,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                         }}
                                     />
                                 </div>
-                                <div style={{ flex: 1.5 }}>
+                                <div>
                                     <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>BOM Options</label>
                                     <input 
                                         type="text" 
