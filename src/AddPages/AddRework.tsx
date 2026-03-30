@@ -243,24 +243,24 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                     </FormGroup>
                 )}
                 <div className="form-group">
-                    <label htmlFor="title">Rework Title (Optional)</label>
+                    <label htmlFor="title">Rework Title</label>
                     <input 
                         type="text"
                         id="title"
                         value={title} 
                         onChange={(e) => setTitle(e.target.value)} 
                         placeholder="E.g. Resistor R12 Replacement"
+                        required
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="description">Rework Description</label>
+                    <label htmlFor="description">Rework Description (Optional)</label>
                     <textarea 
                         id="description"
                         value={description} 
                         onChange={(e) => setDescription(e.target.value)} 
                         placeholder="Detail the repairs or modifications..."
                         rows={4}
-                        required
                     />
                 </div>
                 <div className="form-group">
@@ -278,25 +278,30 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                     {images.length > 0 && (
                         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' }}>
                             {images.map((img, i) => (
-                                <div key={i} style={{ position: 'relative', width: '90px', height: '90px', borderRadius: '12px', overflow: 'hidden', border: '2px solid var(--accent)' }}>
-                                    <img 
-                                        src={URL.createObjectURL(img)} 
-                                        alt={`Preview ${i}`} 
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                    />
-                                    <button 
-                                        type="button"
-                                        onClick={(e) => { e.preventDefault(); setImages(images.filter((_, idx) => idx !== i)); }}
-                                        style={{ 
-                                            position: 'absolute', top: 4, right: 4, 
-                                            background: 'rgba(239, 68, 68, 0.9)', color: 'white', 
-                                            border: 'none', borderRadius: '50%', width: '22px', height: '22px', 
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                                            cursor: 'pointer', fontSize: '14px', fontWeight: 700 
-                                        }}
-                                    >
-                                        &times;
-                                    </button>
+                                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                                    <div style={{ position: 'relative', width: '90px', height: '90px', borderRadius: '12px', overflow: 'hidden', border: '2px solid var(--accent)' }}>
+                                        <img 
+                                            src={URL.createObjectURL(img)} 
+                                            alt={`Preview ${i}`} 
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                        />
+                                        <button 
+                                            type="button"
+                                            onClick={(e) => { e.preventDefault(); setImages(images.filter((_, idx) => idx !== i)); }}
+                                            style={{ 
+                                                position: 'absolute', top: 4, right: 4, 
+                                                background: 'rgba(239, 68, 68, 0.9)', color: 'white', 
+                                                border: 'none', borderRadius: '50%', width: '22px', height: '22px', 
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                                                cursor: 'pointer', fontSize: '14px', fontWeight: 700 
+                                            }}
+                                        >
+                                            &times;
+                                        </button>
+                                    </div>
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-muted)' }}>
+                                        {img.size > 1024 * 1024 ? `${(img.size / (1024 * 1024)).toFixed(2)} MB` : `${Math.round(img.size / 1024)} KB`}
+                                    </span>
                                 </div>
                             ))}
                         </div>
