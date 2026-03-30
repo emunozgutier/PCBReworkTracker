@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { generateCRC, findClosestBoard, typoDistance } from './crc';
+import { generateCRC } from './crc';
 import { useStore } from '../../store/useStore';
 import { usePcbStore } from '../../store/storePcb';
 
@@ -14,7 +14,6 @@ export function TestBoardTypo() {
     const crc = generateCRC(baseName);
     const validBoardName = `${baseName}${crc}`;
 
-    // Create a pool of ALL database boards plus the intended valid board
     const uniqueBoards = Array.from(new Set([
         ...pcbs.map(p => {
             const bn = p.board_number;
@@ -23,9 +22,8 @@ export function TestBoardTypo() {
         }), 
         validBoardName
     ]));
-    const simulatedDatabase = uniqueBoards.map(name => ({ board_number: name }));
-
-    const matchedBoard = findClosestBoard(mistyped, simulatedDatabase);
+    const mistypedUpper = mistyped.toUpperCase();
+    const isValidMatch = mistyped && uniqueBoards.includes(mistypedUpper);
 
     return (
         <div style={{ padding: '2rem', backgroundColor: 'var(--bg-panel)', margin: '2rem auto', maxWidth: '800px', borderRadius: '12px', border: '1px dashed var(--accent)' }}>
@@ -79,41 +77,21 @@ export function TestBoardTypo() {
                 </div>
             </div>
 
-            {mistyped && (() => {
-                const typedUpper = mistyped.toUpperCase();
-                const matchDist = typoDistance(typedUpper, validBoardName);
-                const hasCrcBonus = typedUpper.length > 2 && validBoardName.slice(-1) === typedUpper.slice(-1);
-                const finalScore = hasCrcBonus ? matchDist - 2 : matchDist;
-
-                return (
-                    <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div style={{ fontSize: '1.1rem', padding: '1.5rem', borderRadius: '8px', backgroundColor: matchedBoard === validBoardName ? 'rgba(16, 185, 129, 0.1)' : matchedBoard ? 'rgba(234, 179, 8, 0.1)' : 'rgba(239, 68, 68, 0.1)', border: `1px solid ${matchedBoard === validBoardName ? '#10b981' : matchedBoard ? '#eab308' : '#ef4444'}` }}>
-                            {matchedBoard === validBoardName ? (
-                                <div style={{ color: '#10b981', marginBottom: '1rem' }}>
-                                    🛠️ <strong>Router Auto-Corrector: SUCCESS!</strong> The URL Manager mathematically recognized your intent and magically fixed it back to <strong style={{ color: '#a855f7' }}>{matchedBoard}</strong>!
-                                </div>
-                            ) : matchedBoard ? (
-                                <div style={{ color: '#eab308', marginBottom: '1rem' }}>
-                                    ⚠️ <strong>Router Auto-Corrector: RECOVERED!</strong> The system recovered a valid board, but it did not match your originally expected target. It resolved to <strong style={{ color: '#a855f7' }}>{matchedBoard}</strong> instead of {validBoardName}.
-                                </div>
-                            ) : (
-                                <div style={{ color: '#ef4444', marginBottom: '1rem' }}>
-                                    💥 <strong>Router Auto-Corrector: FAILED!</strong> The URL Manager could not definitively rescue "{typedUpper}". The physical deviation is too massive or the Anchor Checksum is totally destroyed.
-                                </div>
-                            )}
-
-                            <div style={{ marginTop: '1rem', padding: '1rem', fontSize: '0.95rem', backgroundColor: 'var(--bg-panel)', borderRadius: '6px', color: 'var(--text-muted)', border: '1px solid var(--border)', fontFamily: 'monospace' }}>
-                                <div style={{ fontWeight: 'bold', marginBottom: '8px', color: 'var(--text)' }}>Engine Telemetry:</div>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px 16px' }}>
-                                    <span>Base Deviation:</span> <span>{matchDist} edits</span>
-                                    <span>CRC Anchor Bonus:</span> <span style={{ color: hasCrcBonus ? '#10b981' : '#ef4444' }}>{hasCrcBonus ? '-2 (Match)' : '0 (Mismatched)'}</span>
-                                    <strong>Final Penalty:</strong> <strong style={{ color: finalScore <= 3 ? '#10b981' : '#ef4444' }}>{finalScore} (Threshold: ≤ 3)</strong>
-                                </div>
+            {mistyped && (
+                <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ fontSize: '1.1rem', padding: '1.5rem', borderRadius: '8px', backgroundColor: isValidMatch ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', border: `1px solid ${isValidMatch ? '#10b981' : '#ef4444'}` }}>
+                        {isValidMatch ? (
+                            <div style={{ color: '#10b981' }}>
+                                ✅ <strong>VALID MATCH!</strong> The code <strong style={{ color: '#a855f7' }}>{mistypedUpper}</strong> exists mathematically and matches a real physical board in the database.
                             </div>
-                        </div>
+                        ) : (
+                            <div style={{ color: '#ef4444' }}>
+                                💥 <strong>INVALID CODE!</strong> "{mistypedUpper}" does not exist in the PCB database or the mathematical checksum algorithm failed.
+                            </div>
+                        )}
                     </div>
-                );
-            })()}
+                </div>
+            )}
         </div>
     );
 }

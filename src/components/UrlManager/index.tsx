@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { useStore } from '../../store/useStore';
 import { usePcbStore } from '../../store/storePcb';
 import { useReworkStore } from '../../store/storeRework';
-import { findClosestBoard } from './crc';
 
 const getNormalizedPath = () => {
     if (typeof window === 'undefined') return '/';
@@ -157,16 +156,11 @@ export function UrlManager() {
         }
     }, [activeTab, expandedProject, expandedPcb, expandedRework, isolatedView, page]);
 
-    // 3. Auto-correct mistyped PCBs using CRC when data loads
+    // 3. Strictly validate PCBs when data loads
     useEffect(() => {
         if (activeTab === 'pcbs' && expandedPcb && pcbs.length > 0) {
-             const match = findClosestBoard(expandedPcb, pcbs);
-             if (match && match !== expandedPcb) {
-                 const store = useStore.getState();
-                 store.setMistypedUrl(expandedPcb);
-                 store.setCorrectedUrl(match);
-                 store.setPage('fixed_url');
-             } else if (!match) {
+             const exists = pcbs.some(p => p.board_number === expandedPcb);
+             if (!exists) {
                  useStore.getState().setPage('wrong_url');
              }
         }
