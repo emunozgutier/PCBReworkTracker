@@ -11,10 +11,12 @@ interface AddProjectProps {
 
 export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [name, setName] = useState('');
-    const [revisions, setRevisions] = useState('');
-    const [siliconCorners, setSiliconCorners] = useState('');
+    const [revisions, setRevisions] = useState('A0');
+    const [siliconCorners, setSiliconCorners] = useState('TT');
     const [projectKey, setProjectKey] = useState('');
-    const [formfactors, setFormfactors] = useState([{ name: 'Main', revisions: '', boms: '' }]);
+    const [formfactors, setFormfactors] = useState<{name: string, revisions: string, boms?: string}[]>([
+        { name: 'Main', revisions: '1.1', boms: 'BOM1' }
+    ]);
     const [activeTab, setActiveTab] = useState(0);
     
     const { addProject, loading, projects, error } = useProjectStore();
