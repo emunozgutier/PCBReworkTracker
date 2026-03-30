@@ -112,6 +112,10 @@ export function FormTabs({
                         </button>
                     </div>
                 )}
+            </div>
+            
+            {/* Tab Content */}
+            <div style={{ padding: '16px', background: 'var(--card-bg)', border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 8px 8px' }}>
                 {children}
 
                 {onDeleteActiveTab && tabs.length > 0 && (
