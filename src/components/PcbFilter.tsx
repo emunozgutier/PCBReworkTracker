@@ -206,7 +206,7 @@ export function PcbFilter() {
                     {owners.map(owner => {
                         const count = pcbs.filter(pcb => pcb.owner === owner.name && matchPcb(pcb, 'owner')).length;
                         if (count === 0 && hasAnyOtherFilter('owner')) return null;
-                        return <option key={owner.id} value={owner.username}>{owner.username} ({count})</option>;
+                        return <option key={owner.id} value={owner.name}>{owner.username} ({count})</option>;
                     })}
                 </PcbFilterElement>
             </PcbFilterGroup>
