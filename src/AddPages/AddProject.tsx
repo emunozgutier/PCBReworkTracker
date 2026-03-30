@@ -13,7 +13,8 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [revisions, setRevisions] = useState('');
     const [siliconCorners, setSiliconCorners] = useState('');
     const [projectKey, setProjectKey] = useState('');
-    const [formfactors, setFormfactors] = useState([{ name: '', revisions: '', boms: '' }]);
+    const [formfactors, setFormfactors] = useState([{ name: 'Main', revisions: '', boms: '' }]);
+    const [activeTab, setActiveTab] = useState(0);
     
     const { addProject, loading, projects, error } = useProjectStore();
 
@@ -117,60 +118,108 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                     <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '-4px', marginBottom: '8px' }}>
                         Define specific flavors (e.g., Demo, Validation) and their allowed revisions.
                     </p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {formfactors.map((ff, idx) => (
-                            <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                                <input 
-                                    type="text" 
-                                    placeholder="Name (e.g. Demo)" 
-                                    value={ff.name} 
-                                    onChange={e => {
-                                        const newFf = [...formfactors];
-                                        newFf[idx].name = e.target.value;
-                                        setFormfactors(newFf);
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '16px', backgroundColor: 'var(--bg-element)' }}>
+                        <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+                            {formfactors.map((ff, idx) => (
+                                <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => setActiveTab(idx)}
+                                    style={{
+                                        padding: '6px 16px',
+                                        borderRadius: '4px',
+                                        background: activeTab === idx ? 'var(--accent)' : 'var(--bg-panel)',
+                                        color: activeTab === idx ? '#fff' : 'var(--text-muted)',
+                                        border: '1px solid',
+                                        borderColor: activeTab === idx ? 'var(--accent)' : 'var(--border-color)',
+                                        cursor: 'pointer',
+                                        fontWeight: activeTab === idx ? 600 : 400,
+                                        whiteSpace: 'nowrap'
                                     }}
-                                    style={{ flex: 1.5 }}
-                                />
-                                <input 
-                                    type="text" 
-                                    placeholder="Revisions (e.g. 1.0, 1.1)" 
-                                    value={ff.revisions} 
-                                    onChange={e => {
-                                        const newFf = [...formfactors];
-                                        newFf[idx].revisions = e.target.value;
-                                        setFormfactors(newFf);
-                                    }}
-                                    style={{ flex: 2 }}
-                                />
-                                <input 
-                                    type="text" 
-                                    placeholder="BOMs (e.g. 1, 2)" 
-                                    value={ff.boms || ''} 
-                                    onChange={e => {
-                                        const newFf = [...formfactors];
-                                        newFf[idx].boms = e.target.value;
-                                        setFormfactors(newFf);
-                                    }}
-                                    style={{ flex: 2 }}
-                                />
-                                <button 
-                                    type="button" 
-                                    onClick={() => setFormfactors(formfactors.filter((_, i) => i !== idx))}
-                                    style={{ padding: '8px 12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '4px', cursor: 'pointer', color: '#ef4444' }}
-                                    title="Remove Flavor"
                                 >
-                                    ✕
+                                    {ff.name || `Flavor ${idx + 1}`}
                                 </button>
+                            ))}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setFormfactors([...formfactors, { name: '', revisions: '', boms: '' }]);
+                                    setActiveTab(formfactors.length);
+                                }}
+                                style={{
+                                    padding: '6px 12px',
+                                    borderRadius: '4px',
+                                    background: 'var(--bg-panel)',
+                                    color: 'var(--text-muted)',
+                                    border: '1px dashed var(--border-color)',
+                                    cursor: 'pointer',
+                                    fontWeight: 600
+                                }}
+                                title="Add PCB Flavor"
+                            >
+                                +
+                            </button>
+                        </div>
+                        
+                        {formfactors.length > 0 && formfactors[activeTab] && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>Flavor Name</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="e.g. Demo" 
+                                            value={formfactors[activeTab].name} 
+                                            onChange={e => {
+                                                const newFf = [...formfactors];
+                                                newFf[activeTab].name = e.target.value;
+                                                setFormfactors(newFf);
+                                            }}
+                                        />
+                                    </div>
+                                    <div style={{ flex: 1.5 }}>
+                                        <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>PCB Revisions</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="e.g. 1.0, 1.1" 
+                                            value={formfactors[activeTab].revisions} 
+                                            onChange={e => {
+                                                const newFf = [...formfactors];
+                                                newFf[activeTab].revisions = e.target.value;
+                                                setFormfactors(newFf);
+                                            }}
+                                        />
+                                    </div>
+                                    <div style={{ flex: 1.5 }}>
+                                        <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>BOM Options</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="e.g. BOM1, BOM2" 
+                                            value={formfactors[activeTab].boms || ''} 
+                                            onChange={e => {
+                                                const newFf = [...formfactors];
+                                                newFf[activeTab].boms = e.target.value;
+                                                setFormfactors(newFf);
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => {
+                                            const newFf = formfactors.filter((_, i) => i !== activeTab);
+                                            setFormfactors(newFf);
+                                            setActiveTab(Math.max(0, activeTab - 1));
+                                        }}
+                                        style={{ padding: '6px 12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '4px', cursor: 'pointer', color: '#ef4444', fontSize: '0.85rem' }}
+                                    >
+                                        Delete Flavor
+                                    </button>
+                                </div>
                             </div>
-                        ))}
+                        )}
                     </div>
-                    <button 
-                        type="button" 
-                        onClick={() => setFormfactors([...formfactors, { name: '', revisions: '', boms: '' }])} 
-                        style={{ marginTop: '8px', padding: '6px 12px', background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', color: 'var(--text-muted)' }}
-                    >
-                        + Add Flavor
-                    </button>
                 </div>
                 {error && <div className="error-message" style={{ color: '#ef4444', marginBottom: '1rem', padding: '0.5rem', backgroundColor: '#fee2e2', borderRadius: '4px' }}>{error}</div>}
                 <button type="submit" className="submit-button" disabled={loading}>
