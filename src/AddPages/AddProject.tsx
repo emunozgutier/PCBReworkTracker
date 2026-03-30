@@ -139,7 +139,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                         type="text" 
                                         placeholder="e.g. Demo" 
                                         value={formfactors[activeTab].name} 
-                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text-color)' }}
+                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text-color)' }}
                                         onChange={e => {
                                             const newFf = [...formfactors];
                                             newFf[activeTab].name = e.target.value;
@@ -153,7 +153,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                         type="text" 
                                         placeholder="e.g. 1.0, 1.1" 
                                         value={formfactors[activeTab].revisions} 
-                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text-color)' }}
+                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text-color)' }}
                                         onChange={e => {
                                             const newFf = [...formfactors];
                                             newFf[activeTab].revisions = e.target.value;
@@ -167,7 +167,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                         type="text" 
                                         placeholder="e.g. BOM1, BOM2" 
                                         value={formfactors[activeTab].boms || ''} 
-                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text-color)' }}
+                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text-color)' }}
                                         onChange={e => {
                                             const newFf = [...formfactors];
                                             newFf[activeTab].boms = e.target.value;

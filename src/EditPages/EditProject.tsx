@@ -105,7 +105,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                 </button>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <h2 style={{ margin: 0 }}>Edit Project</h2>
-                    <span style={{ fontSize: '0.8rem', backgroundColor: 'var(--bg-element)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                    <span style={{ fontSize: '0.8rem', backgroundColor: 'var(--bg-element)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: '12px', border: '1px solid var(--border)' }}>
                         {pcbCount} {pcbCount === 1 ? 'PCB' : 'PCBs'}
                     </span>
                 </div>
@@ -124,7 +124,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                 <div style={{ display: 'flex', gap: '1rem' }}>
                     <div className="form-group" style={{ flex: 1.5 }}>
                         <label>Project Name</label>
-                        <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-panel)', borderRadius: '4px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px solid var(--border-color)' }}>
+                        <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-panel)', borderRadius: '4px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px solid var(--border)' }}>
                             {name}
                         </div>
                     </div>
@@ -135,7 +135,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                 <HelpCircle size={14} color="var(--text-muted)" />
                             </span>
                         </label>
-                        <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-panel)', borderRadius: '4px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, textTransform: 'uppercase', border: '1px solid var(--border-color)' }}>
+                        <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-panel)', borderRadius: '4px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, textTransform: 'uppercase', border: '1px solid var(--border)' }}>
                             {projectKey}
                         </div>
                     </div>
@@ -187,7 +187,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                         type="text" 
                                         placeholder="e.g. Demo" 
                                         value={formfactors[activeTab].name} 
-                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text-color)' }}
+                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text-color)' }}
                                         onChange={e => {
                                             const newFf = [...formfactors];
                                             newFf[activeTab].name = e.target.value;
@@ -201,7 +201,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                         type="text" 
                                         placeholder="e.g. 1.0, 1.1" 
                                         value={formfactors[activeTab].revisions} 
-                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text-color)' }}
+                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text-color)' }}
                                         onChange={e => {
                                             const newFf = [...formfactors];
                                             newFf[activeTab].revisions = e.target.value;
@@ -215,7 +215,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                         type="text" 
                                         placeholder="e.g. BOM1, BOM2" 
                                         value={formfactors[activeTab].boms || ''} 
-                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text-color)' }}
+                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text-color)' }}
                                         onChange={e => {
                                             const newFf = [...formfactors];
                                             newFf[activeTab].boms = e.target.value;

@@ -25,7 +25,7 @@ export function FormTabs({
                 display: 'flex', 
                 flexWrap: 'wrap', 
                 paddingLeft: '8px', 
-                borderBottom: '1px solid var(--border-color)', 
+                borderBottom: '1px solid var(--border)', 
                 position: 'relative', 
                 zIndex: 1 
             }}>
@@ -43,8 +43,10 @@ export function FormTabs({
                                 borderRadius: '6px 6px 0 0',
                                 background: isActive ? 'var(--bg-panel)' : 'transparent',
                                 color: isActive ? 'var(--text-color)' : 'var(--text-muted)',
-                                border: '1px solid',
-                                borderColor: isActive ? 'var(--border-color) var(--border-color) var(--bg-panel) var(--border-color)' : 'transparent transparent transparent transparent',
+                                borderTop: isActive ? '1px solid var(--border)' : '1px solid transparent',
+                                borderRight: isActive ? '1px solid var(--border)' : '1px solid transparent',
+                                borderLeft: isActive ? '1px solid var(--border)' : '1px solid transparent',
+                                borderBottom: isActive ? '1px solid var(--bg-panel)' : '1px solid var(--border)',
                                 cursor: 'pointer',
                                 fontWeight: isActive ? 600 : 400,
                                 whiteSpace: 'nowrap',
@@ -83,7 +85,7 @@ export function FormTabs({
                         title="Add Tab"
                         onMouseEnter={(e) => {
                             e.currentTarget.style.color = 'var(--text-color)';
-                            e.currentTarget.style.border = '1px dashed var(--border-color)';
+                            e.currentTarget.style.border = '1px dashed var(--border)';
                         }}
                         onMouseLeave={(e) => {
                             e.currentTarget.style.color = 'var(--text-muted)';
@@ -98,7 +100,7 @@ export function FormTabs({
             {/* Content Area bordered */}
             {tabs.length > 0 && (
                 <div style={{ 
-                    border: '1px solid var(--border-color)',
+                    border: '1px solid var(--border)',
                     borderTop: 'none',
                     padding: '20px',
                     borderRadius: '0 0 4px 4px',
@@ -108,7 +110,7 @@ export function FormTabs({
                 }}>
                     {children}
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', paddingTop: '16px', borderTop: '1px dashed var(--border-color)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', paddingTop: '16px', borderTop: '1px dashed var(--border)' }}>
                         <button 
                             type="button" 
                             onClick={onDeleteActiveTab}
