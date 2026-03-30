@@ -43,7 +43,7 @@ function App() {
       
       case 'wrong_url': return <WrongUrl />;
       case 'fixed_url': return <FixedUrl />;
-      case 'test_typo': return <TestBoardTypo />;
+      case 'sandbox': return <TestBoardTypo />;
       
       case 'projects':
         return <CardList type="projects" title="Projects" onAdd={() => addItem('projects_add')} onEdit={(id) => editItem('projects_edit', id)} />;

@@ -7,6 +7,14 @@ import { findClosestBoard } from './crc';
 const getNormalizedPath = () => {
     if (typeof window === 'undefined') return '/';
     let path = window.location.pathname;
+    
+    // Explicitly handle GitHub pages repository name masking, even in DEV mode (case-insensitive)
+    const baseMatch = path.match(/^\/pcbreworktracker(\/|$)/i);
+    if (baseMatch) {
+        path = path.slice(baseMatch[0].length);
+        if (!path.startsWith('/')) path = '/' + path;
+    }
+    
     let base = import.meta.env.BASE_URL || '/';
     if (base.endsWith('/')) base = base.slice(0, -1);
     if (path.startsWith(base)) {
@@ -75,10 +83,13 @@ export function UrlManager() {
             }
 
             // Base Tabs
-            const path = rawPath.replace('/', '') || 'projects';
+            // Use split to safely grab the first path segment regardless of leading/trailing slashes
+            const pathSegments = rawPath.split('/').filter(Boolean);
+            const path = pathSegments[0] || 'projects';
             
             if (path === 'test') {
-                useStore.getState().setPage('test_typo');
+                useStore.getState().setActiveTab('sandbox');
+                useStore.getState().setPage('sandbox');
                 return;
             }
             
@@ -120,7 +131,7 @@ export function UrlManager() {
 
         let targetUrl = `${base}/${activeTab}`;
         
-        if (page === 'test_typo') {
+        if (page === 'sandbox') {
             targetUrl = `${base}/test`;
         } else if (activeTab === 'projects' && expandedProject) {
             targetUrl = `${base}/projects/${encodeURIComponent(expandedProject)}`;

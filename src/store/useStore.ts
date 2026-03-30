@@ -9,7 +9,7 @@ type Page =
     | 'owners' | 'owners_add' | 'owners_edit'
     | 'tags' | 'tags_add' | 'tags_edit'
     | 'wrong_url' | 'fixed_url'
-    | 'test_typo';
+    | 'sandbox';
 
 interface NavigationState {
     page: Page;
