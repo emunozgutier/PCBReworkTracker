@@ -130,6 +130,9 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
 
     if (loading) return <div className="loading">Loading Project...</div>;
 
+    const activeFlavorName = formfactors[activeTab]?.name;
+    const activeFlavorInUse = activeFlavorName ? projectPcbs.some(p => p.product && p.product.startsWith(activeFlavorName)) : false;
+
     return (
         <div className="add-page-container">
             <header className="add-page-header">
@@ -204,14 +207,11 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                             setFormfactors([...formfactors, { name: '', revisions: '', boms: '' }]);
                             setActiveTab(formfactors.length);
                         }}
+                        canDeleteActiveTab={!activeFlavorInUse}
                         onDeleteActiveTab={() => {
-                            const flavorName = formfactors[activeTab]?.name;
-                            if (flavorName) {
-                                const hasPcbs = projectPcbs.some(p => p.product && p.product.startsWith(flavorName));
-                                if (hasPcbs) {
-                                    alert(`Cannot delete flavor "${flavorName}" because it is currently assigned to one or more PCBs.`);
-                                    return;
-                                }
+                            if (activeFlavorInUse) {
+                                alert(`Cannot delete flavor "${activeFlavorName}" because it is currently assigned to one or more PCBs.`);
+                                return;
                             }
                             const newFf = formfactors.filter((_, i) => i !== activeTab);
                             setFormfactors(newFf);

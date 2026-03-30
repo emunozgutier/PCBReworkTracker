@@ -7,6 +7,7 @@ interface FormTabsProps {
     onTabChange: (index: number) => void;
     onAddTab?: () => void;
     onDeleteActiveTab?: () => void;
+    canDeleteActiveTab?: boolean;
     children?: React.ReactNode;
 }
 
@@ -16,6 +17,7 @@ export function FormTabs({
     onTabChange, 
     onAddTab, 
     onDeleteActiveTab, 
+    canDeleteActiveTab = true,
     children
 }: FormTabsProps) {
     return (
@@ -122,21 +124,25 @@ export function FormTabs({
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', paddingTop: '16px', borderTop: '1px dashed var(--border)' }}>
                         <button 
                             type="button" 
-                            onClick={onDeleteActiveTab}
+                            onClick={canDeleteActiveTab ? onDeleteActiveTab : undefined}
+                            disabled={!canDeleteActiveTab}
+                            title={!canDeleteActiveTab ? "Cannot delete flavor currently assigned to PCBs." : "Delete This Flavor"}
                             style={{ 
                                 padding: '6px 12px', 
-                                background: 'rgba(239, 68, 68, 0.05)', 
-                                border: '1px solid rgba(239, 68, 68, 0.2)', 
+                                background: canDeleteActiveTab ? 'rgba(239, 68, 68, 0.05)' : 'transparent', 
+                                border: '1px solid',
+                                borderColor: canDeleteActiveTab ? 'rgba(239, 68, 68, 0.2)' : 'var(--border)', 
                                 borderRadius: '4px', 
-                                cursor: 'pointer', 
-                                color: '#ef4444', 
+                                cursor: canDeleteActiveTab ? 'pointer' : 'not-allowed', 
+                                color: canDeleteActiveTab ? '#ef4444' : 'var(--text-muted)', 
                                 fontSize: '0.85rem',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '6px'
+                                gap: '6px',
+                                opacity: canDeleteActiveTab ? 1 : 0.5
                             }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)')}
-                            onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(239, 68, 68, 0.05)')}
+                            onMouseEnter={(e) => { if (canDeleteActiveTab) e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
+                            onMouseLeave={(e) => { if (canDeleteActiveTab) e.currentTarget.style.background = 'rgba(239, 68, 68, 0.05)'; }}
                         >
                             <Trash2 size={14} />
                             Delete This Flavor

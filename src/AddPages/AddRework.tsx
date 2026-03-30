@@ -190,6 +190,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                     <select id="rework_type" value={reworkType} onChange={(e) => setReworkType(e.target.value)}>
                         <option value="Minor">Minor</option>
                         <option value="Major">Major</option>
+                        <option value="Resistor Option Swap">Resistor Option Swap</option>
                         <option value="Silicon Swap">Silicon Swap</option>
                     </select>
                 </div>

@@ -89,10 +89,14 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                 }
                 if (firstProj.formfactors && firstProj.formfactors.length > 0) {
                     setSelectedFormfactor(firstProj.formfactors[0].name);
-                    setSelectedRevision(firstProj.formfactors[0].revisions[0] || '');
+                    setSelectedRevision(firstProj.revisions && firstProj.revisions.length > 0 ? firstProj.revisions[0] : '');
+                    setPcbRev(firstProj.formfactors[0].revisions[0] || '');
+                    setBom(firstProj.formfactors[0].boms ? firstProj.formfactors[0].boms[0] : '');
                 } else if (firstProj.revisions && firstProj.revisions.length > 0) {
                     setSelectedFormfactor('');
                     setSelectedRevision(firstProj.revisions[0]);
+                    setPcbRev('');
+                    setBom('');
                 }
             }
             if (ownerData.length > 0) setSelectedOwner(ownerData[0].id.toString());
@@ -112,13 +116,19 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
 
         if (project && project.formfactors && project.formfactors.length > 0) {
             setSelectedFormfactor(project.formfactors[0].name);
-            setSelectedRevision(project.formfactors[0].revisions[0] || '');
+            setSelectedRevision(project.revisions && project.revisions.length > 0 ? project.revisions[0] : '');
+            setPcbRev(project.formfactors[0].revisions[0] || '');
+            setBom(project.formfactors[0].boms ? project.formfactors[0].boms[0] : '');
         } else if (project && project.revisions && project.revisions.length > 0) {
             setSelectedFormfactor('');
             setSelectedRevision(project.revisions[0]);
+            setPcbRev('');
+            setBom('');
         } else {
             setSelectedFormfactor('');
             setSelectedRevision('');
+            setPcbRev('');
+            setBom('');
         }
     };
 
@@ -231,6 +241,9 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                     if (e.target.checked) {
                                         setSelectedRevision('');
                                         setSiliconVersion('');
+                                    } else {
+                                        setSelectedRevision(availableSiliconRevisions.length > 0 ? availableSiliconRevisions[0] : '');
+                                        setSiliconVersion(availableSiliconVersions.length > 0 ? availableSiliconVersions[0] : '');
                                     }
                                 }} 
                             />
@@ -250,6 +263,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                     setSelectedFormfactor(e.target.value);
                                     const ff = availableFormfactors.find((f: any) => f.name === e.target.value);
                                     setPcbRev(ff && ff.revisions.length > 0 ? ff.revisions[0] : '');
+                                    setBom(ff && ff.boms && ff.boms.length > 0 ? ff.boms[0] : '');
                                 }}
                                 required
                             >
