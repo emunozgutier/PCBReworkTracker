@@ -576,3 +576,34 @@ body {
 .blink-button {
   animation: slowBlink 0.6s ease-in-out 4 !important;
 }
+
+/* Action Button Animations */
+.action-btn-hover {
+  position: relative;
+  overflow: hidden;
+  transform: translateY(0);
+}
+
+.action-btn-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn-hover:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn-edit:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.action-btn-view:hover {
+  background: rgba(99, 102, 241, 0.1) !important;
+  border-color: rgba(99, 102, 241, 0.8) !important;
+}
+
+.action-btn-add:hover {
+  background: rgba(99, 102, 241, 0.25) !important;
+  border-color: rgba(99, 102, 241, 0.8) !important;
+}

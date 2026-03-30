@@ -33,10 +33,11 @@ export function EditButton({ label = "Edit", icon = Edit2, style, ...props }: Ac
                 fontSize: '0.9rem', 
                 fontWeight: 600, 
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 ...style 
             }}
             {...props}
+            className={`action-btn-hover action-btn-edit ${props.className || ''}`}
         >
             {renderIcon(icon)}
             {label}
@@ -61,10 +62,11 @@ export function ViewButton({ label = "View", icon = ExternalLink, style, ...prop
                 fontSize: '0.9rem', 
                 fontWeight: 600, 
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 ...style 
             }}
             {...props}
+            className={`action-btn-hover action-btn-view ${props.className || ''}`}
         >
             {renderIcon(icon)}
             {label}
@@ -89,10 +91,11 @@ export function AddButton({ label = "Add", icon = Plus, style, ...props }: Actio
                 fontSize: '0.9rem', 
                 fontWeight: 600, 
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 ...style 
             }}
             {...props}
+            className={`action-btn-hover action-btn-add ${props.className || ''}`}
         >
             {renderIcon(icon)}
             {label}
