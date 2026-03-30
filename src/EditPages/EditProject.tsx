@@ -13,6 +13,32 @@ interface EditProjectProps {
 }
 
 export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
+    const { pcbs, fetchPcbs } = usePcbStore();
+    const { projects, updateProject, deleteProject, loading: saving } = useProjectStore();
+
+    const project = projects.find(p => p.id.toString() === id.toString());
+    const projectPcbs = pcbs.filter(p => p.project === (project?.name || ''));
+    const pcbCount = projectPcbs.length;
+
+    const getProductUsageCount = (val: string) => {
+        if (!val) return 0;
+        return projectPcbs.filter(p => p.product && p.product.split(' ').includes(val)).length;
+    };
+
+    const getBomUsageCount = (val: string) => {
+        if (!val) return 0;
+        return projectPcbs.filter(p => p.bom === val).length;
+    };
+
+    const filterCountsObj = (valStr: string | undefined | null, counter: (v: string) => number) => {
+        if (!valStr) return {};
+        return valStr.split(',').reduce((acc, item) => {
+            const trimmed = item.trim();
+            if (trimmed) acc[trimmed] = counter(trimmed);
+            return acc;
+        }, {} as Record<string, number>);
+    };
+
     const [name, setName] = useState('');
     const [revisions, setRevisions] = useState('');
     const [siliconCorners, setSiliconCorners] = useState('');
@@ -148,6 +174,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                         value={revisions}
                         onChange={setRevisions}
                         placeholder="e.g. A0, A1, B0, B1"
+                        usageCounts={filterCountsObj(revisions, getProductUsageCount)}
                     />
                 </div>
                 <div className="form-group">
@@ -156,6 +183,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                         value={siliconCorners}
                         onChange={setSiliconCorners}
                         placeholder="e.g. TT, FF, SS"
+                        usageCounts={filterCountsObj(siliconCorners, getProductUsageCount)}
                     />
                 </div>
                 <div className="form-group">
@@ -203,6 +231,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                             setFormfactors(newFf);
                                         }}
                                         placeholder="e.g. 1.0, 1.1"
+                                        usageCounts={filterCountsObj(formfactors[activeTab].revisions, getProductUsageCount)}
                                     />
                                 </div>
                                 <div>
@@ -215,6 +244,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                             setFormfactors(newFf);
                                         }}
                                         placeholder="e.g. BOM1, BOM2"
+                                        usageCounts={filterCountsObj(formfactors[activeTab].boms, getBomUsageCount)}
                                     />
                                 </div>
                             </div>
