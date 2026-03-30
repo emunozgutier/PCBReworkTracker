@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useStore } from '../../store/useStore';
 import { usePcbStore } from '../../store/storePcb';
 import { useReworkStore } from '../../store/storeRework';
@@ -21,6 +21,7 @@ const getNormalizedPath = () => {
         path = path.slice(base.length);
     }
     if (!path.startsWith('/')) path = '/' + path;
+    console.log('[UrlManager] getNormalizedPath ->', { originalPath: window.location.pathname, base, path });
     return path;
 };
 
@@ -121,8 +122,15 @@ export function UrlManager() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const isInitialMount = useRef(true);
+
     // 2. Listen to Store -> Push/Replace URL
     useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+
         let base = import.meta.env.BASE_URL || '/';
         if (base.endsWith('/')) base = base.slice(0, -1);
         
@@ -143,6 +151,7 @@ export function UrlManager() {
 
         // Only push if the resulting URL is different from the current to avoid infinite loops
         const currentPath = window.location.pathname + window.location.search;
+        console.log('[UrlManager] Before PushState ->', { activeTab, page, targetUrl, currentPath, base });
         if (currentPath !== targetUrl) {
             window.history.pushState({}, '', targetUrl);
         }

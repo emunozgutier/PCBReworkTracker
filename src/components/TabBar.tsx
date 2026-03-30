@@ -1,4 +1,4 @@
-import { CircuitBoard, ClipboardList, PenTool, Hash, Users } from 'lucide-react';
+import { CircuitBoard, ClipboardList, PenTool, Hash, Users, ShieldCheck } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 export function TabBar() {
@@ -9,7 +9,8 @@ export function TabBar() {
         { id: 'pcbs', label: 'PCBs', icon: CircuitBoard },
         { id: 'reworks', label: 'Reworks', icon: PenTool },
         { id: 'owners', label: 'Owners', icon: Users },
-        { id: 'tags', label: 'Tags', icon: Hash }
+        { id: 'tags', label: 'Tags', icon: Hash },
+        { id: 'sandbox', label: 'CRC', icon: ShieldCheck }
     ];
 
     return (

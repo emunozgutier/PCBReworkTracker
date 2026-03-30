@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { generateCRC, findClosestBoard } from './crc';
+import { generateCRC, findClosestBoard, levenshteinDistance } from './crc';
 import { useStore } from '../../store/useStore';
 
 export function TestBoardTypo() {
@@ -67,19 +67,49 @@ export function TestBoardTypo() {
                 </div>
             </div>
 
-            {mistyped && (
-                <div style={{ marginTop: '1.5rem', fontSize: '1.1rem', padding: '1.5rem', borderRadius: '8px', backgroundColor: matchedBoard ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', border: `1px solid ${matchedBoard ? '#10b981' : '#ef4444'}` }}>
-                    {matchedBoard ? (
-                        <div style={{ color: '#10b981' }}>
-                            ✅ <strong>Success!</strong> The URL Manager perfectly intercepted <strong>{mistyped.toUpperCase()}</strong> and algorithmically fixed it back to <strong style={{ color: '#a855f7' }}>{matchedBoard}</strong>
+            {mistyped && (() => {
+                const typedUpper = mistyped.toUpperCase();
+                const matchDist = levenshteinDistance(typedUpper, validBoardName);
+                const hasCrcBonus = typedUpper.length > 2 && validBoardName.slice(-1) === typedUpper.slice(-1);
+                const finalScore = hasCrcBonus ? matchDist - 2 : matchDist;
+
+                return (
+                    <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ fontSize: '1.1rem', padding: '1.5rem', borderRadius: '8px', backgroundColor: typedUpper === validBoardName ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', border: `1px solid ${typedUpper === validBoardName ? '#10b981' : '#ef4444'}` }}>
+                            {typedUpper === validBoardName ? (
+                                <div style={{ color: '#10b981' }}>
+                                    ✅ <strong>Input Status: OK!</strong> The URL naturally matches the exact mathematically generated board string.
+                                </div>
+                            ) : (
+                                <div style={{ color: '#ef4444' }}>
+                                    ❌ <strong>Input Status: BAD!</strong> The URL explicitly contains physical typos, missing data, or a corrupted CRC validator.
+                                </div>
+                            )}
                         </div>
-                    ) : (
-                        <div style={{ color: '#ef4444' }}>
-                            ❌ <strong>Failed!</strong> The URL Manager could not definitively rescue "{mistyped.toUpperCase()}". The string deviation is too massive or the Anchor Checksum is totally destroyed.
+
+                        <div style={{ fontSize: '1.1rem', padding: '1.5rem', borderRadius: '8px', backgroundColor: matchedBoard ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', border: `1px solid ${matchedBoard ? '#10b981' : '#ef4444'}` }}>
+                            {matchedBoard ? (
+                                <div style={{ color: '#10b981', marginBottom: '1rem' }}>
+                                    🛠️ <strong>Router Auto-Corrector: SUCCESS!</strong> The URL Manager mathematically recognized your intent and magically fixed it back to <strong style={{ color: '#a855f7' }}>{matchedBoard}</strong>!
+                                </div>
+                            ) : (
+                                <div style={{ color: '#ef4444', marginBottom: '1rem' }}>
+                                    💥 <strong>Router Auto-Corrector: FAILED!</strong> The URL Manager could not definitively rescue "{typedUpper}". The physical deviation is too massive or the Anchor Checksum is totally destroyed.
+                                </div>
+                            )}
+
+                            <div style={{ marginTop: '1rem', padding: '1rem', fontSize: '0.95rem', backgroundColor: 'var(--bg-panel)', borderRadius: '6px', color: 'var(--text-muted)', border: '1px solid var(--border)', fontFamily: 'monospace' }}>
+                                <div style={{ fontWeight: 'bold', marginBottom: '8px', color: 'var(--text)' }}>Engine Telemetry:</div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px 16px' }}>
+                                    <span>Base Deviation:</span> <span>{matchDist} edits</span>
+                                    <span>CRC Anchor Bonus:</span> <span style={{ color: hasCrcBonus ? '#10b981' : '#ef4444' }}>{hasCrcBonus ? '-2 (Match)' : '0 (Mismatched)'}</span>
+                                    <strong>Final Penalty:</strong> <strong style={{ color: finalScore <= 3 ? '#10b981' : '#ef4444' }}>{finalScore} (Threshold: ≤ 3)</strong>
+                                </div>
+                            </div>
                         </div>
-                    )}
-                </div>
-            )}
+                    </div>
+                );
+            })()}
         </div>
     );
 }
