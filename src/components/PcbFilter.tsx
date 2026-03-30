@@ -195,7 +195,7 @@ export function PcbFilter() {
             {/* Tags & Owner Group */}
             <PcbFilterGroup title="Organization" color="#0ea5e9">
                 <PcbFilterElement title="Tags" value={selectedTags} onChange={setSelectedTags}>
-                    {tags.map(tag => {
+                    {tags.filter(t => t.type === 'public').map(tag => {
                         const count = pcbs.filter(pcb => pcb.tag_ids && pcb.tag_ids.includes(tag.id) && matchPcb(pcb, 'tag')).length;
                         if (count === 0 && hasAnyOtherFilter('tag')) return null;
                         return <option key={tag.id} value={tag.id.toString()}>{formatTagName(tag)} ({count})</option>;
