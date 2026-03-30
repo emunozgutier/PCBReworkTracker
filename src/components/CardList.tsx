@@ -134,6 +134,27 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
             <div className="list-header" style={{ marginBottom: type === 'pcbs' ? '12px' : '24px' }}>
                 <h2>{title}</h2>
                 <div style={{ display: 'flex', gap: '12px' }}>
+                    {type === 'pcbs' && activeFilterCount > 0 && (
+                        <button 
+                            className="secondary-button" 
+                            onClick={() => { usePcbStore.getState().resetFilters(); }}
+                            style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '8px', 
+                                padding: '8px 16px', 
+                                borderRadius: '8px', 
+                                backgroundColor: 'transparent', 
+                                border: '1px solid var(--border-color)', 
+                                color: 'var(--text-muted)', 
+                                cursor: 'pointer',
+                                fontWeight: 500
+                            }}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            <span>Clear All</span>
+                        </button>
+                    )}
                     {type === 'pcbs' && (
                         <button 
                             className="secondary-button" 

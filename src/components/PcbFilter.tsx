@@ -207,28 +207,7 @@ export function PcbFilter() {
                 </PcbFilterElement>
             </PcbFilterGroup>
 
-            {/* Clear Filters Button */}
-            {(selectedProjects.length > 0 || selectedRevisions.length > 0 || selectedFlavors.length > 0 || selectedTags.length > 0 || selectedOwners.length > 0 || selectedPcbRevs.length > 0 || selectedCorners.length > 0 || selectedBoardNumbers.length > 0 || selectedBoms.length > 0) && (
-                <div style={{ alignSelf: 'center', marginTop: '0', display: 'flex', alignItems: 'center', height: '100%' }}>
-                    <button 
-                        onClick={() => { usePcbStore.getState().resetFilters(); }}
-                        style={{ 
-                            padding: '6px 12px', 
-                            backgroundColor: 'transparent', 
-                            border: '1px solid var(--border-color)', 
-                            borderRadius: '4px', 
-                            color: 'var(--text-muted)', 
-                            cursor: 'pointer',
-                            fontSize: '0.85rem',
-                            whiteSpace: 'nowrap',
-                            alignSelf: 'center',
-                            marginTop: '22px'
-                        }}
-                    >
-                        Clear All
-                    </button>
-                </div>
-            )}
+
         </div>
     );
 }
