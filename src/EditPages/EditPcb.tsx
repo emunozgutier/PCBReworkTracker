@@ -253,7 +253,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                 <FormGroup title="PCB">
                     <div className="form-row">
                         <div className="form-group flex-1">
-                            <label htmlFor="formfactor">Flavor</label>
+                            <label htmlFor="formfactor">Flavor *</label>
                             <select 
                                 id="formfactor"
                                 value={selectedFormfactor}
@@ -262,6 +262,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                                     const ff = availableFormfactors.find((f: any) => f.name === e.target.value);
                                     setPcbRev(ff && ff.revisions.length > 0 ? ff.revisions[0] : '');
                                 }}
+                                required
                             >
                                 <option value="">N/A</option>
                                 {availableFormfactors.map((ff: any) => (
@@ -295,27 +296,25 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                             )}
                         </div>
                         <div className="form-group flex-1">
-                            <label htmlFor="bom">BOM (Optional)</label>
-                            {availableBoms.length > 0 ? (
-                                <select 
-                                    id="bom"
-                                    value={bom}
-                                    onChange={(e) => setBom(e.target.value)}
-                                >
-                                    <option value="">Select BOM</option>
-                                    {availableBoms.map((b) => (
+                            <label htmlFor="bom">BOM *</label>
+                            <select 
+                                id="bom"
+                                value={bom}
+                                onChange={(e) => setBom(e.target.value)}
+                                required
+                            >
+                                <option value="">Select BOM</option>
+                                {availableBoms.length > 0 ? (
+                                    availableBoms.map((b) => (
                                         <option key={b} value={b}>{b}</option>
-                                    ))}
-                                </select>
-                            ) : (
-                                <input 
-                                    id="bom"
-                                    type="text" 
-                                    value={bom} 
-                                    onChange={(e) => setBom(e.target.value)} 
-                                    placeholder="e.g. BOM1"
-                                />
-                            )}
+                                    ))
+                                ) : (
+                                    <>
+                                        <option value="BOM1">BOM1</option>
+                                        <option value="BOM2">BOM2</option>
+                                    </>
+                                )}
+                            </select>
                         </div>
                     </div>
                 </FormGroup>
