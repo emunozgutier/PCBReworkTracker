@@ -42,41 +42,50 @@ export function AddTab({ onBack, onSuccess }: AddTabProps) {
 
             <form onSubmit={handleSubmit} className="add-form">
                 <div className="form-group">
-                    <label htmlFor="name">Tag Name</label>
-                    <input 
-                        id="name"
-                        type="text" 
-                        value={name} 
-                        onChange={(e) => setName(e.target.value.toLowerCase().replace(/\s+/g, '-'))} 
-                        placeholder="e.g. username/tag-name"
-                        required 
-                    />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="owner">Tag Owner</label>
-                    <select 
-                        id="owner"
-                        value={ownerId} 
-                        onChange={(e) => setOwnerId(e.target.value)} 
-                        required
-                    >
-                        <option value="">Select an Owner...</option>
-                        {owners.map(o => (
-                            <option key={o.id} value={o.id}>{o.name}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="form-group">
                     <label htmlFor="type">Tag Type</label>
                     <select 
                         id="type"
                         value={type} 
-                        onChange={(e) => setType(e.target.value as 'public' | 'personal')} 
+                        onChange={(e) => {
+                            setType(e.target.value as 'public' | 'personal');
+                            if (e.target.value === 'public') setOwnerId('');
+                        }} 
                         required
                     >
                         <option value="public">Public (Shared across all projects)</option>
                         <option value="personal">Personal (Private to you)</option>
                     </select>
+                </div>
+                {type === 'personal' && (
+                    <div className="form-group">
+                        <label htmlFor="owner">Tag Owner *</label>
+                        <select 
+                            id="owner"
+                            value={ownerId} 
+                            onChange={(e) => setOwnerId(e.target.value)} 
+                            required
+                        >
+                            <option value="">Select an Owner...</option>
+                            {owners.map(o => (
+                                <option key={o.id} value={o.id}>{o.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+                <div className="form-group">
+                    <label htmlFor="name">Tag Name</label>
+                    <input 
+                        id="name"
+                        type="text" 
+                        value={name} 
+                        onChange={(e) => {
+                            let val = e.target.value.toLowerCase().replace(/\s+/g, '-');
+                            if (type === 'public') val = val.replace(/\//g, '');
+                            setName(val);
+                        }} 
+                        placeholder={type === 'public' ? "e.g. tag-name" : "e.g. username/tag-name"}
+                        required 
+                    />
                 </div>
                 <div className="form-group">
                     <label>Choose Color</label>

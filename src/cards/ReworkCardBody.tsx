@@ -86,16 +86,30 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                                 {rework.rework_type || 'Minor'}
                             </div>
                         </div>
+
+                        {(!rework.description || !rework.description.trim()) && (
+                            <>
+                                <div style={{ width: '1px', background: 'var(--border)', alignSelf: 'stretch', opacity: 0.6 }}></div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center' }}>
+                                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Description</span>
+                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>None</span>
+                                </div>
+                            </>
+                        )}
                     </div>
 
-                    <div style={{ width: '100%', height: '1px', background: 'var(--border)', opacity: 0.6 }}></div>
+                    {rework.description && rework.description.trim() ? (
+                        <>
+                            <div style={{ width: '100%', height: '1px', background: 'var(--border)', opacity: 0.6 }}></div>
 
-                    <div>
-                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Description</span>
-                        <p style={{ margin: '8px 0 0 0', fontSize: '0.9rem', color: 'var(--text)', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
-                            {rework.description || <span style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>No description provided.</span>}
-                        </p>
-                    </div>
+                            <div>
+                                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Description</span>
+                                <p style={{ margin: '8px 0 0 0', fontSize: '0.9rem', color: 'var(--text)', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+                                    {rework.description}
+                                </p>
+                            </div>
+                        </>
+                    ) : null}
 
                 </div>
             </div>
