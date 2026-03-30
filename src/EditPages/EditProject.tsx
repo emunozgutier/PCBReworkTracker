@@ -13,11 +13,22 @@ interface EditProjectProps {
 }
 
 export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
-    const { pcbs, fetchPcbs } = usePcbStore();
+    const [name, setName] = useState('');
+    const [revisions, setRevisions] = useState('');
+    const [siliconCorners, setSiliconCorners] = useState('');
+    const [projectKey, setProjectKey] = useState('');
+    const [formfactors, setFormfactors] = useState<{name: string, revisions: string, boms?: string}[]>([]);
+    const [activeTab, setActiveTab] = useState(0);
+    const [loading, setLoading] = useState(true);
+    
     const { projects, updateProject, deleteProject, loading: saving } = useProjectStore();
+    const { pcbs, fetchPcbs } = usePcbStore();
 
-    const project = projects.find(p => p.id.toString() === id.toString());
-    const projectPcbs = pcbs.filter(p => p.project === (project?.name || ''));
+    useEffect(() => {
+        if (pcbs.length === 0) fetchPcbs();
+    }, [pcbs.length, fetchPcbs]);
+
+    const projectPcbs = pcbs.filter(p => p.project === name);
     const pcbCount = projectPcbs.length;
 
     const getProductUsageCount = (val: string) => {
@@ -38,24 +49,6 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
             return acc;
         }, {} as Record<string, number>);
     };
-
-    const [name, setName] = useState('');
-    const [revisions, setRevisions] = useState('');
-    const [siliconCorners, setSiliconCorners] = useState('');
-    const [projectKey, setProjectKey] = useState('');
-    const [formfactors, setFormfactors] = useState<{name: string, revisions: string, boms?: string}[]>([]);
-    const [activeTab, setActiveTab] = useState(0);
-    const [loading, setLoading] = useState(true);
-    
-    const { projects, updateProject, deleteProject, loading: saving } = useProjectStore();
-    const { pcbs, fetchPcbs } = usePcbStore();
-
-    useEffect(() => {
-        if (pcbs.length === 0) fetchPcbs();
-    }, [pcbs.length, fetchPcbs]);
-
-    const projectPcbs = pcbs.filter(p => p.project === name);
-    const pcbCount = projectPcbs.length;
 
     useEffect(() => {
         // Find existing project from store directly if available, else fetch
