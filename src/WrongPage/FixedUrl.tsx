@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useStore } from '../store/useStore';
 import { BoardName } from '../components/BoardName';
 
 export function FixedUrl() {
     const { mistypedUrl, correctedUrl, setExpandedPcb, setActiveTab } = useStore();
-    const [countdown, setCountdown] = useState(4);
 
     const proceed = React.useCallback(() => {
         if (correctedUrl) {
@@ -14,15 +13,6 @@ export function FixedUrl() {
             setActiveTab('projects');
         }
     }, [correctedUrl, setActiveTab, setExpandedPcb]);
-
-    useEffect(() => {
-        if (countdown > 0) {
-            const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
-            return () => clearTimeout(timer);
-        } else if (countdown === 0) {
-            proceed();
-        }
-    }, [countdown, proceed]);
 
     return (
         <div style={{ padding: '3rem 2rem', textAlign: 'center', color: 'var(--text)', maxWidth: '600px', margin: '0 auto' }}>
@@ -61,7 +51,7 @@ export function FixedUrl() {
                         width: '100%'
                     }}
                 >
-                    Proceeding in {countdown}s... Click to skip
+                    Click to Continue
                 </button>
             </div>
         </div>
