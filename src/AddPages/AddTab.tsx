@@ -47,8 +47,8 @@ export function AddTab({ onBack, onSuccess }: AddTabProps) {
                         id="name"
                         type="text" 
                         value={name} 
-                        onChange={(e) => setName(e.target.value)} 
-                        placeholder="e.g. Prototype"
+                        onChange={(e) => setName(e.target.value.toLowerCase().replace(/\s+/g, '-'))} 
+                        placeholder="e.g. username/tag-name"
                         required 
                     />
                 </div>

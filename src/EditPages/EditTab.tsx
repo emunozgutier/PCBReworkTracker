@@ -82,7 +82,8 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
                         id="name"
                         type="text" 
                         value={name} 
-                        onChange={(e) => setName(e.target.value)} 
+                        onChange={(e) => setName(e.target.value.toLowerCase().replace(/\s+/g, '-'))} 
+                        placeholder="e.g. username/tag-name"
                         required 
                     />
                 </div>
