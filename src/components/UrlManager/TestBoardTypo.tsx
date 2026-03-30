@@ -22,47 +22,47 @@ export function TestBoardTypo() {
                 <button onClick={goBack} style={{ padding: '6px 12px', borderRadius: '6px', background: 'var(--bg-element)', color: 'var(--text)', border: '1px solid var(--border)', cursor: 'pointer' }}>Close Sandbox</button>
             </div>
             
-            <p style={{ color: 'var(--text-muted)' }}>Simulate generating a real board natively, and try to break the intelligent matcher with string typos below!</p>
+            <p style={{ color: 'var(--text-muted)', textAlign: 'center' }}>Simulate generating a real board natively, and try to break the intelligent matcher with string typos below!</p>
             
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
-                <div>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <div style={{ textAlign: 'center' }}>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Project Code (3 letters)</label>
                     <input 
                         type="text" 
                         maxLength={3} 
                         value={project} 
                         onChange={e => setProject(e.target.value)} 
-                        style={{ padding: '0.75rem', textTransform: 'uppercase', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-element)', color: 'var(--text)', width: '120px', fontSize: '1.1rem' }} 
+                        style={{ padding: '0.75rem', textTransform: 'uppercase', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-element)', color: 'var(--text)', width: '120px', fontSize: '1.1rem', textAlign: 'center' }} 
                     />
                 </div>
-                <div>
+                <div style={{ textAlign: 'center' }}>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Board Number (4 digits)</label>
                     <input 
                         type="text" 
                         maxLength={4} 
                         value={number} 
                         onChange={e => setNumber(e.target.value.replace(/\D/g, ''))} 
-                        style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-element)', color: 'var(--text)', width: '120px', fontSize: '1.1rem' }} 
+                        style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-element)', color: 'var(--text)', width: '120px', fontSize: '1.1rem', textAlign: 'center' }} 
                     />
                 </div>
             </div>
 
-            <div style={{ margin: '2rem 0', fontSize: '1.3rem', padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+            <div style={{ margin: '2rem 0', fontSize: '1.3rem', padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border)', textAlign: 'center' }}>
                 <strong>Intended Board Output: </strong>
                 <span style={{ color: 'var(--text)', padding: '0.5rem', letterSpacing: '2px' }}>
                     {baseName}<span style={{ color: '#a855f7', fontWeight: 900 }}>{crc}</span>
                 </span>
             </div>
 
-            <div style={{ marginTop: '2.5rem', paddingTop: '2.5rem', borderTop: '1px solid var(--border)' }}>
+            <div style={{ marginTop: '2.5rem', paddingTop: '2.5rem', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Simulate a User Router Typo:</label>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                     <input 
                         type="text" 
                         value={mistyped}
                         onChange={e => setMistyped(e.target.value)}
                         placeholder={`Try typing M0P-0001${crc}`}
-                        style={{ padding: '1rem', width: '100%', maxWidth: '400px', fontSize: '1.1rem', textTransform: 'uppercase', borderRadius: '8px', border: '1px solid var(--accent)', background: 'var(--bg-element)', color: 'var(--text)' }}
+                        style={{ padding: '1rem', width: '100%', maxWidth: '400px', fontSize: '1.1rem', textTransform: 'uppercase', borderRadius: '8px', border: '1px solid var(--accent)', background: 'var(--bg-element)', color: 'var(--text)', textAlign: 'center' }}
                     />
                 </div>
             </div>
