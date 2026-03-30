@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { generateCRC, findClosestBoard, typoDistance } from './crc';
 import { useStore } from '../../store/useStore';
+import { usePcbStore } from '../../store/storePcb';
 
 export function TestBoardTypo() {
     const { goBack } = useStore();
+    const { pcbs } = usePcbStore();
     const [project, setProject] = useState('MAP');
     const [number, setNumber] = useState('0001');
     const [mistyped, setMistyped] = useState('');
@@ -12,8 +14,18 @@ export function TestBoardTypo() {
     const crc = generateCRC(baseName);
     const validBoardName = `${baseName}${crc}`;
 
-    // Test the logic using ONLY this valid board as the available database
-    const matchedBoard = findClosestBoard(mistyped, [{ board_number: validBoardName }]);
+    // Create a pool of ALL database boards plus the intended valid board
+    const uniqueBoards = Array.from(new Set([
+        ...pcbs.map(p => {
+            const bn = p.board_number;
+            // If the database board is legacy and ends in a digit, append its mathematical CRC
+            return /\d$/.test(bn) ? `${bn}${generateCRC(bn)}` : bn;
+        }), 
+        validBoardName
+    ]));
+    const simulatedDatabase = uniqueBoards.map(name => ({ board_number: name }));
+
+    const matchedBoard = findClosestBoard(mistyped, simulatedDatabase);
 
     return (
         <div style={{ padding: '2rem', backgroundColor: 'var(--bg-panel)', margin: '2rem auto', maxWidth: '800px', borderRadius: '12px', border: '1px dashed var(--accent)' }}>
@@ -75,10 +87,14 @@ export function TestBoardTypo() {
 
                 return (
                     <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div style={{ fontSize: '1.1rem', padding: '1.5rem', borderRadius: '8px', backgroundColor: matchedBoard ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', border: `1px solid ${matchedBoard ? '#10b981' : '#ef4444'}` }}>
-                            {matchedBoard ? (
+                        <div style={{ fontSize: '1.1rem', padding: '1.5rem', borderRadius: '8px', backgroundColor: matchedBoard === validBoardName ? 'rgba(16, 185, 129, 0.1)' : matchedBoard ? 'rgba(234, 179, 8, 0.1)' : 'rgba(239, 68, 68, 0.1)', border: `1px solid ${matchedBoard === validBoardName ? '#10b981' : matchedBoard ? '#eab308' : '#ef4444'}` }}>
+                            {matchedBoard === validBoardName ? (
                                 <div style={{ color: '#10b981', marginBottom: '1rem' }}>
                                     🛠️ <strong>Router Auto-Corrector: SUCCESS!</strong> The URL Manager mathematically recognized your intent and magically fixed it back to <strong style={{ color: '#a855f7' }}>{matchedBoard}</strong>!
+                                </div>
+                            ) : matchedBoard ? (
+                                <div style={{ color: '#eab308', marginBottom: '1rem' }}>
+                                    ⚠️ <strong>Router Auto-Corrector: RECOVERED!</strong> The system recovered a valid board, but it did not match your originally expected target. It resolved to <strong style={{ color: '#a855f7' }}>{matchedBoard}</strong> instead of {validBoardName}.
                                 </div>
                             ) : (
                                 <div style={{ color: '#ef4444', marginBottom: '1rem' }}>
