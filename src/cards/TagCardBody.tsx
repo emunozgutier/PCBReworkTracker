@@ -13,7 +13,7 @@ export function TagCardBody({ tag }: TagCardBodyProps) {
     const [taggedPcbs, setTaggedPcbs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const { setActiveTab } = useStore();
-    const { setSelectedProjects } = usePcbStore();
+    const { setSelectedTags, resetFilters } = usePcbStore();
 
     useEffect(() => {
         fetch(`${API_BASE}/tags/${tag.id}/pcbs`)
@@ -35,7 +35,8 @@ export function TagCardBody({ tag }: TagCardBodyProps) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <ViewButton 
                         onClick={() => {
-                            setSelectedProjects([]);
+                            resetFilters();
+                            setSelectedTags([tag.id.toString()]);
                             setActiveTab('pcbs');
                         }}
                         label="View PCBs Global List"

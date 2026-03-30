@@ -21,12 +21,24 @@ interface TagState {
     addTag: (data: { name: string; color: string; owner_id?: number | string | null; type?: 'public' | 'personal' }) => Promise<boolean>;
     updateTag: (id: number | string, data: { name: string; color: string; owner_id?: number | string | null; type?: 'public' | 'personal' }) => Promise<boolean>;
     deleteTag: (id: number | string) => Promise<boolean>;
+    
+    selectedTagTypes: string[];
+    selectedTagOwners: string[];
+    setSelectedTagTypes: (types: string[]) => void;
+    setSelectedTagOwners: (owners: string[]) => void;
+    resetFilters: () => void;
 }
 
 export const useTagStore = create<TagState>((set, get) => ({
     tags: [],
     loading: false,
     error: null,
+    selectedTagTypes: [],
+    selectedTagOwners: [],
+
+    setSelectedTagTypes: (types) => set({ selectedTagTypes: types }),
+    setSelectedTagOwners: (owners) => set({ selectedTagOwners: owners }),
+    resetFilters: () => set({ selectedTagTypes: [], selectedTagOwners: [] }),
 
     fetchTags: async () => {
         set({ loading: true, error: null });

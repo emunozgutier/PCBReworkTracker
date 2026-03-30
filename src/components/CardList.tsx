@@ -5,6 +5,7 @@ import { PcbCard } from '../cards/PcbCard';
 import { ReworkCard } from '../cards/ReworkCard';
 import { TagCard } from '../cards/TagCard';
 import { PcbFilter } from './PcbFilter';
+import { TagFilter } from './TagFilter';
 
 import { useProjectStore } from '../store/storeProject';
 import { usePcbStore } from '../store/storePcb';
@@ -58,8 +59,15 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
         selectedBoardNumbers,
         setSelectedBoardNumbers
     } = usePcbStore();
+
+    const { 
+        selectedTagTypes,
+        selectedTagOwners
+    } = useTagStore();
     
-    const activeFilterCount = selectedProjects.length + selectedRevisions.length + selectedFlavors.length + selectedCorners.length + selectedPcbRevs.length + selectedTags.length + selectedOwners.length + selectedBoardNumbers.length;
+    const activePcbFilterCount = selectedProjects.length + selectedRevisions.length + selectedFlavors.length + selectedCorners.length + selectedPcbRevs.length + selectedTags.length + selectedOwners.length + selectedBoardNumbers.length;
+    const activeTagFilterCount = selectedTagTypes.length + selectedTagOwners.length;
+    const activeFilterCount = type === 'pcbs' ? activePcbFilterCount : (type === 'tags' ? activeTagFilterCount : 0);
 
     const [showFilters, setShowFilters] = useState<boolean>(activeFilterCount > 0);
     const [hasAutoFiltered, setHasAutoFiltered] = useState(false);
@@ -133,22 +141,35 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
             }
             break;
         case 'owners': items = owners; loading = ownersLoading; break;
-        case 'tags': items = tags; loading = tagsLoading; break;
+        case 'tags': 
+            items = tags; 
+            loading = tagsLoading; 
+            if (selectedTagTypes && selectedTagTypes.length > 0) {
+                items = items.filter(tag => selectedTagTypes.includes(tag.type));
+            }
+            if (selectedTagOwners && selectedTagOwners.length > 0) {
+                items = items.filter(tag => selectedTagOwners.includes(tag.owner_name));
+            }
+            if (searchQuery) {
+                const sq = searchQuery.toLowerCase();
+                items = items.filter(tag => tag.name.toLowerCase().includes(sq));
+            }
+            break;
     }
 
     if (loading) return <div className="loading">Loading {title}...</div>;
 
     return (
         <div className="card-list-container">
-            <div className="list-header" style={{ marginBottom: type === 'pcbs' ? '12px' : '24px' }}>
-                <h2>{title}</h2>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    {type === 'pcbs' && (
+            <div className="list-header" style={{ marginBottom: (type === 'pcbs' || type === 'tags') ? '12px' : '24px' }}>
+                <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+                    <h2 style={{ margin: 0 }}>{title}</h2>
+                    {(type === 'pcbs' || type === 'tags') && (
                         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                             <svg style={{ position: 'absolute', left: '10px', color: 'var(--text-muted)' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                             <input 
                                 type="text"
-                                placeholder="Search PCBs..."
+                                placeholder={`Search ${type === 'pcbs' ? 'PCBs' : 'Tags'}...`}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 style={{
@@ -175,10 +196,13 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                             />
                         </div>
                     )}
-                    {type === 'pcbs' && activeFilterCount > 0 && (
+                </div>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+
+                    {(type === 'pcbs' || type === 'tags') && activeFilterCount > 0 && (
                         <button 
                             className="secondary-button" 
-                            onClick={() => { usePcbStore.getState().resetFilters(); }}
+                            onClick={() => { type === 'pcbs' ? usePcbStore.getState().resetFilters() : useTagStore.getState().resetFilters(); }}
                             style={{ 
                                 display: 'flex', 
                                 alignItems: 'center', 
@@ -196,7 +220,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                             <span>Clear All</span>
                         </button>
                     )}
-                    {type === 'pcbs' && (
+                    {(type === 'pcbs' || type === 'tags') && (
                         <button 
                             className="secondary-button" 
                             onClick={() => setShowFilters(!showFilters)}
@@ -240,6 +264,10 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
             
             {type === 'pcbs' && showFilters && (
                 <PcbFilter />
+            )}
+            
+            {type === 'tags' && showFilters && (
+                <TagFilter />
             )}
 
             <div className={`cards-grid ${['projects', 'pcbs', 'reworks', 'tags'].includes(type) ? 'single-column' : ''}`}>
