@@ -29,6 +29,7 @@ interface PcbState {
     selectedTags: string[];
     selectedOwners: string[];
     selectedBoardNumbers: string[];
+    selectedBoms: string[];
     setSelectedProjects: (projects: string[]) => void;
     setSelectedRevisions: (revisions: string[]) => void;
     setSelectedFlavors: (flavors: string[]) => void;
@@ -37,6 +38,7 @@ interface PcbState {
     setSelectedTags: (tags: string[]) => void;
     setSelectedOwners: (owners: string[]) => void;
     setSelectedBoardNumbers: (boardNumbers: string[]) => void;
+    setSelectedBoms: (boms: string[]) => void;
     resetFilters: () => void;
 }
 
@@ -52,6 +54,7 @@ export const usePcbStore = create<PcbState>((set, get) => ({
     selectedTags: [],
     selectedOwners: [],
     selectedBoardNumbers: [],
+    selectedBoms: [],
 
     setSelectedProjects: (projects) => set({ selectedProjects: projects }),
     setSelectedRevisions: (revisions) => set({ selectedRevisions: revisions }),
@@ -61,6 +64,7 @@ export const usePcbStore = create<PcbState>((set, get) => ({
     setSelectedTags: (tags) => set({ selectedTags: tags }),
     setSelectedOwners: (owners) => set({ selectedOwners: owners }),
     setSelectedBoardNumbers: (boardNumbers) => set({ selectedBoardNumbers: boardNumbers }),
+    setSelectedBoms: (boms) => set({ selectedBoms: boms }),
     resetFilters: () => set({
         selectedProjects: [],
         selectedRevisions: [],
@@ -69,7 +73,8 @@ export const usePcbStore = create<PcbState>((set, get) => ({
         selectedCorners: [],
         selectedTags: [],
         selectedOwners: [],
-        selectedBoardNumbers: []
+        selectedBoardNumbers: [],
+        selectedBoms: []
     }),
 
     fetchPcbs: async () => {
