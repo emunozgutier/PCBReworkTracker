@@ -92,7 +92,25 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
             return createResponse(pcbsWithTags);
         }
         if (method === 'POST') {
-            const newPcb = { id: Date.now(), ...body };
+            const proj = internalProjects.find(p => p.id === parseInt(body.project_id));
+            const ownerObj = internalOwners.find(o => o.id === parseInt(body.owner_id));
+            
+            const newPcb = { 
+                id: Date.now(), 
+                ...body,
+                project: proj ? proj.name : 'Unknown',
+                owner: ownerObj ? ownerObj.name : 'Unassigned'
+            };
+            
+            if (proj) {
+                proj.pcb_count = (proj.pcb_count || 0) + 1;
+                if (!proj.pcbs) proj.pcbs = [];
+                proj.pcbs.push(newPcb.board_number);
+            }
+            if (ownerObj) {
+                ownerObj.pcb_count = (ownerObj.pcb_count || 0) + 1;
+            }
+
             internalPcbs.push(newPcb);
             return createResponse(newPcb, 201);
         }
@@ -130,7 +148,18 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
     if (localPath.startsWith('/reworks')) {
         if (method === 'GET') return createResponse(internalReworks);
         if (method === 'POST') {
-            const newRework = { id: Date.now(), timestamp: new Date().toISOString(), ...body };
+            const ownerObj = internalOwners.find(o => o.id === parseInt(body.owner_id));
+            const newRework = { 
+                id: Date.now(), 
+                timestamp: new Date().toISOString(), 
+                ...body,
+                owner_name: ownerObj ? ownerObj.name : 'Unknown'
+            };
+            
+            if (ownerObj) {
+                ownerObj.rework_count = (ownerObj.rework_count || 0) + 1;
+            }
+
             internalReworks.push(newRework);
             return createResponse(newRework, 201);
         }
