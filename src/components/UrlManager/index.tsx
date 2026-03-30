@@ -88,7 +88,7 @@ export function UrlManager() {
             const pathSegments = rawPath.split('/').filter(Boolean);
             const path = pathSegments[0] || 'projects';
             
-            if (path === 'test') {
+            if (path === 'crc') {
                 useStore.getState().setActiveTab('sandbox');
                 useStore.getState().setPage('sandbox');
                 return;
@@ -140,7 +140,7 @@ export function UrlManager() {
         let targetUrl = `${base}/${activeTab}`;
         
         if (page === 'sandbox') {
-            targetUrl = `${base}/test`;
+            targetUrl = `${base}/crc`;
         } else if (activeTab === 'projects' && expandedProject) {
             targetUrl = `${base}/projects/${encodeURIComponent(expandedProject)}`;
         } else if (activeTab === 'pcbs' && expandedPcb) {
