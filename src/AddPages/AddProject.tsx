@@ -9,6 +9,24 @@ interface AddProjectProps {
     onSuccess: () => void;
 }
 
+function generateUniqueKey(name: string, existingKeys: string[]): string {
+    const letters = name.replace(/[^a-zA-Z]/g, '').toUpperCase();
+    if (letters.length < 3) return '';
+
+    // Strategy 1: First 3 letters
+    const candidate1 = letters.substring(0, 3);
+    if (!existingKeys.includes(candidate1)) return candidate1;
+
+    // Strategy 2: First 3 consonants
+    const consonants = letters.replace(/[AEIOU]/g, '');
+    if (consonants.length >= 3) {
+        const candidate2 = consonants.substring(0, 3);
+        if (!existingKeys.includes(candidate2)) return candidate2;
+    }
+
+    return '';
+}
+
 export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [name, setName] = useState('');
     const [revisions, setRevisions] = useState('A0');
@@ -18,6 +36,8 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
         { name: 'Main', revisions: '1.1', boms: 'BOM1' }
     ]);
     const [activeTab, setActiveTab] = useState(0);
+    const [isKeyManuallyEdited, setIsKeyManuallyEdited] = useState(false);
+    const [autoKeyError, setAutoKeyError] = useState('');
     
     const { addProject, loading, projects, error } = useProjectStore();
 
@@ -36,6 +56,27 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
         keyBorderColor = '#ef4444';
         keyTextColor = '#ef4444';
     }
+
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newName = e.target.value;
+        setName(newName);
+
+        if (!isKeyManuallyEdited) {
+            const existingKeys = projects.map(p => p.project_key);
+            const autoKey = generateUniqueKey(newName, existingKeys);
+            
+            if (autoKey) {
+                setProjectKey(autoKey);
+                setAutoKeyError('');
+            } else if (newName.replace(/[^a-zA-Z]/g, '').length >= 3) {
+                setAutoKeyError('Could not auto-generate a unique 3-letter key. Please enter one manually.');
+                setProjectKey('');
+            } else {
+                setAutoKeyError('');
+                if (newName === '') setProjectKey('');
+            }
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -69,7 +110,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                         id="name"
                         type="text" 
                         value={name} 
-                        onChange={(e) => setName(e.target.value)} 
+                        onChange={handleNameChange} 
                         placeholder="e.g. Project Ares"
                         required 
                     />
@@ -86,7 +127,11 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                         type="text" 
                         maxLength={3}
                         value={projectKey} 
-                        onChange={(e) => setProjectKey(e.target.value.replace(/[^A-Za-z]/g, '').toUpperCase())} 
+                        onChange={(e) => {
+                            setProjectKey(e.target.value.replace(/[^A-Za-z]/g, '').toUpperCase());
+                            setIsKeyManuallyEdited(true);
+                            setAutoKeyError('');
+                        }} 
                         placeholder="e.g. MOD (Auto-generates if blank)"
                         style={{ 
                             textTransform: 'uppercase',
@@ -95,6 +140,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                             outlineColor: keyBorderColor
                         }}
                     />
+                    {autoKeyError && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{autoKeyError}</span>}
                 </div>
                 <div className="form-group">
                     <label htmlFor="revisions">Global Available Revisions (Optional)</label>

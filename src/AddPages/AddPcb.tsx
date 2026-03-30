@@ -154,6 +154,28 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
             </header>
 
             <form onSubmit={handleSubmit} className="add-form">
+                <FormGroup title="Instance">
+                    <div className="form-row">
+                        <div className="form-group flex-1">
+                            <label>Assigned Name</label>
+                            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(0, 0, 0, 0.2)', borderRadius: '12px', color: 'var(--text)', fontSize: '1rem', fontWeight: 500, textTransform: 'uppercase', border: '1px solid var(--border)' }}>
+                                {selectedProjectKey}-{boardNumber}
+                            </div>
+                        </div>
+                        <div className="form-group flex-1">
+                            <label htmlFor="owner">Owner</label>
+                            <select 
+                                id="owner" 
+                                value={selectedOwner} 
+                                onChange={(e) => setSelectedOwner(e.target.value)}
+                            >
+                                <option value="">Unassigned</option>
+                                {owners.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                            </select>
+                        </div>
+                    </div>
+                </FormGroup>
+
                 <FormGroup title="Silicon">
                     <div className="form-row">
                         <div className="form-group flex-1">
@@ -275,28 +297,6 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                         <option value="BOM2">BOM2</option>
                                     </>
                                 )}
-                            </select>
-                        </div>
-                    </div>
-                </FormGroup>
-
-                <FormGroup title="Instance">
-                    <div className="form-row">
-                        <div className="form-group flex-1">
-                            <label>Assigned Name</label>
-                            <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-panel)', borderRadius: '4px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, textTransform: 'uppercase', border: '1px solid var(--border-color)' }}>
-                                {selectedProjectKey}-{boardNumber}
-                            </div>
-                        </div>
-                        <div className="form-group flex-1">
-                            <label htmlFor="owner">Owner</label>
-                            <select 
-                                id="owner" 
-                                value={selectedOwner} 
-                                onChange={(e) => setSelectedOwner(e.target.value)}
-                            >
-                                <option value="">Unassigned</option>
-                                {owners.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
                             </select>
                         </div>
                     </div>
