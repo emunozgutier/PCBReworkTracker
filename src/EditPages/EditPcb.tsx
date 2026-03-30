@@ -30,15 +30,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     const [saving, setSaving] = useState(false);
 
     const selectedProjData = projects.find(p => p.id.toString() === selectedProject);
-    const availableFormfactors = selectedProjData?.formfactors || [];
-    
-    let availablePcbRevisions: string[] = [];
-    let availableBoms: string[] = [];
-    if (selectedProject && selectedFormfactor) {
-        const ff = availableFormfactors.find((f: any) => f.name === selectedFormfactor);
-        availablePcbRevisions = ff ? ff.revisions : [];
-        availableBoms = ff && ff.boms ? ff.boms : [];
-    }
+
     const selectedProjectKey = selectedProjData?.project_key || 'XXX';
 
     useEffect(() => {
@@ -170,6 +162,37 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
             </header>
 
                         <form onSubmit={handleUpdate} className="add-form">
+                <FormGroup title="Instance">
+                    <div className="form-row">
+                        <div className="form-group flex-1">
+                            <label>Assigned Name</label>
+                            <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-panel)', borderRadius: '4px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, textTransform: 'uppercase', border: '1px solid var(--border-color)' }}>
+                                {selectedProjectKey}-{boardNumber}
+                            </div>
+                        </div>
+                        <div className="form-group flex-1">
+                            <label htmlFor="owner">Owner</label>
+                            <select 
+                                id="owner" 
+                                value={selectedOwner} 
+                                onChange={(e) => setSelectedOwner(e.target.value)}
+                            >
+                                <option value="">Unassigned</option>
+                                {owners.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                            </select>
+                        </div>
+                        <div className="form-group flex-1">
+                            <label htmlFor="status">Status</label>
+                            <select id="status" value={status} onChange={(e) => setStatus(e.target.value)}>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                                <option value="On Hold">On Hold</option>
+                                <option value="Scrapped">Scrapped</option>
+                            </select>
+                        </div>
+                    </div>
+                </FormGroup>
+
                 <FormGroup title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         Silicon
@@ -207,102 +230,39 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                     </div>
                 </FormGroup>
 
-                <FormGroup title="PCB">
-                    <div className="form-row">
-                        <div className="form-group flex-1">
-                            <label htmlFor="formfactor">Flavor *</label>
-                            <select 
-                                id="formfactor"
-                                value={selectedFormfactor}
-                                onChange={(e) => {
-                                    setSelectedFormfactor(e.target.value);
-                                    const ff = availableFormfactors.find((f: any) => f.name === e.target.value);
-                                    setPcbRev(ff && ff.revisions.length > 0 ? ff.revisions[0] : '');
-                                }}
-                                required
-                            >
-                                <option value="">N/A</option>
-                                {availableFormfactors.map((ff: any) => (
-                                    <option key={ff.name} value={ff.name}>{ff.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="form-group flex-1">
-                            <label htmlFor="pcb_rev">Rev Number *</label>
-                            {availablePcbRevisions.length > 0 ? (
-                                <select 
-                                    id="pcb_rev"
-                                    value={pcbRev}
-                                    onChange={(e) => setPcbRev(e.target.value)}
-                                    required
-                                >
-                                    <option value="">Select Rev</option>
-                                    {availablePcbRevisions.map((rev) => (
-                                        <option key={rev} value={rev}>{rev}</option>
-                                    ))}
-                                </select>
-                            ) : (
-                                <input 
-                                    id="pcb_rev"
-                                    type="number" 
-                                    step="any"
-                                    value={pcbRev} 
-                                    onChange={(e) => setPcbRev(e.target.value)} 
-                                    required
-                                />
-                            )}
-                        </div>
-                        <div className="form-group flex-1">
-                            <label htmlFor="bom">BOM *</label>
-                            <select 
-                                id="bom"
-                                value={bom}
-                                onChange={(e) => setBom(e.target.value)}
-                                required
-                            >
-                                <option value="">Select BOM</option>
-                                {availableBoms.length > 0 ? (
-                                    availableBoms.map((b) => (
-                                        <option key={b} value={b}>{b}</option>
-                                    ))
-                                ) : (
-                                    <>
-                                        <option value="BOM1">BOM1</option>
-                                        <option value="BOM2">BOM2</option>
-                                    </>
-                                )}
-                            </select>
-                        </div>
+                <FormGroup title={
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        PCB
+                        <span 
+                            title="Base PCB configuration cannot be changed after creation." 
+                            style={{ 
+                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                width: '16px', height: '16px', borderRadius: '50%', background: 'var(--accent)', 
+                                color: 'white', fontSize: '10px', fontWeight: 'bold', cursor: 'help' 
+                            }}
+                        >
+                            ?
+                        </span>
                     </div>
-                </FormGroup>
-
-                <FormGroup title="Instance">
+                }>
                     <div className="form-row">
                         <div className="form-group flex-1">
-                            <label>Assigned Name</label>
-                            <div style={{ padding: '0.75rem', backgroundColor: 'var(--bg-panel)', borderRadius: '4px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, textTransform: 'uppercase', border: '1px solid var(--border-color)' }}>
-                                {selectedProjectKey}-{boardNumber}
+                            <label>Flavor</label>
+                            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
+                                {selectedFormfactor || 'N/A'}
                             </div>
                         </div>
                         <div className="form-group flex-1">
-                            <label htmlFor="owner">Owner</label>
-                            <select 
-                                id="owner" 
-                                value={selectedOwner} 
-                                onChange={(e) => setSelectedOwner(e.target.value)}
-                            >
-                                <option value="">Unassigned</option>
-                                {owners.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-                            </select>
+                            <label>Rev Number</label>
+                            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
+                                {pcbRev || 'N/A'}
+                            </div>
                         </div>
                         <div className="form-group flex-1">
-                            <label htmlFor="status">Status</label>
-                            <select id="status" value={status} onChange={(e) => setStatus(e.target.value)}>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Completed">Completed</option>
-                                <option value="On Hold">On Hold</option>
-                                <option value="Scrapped">Scrapped</option>
-                            </select>
+                            <label>BOM</label>
+                            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
+                                {bom || 'Unknown'}
+                            </div>
                         </div>
                     </div>
                 </FormGroup>
