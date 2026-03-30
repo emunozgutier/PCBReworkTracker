@@ -75,27 +75,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                 >
                     <Edit2 size={18} /> Edit PCB
                 </button>
-                <button 
-                    onClick={(e) => { e.stopPropagation(); addItem('reworks_add', pcb.id); }}
-                    style={{ 
-                        flex: 1,
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center',
-                        gap: '8px', 
-                        background: 'rgba(99, 102, 241, 0.15)', 
-                        color: '#818cf8', 
-                        border: '1px solid rgba(99, 102, 241, 0.5)', 
-                        padding: '10px 16px', 
-                        borderRadius: '8px', 
-                        fontSize: '0.9rem', 
-                        fontWeight: 600, 
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease'
-                    }}
-                >
-                    <Plus size={18} /> Add Rework log
-                </button>
+
                 <button 
                     onClick={(e) => { e.stopPropagation(); setQrModalBoard(pcb.board_number); }}
                     style={{ 
@@ -156,7 +136,28 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
             <div style={{ padding: '16px', background: 'rgba(255, 255, 255, 0.02)', borderBottomLeftRadius: '12px', borderBottomRightRadius: '12px', border: '1px solid var(--border)', borderTop: 'none' }}>
                 {activeTabName === 'Rework' && (
                     <>
-                        <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '12px' }}>Recent Rework History</h4>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                            <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>Recent Rework History</h4>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); addItem('reworks_add', pcb.id); }}
+                                style={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    gap: '6px', 
+                                    padding: '6px 12px', 
+                                    background: 'rgba(99, 102, 241, 0.15)', 
+                                    color: '#818cf8', 
+                                    border: '1px solid rgba(99, 102, 241, 0.5)', 
+                                    borderRadius: '6px', 
+                                    fontSize: '0.85rem', 
+                                    fontWeight: 600, 
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease'
+                                }}
+                            >
+                                <Plus size={16} /> Add Rework log
+                            </button>
+                        </div>
                         {pcbReworks.length > 0 ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 {pcbReworks.slice(0, 5).map((rework: any, index: number) => (
@@ -189,23 +190,8 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
 
                             return (
                                 <div>
-                                    {filteredAttached.length > 0 ? (
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
-                                            {filteredAttached.map(tag => (
-                                                <div key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: `${tag.color}20`, color: tag.color, border: `1px solid ${tag.color}40`, padding: '4px 10px', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 600 }}>
-                                                    <TagIcon size={12} />
-                                                    {tag.owner_username ? `${tag.owner_username}-${tag.name}` : tag.name}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.9rem', marginBottom: '16px' }}>
-                                            No {isPersonal ? 'personal' : 'public'} tags attached.
-                                        </p>
-                                    )}
-
                                     {isAssigningTag ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)', marginBottom: '16px' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                                                 <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Select {isPersonal ? 'Personal' : 'Public'} Tag to Attach:</span>
                                                 <button onClick={(e) => { e.stopPropagation(); setIsAssigningTag(false); }} style={{ background: 'transparent', color: 'var(--text-muted)', border: 'none', cursor: 'pointer' }}><X size={18} /></button>
@@ -254,11 +240,27 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                                 fontWeight: 600, 
                                                 cursor: 'pointer',
                                                 transition: 'all 0.2s ease',
-                                                width: '100%'
+                                                width: '100%',
+                                                marginBottom: '16px'
                                             }}
                                         >
-                                            <TagIcon size={18} /> Add {isPersonal ? 'Personal' : 'Public'} Tag
+                                            <Plus size={18} /> Add {isPersonal ? 'Personal' : 'Public'} Tag
                                         </button>
+                                    )}
+
+                                    {filteredAttached.length > 0 ? (
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
+                                            {filteredAttached.map(tag => (
+                                                <div key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: `${tag.color}20`, color: tag.color, border: `1px solid ${tag.color}40`, padding: '4px 10px', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 600 }}>
+                                                    <TagIcon size={12} />
+                                                    {tag.owner_username ? `${tag.owner_username}-${tag.name}` : tag.name}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.9rem', margin: 0 }}>
+                                            No {isPersonal ? 'personal' : 'public'} tags attached.
+                                        </p>
                                     )}
                                 </div>
                             );
