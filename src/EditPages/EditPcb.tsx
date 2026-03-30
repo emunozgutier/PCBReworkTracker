@@ -181,15 +181,6 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                                 {owners.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
                             </select>
                         </div>
-                        <div className="form-group flex-1">
-                            <label htmlFor="status">Status</label>
-                            <select id="status" value={status} onChange={(e) => setStatus(e.target.value)}>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Completed">Completed</option>
-                                <option value="On Hold">On Hold</option>
-                                <option value="Scrapped">Scrapped</option>
-                            </select>
-                        </div>
                     </div>
                 </FormGroup>
 
