@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PictureCard } from '../components/PictureCard';
 import { useStore } from '../store/useStore';
-import { Edit2 } from 'lucide-react';
+import { EditButton, ViewButton } from '../forms/ActionButtons';
 
 interface ReworkCardBodyProps {
     rework: any;
@@ -23,54 +23,22 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
     return (
         <div className="card-expanded-content" style={{ marginTop: '6px', paddingTop: '6px' }}>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                <button 
+                <EditButton 
                     onClick={(e) => { e.stopPropagation(); editItem('reworks_edit', rework.id); }}
-                    style={{ 
-                        flex: 1,
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center',
-                        gap: '8px', 
-                        background: 'transparent', 
-                        color: 'var(--text)', 
-                        border: '1px solid var(--border-color)', 
-                        padding: '10px 16px', 
-                        borderRadius: '8px', 
-                        fontSize: '0.9rem', 
-                        fontWeight: 600, 
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease'
-                    }}
-                >
-                    <Edit2 size={18} /> Edit Rework
-                </button>
+                    label="Edit Rework"
+                />
                 {imagePaths.length > 0 && (
-                    <button 
+                    <ViewButton 
                         onClick={(e) => { e.stopPropagation(); setShowGallery(true); }}
-                        style={{ 
-                            flex: 1,
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                            gap: '8px', 
-                            background: 'rgba(99, 102, 241, 0.15)', 
-                            color: '#818cf8', 
-                            border: '1px solid rgba(99, 102, 241, 0.5)', 
-                            padding: '10px 16px', 
-                            borderRadius: '8px', 
-                            fontSize: '0.9rem', 
-                            fontWeight: 600, 
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease'
-                        }}
-                    >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                            <polyline points="21 15 16 10 5 21"></polyline>
-                        </svg>
-                        View {imagePaths.length} Photo{imagePaths.length > 1 ? 's' : ''}
-                    </button>
+                        label={`View ${imagePaths.length} Photo${imagePaths.length > 1 ? 's' : ''}`}
+                        icon={
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                        }
+                    />
                 )}
             </div>
 

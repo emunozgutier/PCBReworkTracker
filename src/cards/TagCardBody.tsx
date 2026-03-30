@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { API_BASE } from '../apiBridge';
 import { PcbCardHeader } from './PcbCardHeader';
 import { useStore } from '../store/useStore';
-import { ExternalLink } from 'lucide-react';
 import { usePcbStore } from '../store/storePcb';
+import { ViewButton } from '../forms/ActionButtons';
 
 interface TagCardBodyProps {
     tag: any;
@@ -33,31 +33,14 @@ export function TagCardBody({ tag }: TagCardBodyProps) {
             
             {taggedPcbs.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <button 
+                    <ViewButton 
                         onClick={() => {
                             setSelectedProjects([]);
                             setActiveTab('pcbs');
                         }}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '6px',
-                            background: 'transparent',
-                            border: '1px solid var(--accent)',
-                            color: 'var(--accent)',
-                            fontSize: '0.9rem',
-                            cursor: 'pointer',
-                            padding: '8px 16px',
-                            borderRadius: '8px',
-                            fontWeight: 600,
-                            transition: 'all 0.2s',
-                            marginBottom: '4px'
-                        }}
-                    >
-                        <span>View PCBs Global List</span>
-                        <ExternalLink size={16} />
-                    </button>
+                        label="View PCBs Global List"
+                        style={{ marginBottom: '4px' }}
+                    />
                     {taggedPcbs.map((pcb, index) => (
                         <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--bg-element)' }}>
                             <PcbCardHeader 

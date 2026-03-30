@@ -4,7 +4,8 @@ import { useTagStore } from '../store/storeTag';
 import { useStore } from '../store/useStore';
 import { API_BASE } from '../apiBridge';
 import { FormTabs } from '../forms/FormTabs';
-import { Plus, ExternalLink, QrCode as QrCodeIcon, Tag as TagIcon, X, Edit2 } from 'lucide-react';
+import { QrCode as QrCodeIcon, Tag as TagIcon, X } from 'lucide-react';
+import { EditButton, ViewButton, AddButton } from '../forms/ActionButtons';
 import { ReworkCardHeader } from './ReworkCardHeader';
 
 interface PcbCardBodyProps {
@@ -54,27 +55,10 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     return (
         <div className="card-expanded-content">
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                <button 
+                <EditButton 
                     onClick={(e) => { e.stopPropagation(); editItem('pcbs_edit', pcb.id); }}
-                    style={{ 
-                        flex: 1,
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center',
-                        gap: '8px', 
-                        background: 'transparent', 
-                        color: 'var(--text)', 
-                        border: '1px solid var(--border-color)', 
-                        padding: '10px 16px', 
-                        borderRadius: '8px', 
-                        fontSize: '0.9rem', 
-                        fontWeight: 600, 
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease'
-                    }}
-                >
-                    <Edit2 size={18} /> Edit PCB
-                </button>
+                    label="Edit PCB"
+                />
 
                 <button 
                     onClick={(e) => { e.stopPropagation(); setQrModalBoard(pcb.board_number); }}
@@ -114,48 +98,20 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                             <h4 style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>Recent Rework History</h4>
                             <div style={{ display: 'flex', gap: '8px' }}>
-                                <button 
+                                <ViewButton 
                                     onClick={(e) => { 
                                         e.stopPropagation(); 
                                         setSelectedBoards([pcb.id.toString()]);
                                         setActiveTab('reworks'); 
                                     }}
-                                    style={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        gap: '6px', 
-                                        background: 'transparent', 
-                                        color: 'var(--text)', 
-                                        border: '1px solid var(--border-color)', 
-                                        padding: '6px 12px', 
-                                        borderRadius: '6px', 
-                                        fontSize: '0.85rem', 
-                                        fontWeight: 600, 
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease'
-                                    }}
-                                >
-                                    <ExternalLink size={16} /> View All Reworks
-                                </button>
-                                <button 
+                                    label="View All Reworks"
+                                    style={{ flex: 'none' }}
+                                />
+                                <AddButton 
                                     onClick={(e) => { e.stopPropagation(); addItem('reworks_add', pcb.id); }}
-                                    style={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        gap: '6px', 
-                                        padding: '6px 12px', 
-                                        background: 'rgba(99, 102, 241, 0.15)', 
-                                        color: '#818cf8', 
-                                        border: '1px solid rgba(99, 102, 241, 0.5)', 
-                                        borderRadius: '6px', 
-                                        fontSize: '0.85rem', 
-                                        fontWeight: 600, 
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease'
-                                    }}
-                                >
-                                    <Plus size={16} /> Add Rework log
-                                </button>
+                                    label="Add Rework log"
+                                    style={{ flex: 'none' }}
+                                />
                             </div>
                         </div>
                         {pcbReworks.length > 0 ? (
@@ -224,28 +180,11 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                             )}
                                         </div>
                                     ) : (
-                                        <button 
+                                        <AddButton 
                                             onClick={(e) => { e.stopPropagation(); setIsAssigningTag(true); }}
-                                            style={{ 
-                                                display: 'flex', 
-                                                alignItems: 'center', 
-                                                justifyContent: 'center',
-                                                gap: '8px', 
-                                                background: 'rgba(16, 185, 129, 0.15)', 
-                                                color: '#34d399', 
-                                                border: '1px solid rgba(16, 185, 129, 0.5)', 
-                                                padding: '10px 16px', 
-                                                borderRadius: '8px', 
-                                                fontSize: '0.9rem', 
-                                                fontWeight: 600, 
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s ease',
-                                                width: '100%',
-                                                marginBottom: '16px'
-                                            }}
-                                        >
-                                            <Plus size={18} /> Add {isPersonal ? 'Personal' : 'Public'} Tag
-                                        </button>
+                                            label={`Add ${isPersonal ? 'Personal' : 'Public'} Tag`}
+                                            style={{ width: '100%', marginBottom: '16px' }}
+                                        />
                                     )}
 
                                     {filteredAttached.length > 0 ? (
