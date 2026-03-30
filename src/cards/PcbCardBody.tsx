@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useReworkStore } from '../store/storeRework';
 import { useTagStore } from '../store/storeTag';
 import { useStore } from '../store/useStore';
+import { usePcbStore } from '../store/storePcb';
 import { API_BASE } from '../apiBridge';
 import { FormTabs } from '../forms/FormTabs';
 import { Tag as TagIcon, X } from 'lucide-react';
@@ -16,6 +17,7 @@ interface PcbCardBodyProps {
 export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const { reworks, fetchReworks, setSelectedBoards } = useReworkStore();
     const { tags, fetchTags } = useTagStore();
+    const { fetchPcbs } = usePcbStore();
     const { addItem, setActiveTab, setQrModalBoard, editItem } = useStore();
 
     const [attachedTags, setAttachedTags] = useState<any[]>([]);
@@ -53,8 +55,27 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                 body: JSON.stringify({ tag_id: tagId })
             });
             await fetchAttachedTags();
+            fetchPcbs();
         } catch (err) { }
         setIsAssigningTag(false);
+    };
+
+    const handleRemoveTagDirect = async (tag: any) => {
+        if (tag.type === 'personal') return; 
+        
+        const confirmation = window.prompt(`Type "${tag.name}-${pcb.board_number}" to remove this tag from the board.`);
+        if (confirmation !== `${tag.name}-${pcb.board_number}`) {
+            if (confirmation !== null) alert('Incorrect confirmation text. Tag removal cancelled.');
+            return;
+        }
+
+        try {
+            await fetch(`${API_BASE}/pcbs/${pcb.id}/tags/${tag.id}`, {
+                method: 'DELETE'
+            });
+            await fetchAttachedTags();
+            fetchPcbs();
+        } catch (err) { }
     };
 
     const pcbReworks = reworks.filter((r: any) => r.pcb_id === pcb.id);
@@ -184,6 +205,20 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                                 <div key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: `${tag.color}20`, color: tag.color, border: `1px solid ${tag.color}40`, padding: '4px 10px', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 600 }}>
                                                     <TagIcon size={12} />
                                                     {formatTagName(tag)}
+                                                    {!isPersonal && (
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); handleRemoveTagDirect(tag); }}
+                                                            style={{
+                                                                background: 'none', border: 'none', cursor: 'pointer',
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                color: tag.color, padding: 0, marginLeft: '4px', opacity: 0.7
+                                                            }}
+                                                            onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+                                                            onMouseOut={(e) => e.currentTarget.style.opacity = '0.7'}
+                                                        >
+                                                            <X size={14} />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
