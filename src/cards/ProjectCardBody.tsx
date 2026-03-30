@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ExternalLink, Edit2 } from 'lucide-react';
 import { usePcbStore } from '../store/storePcb';
 import { useStore } from '../store/useStore';
@@ -24,11 +25,39 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     // Get actual PCB objects for this project
     const projectPcbs = allPcbs.filter(p => p.project === project.name);
 
+    const [isBlinking, setIsBlinking] = useState(false);
+
+    const handlePcbClick = () => {
+        setIsBlinking(true);
+        setTimeout(() => setIsBlinking(false), 2000); // blink for 2 seconds (time for 3 loops)
+    };
+
     return (
         <div className="card-expanded-content" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <ProjectCardSummary project={project} />
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                <button 
+                    onClick={(e) => { e.stopPropagation(); editItem('projects_edit', project.id); }}
+                    style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        background: 'transparent',
+                        border: '1px solid var(--border)',
+                        color: 'var(--text)',
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        fontWeight: 600,
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    <Edit2 size={16} /> Edit Project
+                </button>
                 <button 
                     onClick={(e) => {
                         e.stopPropagation();
@@ -51,30 +80,9 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                         fontWeight: 600,
                         transition: 'all 0.2s'
                     }}
-                    className="view-pcbs-btn"
+                    className={`view-pcbs-btn ${isBlinking ? 'blink-button' : ''}`}
                 >
                     <ExternalLink size={16} /> View PCBs Info
-                </button>
-                <button 
-                    onClick={(e) => { e.stopPropagation(); editItem('projects_edit', project.id); }}
-                    style={{
-                        flex: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        background: 'transparent',
-                        border: '1px solid var(--border-color)',
-                        color: 'var(--text)',
-                        fontSize: '0.9rem',
-                        cursor: 'pointer',
-                        padding: '8px 16px',
-                        borderRadius: '8px',
-                        fontWeight: 600,
-                        transition: 'all 0.2s'
-                    }}
-                >
-                    <Edit2 size={16} /> Edit Project
                 </button>
             </div>
 
@@ -85,7 +93,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                             <PcbCardHeader 
                                 pcb={pcb} 
                                 isExpanded={false}
-                                onToggle={() => {}}
+                                onToggle={() => handlePcbClick()}
                                 hideActions={true}
                             />
                         </div>
