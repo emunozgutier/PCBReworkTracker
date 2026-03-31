@@ -33,7 +33,7 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
                         color: rework.rework_type === 'Major' ? '#ef4444' : rework.rework_type === 'Silicon Swap' ? '#a855f7' : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' ? '#f97316' : '#818cf8',
                         border: `1px solid ${rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.4)' : rework.rework_type === 'Silicon Swap' ? 'rgba(168, 85, 247, 0.4)' : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' ? 'rgba(249, 115, 22, 0.4)' : 'rgba(99, 102, 241, 0.4)'}`
                     }}>
-                        {rework.rework_type || 'Minor'}
+                        {rework.rework_type === 'Resistor Option Swap' ? 'Resistor Swap' : (rework.rework_type || 'Minor')}
                     </span>
                     {rework.title && (
                         <span style={{ 

@@ -83,7 +83,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                                   : 'rgba(59, 130, 246, 0.2)'
                                 }`
                             }}>
-                                {rework.rework_type || 'Minor'}
+                                {rework.rework_type === 'Resistor Option Swap' ? 'Resistor Swap' : (rework.rework_type || 'Minor')}
                             </div>
                         </div>
 
