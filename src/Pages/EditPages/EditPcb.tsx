@@ -3,7 +3,7 @@ import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE } from '../../store/database/apiBridge';
 import { usePcbStore } from '../../store/storePcb';
-import { FormGroup } from '../../forms/FormGroup';
+import { FormGroup } from '../../components/forms/FormGroup';
 
 interface EditPCBProps {
     id: string | number;

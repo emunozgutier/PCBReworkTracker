@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2, HelpCircle } from 'lucide-react';
-import { FormTabs } from '../../forms/FormTabs';
-import { MultipleInputs } from '../../forms/MultipleInputs';
+import { FormTabs } from '../../components/forms/FormTabs';
+import { MultipleInputs } from '../../components/forms/MultipleInputs';
 import { API_BASE } from '../../store/database/apiBridge';
 import { useProjectStore } from '../../store/storeProject';
 import { usePcbStore } from '../../store/storePcb';

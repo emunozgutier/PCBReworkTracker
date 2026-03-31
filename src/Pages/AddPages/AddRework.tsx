@@ -5,7 +5,7 @@ import { API_BASE } from '../../store/database/apiBridge';
 import { useReworkStore } from '../../store/storeRework';
 import { useStore } from '../../store/useStore';
 import { useOwnerStore } from '../../store/storeOwner';
-import { FormGroup } from '../../forms/FormGroup';
+import { FormGroup } from '../../components/forms/FormGroup';
 
 interface AddReworkProps {
     onBack: () => void;

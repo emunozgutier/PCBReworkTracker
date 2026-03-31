@@ -4,7 +4,7 @@ import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 import { API_BASE } from '../../store/database/apiBridge';
 import { useReworkStore } from '../../store/storeRework';
 import { useOwnerStore } from '../../store/storeOwner';
-import { FormGroup } from '../../forms/FormGroup';
+import { FormGroup } from '../../components/forms/FormGroup';
 
 interface EditReworkProps {
     id: string | number;

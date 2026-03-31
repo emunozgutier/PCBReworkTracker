@@ -3,7 +3,7 @@ import { API_BASE } from '../../store/database/apiBridge';
 import { PcbCardHeader } from './PcbCardHeader';
 import { useStore } from '../../store/useStore';
 import { usePcbStore } from '../../store/storePcb';
-import { ViewButton } from '../../forms/ActionButtons';
+import { ViewButton } from '../../components/forms/ActionButtons';
 
 interface TagCardBodyProps {
     tag: any;
