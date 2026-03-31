@@ -13,7 +13,7 @@ export function TagCard({ tag, onEdit }: TagCardProps) {
     const toggleExpand = () => setIsExpanded(!isExpanded);
 
     return (
-        <div className={`card-container ${isExpanded ? 'expanded' : ''}`}>
+        <div className={`item-card project-card ${isExpanded ? 'active' : ''}`}>
             <TagCardHeader 
                 tag={tag} 
                 isExpanded={isExpanded} 
