@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { BoardName } from '../../components/BoardName';
 
 interface RemovePcbProps {
@@ -28,7 +29,7 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
         }
     };
 
-    return (
+    return createPortal(
         <div style={{
             position: 'fixed',
             top: 0,
@@ -121,6 +122,7 @@ export function RemovePcb({ isOpen, onClose, onConfirm, pcb }: RemovePcbProps) {
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

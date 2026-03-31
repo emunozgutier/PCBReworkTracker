@@ -195,7 +195,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                         fontSize: '0.875rem',
                         color: 'var(--text-muted)'
                     }}>
-                        Note: To change silicon you need to fill rework on log.
+                        Note: To change silicon you need to fill rework log.
                     </div>
                     <div className="form-row">
                         <div className="form-group flex-1">
