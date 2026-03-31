@@ -115,18 +115,38 @@ export function NetworkQRCode() {
                 </div>
                 <div style={{ textAlign: 'center', width: '100%' }}>
                     <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent)', marginBottom: '8px' }}>{qrModalBoard}</div>
-                    <code style={{ 
-                        display: 'block', 
-                        fontSize: '0.8rem', 
-                        color: 'var(--text-muted)', 
-                        background: 'rgba(0,0,0,0.2)', 
-                        padding: '12px 8px',
-                        borderRadius: '6px',
-                        lineHeight: '1.4'
-                    }}>
+                    <a 
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ 
+                            display: 'block', 
+                            fontSize: '0.8rem', 
+                            color: 'var(--text-muted)', 
+                            background: 'rgba(0,0,0,0.2)', 
+                            padding: '12px 8px',
+                            borderRadius: '8px',
+                            lineHeight: '1.4',
+                            textDecoration: 'none',
+                            border: '1px solid rgba(255, 255, 255, 0.05)',
+                            transition: 'all 0.2s ease',
+                            cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)';
+                            e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(0,0,0,0.2)';
+                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+                        }}
+                    >
                         <div style={{ wordBreak: 'break-all' }}>{displayDomain}</div>
-                        <div style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '2px' }}>{displayPath}</div>
-                    </code>
+                        <div style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '2px', textDecoration: 'underline text-underline-offset-2' }}>{displayPath}</div>
+                        <div style={{ marginTop: '6px', fontSize: '0.7rem', color: '#a855f7', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            Click to Open PCB Page
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>
