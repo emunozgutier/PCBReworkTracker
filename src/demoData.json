@@ -783,861 +783,861 @@
         {
             "id": 1,
             "pcb_id": 1,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Set clock to external clock",
+            "description": "Detailed rework analysis for DIO-0001U:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.495Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "DIO-0001U",
             "image_path": "[\"this is picture DIO-0001U-R-001-PIC-1\",\"this is picture DIO-0001U-R-001-PIC-2\",\"this is picture DIO-0001U-R-001-PIC-3\"]",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Resistor Swap"
         },
         {
             "id": 2,
             "pcb_id": 2,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Set clock to external clock",
+            "description": "Detailed rework analysis for DIO-0002D:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.496Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "DIO-0002D",
             "image_path": "[\"this is picture DIO-0002D-R-001-PIC-1\",\"this is picture DIO-0002D-R-001-PIC-2\",\"this is picture DIO-0002D-R-001-PIC-3\"]",
-            "rework_type": "Minor Rework"
+            "rework_type": "Resistor Swap"
         },
         {
             "id": 3,
             "pcb_id": 3,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Replaced Burned 3.3V reg",
+            "description": "Detailed rework analysis for DIO-0003N:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.496Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "DIO-0003N",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Major"
         },
         {
             "id": 4,
             "pcb_id": 4,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Set board for GPIO control",
+            "description": "Detailed rework analysis for DIO-0004W:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.496Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
             "pcb_board_number": "DIO-0004W",
             "image_path": "[\"this is picture DIO-0004W-R-001-PIC-1\",\"this is picture DIO-0004W-R-001-PIC-2\"]",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Minor"
         },
         {
             "id": 5,
             "pcb_id": 6,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Installed new Osc",
+            "description": "Detailed rework analysis for DIO-0006Q:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "DIO-0006Q",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Major"
         },
         {
             "id": 6,
             "pcb_id": 7,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Silicon Swap to A0 TT",
+            "description": "Detailed rework analysis for DIO-0007Y:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "DIO-0007Y",
-            "rework_type": "Minor Rework"
+            "rework_type": "Silicon Swap"
         },
         {
             "id": 7,
             "pcb_id": 9,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Removed the MDI termination resistors",
+            "description": "Detailed rework analysis for DIO-0009S:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "DIO-0009S",
             "image_path": "[\"this is picture DIO-0009S-R-001-PIC-1\",\"this is picture DIO-0009S-R-001-PIC-2\",\"this is picture DIO-0009S-R-001-PIC-3\"]",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Minor"
         },
         {
             "id": 8,
             "pcb_id": 11,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Swapped MID to copper",
+            "description": "Detailed rework analysis for DIO-0011C:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "DIO-0011C",
             "image_path": "[\"this is picture DIO-0011C-R-001-PIC-1\",\"this is picture DIO-0011C-R-001-PIC-2\"]",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Resistor Swap"
         },
         {
             "id": 9,
             "pcb_id": 12,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Set board for GPIO control",
+            "description": "Detailed rework analysis for DIO-0012M:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "DIO-0012M",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Minor"
         },
         {
             "id": 10,
             "pcb_id": 14,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Added new Inductors to the board",
+            "description": "Detailed rework analysis for DIO-0014E:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "DIO-0014E",
-            "rework_type": "Minor Rework"
+            "rework_type": "Major"
         },
         {
             "id": 11,
             "pcb_id": 15,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Replaced Burned 3.3V reg",
+            "description": "Detailed rework analysis for DIO-0015P:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "DIO-0015P",
             "image_path": "[\"this is picture DIO-0015P-R-001-PIC-1\",\"this is picture DIO-0015P-R-001-PIC-2\"]",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Major"
         },
         {
             "id": 12,
             "pcb_id": 16,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Replaced Burned 3.3V reg",
+            "description": "Detailed rework analysis for DIO-0016X:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "DIO-0016X",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Major"
         },
         {
             "id": 13,
             "pcb_id": 16,
-            "title": "Rework 2",
-            "description": "Standard rework operation.",
+            "title": "Silicon Swap to A0 TT",
+            "description": "Detailed rework analysis for DIO-0016X:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
             "pcb_board_number": "DIO-0016X",
             "image_path": "[\"this is picture DIO-0016X-R-001-PIC-1\",\"this is picture DIO-0016X-R-001-PIC-2\",\"this is picture DIO-0016X-R-001-PIC-3\"]",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Silicon Swap"
         },
         {
             "id": 14,
             "pcb_id": 16,
-            "title": "Rework 3",
-            "description": "Standard rework operation.",
+            "title": "Replaced Burned 3.3V reg",
+            "description": "Detailed rework analysis for DIO-0016X:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "DIO-0016X",
-            "rework_type": "Minor Rework"
+            "rework_type": "Major"
         },
         {
             "id": 15,
             "pcb_id": 19,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Fixed Vbat to 3.3V rail",
+            "description": "Detailed rework analysis for DIO-0019A:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "DIO-0019A",
             "image_path": "[\"this is picture DIO-0019A-R-001-PIC-1\",\"this is picture DIO-0019A-R-001-PIC-2\"]",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Minor"
         },
         {
             "id": 16,
             "pcb_id": 22,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Swapped MID to copper",
+            "description": "Detailed rework analysis for DIO-0022U:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "DIO-0022U",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Resistor Swap"
         },
         {
             "id": 17,
             "pcb_id": 23,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Fixed Vbat to 3.3V rail",
+            "description": "Detailed rework analysis for DIO-0023D:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "DIO-0023D",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Minor"
         },
         {
             "id": 18,
             "pcb_id": 27,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Set clock to external clock",
+            "description": "Detailed rework analysis for DIO-0027Q:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "DIO-0027Q",
-            "rework_type": "Minor Rework"
+            "rework_type": "Resistor Swap"
         },
         {
             "id": 19,
             "pcb_id": 29,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Silicon Swap to A0 TT",
+            "description": "Detailed rework analysis for DIO-0029H:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "DIO-0029H",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Silicon Swap"
         },
         {
             "id": 20,
             "pcb_id": 31,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Added new Inductors to the board",
+            "description": "Detailed rework analysis for TIT-0001E:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "TIT-0001E",
             "image_path": "[\"this is picture TIT-0001E-R-001-PIC-1\",\"this is picture TIT-0001E-R-001-PIC-2\"]",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Major"
         },
         {
             "id": 21,
             "pcb_id": 32,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Silicon Swap to A0 TT",
+            "description": "Detailed rework analysis for TIT-0002P:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "TIT-0002P",
             "image_path": "[\"this is picture TIT-0002P-R-001-PIC-1\",\"this is picture TIT-0002P-R-001-PIC-2\",\"this is picture TIT-0002P-R-001-PIC-3\"]",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Silicon Swap"
         },
         {
             "id": 22,
             "pcb_id": 32,
-            "title": "Rework 2",
-            "description": "Standard rework operation.",
+            "title": "Removed the MDI termination resistors",
+            "description": "Detailed rework analysis for TIT-0002P:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
             "pcb_board_number": "TIT-0002P",
-            "rework_type": "Minor Rework"
+            "rework_type": "Minor"
         },
         {
             "id": 23,
             "pcb_id": 32,
-            "title": "Rework 3",
-            "description": "Standard rework operation.",
+            "title": "Added test wire",
+            "description": "Detailed rework analysis for TIT-0002P:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "TIT-0002P",
             "image_path": "[\"this is picture TIT-0002P-R-001-PIC-1\",\"this is picture TIT-0002P-R-001-PIC-2\"]",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Minor"
         },
         {
             "id": 24,
             "pcb_id": 33,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Fixed Vbat to 3.3V rail",
+            "description": "Detailed rework analysis for TIT-0003X:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
             "pcb_board_number": "TIT-0003X",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Minor"
         },
         {
             "id": 25,
             "pcb_id": 34,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Added test wire",
+            "description": "Detailed rework analysis for TIT-0004G:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "TIT-0004G",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Minor"
         },
         {
             "id": 26,
             "pcb_id": 35,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Replaced Burned 3.3V reg",
+            "description": "Detailed rework analysis for TIT-0005R:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "TIT-0005R",
-            "rework_type": "Minor Rework"
+            "rework_type": "Major"
         },
         {
             "id": 27,
             "pcb_id": 35,
-            "title": "Rework 2",
-            "description": "Standard rework operation.",
+            "title": "Silicon Swap to A0 TT",
+            "description": "Detailed rework analysis for TIT-0005R:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "TIT-0005R",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Silicon Swap"
         },
         {
             "id": 28,
             "pcb_id": 35,
-            "title": "Rework 3",
-            "description": "Standard rework operation.",
+            "title": "Fixed Vbat to 3.3V rail",
+            "description": "Detailed rework analysis for TIT-0005R:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "TIT-0005R",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Minor"
         },
         {
             "id": 29,
             "pcb_id": 36,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Added test wire",
+            "description": "Detailed rework analysis for TIT-0006A:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
             "pcb_board_number": "TIT-0006A",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Minor"
         },
         {
             "id": 30,
             "pcb_id": 37,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Added test wire",
+            "description": "Detailed rework analysis for TIT-0007J:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "TIT-0007J",
-            "rework_type": "Minor Rework"
+            "rework_type": "Minor"
         },
         {
             "id": 31,
             "pcb_id": 37,
-            "title": "Rework 2",
-            "description": "Standard rework operation.",
+            "title": "Set board for GPIO control",
+            "description": "Detailed rework analysis for TIT-0007J:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "TIT-0007J",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Minor"
         },
         {
             "id": 32,
             "pcb_id": 37,
-            "title": "Rework 3",
-            "description": "Standard rework operation.",
+            "title": "Set clock to external clock",
+            "description": "Detailed rework analysis for TIT-0007J:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "TIT-0007J",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Resistor Swap"
         },
         {
             "id": 33,
             "pcb_id": 38,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Set board for GPIO control",
+            "description": "Detailed rework analysis for TIT-0008T:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "TIT-0008T",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Minor"
         },
         {
             "id": 34,
             "pcb_id": 39,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Silicon Swap to A0 TT",
+            "description": "Detailed rework analysis for TIT-0009C:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "TIT-0009C",
             "image_path": "[\"this is picture TIT-0009C-R-001-PIC-1\",\"this is picture TIT-0009C-R-001-PIC-2\"]",
-            "rework_type": "Minor Rework"
+            "rework_type": "Silicon Swap"
         },
         {
             "id": 35,
             "pcb_id": 40,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Set clock to external clock",
+            "description": "Detailed rework analysis for TIT-0010D:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "TIT-0010D",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Resistor Swap"
         },
         {
             "id": 36,
             "pcb_id": 41,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Added new Inductors to the board",
+            "description": "Detailed rework analysis for TIT-0011N:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
             "pcb_board_number": "TIT-0011N",
             "image_path": "[\"this is picture TIT-0011N-R-001-PIC-1\",\"this is picture TIT-0011N-R-001-PIC-2\"]",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Major"
         },
         {
             "id": 37,
             "pcb_id": 42,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Replaced Burned 3.3V reg",
+            "description": "Detailed rework analysis for TIT-0012W:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "TIT-0012W",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Major"
         },
         {
             "id": 38,
             "pcb_id": 43,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Installed new Osc",
+            "description": "Detailed rework analysis for ATL-0001F:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "ATL-0001F",
             "image_path": "[\"this is picture ATL-0001F-R-001-PIC-1\",\"this is picture ATL-0001F-R-001-PIC-2\"]",
-            "rework_type": "Minor Rework"
+            "rework_type": "Major"
         },
         {
             "id": 39,
             "pcb_id": 44,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Added new Inductors to the board",
+            "description": "Detailed rework analysis for ATL-0002Q:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0002Q",
             "image_path": "[\"this is picture ATL-0002Q-R-001-PIC-1\",\"this is picture ATL-0002Q-R-001-PIC-2\",\"this is picture ATL-0002Q-R-001-PIC-3\"]",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Major"
         },
         {
             "id": 40,
             "pcb_id": 44,
-            "title": "Rework 2",
-            "description": "Standard rework operation.",
+            "title": "Removed the MDI termination resistors",
+            "description": "Detailed rework analysis for ATL-0002Q:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "ATL-0002Q",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Minor"
         },
         {
             "id": 41,
             "pcb_id": 44,
-            "title": "Rework 3",
-            "description": "Standard rework operation.",
+            "title": "Fixed Vbat to 3.3V rail",
+            "description": "Detailed rework analysis for ATL-0002Q:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "ATL-0002Q",
             "image_path": "[\"this is picture ATL-0002Q-R-001-PIC-1\",\"this is picture ATL-0002Q-R-001-PIC-2\"]",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Minor"
         },
         {
             "id": 42,
             "pcb_id": 45,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Swapped MID to copper",
+            "description": "Detailed rework analysis for ATL-0003Y:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
             "pcb_board_number": "ATL-0003Y",
             "image_path": "[\"this is picture ATL-0003Y-R-001-PIC-1\",\"this is picture ATL-0003Y-R-001-PIC-2\",\"this is picture ATL-0003Y-R-001-PIC-3\"]",
-            "rework_type": "Minor Rework"
+            "rework_type": "Resistor Swap"
         },
         {
             "id": 43,
             "pcb_id": 46,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Set board for GPIO control",
+            "description": "Detailed rework analysis for ATL-0004H:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
             "pcb_board_number": "ATL-0004H",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Minor"
         },
         {
             "id": 44,
             "pcb_id": 47,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Replaced Burned 3.3V reg",
+            "description": "Detailed rework analysis for ATL-0005S:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
             "pcb_board_number": "ATL-0005S",
             "image_path": "[\"this is picture ATL-0005S-R-001-PIC-1\",\"this is picture ATL-0005S-R-001-PIC-2\",\"this is picture ATL-0005S-R-001-PIC-3\"]",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Major"
         },
         {
             "id": 45,
             "pcb_id": 48,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Set clock to external clock",
+            "description": "Detailed rework analysis for ATL-0006B:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "ATL-0006B",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Resistor Swap"
         },
         {
             "id": 46,
             "pcb_id": 49,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Installed new Osc",
+            "description": "Detailed rework analysis for ATL-0007K:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "ATL-0007K",
             "image_path": "[\"this is picture ATL-0007K-R-001-PIC-1\",\"this is picture ATL-0007K-R-001-PIC-2\",\"this is picture ATL-0007K-R-001-PIC-3\"]",
-            "rework_type": "Minor Rework"
+            "rework_type": "Major"
         },
         {
             "id": 47,
             "pcb_id": 49,
-            "title": "Rework 2",
-            "description": "Standard rework operation.",
+            "title": "Installed new Osc",
+            "description": "Detailed rework analysis for ATL-0007K:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0007K",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Major"
         },
         {
             "id": 48,
             "pcb_id": 49,
-            "title": "Rework 3",
-            "description": "Standard rework operation.",
+            "title": "Installed new Osc",
+            "description": "Detailed rework analysis for ATL-0007K:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "ATL-0007K",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Major"
         },
         {
             "id": 49,
             "pcb_id": 50,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Replaced Burned 3.3V reg",
+            "description": "Detailed rework analysis for ATL-0008U:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
             "pcb_board_number": "ATL-0008U",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Major"
         },
         {
             "id": 50,
             "pcb_id": 51,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Added test wire",
+            "description": "Detailed rework analysis for ATL-0009D:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "ATL-0009D",
-            "rework_type": "Minor Rework"
+            "rework_type": "Minor"
         },
         {
             "id": 51,
             "pcb_id": 52,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Added new Inductors to the board",
+            "description": "Detailed rework analysis for ATL-0010E:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "ATL-0010E",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Major"
         },
         {
             "id": 52,
             "pcb_id": 53,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Removed the MDI termination resistors",
+            "description": "Detailed rework analysis for ATL-0011P:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0011P",
             "image_path": "this is picture ATL-0011P-R-001-PIC-1",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Minor"
         },
         {
             "id": 53,
             "pcb_id": 53,
-            "title": "Rework 2",
-            "description": "Standard rework operation.",
+            "title": "Removed the MDI termination resistors",
+            "description": "Detailed rework analysis for ATL-0011P:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0011P",
             "image_path": "[\"this is picture ATL-0011P-R-001-PIC-1\",\"this is picture ATL-0011P-R-001-PIC-2\",\"this is picture ATL-0011P-R-001-PIC-3\"]",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Minor"
         },
         {
             "id": 54,
             "pcb_id": 53,
-            "title": "Rework 3",
-            "description": "Standard rework operation.",
+            "title": "Silicon Swap to A0 TT",
+            "description": "Detailed rework analysis for ATL-0011P:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0011P",
-            "rework_type": "Minor Rework"
+            "rework_type": "Silicon Swap"
         },
         {
             "id": 55,
             "pcb_id": 54,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Added test wire",
+            "description": "Detailed rework analysis for ATL-0012X:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0012X",
             "image_path": "[\"this is picture ATL-0012X-R-001-PIC-1\",\"this is picture ATL-0012X-R-001-PIC-2\"]",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Minor"
         },
         {
             "id": 56,
             "pcb_id": 55,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Set clock to external clock",
+            "description": "Detailed rework analysis for ATL-0013G:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "ATL-0013G",
             "image_path": "this is picture ATL-0013G-R-001-PIC-1",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Resistor Swap"
         },
         {
             "id": 57,
             "pcb_id": 56,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Silicon Swap to A0 TT",
+            "description": "Detailed rework analysis for ATL-0014R:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "ATL-0014R",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Silicon Swap"
         },
         {
             "id": 58,
             "pcb_id": 57,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Added test wire",
+            "description": "Detailed rework analysis for ATL-0015A:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
             "pcb_board_number": "ATL-0015A",
             "image_path": "[\"this is picture ATL-0015A-R-001-PIC-1\",\"this is picture ATL-0015A-R-001-PIC-2\"]",
-            "rework_type": "Minor Rework"
+            "rework_type": "Minor"
         },
         {
             "id": 59,
             "pcb_id": 58,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Removed the MDI termination resistors",
+            "description": "Detailed rework analysis for ATL-0016J:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "ATL-0016J",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Minor"
         },
         {
             "id": 60,
             "pcb_id": 59,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Replaced Burned 3.3V reg",
+            "description": "Detailed rework analysis for ATL-0017T:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
             "pcb_board_number": "ATL-0017T",
             "image_path": "[\"this is picture ATL-0017T-R-001-PIC-1\",\"this is picture ATL-0017T-R-001-PIC-2\"]",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Major"
         },
         {
             "id": 61,
             "pcb_id": 59,
-            "title": "Rework 2",
-            "description": "Standard rework operation.",
+            "title": "Removed the MDI termination resistors",
+            "description": "Detailed rework analysis for ATL-0017T:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "ATL-0017T",
             "image_path": "[\"this is picture ATL-0017T-R-001-PIC-1\",\"this is picture ATL-0017T-R-001-PIC-2\",\"this is picture ATL-0017T-R-001-PIC-3\"]",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Minor"
         },
         {
             "id": 62,
             "pcb_id": 59,
-            "title": "Rework 3",
-            "description": "Standard rework operation.",
+            "title": "Set board for GPIO control",
+            "description": "Detailed rework analysis for ATL-0017T:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0017T",
             "image_path": "[\"this is picture ATL-0017T-R-001-PIC-1\",\"this is picture ATL-0017T-R-001-PIC-2\",\"this is picture ATL-0017T-R-001-PIC-3\"]",
-            "rework_type": "Minor Rework"
+            "rework_type": "Minor"
         },
         {
             "id": 63,
             "pcb_id": 60,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Set clock to external clock",
+            "description": "Detailed rework analysis for ATL-0018C:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 1,
             "owner_name": "Alice Smith",
             "pcb_board_number": "ATL-0018C",
             "image_path": "[\"this is picture ATL-0018C-R-001-PIC-1\",\"this is picture ATL-0018C-R-001-PIC-2\",\"this is picture ATL-0018C-R-001-PIC-3\"]",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Resistor Swap"
         },
         {
             "id": 64,
             "pcb_id": 61,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Installed new Osc",
+            "description": "Detailed rework analysis for ATL-0019M:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "ATL-0019M",
             "image_path": "[\"this is picture ATL-0019M-R-001-PIC-1\",\"this is picture ATL-0019M-R-001-PIC-2\",\"this is picture ATL-0019M-R-001-PIC-3\"]",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Major"
         },
         {
             "id": 65,
             "pcb_id": 62,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Silicon Swap to A0 TT",
+            "description": "Detailed rework analysis for ATL-0020N:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 4,
             "owner_name": "Elena Miller",
             "pcb_board_number": "ATL-0020N",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Silicon Swap"
         },
         {
             "id": 66,
             "pcb_id": 63,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Swapped MID to copper",
+            "description": "Detailed rework analysis for ATL-0021W:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "ATL-0021W",
             "image_path": "[\"this is picture ATL-0021W-R-001-PIC-1\",\"this is picture ATL-0021W-R-001-PIC-2\"]",
-            "rework_type": "Minor Rework"
+            "rework_type": "Resistor Swap"
         },
         {
             "id": 67,
             "pcb_id": 64,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Replaced Burned 3.3V reg",
+            "description": "Detailed rework analysis for ATL-0022F:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
             "pcb_board_number": "ATL-0022F",
             "image_path": "[\"this is picture ATL-0022F-R-001-PIC-1\",\"this is picture ATL-0022F-R-001-PIC-2\",\"this is picture ATL-0022F-R-001-PIC-3\"]",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Major"
         },
         {
             "id": 68,
             "pcb_id": 65,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Installed new Osc",
+            "description": "Detailed rework analysis for ATL-0023Q:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 7,
             "owner_name": "George Costanza",
             "pcb_board_number": "ATL-0023Q",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Major"
         },
         {
             "id": 69,
             "pcb_id": 65,
-            "title": "Rework 2",
-            "description": "Standard rework operation.",
+            "title": "Added new Inductors to the board",
+            "description": "Detailed rework analysis for ATL-0023Q:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0023Q",
             "image_path": "this is picture ATL-0023Q-R-001-PIC-1",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Major"
         },
         {
             "id": 70,
             "pcb_id": 65,
-            "title": "Rework 3",
-            "description": "Standard rework operation.",
+            "title": "Set board for GPIO control",
+            "description": "Detailed rework analysis for ATL-0023Q:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "ATL-0023Q",
-            "rework_type": "Minor Rework"
+            "rework_type": "Minor"
         },
         {
             "id": 71,
             "pcb_id": 66,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Swapped MID to copper",
+            "description": "Detailed rework analysis for ATL-0024Y:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 5,
             "owner_name": "Ethan Hunt",
             "pcb_board_number": "ATL-0024Y",
             "image_path": "[\"this is picture ATL-0024Y-R-001-PIC-1\",\"this is picture ATL-0024Y-R-001-PIC-2\"]",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Resistor Swap"
         },
         {
             "id": 72,
             "pcb_id": 66,
-            "title": "Rework 2",
-            "description": "Standard rework operation.",
+            "title": "Fixed Vbat to 3.3V rail",
+            "description": "Detailed rework analysis for ATL-0024Y:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
             "pcb_board_number": "ATL-0024Y",
-            "rework_type": "Debug / Trace Cut"
+            "rework_type": "Minor"
         },
         {
             "id": 73,
             "pcb_id": 66,
-            "title": "Rework 3",
-            "description": "Standard rework operation.",
+            "title": "Installed new Osc",
+            "description": "Detailed rework analysis for ATL-0024Y:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 2,
             "owner_name": "Bob Jones",
             "pcb_board_number": "ATL-0024Y",
-            "rework_type": "Major Component Swap"
+            "rework_type": "Major"
         },
         {
             "id": 74,
             "pcb_id": 67,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Set clock to external clock",
+            "description": "Detailed rework analysis for ATL-0025H:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 6,
             "owner_name": "Fiona Gallagher",
             "pcb_board_number": "ATL-0025H",
-            "rework_type": "Minor Rework"
+            "rework_type": "Resistor Swap"
         },
         {
             "id": 75,
             "pcb_id": 68,
-            "title": "Rework 1",
-            "description": "Standard rework operation.",
+            "title": "Swapped MID to copper",
+            "description": "Detailed rework analysis for ATL-0026S:\n\nThis operation involved extensive root-cause debugging across the downstream signal path. All surrounding passive components have been validated to comply with the base specification, and power integrity tracks tested clean.\n\nAction Taken:\n- Applied thermal stress profiling.\n- Re-soldered compromised pads.\n- Cleaned with flux remover.\n\nAdditional notes: Please verify the I2C communications rail before deploying this board into the automated test chamber sequence.",
             "timestamp": "2026-03-28T20:26:43.497Z",
             "owner_id": 3,
             "owner_name": "Charlie Brown",
             "pcb_board_number": "ATL-0026S",
             "image_path": "[\"this is picture ATL-0026S-R-001-PIC-1\",\"this is picture ATL-0026S-R-001-PIC-2\"]",
-            "rework_type": "Silicon Replacement"
+            "rework_type": "Resistor Swap"
         }
     ],
     "demoTags": [
