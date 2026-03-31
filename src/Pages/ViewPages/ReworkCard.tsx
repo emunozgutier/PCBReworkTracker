@@ -24,6 +24,7 @@ export function ReworkCard({ rework }: ReworkCardProps) {
                 rework={rework} 
                 isExpanded={isExpanded} 
                 onToggle={handleToggle} 
+                showFullTitle={true}
             />
             {isExpanded && <ReworkCardBody rework={rework} />}
         </div>

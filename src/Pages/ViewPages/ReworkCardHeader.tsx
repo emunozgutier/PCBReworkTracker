@@ -5,9 +5,10 @@ interface ReworkCardHeaderProps {
     rework: any;
     isExpanded: boolean;
     onToggle: () => void;
+    showFullTitle?: boolean;
 }
 
-export function ReworkCardHeader({ rework, isExpanded, onToggle }: ReworkCardHeaderProps) {
+export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle = false }: ReworkCardHeaderProps) {
     let imagePaths: string[] = [];
     if (rework.image_path) {
         try {
@@ -17,9 +18,9 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle }: ReworkCardHea
         }
     }
 
-    const shortName = rework.rework_name
+    const shortName = (rework.rework_name && !showFullTitle)
         ? rework.rework_name.replace(new RegExp(`^${rework.board_number || rework.pcb_board_number || '.*'}-`), '')
-        : `R-${String(rework.id).padStart(3, '0')}`;
+        : (rework.rework_name || (showFullTitle ? `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R-${String(rework.id).padStart(3, '0')}` : `R-${String(rework.id).padStart(3, '0')}`));
 
     return (
         <div 
