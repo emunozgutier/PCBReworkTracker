@@ -1,3 +1,6 @@
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
 import './App.css'
 import { NetworkQRCode } from './components/NetworkQRCode'
 import { TabBar } from './components/TabBar'
@@ -107,3 +110,14 @@ function App() {
 }
 
 export default App
+
+if (typeof document !== 'undefined') {
+  const rootElement = document.getElementById('root');
+  if (rootElement) {
+    createRoot(rootElement).render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    )
+  }
+}
