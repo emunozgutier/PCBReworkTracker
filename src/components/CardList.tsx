@@ -161,8 +161,8 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
 
     return (
         <div className="card-list-container">
-            <div className="list-header" style={{ marginBottom: (type === 'pcbs' || type === 'tags') ? '12px' : '24px' }}>
-                <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+            <div className="list-header" style={{ marginBottom: (type === 'pcbs' || type === 'tags') ? '12px' : '24px', flexWrap: 'wrap', gap: '16px' }}>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <h2 style={{ margin: 0 }}>{title}</h2>
                     {(type === 'pcbs' || type === 'tags') && (
                         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -179,7 +179,8 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                                     backgroundColor: 'rgba(255, 255, 255, 0.05)',
                                     color: 'var(--text)',
                                     fontSize: '0.85rem',
-                                    width: '200px',
+                                    width: '100%',
+                                    maxWidth: '220px',
                                     outline: 'none',
                                     transition: 'all 0.2s ease'
                                 }}

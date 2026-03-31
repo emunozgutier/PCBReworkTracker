@@ -17,17 +17,21 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle }: ReworkCardHea
         }
     }
 
+    const shortName = rework.rework_name
+        ? rework.rework_name.replace(new RegExp(`^${rework.board_number || rework.pcb_board_number || '.*'}-`), '')
+        : `R-${String(rework.id).padStart(3, '0')}`;
+
     return (
         <div 
             className="card-header-main" 
             onClick={onToggle}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', gap: '12px', width: '100%' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', gap: '12px', minWidth: 0, width: '100%' }}
         >
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
-                <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--accent)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0, flex: 1 }}>
+                <span className="board-num" style={{ display: 'block', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--accent)', width: '100%' }}>
                     {rework.title 
-                        ? `${rework.rework_name || `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R-${String(rework.id).padStart(3, '0')}`}: ${rework.title}`
-                        : (rework.rework_name || `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R-${String(rework.id).padStart(3, '0')}`)}
+                        ? `${shortName}: ${rework.title}`
+                        : shortName}
                 </span>
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
