@@ -4,6 +4,7 @@ import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 import { API_BASE } from '../../store/database/apiBridge';
 import { usePcbStore } from '../../store/storePcb';
 import { FormGroup } from '../../components/forms/FormGroup';
+import { RemovePcb } from '../RemovePage/RemovePcb';
 
 interface EditPCBProps {
     id: string | number;
@@ -28,6 +29,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     const [loading, setLoading] = useState(true);
     const { updatePcb, deletePcb } = usePcbStore();
     const [saving, setSaving] = useState(false);
+    const [isRemoveOpen, setIsRemoveOpen] = useState(false);
 
     const selectedProjData = projects.find(p => p.id.toString() === selectedProject);
 
@@ -139,8 +141,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
         setSaving(false);
     };
 
-    const handleDelete = async () => {
-        if (!window.confirm('Are you sure you want to delete this PCB?')) return;
+    const handleConfirmedDelete = async () => {
         setSaving(true);
         const success = await deletePcb(id);
         if (success) onSuccess();
@@ -156,7 +157,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                     <ArrowLeft size={20} />
                 </button>
                 <h2>Edit PCB Board</h2>
-                <button onClick={handleDelete} className="delete-icon-button" title="Delete PCB">
+                <button type="button" onClick={() => setIsRemoveOpen(true)} className="delete-icon-button" title="Delete PCB">
                     <Trash2 size={20} color="#ef4444" />
                 </button>
             </header>
@@ -260,6 +261,13 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                     <span>{saving ? 'Saving...' : 'Update PCB Board'}</span>
                 </button>
             </form>
+
+            <RemovePcb 
+                isOpen={isRemoveOpen}
+                onClose={() => setIsRemoveOpen(false)}
+                onConfirm={handleConfirmedDelete}
+                pcb={{ board_number: `${selectedProjectKey}-${boardNumber}` }}
+            />
         </div>
     );
 }
