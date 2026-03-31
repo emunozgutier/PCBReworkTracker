@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { API_BASE } from '../../store/database/apiBridge';
+import { API_BASE, apiFetch } from '../../store/database/apiBridge';
 import { PcbCardHeader } from './PcbCardHeader';
 import { useStore } from '../../store/useStore';
 import { usePcbStore } from '../../store/storePcb';
@@ -16,7 +16,7 @@ export function TagCardBody({ tag }: TagCardBodyProps) {
     const { setSelectedTags, resetFilters } = usePcbStore();
 
     useEffect(() => {
-        fetch(`${API_BASE}/tags/${tag.id}/pcbs`)
+        apiFetch(`${API_BASE}/tags/${tag.id}/pcbs`)
             .then(res => res.json())
             .then(data => {
                 setTaggedPcbs(data);
