@@ -164,7 +164,7 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
                     <select id="rework_type" value={reworkType} onChange={(e) => setReworkType(e.target.value)}>
                         <option value="Minor">Minor</option>
                         <option value="Major">Major</option>
-                        <option value="Resistor Option Swap">Resistor Option Swap</option>
+                        <option value="Resistor Swap">Resistor Swap</option>
                         <option value="Silicon Swap">Silicon Swap</option>
                     </select>
                 </div>

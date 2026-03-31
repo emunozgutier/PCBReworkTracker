@@ -19,13 +19,14 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const { reworks, fetchReworks, setSelectedBoards } = useReworkStore();
     const { tags, fetchTags } = useTagStore();
     const { fetchPcbs } = usePcbStore();
-    const { addItem, setActiveTab, setQrModalBoard, editItem } = useStore();
+    const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile } = useStore();
 
     const [attachedTags, setAttachedTags] = useState<any[]>([]);
     const [isAssigningTag, setIsAssigningTag] = useState(false);
     const [tagToRemove, setTagToRemove] = useState<any>(null);
     const [activeTabIndex, setActiveTabIndex] = useState(0);
     const tabsList = ['Rework', 'Public Tags', 'Personal Tags'];
+    const mobileTabsList = ['Rework', 'Public #', 'Personal #'];
     const activeTabName = tabsList[activeTabIndex];
     
     const [isBlinking, setIsBlinking] = useState(false);
@@ -98,7 +99,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
 
             <div style={{ marginTop: '20px' }}>
                 <FormTabs
-                    tabs={tabsList}
+                    tabs={isMobile ? mobileTabsList : tabsList}
                     activeTab={activeTabIndex}
                     onTabChange={(t) => { setActiveTabIndex(t); setIsAssigningTag(false); }}
                 />

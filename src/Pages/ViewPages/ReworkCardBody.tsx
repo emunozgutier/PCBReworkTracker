@@ -67,11 +67,11 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                                 padding: '4px 12px', 
                                 background: rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.1)' 
                                           : rework.rework_type === 'Silicon Swap' ? 'rgba(168, 85, 247, 0.1)' 
-                                          : rework.rework_type === 'Resistor Option Swap' ? 'rgba(249, 115, 22, 0.1)'
+                                : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' ? 'rgba(249, 115, 22, 0.1)'
                                           : 'rgba(59, 130, 246, 0.1)', 
                                 color: rework.rework_type === 'Major' ? '#ef4444' 
                                      : rework.rework_type === 'Silicon Swap' ? '#a855f7' 
-                                     : rework.rework_type === 'Resistor Option Swap' ? '#f97316'
+                                     : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' ? '#f97316'
                                      : '#3b82f6', 
                                 borderRadius: '16px', 
                                 fontSize: '0.75rem', 
@@ -79,7 +79,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                                 border: `1px solid ${
                                     rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.2)' 
                                   : rework.rework_type === 'Silicon Swap' ? 'rgba(168, 85, 247, 0.2)' 
-                                  : rework.rework_type === 'Resistor Option Swap' ? 'rgba(249, 115, 22, 0.2)'
+                                  : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' ? 'rgba(249, 115, 22, 0.2)'
                                   : 'rgba(59, 130, 246, 0.2)'
                                 }`
                             }}>
