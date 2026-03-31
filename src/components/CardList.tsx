@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Plus, Edit2 } from 'lucide-react';
-import { ProjectCard } from '../cards/ProjectCard';
-import { PcbCard } from '../cards/PcbCard';
-import { ReworkCard } from '../cards/ReworkCard';
-import { TagCard } from '../cards/TagCard';
+import { ProjectCard } from '../ViewPages/ProjectCard';
+import { PcbCard } from '../ViewPages/PcbCard';
+import { ReworkCard } from '../ViewPages/ReworkCard';
+import { TagCard } from '../ViewPages/TagCard';
 import { PcbFilter } from './PcbFilter';
 import { TagFilter } from './TagFilter';
 
