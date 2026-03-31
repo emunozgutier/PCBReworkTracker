@@ -9,6 +9,7 @@ interface ReworkCardBodyProps {
 
 export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
     const [showGallery, setShowGallery] = useState(false);
+    const [showDescriptionModal, setShowDescriptionModal] = useState(false);
     const { editItem } = useStore();
 
     let imagePaths: string[] = [];
@@ -87,32 +88,74 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                             </div>
                         </div>
 
-                        {(!rework.description || !rework.description.trim()) && (
-                            <>
-                                <div style={{ width: '1px', background: 'var(--border)', alignSelf: 'stretch', opacity: 0.6 }}></div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center' }}>
-                                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Description</span>
-                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>None</span>
-                                </div>
-                            </>
-                        )}
-                    </div>
+                        <div style={{ width: '1px', background: 'var(--border)', alignSelf: 'stretch', opacity: 0.6 }}></div>
 
-                    {rework.description && rework.description.trim() ? (
-                        <>
-                            <div style={{ width: '100%', height: '1px', background: 'var(--border)', opacity: 0.6 }}></div>
-
-                            <div>
-                                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Description</span>
-                                <p style={{ margin: '8px 0 0 0', fontSize: '0.9rem', color: 'var(--text)', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0, flex: 1 }}>
+                            <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Description</span>
+                            {rework.description && rework.description.trim() ? (
+                                <p 
+                                    style={{ 
+                                        margin: 0, 
+                                        fontSize: '0.85rem', 
+                                        color: 'var(--text)', 
+                                        whiteSpace: 'nowrap', 
+                                        overflow: 'hidden', 
+                                        textOverflow: 'ellipsis',
+                                        cursor: 'pointer',
+                                        transition: 'color 0.2s',
+                                        maxWidth: '100%'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
+                                    onClick={(e) => { e.stopPropagation(); setShowDescriptionModal(true); }}
+                                    title="Click to view full description"
+                                >
                                     {rework.description}
                                 </p>
-                            </div>
-                        </>
-                    ) : null}
-
+                            ) : (
+                                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>None</span>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            {showDescriptionModal && rework.description && (
+                <div style={{
+                    position: 'fixed', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '24px'
+                }} onClick={() => setShowDescriptionModal(false)}>
+                    <div style={{
+                        backgroundColor: '#1e293b',
+                        border: '1px solid var(--border)',
+                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.75)',
+                        borderRadius: '12px',
+                        padding: '24px',
+                        maxWidth: '500px',
+                        width: '100%',
+                        position: 'relative',
+                        cursor: 'default'
+                    }} onClick={(e) => e.stopPropagation()}>
+                        <button
+                            onClick={() => setShowDescriptionModal(false)}
+                            style={{
+                                position: 'absolute', top: '16px', right: '16px',
+                                background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-muted)',
+                                cursor: 'pointer', padding: '6px', borderRadius: '50%',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                        <h3 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', color: 'var(--text)', fontWeight: 600 }}>Rework Description</h3>
+                        <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text)', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+                            {rework.description}
+                        </p>
+                    </div>
+                </div>
+            )}
             {showGallery && imagePaths.length > 0 && (
                 <PictureCard 
                     images={imagePaths} 
