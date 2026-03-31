@@ -51,6 +51,7 @@ body {
   font-weight: 800;
   background: linear-gradient(to right, #818cf8, #c084fc);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
 }
@@ -105,9 +106,11 @@ body {
 }
 
 @media (max-width: 768px) {
-  .app-container { padding: 16px; }
+  .app-container { padding: 12px; }
   .tab-label { display: none; }
-  .tab-item { padding: 12px; }
+  .tab-item { padding: 8px; flex: 1 1 auto; justify-content: center; }
+  .item-card { padding: 12px; width: 100%; max-width: 100%; box-sizing: border-box; overflow: hidden; }
+  .card-header-main { padding: 10px 12px !important; }
   .tab-bar { 
     position: sticky; 
     top: 10px; 
@@ -202,7 +205,9 @@ body {
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-  gap: 20px;
+  gap: 16px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .cards-grid.single-column {

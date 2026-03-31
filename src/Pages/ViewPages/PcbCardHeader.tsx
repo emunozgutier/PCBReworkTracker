@@ -19,7 +19,7 @@ export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions }: PcbCar
                 <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap' }}><BoardName name={pcb.board_number} /></span>
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', fontSize: '0.85rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.03)', padding: '4px 10px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                    <span style={{ whiteSpace: 'nowrap' }}>{pcb.product || 'No Rev'}</span>
+                    <span style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{pcb.product || 'No Rev'}</span>
                     {pcb.bom && <><span style={{ opacity: 0.5 }}>•</span><span style={{ whiteSpace: 'nowrap' }}>{pcb.bom}</span></>}
                     <span style={{ opacity: 0.5 }}>•</span>
                     <span style={{ whiteSpace: 'nowrap' }}>{pcb.owner || 'Unassigned'}</span>
