@@ -7,7 +7,17 @@ export const API_BASE = `http://${window.location.hostname}:5002/api`;
 let internalProjects = [...demoData.demoProjects] as any[];
 let internalPcbs = [...demoData.demoPcbs] as any[];
 let internalOwners = [...demoData.demoOwners] as any[];
-let internalReworks = [...demoData.demoReworks] as any[];
+const reworkCounts: Record<number, number> = {};
+let internalReworks = demoData.demoReworks.map((r: any) => {
+    const pcb = demoData.demoPcbs.find(p => p.id === r.pcb_id);
+    const boardName = pcb ? pcb.board_number : r.pcb_board_number || 'UNKNOWN';
+    if (!reworkCounts[r.pcb_id]) reworkCounts[r.pcb_id] = 0;
+    reworkCounts[r.pcb_id]++;
+    return {
+        ...r,
+        rework_name: r.rework_name || `${boardName}-R-${String(reworkCounts[r.pcb_id]).padStart(3, '0')}`
+    };
+}) as any[];
 let internalTags = [...demoData.demoTags] as any[];
 let internalPcbTags = { ...demoData.demoPcbTags } as any;
 
@@ -148,11 +158,37 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
     if (localPath.startsWith('/reworks')) {
         if (method === 'GET') return createResponse(internalReworks);
         if (method === 'POST') {
+            const pcbId = parseInt(body.pcb_id);
+            const pcbObj = internalPcbs.find(p => p.id === pcbId);
+            const boardName = pcbObj ? pcbObj.board_number : 'UNKNOWN';
+
+            // Find existing reworks for this PCB
+            const pcbReworks = internalReworks.filter(r => r.pcb_id === pcbId || r.pcb_id === String(pcbId));
+            
+            let sequence = 1;
+            if (pcbReworks.length > 0) {
+                // By default, just increment from the amount of reworks if they lack a name
+                sequence = pcbReworks.length + 1;
+                
+                // Try to extract from the last rework if it has a name
+                const sortedReworks = [...pcbReworks].sort((a, b) => b.id - a.id);
+                const lastRework = sortedReworks[0];
+                if (lastRework && lastRework.rework_name) {
+                    const parts = lastRework.rework_name.split('-R-');
+                    if (parts.length === 2 && !isNaN(parseInt(parts[1]))) {
+                        sequence = parseInt(parts[1]) + 1;
+                    }
+                }
+            }
+            
+            const reworkName = `${boardName}-R-${String(sequence).padStart(3, '0')}`;
+
             const ownerObj = internalOwners.find(o => o.id === parseInt(body.owner_id));
             const newRework = { 
                 id: Date.now(), 
                 timestamp: new Date().toISOString(), 
                 ...body,
+                rework_name: reworkName,
                 owner_name: ownerObj ? ownerObj.name : 'Unknown'
             };
             
@@ -177,6 +213,22 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
     
     if (localPath.startsWith('/tags')) {
         if (method === 'GET') {
+            const parts = localPath.split('/');
+            // Check for /tags/:id/pcbs
+            if (parts.length === 4 && parts[3] === 'pcbs') {
+                const tagId = parseInt(parts[2]);
+                const matchingPcbIds = Object.keys(internalPcbTags)
+                    .filter(pcbIdStr => internalPcbTags[parseInt(pcbIdStr)].includes(tagId))
+                    .map(Number);
+                
+                const returnPcbs = internalPcbs.filter(p => matchingPcbIds.includes(p.id))
+                    .map(p => {
+                        const project = internalProjects.find(proj => proj.id === p.project_id);
+                        return { ...p, project_name: project?.name, project_key: project?.project_key };
+                    });
+                return createResponse(returnPcbs);
+            }
+
             const tagsWithOwners = internalTags.map(tag => {
                 const owner = internalOwners.find(o => o.id === tag.owner_id);
                 return owner ? { ...tag, owner_name: owner.name, owner_username: owner.username } : tag;

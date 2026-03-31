@@ -1646,28 +1646,32 @@
             "name": "Team Alice",
             "color": "#ec4899",
             "owner_id": 1,
-            "pcb_count": 16
+            "pcb_count": 16,
+            "type": "personal"
         },
         {
             "id": 2,
             "name": "Team Bob",
             "color": "#14b8a6",
             "owner_id": 2,
-            "pcb_count": 52
+            "pcb_count": 52,
+            "type": "personal"
         },
         {
             "id": 3,
             "name": "Damaged",
             "color": "#ef4444",
             "owner_id": 1,
-            "pcb_count": 5
+            "pcb_count": 5,
+            "type": "public"
         },
         {
             "id": 4,
             "name": "Silicon Not Installed",
             "color": "#f59e0b",
             "owner_id": 2,
-            "pcb_count": 13
+            "pcb_count": 13,
+            "type": "public"
         }
     ],
     "demoPcbTags": {

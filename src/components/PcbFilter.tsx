@@ -199,8 +199,7 @@ export function PcbFilter() {
                     title="Public Tags" 
                     value={selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'public')} 
                     onChange={(newPublic) => {
-                        const personalTagsSelected = selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'personal');
-                        setSelectedTags([...personalTagsSelected, ...newPublic]);
+                        setSelectedTags(newPublic.length > 0 ? [newPublic[newPublic.length - 1]] : []);
                     }}
                 >
                     {tags.filter(t => t.type === 'public').map(tag => {
@@ -214,8 +213,7 @@ export function PcbFilter() {
                     title="Personal Tags" 
                     value={selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'personal')} 
                     onChange={(newPersonal) => {
-                        const publicTagsSelected = selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'public');
-                        setSelectedTags([...publicTagsSelected, ...newPersonal]);
+                        setSelectedTags(newPersonal.length > 0 ? [newPersonal[newPersonal.length - 1]] : []);
                     }}
                 >
                     {tags.filter(t => t.type === 'personal').map(tag => {
