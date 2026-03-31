@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
-import { API_BASE } from '../../apiBridge';
+import { API_BASE } from '../../store/database/apiBridge';
 import { useOwnerStore } from '../../store/storeOwner';
 
 interface EditUserProps {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { API_BASE } from '../apiBridge';
+import { API_BASE } from '../store/database/apiBridge';
 
 interface DashboardStats {
     projects: number;

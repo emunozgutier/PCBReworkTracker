@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { API_BASE } from '../apiBridge';
-import { apiFetch } from '../apiBridge';
+import { API_BASE } from '../store/database/apiBridge';
+import { apiFetch } from '../store/database/apiBridge';
 
 export interface Pcb {
     id: number;

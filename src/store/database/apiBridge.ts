@@ -1,4 +1,4 @@
-import { useDemoStore } from './store/useDemoStore';
+import { useDemoStore } from '../useDemoStore';
 import demoData from './demoData.json';
 
 export const API_BASE = `http://${window.location.hostname}:5002/api`;

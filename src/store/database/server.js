@@ -16,7 +16,7 @@ const port = 5002;
 // Configure Multer Storage
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const dir = path.join(__dirname, 'pictures');
+        const dir = path.join(__dirname, '../../../pictures');
         if (!fs.existsSync(dir)){
             fs.mkdirSync(dir);
         }
@@ -38,7 +38,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/api/pictures', express.static(path.join(__dirname, 'pictures')));
+app.use('/api/pictures', express.static(path.join(__dirname, '../../../pictures')));
 
 // Initialize Database
 initDb();
@@ -292,8 +292,8 @@ app.post('/api/reworks', upload.any(), (req, res) => {
                 req.files.slice(0, 3).forEach((file, index) => {
                     const ext = path.extname(file.originalname) || '.jpg';
                     const newFileName = `${reworkName}-PIC-${index + 1}${ext}`;
-                    const oldPath = path.join(__dirname, 'pictures', file.filename);
-                    const newPath = path.join(__dirname, 'pictures', newFileName);
+                    const oldPath = path.join(__dirname, '../../../pictures', file.filename);
+                    const newPath = path.join(__dirname, '../../../pictures', newFileName);
                     
                     try {
                         if (fs.existsSync(oldPath)) {
