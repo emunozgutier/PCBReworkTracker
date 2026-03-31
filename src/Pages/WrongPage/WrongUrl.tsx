@@ -1,4 +1,4 @@
-import { useStore } from '../store/useStore';
+import { useStore } from '../../store/useStore';
 
 export function WrongUrl() {
     const { setActiveTab } = useStore();

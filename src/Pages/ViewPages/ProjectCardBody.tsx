@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { EditButton, ViewButton } from '../forms/ActionButtons';
-import { usePcbStore } from '../store/storePcb';
-import { useStore } from '../store/useStore';
+import { EditButton, ViewButton } from '../../forms/ActionButtons';
+import { usePcbStore } from '../../store/storePcb';
+import { useStore } from '../../store/useStore';
 import { PcbCardHeader } from './PcbCardHeader';
 import { ProjectCardSummary } from './ProjectCardSummary';
 

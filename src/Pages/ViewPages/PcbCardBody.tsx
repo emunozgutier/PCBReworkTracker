@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
-import { useReworkStore } from '../store/storeRework';
-import { useTagStore } from '../store/storeTag';
-import { useStore } from '../store/useStore';
-import { usePcbStore } from '../store/storePcb';
-import { API_BASE } from '../apiBridge';
-import { FormTabs } from '../forms/FormTabs';
+import { useReworkStore } from '../../store/storeRework';
+import { useTagStore } from '../../store/storeTag';
+import { useStore } from '../../store/useStore';
+import { usePcbStore } from '../../store/storePcb';
+import { API_BASE } from '../../apiBridge';
+import { FormTabs } from '../../forms/FormTabs';
 import { Tag as TagIcon, X } from 'lucide-react';
-import { formatTagName } from '../store/storeTag';
-import { EditButton, ViewButton, AddButton, QrButton } from '../forms/ActionButtons';
+import { formatTagName } from '../../store/storeTag';
+import { EditButton, ViewButton, AddButton, QrButton } from '../../forms/ActionButtons';
 import { ReworkCardHeader } from './ReworkCardHeader';
 
 interface PcbCardBodyProps {

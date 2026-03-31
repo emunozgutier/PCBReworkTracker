@@ -1,6 +1,6 @@
 import React from 'react';
-import { useStore } from '../store/useStore';
-import { BoardName } from '../components/BoardName';
+import { useStore } from '../../store/useStore';
+import { BoardName } from '../../components/BoardName';
 
 export function FixedUrl() {
     const { mistypedUrl, correctedUrl, setExpandedPcb, setActiveTab } = useStore();

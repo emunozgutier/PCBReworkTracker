@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2, HelpCircle } from 'lucide-react';
-import { FormTabs } from '../forms/FormTabs';
-import { MultipleInputs } from '../forms/MultipleInputs';
-import { API_BASE } from '../apiBridge';
-import { useProjectStore } from '../store/storeProject';
-import { usePcbStore } from '../store/storePcb';
+import { FormTabs } from '../../forms/FormTabs';
+import { MultipleInputs } from '../../forms/MultipleInputs';
+import { API_BASE } from '../../apiBridge';
+import { useProjectStore } from '../../store/storeProject';
+import { usePcbStore } from '../../store/storePcb';
 
 interface EditProjectProps {
     id: string | number;

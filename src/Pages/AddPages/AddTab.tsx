@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 
-import { useTagStore } from '../store/storeTag';
-import { useOwnerStore } from '../store/storeOwner';
+import { useTagStore } from '../../store/storeTag';
+import { useOwnerStore } from '../../store/storeOwner';
 
 interface AddTabProps {
     onBack: () => void;

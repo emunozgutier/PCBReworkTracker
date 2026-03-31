@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
-import { API_BASE } from '../apiBridge';
-import { usePcbStore } from '../store/storePcb';
-import { FormGroup } from '../forms/FormGroup';
+import { API_BASE } from '../../apiBridge';
+import { usePcbStore } from '../../store/storePcb';
+import { FormGroup } from '../../forms/FormGroup';
 
 interface EditPCBProps {
     id: string | number;

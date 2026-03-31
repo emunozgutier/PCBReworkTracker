@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 
-import { API_BASE } from '../apiBridge';
-import { useReworkStore } from '../store/storeRework';
-import { useStore } from '../store/useStore';
-import { useOwnerStore } from '../store/storeOwner';
-import { FormGroup } from '../forms/FormGroup';
+import { API_BASE } from '../../apiBridge';
+import { useReworkStore } from '../../store/storeRework';
+import { useStore } from '../../store/useStore';
+import { useOwnerStore } from '../../store/storeOwner';
+import { FormGroup } from '../../forms/FormGroup';
 
 interface AddReworkProps {
     onBack: () => void;

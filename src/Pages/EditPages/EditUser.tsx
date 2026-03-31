@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
-import { API_BASE } from '../apiBridge';
-import { useOwnerStore } from '../store/storeOwner';
+import { API_BASE } from '../../apiBridge';
+import { useOwnerStore } from '../../store/storeOwner';
 
 interface EditUserProps {
     id: string | number;
