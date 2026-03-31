@@ -37,7 +37,7 @@ export function TagFilter() {
             width: '100%',
             paddingBottom: '12px'
         }}>
-            <PcbFilterGroup title="Tag Properties" color="#10b981">
+            <PcbFilterGroup title="Tag Properties" color="#8b5cf6">
                 <PcbFilterElement title="Type" value={selectedTagTypes} onChange={setSelectedTagTypes}>
                     {['public', 'personal'].map(type => {
                         const count = tags.filter((tag: any) => tag.type === type && matchTag(tag, 'type')).length;
