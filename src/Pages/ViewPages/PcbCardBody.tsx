@@ -5,6 +5,7 @@ import { useStore } from '../../store/useStore';
 import { usePcbStore } from '../../store/storePcb';
 import { API_BASE } from '../../apiBridge';
 import { FormTabs } from '../../forms/FormTabs';
+import { RemoveTag } from '../RemovePage/RemoveTag';
 import { Tag as TagIcon, X } from 'lucide-react';
 import { formatTagName } from '../../store/storeTag';
 import { EditButton, ViewButton, AddButton, QrButton } from '../../forms/ActionButtons';
@@ -22,6 +23,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
 
     const [attachedTags, setAttachedTags] = useState<any[]>([]);
     const [isAssigningTag, setIsAssigningTag] = useState(false);
+    const [tagToRemove, setTagToRemove] = useState<any>(null);
     const [activeTabIndex, setActiveTabIndex] = useState(0);
     const tabsList = ['Rework', 'Public Tags', 'Personal Tags'];
     const activeTabName = tabsList[activeTabIndex];
@@ -62,20 +64,19 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
 
     const handleRemoveTagDirect = async (tag: any) => {
         if (tag.type === 'personal') return; 
-        
-        const confirmation = window.prompt(`Type "${tag.name}-${pcb.board_number}" to remove this tag from the board.`);
-        if (confirmation !== `${tag.name}-${pcb.board_number}`) {
-            if (confirmation !== null) alert('Incorrect confirmation text. Tag removal cancelled.');
-            return;
-        }
+        setTagToRemove(tag);
+    };
 
+    const confirmRemoveTag = async () => {
+        if (!tagToRemove) return;
         try {
-            await fetch(`${API_BASE}/pcbs/${pcb.id}/tags/${tag.id}`, {
+            await fetch(`${API_BASE}/pcbs/${pcb.id}/tags/${tagToRemove.id}`, {
                 method: 'DELETE'
             });
             await fetchAttachedTags();
             fetchPcbs();
         } catch (err) { }
+        setTagToRemove(null);
     };
 
     const pcbReworks = reworks.filter((r: any) => r.pcb_id === pcb.id);
@@ -233,6 +234,14 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                     </>
                 )}
             </div>
+
+            <RemoveTag 
+                isOpen={!!tagToRemove} 
+                onClose={() => setTagToRemove(null)} 
+                onConfirm={confirmRemoveTag} 
+                tag={tagToRemove} 
+                pcb={pcb} 
+            />
         </div>
     );
 }
