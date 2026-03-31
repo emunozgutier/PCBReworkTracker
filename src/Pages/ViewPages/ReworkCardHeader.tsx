@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useStore } from '../../store/useStore';
 
 interface ReworkCardHeaderProps {
     rework: any;
@@ -8,6 +9,8 @@ interface ReworkCardHeaderProps {
 }
 
 export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle = false }: ReworkCardHeaderProps) {
+    const { isMobile } = useStore();
+
     const shortName = (rework.rework_name && !showFullTitle)
         ? rework.rework_name.replace(new RegExp(`^${rework.board_number || rework.pcb_board_number || '.*'}-`), '')
         : (rework.rework_name || (showFullTitle ? `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R-${String(rework.id).padStart(3, '0')}` : `R-${String(rework.id).padStart(3, '0')}`));
@@ -18,7 +21,7 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
             onClick={onToggle}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', gap: '12px', minWidth: 0, width: '100%' }}
         >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0, flex: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0, flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, width: '100%' }}>
                     <span className="board-num" style={{ flexShrink: 0, margin: 0, whiteSpace: 'nowrap', color: 'var(--accent)', fontWeight: 'bold' }}>
                         {shortName}
@@ -35,7 +38,7 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
                     }}>
                         {rework.rework_type === 'Resistor Option Swap' ? 'Resistor Swap' : (rework.rework_type || 'Minor')}
                     </span>
-                    {rework.title && (
+                    {rework.title && !isMobile && (
                         <span style={{ 
                             flexShrink: 1, 
                             minWidth: 0,
@@ -48,6 +51,19 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
                         </span>
                     )}
                 </div>
+                {rework.title && isMobile && (
+                    <div style={{ 
+                        color: 'var(--text-muted)', 
+                        fontSize: '0.85rem', 
+                        whiteSpace: 'nowrap', 
+                        overflow: 'hidden', 
+                        textOverflow: 'ellipsis', 
+                        width: '100%',
+                        textAlign: 'left'
+                    }}>
+                        {rework.title}
+                    </div>
+                )}
             </div>
 
             <div className="expand-indicator" style={{ display: 'flex', position: 'static', transform: 'none', flexShrink: 0 }}>
