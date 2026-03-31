@@ -99,11 +99,16 @@ export function PcbFilter() {
                         const activeProjects = selectedProjects.length > 0 ? projects.filter(p => selectedProjects.includes(p.id.toString())) : projects;
                         const allRevs = new Set<string>();
                         activeProjects.forEach((p: any) => { if (p.revisions) p.revisions.forEach((r: string) => allRevs.add(r)); });
+                        
+                        // Dynamically inject implicit 'No part yet' placeholder if any board matches
+                        if (pcbs.some(pcb => pcb.product && pcb.product.includes('No part yet'))) {
+                            allRevs.add('No part yet');
+                        }
 
                         return Array.from(allRevs).sort().map(rev => {
                             const count = pcbs.filter(pcb => pcb.product && pcb.product.includes(rev) && matchPcb(pcb, 'revision')).length;
                             if (count === 0 && hasAnyOtherFilter('revision')) return null;
-                            return <option key={rev} value={rev}>{rev} ({count})</option>;
+                            return <option key={rev} value={rev}>{rev === 'No part yet' ? 'N/A (No part yet)' : rev} ({count})</option>;
                         });
                     })()}
                 </PcbFilterElement>
