@@ -69,7 +69,7 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
     const activeTagFilterCount = selectedTagTypes.length + selectedTagOwners.length;
     const activeFilterCount = type === 'pcbs' ? activePcbFilterCount : (type === 'tags' ? activeTagFilterCount : 0);
 
-    const [showFilters, setShowFilters] = useState<boolean>(activeFilterCount > 0);
+    const [showFilters, setShowFilters] = useState<boolean>(activeFilterCount > 0 && !isolatedView);
     const [hasAutoFiltered, setHasAutoFiltered] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -83,10 +83,11 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
     }, [expandedPcb, isolatedView, type, hasAutoFiltered, selectedBoardNumbers, setSelectedBoardNumbers]);
 
     useEffect(() => {
-        if (activeFilterCount > 0) {
+        // Only auto-expand filters when we are NOT in an isolated full-screen view mode
+        if (activeFilterCount > 0 && !isolatedView) {
             setShowFilters(true);
         }
-    }, [activeFilterCount]);
+    }, [activeFilterCount, isolatedView]);
 
     switch (type) {
         case 'projects': 
