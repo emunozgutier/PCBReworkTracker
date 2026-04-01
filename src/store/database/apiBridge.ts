@@ -277,7 +277,12 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
 
             const tagsWithOwners = internalTags.map(tag => {
                 const owner = internalOwners.find(o => String(o.id) === String(tag.owner_id));
-                return owner ? { ...tag, owner_name: owner.name, owner_username: owner.username } : tag;
+                const pcb_count = Object.values(internalPcbTags).filter((tags: any) => tags.includes(tag.id)).length;
+                return { 
+                    ...tag, 
+                    pcb_count,
+                    ...(owner ? { owner_name: owner.name, owner_username: owner.username } : {})
+                };
             });
             return createResponse(tagsWithOwners);
         }
