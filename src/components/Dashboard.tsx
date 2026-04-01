@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { API_BASE } from '../store/database/apiBridge';
+import { API_BASE, apiFetch } from '../store/database/apiBridge';
 
 interface DashboardStats {
     projects: number;
@@ -15,7 +15,7 @@ export function Dashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch(`${API_BASE}/dashboard`)
+        apiFetch(`${API_BASE}/dashboard`)
             .then(res => res.json())
             .then(data => {
                 setStats(data);

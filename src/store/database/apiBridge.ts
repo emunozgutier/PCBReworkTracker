@@ -60,8 +60,27 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
     }
     
     // Route matching
+    if (localPath.startsWith('/dashboard')) {
+        if (method === 'GET') {
+            return createResponse({
+                projects: internalProjects.length,
+                pcbs: internalPcbs.length,
+                owners: internalOwners.length,
+                reworks: internalReworks.length,
+                tags: internalTags.length
+            });
+        }
+    }
     if (localPath.startsWith('/projects')) {
-        if (method === 'GET') return createResponse(internalProjects);
+        if (method === 'GET') {
+            const parts = localPath.split('/');
+            if (parts.length === 3 && parts[2]) {
+                const id = parseInt(parts[2]);
+                const p = internalProjects.find(x => x.id === id);
+                return createResponse(p || { error: 'Not found' }, p ? 200 : 404);
+            }
+            return createResponse(internalProjects);
+        }
         if (method === 'POST') {
             const newProject = { id: Date.now(), ...body, pcb_count: 0, pcbs: [] };
             internalProjects.push(newProject);
@@ -93,6 +112,11 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
                         return owner ? { ...tag, owner_name: owner.name, owner_username: owner.username } : tag;
                     });
                 return createResponse(tagsForPcb);
+            }
+            if (parts.length === 3 && parts[2]) {
+                const id = parseInt(parts[2]);
+                const pcb = internalPcbs.find(x => x.id === id);
+                return createResponse(pcb || { error: 'Not found' }, pcb ? 200 : 404);
             }
             // Return internalPcbs with tag_ids joined
             const pcbsWithTags = internalPcbs.map(pcb => ({
@@ -137,7 +161,15 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
     }
     
     if (localPath.startsWith('/owners')) {
-        if (method === 'GET') return createResponse(internalOwners);
+        if (method === 'GET') {
+            const parts = localPath.split('/');
+            if (parts.length === 3 && parts[2]) {
+                const id = parseInt(parts[2]);
+                const o = internalOwners.find(x => x.id === id);
+                return createResponse(o || { error: 'Not found' }, o ? 200 : 404);
+            }
+            return createResponse(internalOwners);
+        }
         if (method === 'POST') {
             const newOwner = { id: Date.now(), ...body, pcb_count: 0, rework_count: 0, tag_count: 0 };
             internalOwners.push(newOwner);
@@ -156,7 +188,15 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
     }
     
     if (localPath.startsWith('/reworks')) {
-        if (method === 'GET') return createResponse(internalReworks);
+        if (method === 'GET') {
+            const parts = localPath.split('/');
+            if (parts.length === 3 && parts[2]) {
+                const id = parseInt(parts[2]);
+                const r = internalReworks.find(x => x.id === id);
+                return createResponse(r || { error: 'Not found' }, r ? 200 : 404);
+            }
+            return createResponse(internalReworks);
+        }
         if (method === 'POST') {
             const pcbId = parseInt(body.pcb_id);
             const pcbObj = internalPcbs.find(p => p.id === pcbId);
@@ -227,6 +267,12 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
                         return { ...p, project_name: project?.name, project_key: project?.project_key };
                     });
                 return createResponse(returnPcbs);
+            }
+
+            if (parts.length === 3 && parts[2]) {
+                const id = parseInt(parts[2]);
+                const t = internalTags.find(x => x.id === id);
+                return createResponse(t || { error: 'Not found' }, t ? 200 : 404);
             }
 
             const tagsWithOwners = internalTags.map(tag => {

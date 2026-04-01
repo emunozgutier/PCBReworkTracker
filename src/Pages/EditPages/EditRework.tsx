@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
-import { API_BASE } from '../../store/database/apiBridge';
+import { API_BASE, apiFetch } from '../../store/database/apiBridge';
 import { useReworkStore } from '../../store/storeRework';
 import { useOwnerStore } from '../../store/storeOwner';
 import { FormGroup } from '../../components/forms/FormGroup';
@@ -31,9 +31,9 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
     useEffect(() => {
         fetchOwners();
         Promise.all([
-            fetch(`${API_BASE}/pcbs`).then(res => res.json()),
-            fetch(`${API_BASE}/projects`).then(res => res.json()),
-            fetch(`${API_BASE}/reworks/${id}`).then(res => res.json())
+            apiFetch(`${API_BASE}/pcbs`).then(res => res.json()),
+            apiFetch(`${API_BASE}/projects`).then(res => res.json()),
+            apiFetch(`${API_BASE}/reworks/${id}`).then(res => res.json())
         ]).then(([pcbData, projData, rework]) => {
             setPcbs(pcbData);
             setProjects(projData);

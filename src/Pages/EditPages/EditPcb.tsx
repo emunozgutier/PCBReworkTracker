@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
-import { API_BASE } from '../../store/database/apiBridge';
+import { API_BASE, apiFetch } from '../../store/database/apiBridge';
 import { usePcbStore } from '../../store/storePcb';
 import { FormGroup } from '../../components/forms/FormGroup';
 import { RemovePcb } from '../RemovePage/RemovePcb';
@@ -37,9 +37,9 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
 
     useEffect(() => {
         Promise.all([
-            fetch(`${API_BASE}/projects`).then(res => res.json()),
-            fetch(`${API_BASE}/owners`).then(res => res.json()),
-            fetch(`${API_BASE}/pcbs/${id}`).then(res => res.json())
+            apiFetch(`${API_BASE}/projects`).then(res => res.json()),
+            apiFetch(`${API_BASE}/owners`).then(res => res.json()),
+            apiFetch(`${API_BASE}/pcbs/${id}`).then(res => res.json())
         ]).then(([projData, ownerData, pcb]) => {
             setProjects(projData);
             setOwners(ownerData);

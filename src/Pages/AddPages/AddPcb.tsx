@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 
-import { API_BASE } from '../../store/database/apiBridge';
+import { API_BASE, apiFetch } from '../../store/database/apiBridge';
 import { usePcbStore } from '../../store/storePcb';
 import { FormGroup } from '../../components/forms/FormGroup';
 import { generateCRC } from '../../components/UrlManager/crc';
@@ -75,8 +75,8 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     useEffect(() => {
         // Fetch projects and owners for dropdowns
         Promise.all([
-            fetch(`${API_BASE}/projects`).then(res => res.json()),
-            fetch(`${API_BASE}/owners`).then(res => res.json())
+            apiFetch(`${API_BASE}/projects`).then(res => res.json()),
+            apiFetch(`${API_BASE}/owners`).then(res => res.json())
         ]).then(([projData, ownerData]) => {
             setProjects(projData);
             setOwners(ownerData);
