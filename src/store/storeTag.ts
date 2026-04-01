@@ -121,6 +121,8 @@ export const formatTagName = (tag: any): string => {
     if (!tag || !tag.name) return '';
     const cleanName = tag.name.trim().replace(/\s+/g, '-');
     
+    if (tag.type === 'public') return cleanName;
+
     if (tag.owner_username) return `${tag.owner_username}/${cleanName}`;
     if (tag.owner_name) return `${tag.owner_name}/${cleanName}`;
     return cleanName;
