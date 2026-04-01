@@ -44,9 +44,9 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
             </div>
 
             <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minWidth: 0, width: '100%' }}>
                     
-                    <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', minWidth: 0, width: '100%' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '110px' }}>
                             <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Logged At</span>
                             <span style={{ fontSize: '0.9rem', color: 'var(--text)', fontWeight: 600 }}>

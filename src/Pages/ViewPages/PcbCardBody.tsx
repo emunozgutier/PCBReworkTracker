@@ -131,7 +131,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                         {pcbReworks.length > 0 ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 {pcbReworks.slice(0, 5).map((rework: any, index: number) => (
-                                    <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.03)' }}>
+                                    <div key={index} style={{ border: '1px solid var(--border)', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.03)', minWidth: 0, width: '100%', boxSizing: 'border-box' }}>
                                         <ReworkCardHeader 
                                             rework={rework} 
                                             isExpanded={false}
