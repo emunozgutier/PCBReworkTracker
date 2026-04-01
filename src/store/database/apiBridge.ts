@@ -118,9 +118,9 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
                 const pcb = internalPcbs.find(x => x.id === id);
                 return createResponse(pcb || { error: 'Not found' }, pcb ? 200 : 404);
             }
-            // Return internalPcbs with tag_ids joined
             const pcbsWithTags = internalPcbs.map(pcb => ({
                 ...pcb,
+                product: pcb.product_name_and_rev || pcb.product,
                 tag_ids: internalPcbTags[pcb.id] || []
             }));
             return createResponse(pcbsWithTags);
