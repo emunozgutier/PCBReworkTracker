@@ -1,7 +1,7 @@
-import { usePcbStore } from '../store/storePcb';
-import { useProjectStore } from '../store/storeProject';
-import { useTagStore, formatTagName } from '../store/storeTag';
-import { useOwnerStore } from '../store/storeOwner';
+import { usePcbStore } from '../../store/storePcb';
+import { useProjectStore } from '../../store/storeProject';
+import { useTagStore, formatTagName } from '../../store/storeTag';
+import { useOwnerStore } from '../../store/storeOwner';
 import { PcbFilterElement } from './PcbFilterElement';
 import { PcbFilterGroup } from './PcbFilterGroup';
 

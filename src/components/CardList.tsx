@@ -4,8 +4,8 @@ import { ProjectCard } from '../Pages/ViewPages/ProjectCard';
 import { PcbCard } from '../Pages/ViewPages/PcbCard';
 import { ReworkCard } from '../Pages/ViewPages/ReworkCard';
 import { TagCard } from '../Pages/ViewPages/TagCard';
-import { PcbFilter } from './PcbFilter';
-import { TagFilter } from './TagFilter';
+import { PcbFilter } from './Filter/PcbFilter';
+import { TagFilter } from './Filter/TagFilter';
 
 import { useProjectStore } from '../store/storeProject';
 import { usePcbStore } from '../store/storePcb';

@@ -1,5 +1,5 @@
-import { useTagStore } from '../store/storeTag';
-import { useOwnerStore } from '../store/storeOwner';
+import { useTagStore } from '../../store/storeTag';
+import { useOwnerStore } from '../../store/storeOwner';
 import { PcbFilterElement } from './PcbFilterElement';
 import { PcbFilterGroup } from './PcbFilterGroup';
 
