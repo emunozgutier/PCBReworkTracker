@@ -15,7 +15,7 @@ let internalReworks = demoData.demoReworks.map((r: any) => {
     reworkCounts[r.pcb_id]++;
     return {
         ...r,
-        rework_name: r.rework_name || `${boardName}-R-${String(reworkCounts[r.pcb_id]).padStart(3, '0')}`
+        rework_name: r.rework_name || `${boardName}-R${String(reworkCounts[r.pcb_id]).padStart(3, '0')}`
     };
 }) as any[];
 let internalTags = [...demoData.demoTags] as any[];
@@ -221,7 +221,7 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
                 }
             }
             
-            const reworkName = `${boardName}-R-${String(sequence).padStart(3, '0')}`;
+            const reworkName = `${boardName}-R${String(sequence).padStart(3, '0')}`;
 
             const ownerObj = internalOwners.find(o => o.id === parseInt(body.owner_id));
             const newRework = { 

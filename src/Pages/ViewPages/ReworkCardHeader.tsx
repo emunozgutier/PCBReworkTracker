@@ -13,7 +13,7 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
 
     const shortName = (rework.rework_name && !showFullTitle)
         ? rework.rework_name.replace(new RegExp(`^${rework.board_number || rework.pcb_board_number || '.*'}-`), '')
-        : (rework.rework_name || (showFullTitle ? `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R-${String(rework.id).padStart(3, '0')}` : `R-${String(rework.id).padStart(3, '0')}`));
+        : (rework.rework_name || (showFullTitle ? `${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R${String(rework.id).padStart(3, '0')}` : `R${String(rework.id).padStart(3, '0')}`));
 
     return (
         <div 

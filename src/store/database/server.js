@@ -284,7 +284,7 @@ app.post('/api/reworks', upload.any(), (req, res) => {
                 }
             }
             
-            const reworkName = `${boardName}-R-${String(sequence).padStart(3, '0')}`;
+            const reworkName = `${boardName}-R${String(sequence).padStart(3, '0')}`;
             
             // Post-process the uploaded files dynamically to match the reworkName
             let finalPaths = [];
