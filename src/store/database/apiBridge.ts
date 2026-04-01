@@ -89,7 +89,7 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
                 const tagsForPcb = internalTags
                     .filter(t => tagIds.includes(t.id))
                     .map(tag => {
-                        const owner = internalOwners.find(o => o.id === tag.owner_id);
+                        const owner = internalOwners.find(o => String(o.id) === String(tag.owner_id));
                         return owner ? { ...tag, owner_name: owner.name, owner_username: owner.username } : tag;
                     });
                 return createResponse(tagsForPcb);
@@ -230,7 +230,7 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
             }
 
             const tagsWithOwners = internalTags.map(tag => {
-                const owner = internalOwners.find(o => o.id === tag.owner_id);
+                const owner = internalOwners.find(o => String(o.id) === String(tag.owner_id));
                 return owner ? { ...tag, owner_name: owner.name, owner_username: owner.username } : tag;
             });
             return createResponse(tagsWithOwners);

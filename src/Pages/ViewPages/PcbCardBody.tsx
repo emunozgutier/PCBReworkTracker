@@ -3,7 +3,7 @@ import { useReworkStore } from '../../store/storeRework';
 import { useTagStore } from '../../store/storeTag';
 import { useStore } from '../../store/useStore';
 import { usePcbStore } from '../../store/storePcb';
-import { API_BASE } from '../../store/database/apiBridge';
+import { API_BASE, apiFetch } from '../../store/database/apiBridge';
 import { FormTabs } from '../../components/forms/FormTabs';
 import { RemoveTag } from '../RemovePage/RemoveTag';
 import { Tag as TagIcon, X } from 'lucide-react';
@@ -37,7 +37,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
 
     const fetchAttachedTags = async () => {
         try {
-            const res = await fetch(`${API_BASE}/pcbs/${pcb.id}/tags`);
+            const res = await apiFetch(`${API_BASE}/pcbs/${pcb.id}/tags`);
             if (res.ok) {
                 setAttachedTags(await res.json());
             }
@@ -52,7 +52,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
 
     const handleAssignTagDirect = async (tagId: string | number) => {
         try {
-            await fetch(`${API_BASE}/pcbs/${pcb.id}/tags`, {
+            await apiFetch(`${API_BASE}/pcbs/${pcb.id}/tags`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ tag_id: tagId })
@@ -71,7 +71,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const confirmRemoveTag = async () => {
         if (!tagToRemove) return;
         try {
-            await fetch(`${API_BASE}/pcbs/${pcb.id}/tags/${tagToRemove.id}`, {
+            await apiFetch(`${API_BASE}/pcbs/${pcb.id}/tags/${tagToRemove.id}`, {
                 method: 'DELETE'
             });
             await fetchAttachedTags();
