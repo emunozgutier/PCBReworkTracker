@@ -4,6 +4,7 @@ import { PcbCardHeader } from './PcbCardHeader';
 import { useStore } from '../../store/useStore';
 import { usePcbStore } from '../../store/storePcb';
 import { ViewButton } from '../../components/forms/ActionButtons';
+import { useTagStore, formatTagName } from '../../store/storeTag';
 
 interface TagCardBodyProps {
     tag: any;
@@ -36,7 +37,13 @@ export function TagCardBody({ tag }: TagCardBodyProps) {
                     <ViewButton 
                         onClick={() => {
                             resetFilters();
-                            setSelectedTags([tag.id.toString()]);
+                            if (tag.type === 'public') {
+                                const { tags } = useTagStore.getState();
+                                const groupIds = tags.filter((t: any) => t.type === 'public' && formatTagName(t) === formatTagName(tag)).map((t: any) => t.id.toString());
+                                setSelectedTags(groupIds);
+                            } else {
+                                setSelectedTags([tag.id.toString()]);
+                            }
                             setActiveTab('pcbs');
                         }}
                         label="View PCBs Global List"

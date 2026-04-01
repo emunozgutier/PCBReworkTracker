@@ -197,16 +197,40 @@ export function PcbFilter() {
             <PcbFilterGroup title="Organization" color="#0ea5e9">
                 <PcbFilterElement 
                     title="Public Tags" 
-                    value={selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'public')} 
+                    value={(() => {
+                        const activePublicIds = selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'public');
+                        if (activePublicIds.length === 0) return [];
+                        const sampleTag = tags.find(t => t.id.toString() === activePublicIds[0]);
+                        if (!sampleTag) return [];
+                        const name = formatTagName(sampleTag);
+                        const groupIds = tags.filter(t => t.type === 'public' && formatTagName(t) === name).map(t => t.id.toString());
+                        return [groupIds.join(',')];
+                    })()} 
                     onChange={(newPublic) => {
-                        setSelectedTags(newPublic.length > 0 ? [newPublic[newPublic.length - 1]] : []);
+                        if (newPublic.length > 0) {
+                            setSelectedTags(newPublic[newPublic.length - 1].split(','));
+                        } else {
+                            setSelectedTags([]);
+                        }
                     }}
                 >
-                    {tags.filter(t => t.type === 'public').map(tag => {
-                        const count = pcbs.filter(pcb => pcb.tag_ids && pcb.tag_ids.includes(tag.id) && matchPcb(pcb, 'tag')).length;
-                        if (count === 0 && hasAnyOtherFilter('tag')) return null;
-                        return <option key={tag.id} value={tag.id.toString()}>{formatTagName(tag)} ({count})</option>;
-                    })}
+                    {(() => {
+                        const publicTags = tags.filter((t: any) => t.type === 'public');
+                        const grouped = new Map<string, any[]>();
+                        publicTags.forEach((t: any) => {
+                            const name = formatTagName(t);
+                            if (!grouped.has(name)) grouped.set(name, []);
+                            grouped.get(name)!.push(t);
+                        });
+
+                        return Array.from(grouped.entries()).map(([name, groupTags]) => {
+                            const groupIds = groupTags.map(t => t.id);
+                            const count = pcbs.filter(pcb => pcb.tag_ids && pcb.tag_ids.some(id => groupIds.includes(id)) && matchPcb(pcb, 'tag')).length;
+                            if (count === 0 && hasAnyOtherFilter('tag')) return null;
+                            const valueStr = groupIds.join(',');
+                            return <option key={name} value={valueStr}>{name} ({count})</option>;
+                        });
+                    })()}
                 </PcbFilterElement>
 
                 <PcbFilterElement 
