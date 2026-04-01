@@ -102,6 +102,8 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                                         WebkitLineClamp: 3,
                                         WebkitBoxOrient: 'vertical',
                                         overflow: 'hidden',
+                                        whiteSpace: 'pre-wrap',
+                                        wordBreak: 'break-word',
                                         cursor: 'pointer',
                                         transition: 'color 0.2s',
                                         maxWidth: '100%'
@@ -151,9 +153,11 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         </button>
                         <h3 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', color: 'var(--text)', fontWeight: 600 }}>Rework Description</h3>
-                        <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text)', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
-                            {rework.description}
-                        </p>
+                        <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '8px' }}>
+                            <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.6' }}>
+                                {rework.description}
+                            </p>
+                        </div>
                     </div>
                 </div>
             )}
