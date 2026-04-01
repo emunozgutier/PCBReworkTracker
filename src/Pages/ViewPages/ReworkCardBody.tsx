@@ -98,9 +98,10 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                                         margin: 0, 
                                         fontSize: '0.85rem', 
                                         color: 'var(--text)', 
-                                        whiteSpace: 'nowrap', 
-                                        overflow: 'hidden', 
-                                        textOverflow: 'ellipsis',
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 3,
+                                        WebkitBoxOrient: 'vertical',
+                                        overflow: 'hidden',
                                         cursor: 'pointer',
                                         transition: 'color 0.2s',
                                         maxWidth: '100%'
