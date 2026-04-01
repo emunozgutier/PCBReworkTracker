@@ -86,6 +86,9 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                             }}>
                                 {rework.rework_type === 'Resistor Option Swap' ? 'Resistor Swap' : (rework.rework_type || 'Minor')}
                             </div>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '2px' }}>
+                                By: <strong style={{ color: 'var(--text)', fontWeight: 600 }}>{rework.owner_name || rework.owner || 'System'}</strong>
+                            </span>
                         </div>
 
                         <div style={{ width: '1px', background: 'var(--border)', alignSelf: 'stretch', opacity: 0.6 }}></div>

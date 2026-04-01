@@ -301,25 +301,23 @@ export function CardList({ type, title, onAdd, onEdit }: CardListProps) {
                                 </div>
 
                                 {type === 'owners' && (
-                                    <>
-                                        <div className="card-title">
-                                            <span className="board-num">{item.name}</span>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingRight: '24px' }}>
+                                            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text)', margin: 0 }}>{item.name}</span>
+                                            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{item.username ? `@${item.username}` : 'No username'}</span>
                                         </div>
-                                        <div className="card-details">
-                                            <p>{item.username ? `@${item.username}` : 'No username'}</p>
-                                        </div>
-                                        <div className="pcb-mini-list" style={{ marginTop: '12px' }}>
-                                            <span className="pcb-pill" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>
+                                        <div className="pcb-mini-list" style={{ gap: '6px' }}>
+                                            <span className="pcb-pill" style={{ padding: '2px 8px', fontSize: '0.75rem', borderColor: 'var(--accent)', color: 'var(--accent)' }}>
                                                 {item.pcb_count || 0} PCBs
                                             </span>
-                                            <span className="pcb-pill" style={{ borderColor: '#f43f5e', color: '#f43f5e' }}>
+                                            <span className="pcb-pill" style={{ padding: '2px 8px', fontSize: '0.75rem', borderColor: '#f43f5e', color: '#f43f5e' }}>
                                                 {item.rework_count || 0} Reworks
                                             </span>
-                                            <span className="pcb-pill" style={{ borderColor: '#10b981', color: '#10b981' }}>
+                                            <span className="pcb-pill" style={{ padding: '2px 8px', fontSize: '0.75rem', borderColor: '#10b981', color: '#10b981' }}>
                                                 {item.tag_count || 0} Tags
                                             </span>
                                         </div>
-                                    </>
+                                    </div>
                                 )}
                             </div>
                         );
