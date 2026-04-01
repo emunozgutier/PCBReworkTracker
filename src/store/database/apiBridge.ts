@@ -228,12 +228,19 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
                 id: Date.now(), 
                 timestamp: new Date().toISOString(), 
                 ...body,
+                pcb_id: pcbId,
+                owner_id: parseInt(body.owner_id),
                 rework_name: reworkName,
                 owner_name: ownerObj ? ownerObj.name : 'Unknown'
             };
             
             if (ownerObj) {
                 ownerObj.rework_count = (ownerObj.rework_count || 0) + 1;
+            }
+
+            if (body.new_product && pcbObj) {
+                pcbObj.product = body.new_product;
+                pcbObj.product_name_and_rev = body.new_product;
             }
 
             internalReworks.push(newRework);
