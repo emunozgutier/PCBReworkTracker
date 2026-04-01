@@ -620,3 +620,41 @@ body {
   background: rgba(99, 102, 241, 0.25) !important;
   border-color: rgba(99, 102, 241, 0.8) !important;
 }
+
+/* Rework Body Responsive */
+.rework-body-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  min-width: 0;
+  width: 100%;
+}
+
+.rework-body-divider {
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+  opacity: 0.6;
+}
+
+.rework-description-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .rework-body-row {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .rework-body-divider.mobile-hide {
+    display: none;
+  }
+  .rework-description-col {
+    flex-basis: 100%;
+    margin-top: 4px;
+  }
+}

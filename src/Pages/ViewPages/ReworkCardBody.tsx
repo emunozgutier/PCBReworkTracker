@@ -46,7 +46,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
             <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minWidth: 0, width: '100%' }}>
                     
-                    <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', minWidth: 0, width: '100%' }}>
+                    <div className="rework-body-row">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '110px' }}>
                             <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Logged At</span>
                             <span style={{ fontSize: '0.9rem', color: 'var(--text)', fontWeight: 600 }}>
@@ -57,7 +57,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                             </span>
                         </div>
 
-                        <div style={{ width: '1px', background: 'var(--border)', alignSelf: 'stretch', opacity: 0.6 }}></div>
+                        <div className="rework-body-divider"></div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Rework Type</span>
@@ -91,9 +91,9 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                             </span>
                         </div>
 
-                        <div style={{ width: '1px', background: 'var(--border)', alignSelf: 'stretch', opacity: 0.6 }}></div>
+                        <div className="rework-body-divider mobile-hide"></div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0, flex: 1 }}>
+                        <div className="rework-description-col">
                             <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Description</span>
                             {rework.description && rework.description.trim() ? (
                                 <p 
