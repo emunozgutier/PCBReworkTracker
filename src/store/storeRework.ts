@@ -10,6 +10,7 @@ export interface Rework {
     timestamp: string;
     owner_id: number | null;
     owner_name: string | null;
+    owner_username?: string;
     pcb_board_number: string;
     image_path?: string;
     rework_name?: string;
