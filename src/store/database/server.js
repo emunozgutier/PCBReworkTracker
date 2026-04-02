@@ -249,7 +249,7 @@ app.post('/api/tags', (req, res) => {
 // Reworks API
 app.get('/api/reworks', (req, res) => {
     const query = `
-        SELECT reworks.*, pcbs.board_number, owners.name as owner_name 
+        SELECT reworks.*, pcbs.board_number, owners.name as owner_name, owners.username as owner_username
         FROM reworks 
         LEFT JOIN pcbs ON reworks.pcb_id = pcbs.id
         LEFT JOIN owners ON reworks.owner_id = owners.id

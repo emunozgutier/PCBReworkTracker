@@ -133,23 +133,23 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
                     </select>
                 </div>
                 <div className="form-group">
-                    <label htmlFor="title">Rework Title (Optional)</label>
+                    <label htmlFor="title">Rework Title</label>
                     <input 
                         type="text"
                         id="title"
                         value={title} 
                         onChange={(e) => setTitle(e.target.value)} 
                         placeholder="E.g. Resistor R12 Replacement"
+                        required
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="description">Rework Description</label>
+                    <label htmlFor="description">Rework Description (Optional)</label>
                     <textarea 
                         id="description"
                         value={description} 
                         onChange={(e) => setDescription(e.target.value)} 
                         rows={4}
-                        required
                     />
                 </div>
                 <div className="form-group">

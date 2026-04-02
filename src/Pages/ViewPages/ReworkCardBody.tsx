@@ -86,9 +86,22 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                             }}>
                                 {rework.rework_type === 'Resistor Option Swap' ? 'Resistor Swap' : (rework.rework_type || 'Minor')}
                             </div>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '2px' }}>
-                                By: <strong style={{ color: 'var(--text)', fontWeight: 600 }}>{rework.owner_name || rework.owner || 'System'}</strong>
-                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '4px' }}>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>By:</span>
+                                <span style={{ 
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    color: 'var(--text)',
+                                    padding: '2px 8px',
+                                    borderRadius: '12px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 600,
+                                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                                    display: 'inline-flex',
+                                    alignItems: 'center'
+                                }}>
+                                    @{rework.owner_username || rework.owner_name || rework.owner || 'System'}
+                                </span>
+                            </div>
                         </div>
 
                         <div className="rework-body-divider mobile-hide"></div>

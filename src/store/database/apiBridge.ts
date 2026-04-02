@@ -193,9 +193,16 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
             if (parts.length === 3 && parts[2]) {
                 const id = parseInt(parts[2]);
                 const r = internalReworks.find(x => x.id === id);
-                return createResponse(r || { error: 'Not found' }, r ? 200 : 404);
+                if (r) {
+                    const owner = internalOwners.find(o => String(o.id) === String(r.owner_id));
+                    return createResponse(owner ? { ...r, owner_name: owner.name, owner_username: owner.username } : r);
+                }
+                return createResponse({ error: 'Not found' }, 404);
             }
-            return createResponse(internalReworks);
+            return createResponse(internalReworks.map(r => {
+                const owner = internalOwners.find(o => String(o.id) === String(r.owner_id));
+                return owner ? { ...r, owner_name: owner.name, owner_username: owner.username } : r;
+            }));
         }
         if (method === 'POST') {
             const pcbId = parseInt(body.pcb_id);
@@ -231,7 +238,8 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
                 pcb_id: pcbId,
                 owner_id: parseInt(body.owner_id),
                 rework_name: reworkName,
-                owner_name: ownerObj ? ownerObj.name : 'Unknown'
+                owner_name: ownerObj ? ownerObj.name : 'Unknown',
+                owner_username: ownerObj ? ownerObj.username : undefined
             };
             
             if (ownerObj) {

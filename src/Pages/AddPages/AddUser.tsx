@@ -43,7 +43,7 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="username">Username (No spaces)</label>
+                    <label htmlFor="username">Username (Max 8 characters, no spaces)</label>
                     <input 
                         id="username"
                         type="text" 
@@ -51,7 +51,8 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
                         onChange={(e) => setUsername(e.target.value)} 
                         placeholder="e.g. jsmith"
                         pattern="^\S+$"
-                        title="Username cannot contain spaces"
+                        maxLength={8}
+                        title="Username cannot contain spaces and must be 8 characters or fewer"
                         required 
                     />
                 </div>
