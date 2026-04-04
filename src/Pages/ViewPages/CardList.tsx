@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Plus, Edit2 } from 'lucide-react';
-import { ProjectCard } from '../Pages/ViewPages/ProjectCard';
-import { PcbCard } from '../Pages/ViewPages/PcbCard';
-import { ReworkCard } from '../Pages/ViewPages/ReworkCard';
-import { TagCard } from '../Pages/ViewPages/TagCard';
-import { PcbFilter } from './Filter/PcbFilter';
-import { TagFilter } from './Filter/TagFilter';
+import { ProjectCard } from './ProjectCard';
+import { PcbCard } from './PcbCard';
+import { ReworkCard } from './ReworkCard';
+import { TagCard } from './TagCard';
+import { PcbFilter } from '../../components/Filter/PcbFilter';
+import { TagFilter } from '../../components/Filter/TagFilter';
 
-import { useProjectStore } from '../store/storeProject';
-import { usePcbStore } from '../store/storePcb';
-import { useReworkStore } from '../store/storeRework';
-import { useOwnerStore } from '../store/storeOwner';
-import { useTagStore } from '../store/storeTag';
-import { useStore } from '../store/useStore';
+import { useProjectStore } from '../../store/storeProject';
+import { usePcbStore } from '../../store/storePcb';
+import { useReworkStore } from '../../store/storeRework';
+import { useOwnerStore } from '../../store/storeOwner';
+import { useTagStore } from '../../store/storeTag';
+import { useStore } from '../../store/useStore';
 
 interface CardListProps {
     type: 'projects' | 'pcbs' | 'reworks' | 'tags' | 'owners';

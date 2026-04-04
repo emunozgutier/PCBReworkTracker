@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PictureCard } from '../../components/PictureCard';
+import { PictureCard } from './PictureCard';
 import { useStore } from '../../store/useStore';
 import { EditButton, ViewButton } from '../../components/forms/ActionButtons';
 
