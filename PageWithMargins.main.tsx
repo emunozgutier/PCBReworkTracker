@@ -22,26 +22,13 @@ import { TestBoardTypo } from './components/UrlManager/TestBoardTypo';
 import { WrongUrl } from './Pages/WrongPage/WrongUrl';
 import { FixedUrl } from './Pages/WrongPage/FixedUrl';
 import { GithubLink } from './components/GithubLink';
+
 import { UserLoginButton } from './login/UserLoginButton';
 
-
 import { useAppState } from './store/useAppState';
-import { useGlobalSettings } from './store/useGlobalSettings';
-import { PermissionDenied } from './components/PermissionDenied';
-import { useAuthStore } from './login/client';
-import { LoginView } from './login/LoginView';
-import { useEffect } from 'react';
 
 export function PageWithMargins() {
   const { page, selectedId, editItem, addItem, goBack, isMobile } = useAppState();
-  const { hasPermission } = useGlobalSettings();
-  const { token, owner, verifySession } = useAuthStore();
-
-  useEffect(() => {
-    if (token) {
-      verifySession();
-    }
-  }, [token, verifySession]);
 
   const handleSuccess = () => {
     // Refresh data and go back
@@ -50,86 +37,45 @@ export function PageWithMargins() {
 
   const renderContent = () => {
     switch (page) {
-      case 'projects_add': 
-        if (!hasPermission('projects', 'create')) return <PermissionDenied pageLabel="Create Projects" />;
-        return <AddProject onBack={goBack} onSuccess={handleSuccess} />;
-      case 'pcbs_add': 
-        if (!hasPermission('pcbs', 'create')) return <PermissionDenied pageLabel="Create PCBs" />;
-        return <AddPCB onBack={goBack} onSuccess={handleSuccess} />;
-      case 'reworks_add': 
-        if (!hasPermission('reworks', 'create')) return <PermissionDenied pageLabel="Create Reworks" />;
-        return <AddRework onBack={goBack} onSuccess={handleSuccess} />;
-      case 'owners_add': 
-        if (!hasPermission('owners', 'create')) return <PermissionDenied pageLabel="Create Owners/Users" />;
-        return <AddUser onBack={goBack} onSuccess={handleSuccess} />;
-      case 'tags_add': 
-        if (!hasPermission('tags', 'create')) return <PermissionDenied pageLabel="Create Tags" />;
-        return <AddTab onBack={goBack} onSuccess={handleSuccess} />;
+      case 'projects_add': return <AddProject onBack={goBack} onSuccess={handleSuccess} />;
+      case 'pcbs_add': return <AddPCB onBack={goBack} onSuccess={handleSuccess} />;
+      case 'reworks_add': return <AddRework onBack={goBack} onSuccess={handleSuccess} />;
+      case 'owners_add': return <AddUser onBack={goBack} onSuccess={handleSuccess} />;
+      case 'tags_add': return <AddTab onBack={goBack} onSuccess={handleSuccess} />;
       
-      case 'projects_edit': 
-        if (!hasPermission('projects', 'edit')) return <PermissionDenied pageLabel="Edit Projects" />;
-        return <EditProject id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
-      case 'pcbs_edit': 
-        if (!hasPermission('pcbs', 'edit')) return <PermissionDenied pageLabel="Edit PCBs" />;
-        return <EditPCB id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
-      case 'reworks_edit': 
-        if (!hasPermission('reworks', 'edit')) return <PermissionDenied pageLabel="Edit Reworks" />;
-        return <EditRework id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
-      case 'owners_edit': 
-        if (!hasPermission('owners', 'edit')) return <PermissionDenied pageLabel="Edit Owners/Users" />;
-        return <EditUser id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
-      case 'tags_edit': 
-        if (!hasPermission('tags', 'edit')) return <PermissionDenied pageLabel="Edit Tags" />;
-        return <EditTab id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
+      case 'projects_edit': return <EditProject id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
+      case 'pcbs_edit': return <EditPCB id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
+      case 'reworks_edit': return <EditRework id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
+      case 'owners_edit': return <EditUser id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
+      case 'tags_edit': return <EditTab id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
       
       case 'wrong_url': return <WrongUrl />;
       case 'fixed_url': return <FixedUrl />;
       case 'sandbox': return <TestBoardTypo />;
       
       case 'projects':
-        if (!hasPermission('projects', 'view')) return <PermissionDenied pageLabel="Projects" />;
         return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} />;
       case 'pcbs':
-        if (!hasPermission('pcbs', 'view')) return <PermissionDenied pageLabel="PCBs" />;
         return <PcbView title="PCB Boards" onAdd={() => addItem('pcbs_add')} />;
       case 'reworks':
-        if (!hasPermission('reworks', 'view')) return <PermissionDenied pageLabel="Reworks" />;
         return <ReworkView title="Rework History" onAdd={() => addItem('reworks_add')} />;
       case 'owners':
-        if (!hasPermission('owners', 'view')) return <PermissionDenied pageLabel="Owners/Users" />;
         return <UserView title="Owners" onAdd={() => addItem('owners_add')} onEdit={(id) => editItem('owners_edit', id)} />;
       case 'tags':
-        if (!hasPermission('tags', 'view')) return <PermissionDenied pageLabel="Tags" />;
         return <TabView title="Tags" onAdd={() => addItem('tags_add')} onEdit={(id) => editItem('tags_edit', id)} />;
       case 'settings':
-        if (!hasPermission('settings', 'view')) return <PermissionDenied pageLabel="Settings" />;
         return <SettingsView />;
-      case 'login':
-        return <LoginView />;
-
       default:
-        if (!hasPermission('projects', 'view')) return <PermissionDenied pageLabel="Projects" />;
         return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} />;
     }
   };
 
-  if (token && !owner) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', justifyContent: 'center', alignItems: 'center', gap: '16px', background: 'var(--bg-app)', color: 'var(--text-main)' }}>
-        <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid var(--border)', borderTopColor: 'var(--accent)', animation: 'spin 1s linear infinite' }}></div>
-        <span style={{ fontSize: '0.95rem', fontWeight: 600 }}>Restoring session...</span>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
-  }
-
   return (
     <div className={`app-container ${isMobile ? 'mobile-state' : ''}`} style={{ position: 'relative' }}>
-
-      <UrlManager />
       <GithubLink />
       <UserLoginButton />
-
+      <UrlManager />
+      
       <header className="app-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center', alignItems: 'center', padding: '0 20px', textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <h1 style={{ margin: 0 }}>Rework Tracker</h1>
