@@ -23,6 +23,8 @@ import { WrongUrl } from './Pages/WrongPage/WrongUrl';
 import { FixedUrl } from './Pages/WrongPage/FixedUrl';
 import { GithubLink } from './components/GithubLink';
 
+import { UserLoginButton } from './login/UserLoginButton';
+
 import { useAppState } from './store/useAppState';
 
 export function PageWithMargins() {
@@ -69,16 +71,14 @@ export function PageWithMargins() {
   };
 
   return (
-    <div className={`app-container ${isMobile ? 'mobile-state' : ''}`}>
+    <div className={`app-container ${isMobile ? 'mobile-state' : ''}`} style={{ position: 'relative' }}>
+      <GithubLink />
+      <UserLoginButton />
       <UrlManager />
       
-      <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 1000 }}>
-        <GithubLink />
-      </div>
-
       <header className="app-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center', alignItems: 'center', padding: '0 20px', textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <h1 style={{ margin: 0 }}>{isMobile ? 'Rework Tracker' : 'PCB Rework Tracker'}</h1>
+          <h1 style={{ margin: 0 }}>Rework Tracker</h1>
           {typeof window !== 'undefined' && window.location.hostname.includes('github.io') && (
             <div 
               className="demo-indicator"
