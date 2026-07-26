@@ -1,4 +1,4 @@
-import { Check, Radio, Shield, Key, Eye, Plus, Edit2, Trash2 } from 'lucide-react';
+import { Check, Radio, Key, Eye, Plus, Edit2, Trash2 } from 'lucide-react';
 import { useGlobalSettings } from '../../store/useGlobalSettings';
 import type { UserRole, PageName, PagePermissions } from '../../store/useGlobalSettings';
 import { getNatoWord } from '../../components/UrlManager/crc';
@@ -37,23 +37,70 @@ export function SettingsView() {
 
     return (
         <div className="settings-page-wrapper">
-            {/* Active Role Simulation Bar */}
-            <div className="settings-main-card active-role-card" style={{ marginBottom: '24px', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%)', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ background: 'var(--accent)', color: 'white', borderRadius: '8px', padding: '8px' }}>
-                            <Shield size={20} />
+
+
+            {/* Checksum format setting */}
+            <div className="settings-main-card" style={{ marginBottom: '24px' }}>
+                <div className="settings-card-label">
+                    <Radio size={18} color="var(--accent)" />
+                    <span>CRC Checksum Display Mode</span>
+                </div>
+
+                <div className="settings-options-grid">
+                    {/* Option 1: Single Letter */}
+                    <div
+                        className={`setting-choice-card ${crcFormat === 'letter' ? 'selected' : ''}`}
+                        onClick={() => setCrcFormat('letter')}
+                    >
+                        <div className="choice-card-top">
+                            <span className="choice-title">Single Letter</span>
+                            <div className="choice-radio">
+                                {crcFormat === 'letter' && <Check size={14} color="#ffffff" />}
+                            </div>
                         </div>
-                        <div>
-                            <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)' }}>
-                                RBAC Simulation Mode
-                            </h3>
-                            <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                Toggling roles instantly changes permissions across all views.
-                            </p>
+
+                        <div className="choice-example-badge">
+                            <span className="example-code">
+                                {sampleBase}<span>{sampleLetter}</span>
+                            </span>
                         </div>
                     </div>
-                    
+
+                    {/* Option 2: NATO Phonetic Word */}
+                    <div
+                        className={`setting-choice-card ${crcFormat === 'nato' ? 'selected' : ''}`}
+                        onClick={() => setCrcFormat('nato')}
+                    >
+                        <div className="choice-card-top">
+                            <span className="choice-title">NATO Phonetic Word</span>
+                            <div className="choice-radio">
+                                {crcFormat === 'nato' && <Check size={14} color="#ffffff" />}
+                            </div>
+                        </div>
+
+                        <div className="choice-example-badge" style={{ justifyContent: 'flex-start' }}>
+                            <span className="example-code">
+                                {sampleBase}<span>{sampleNato}</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Rights Table Card */}
+            <div className="settings-main-card">
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
+                    <div>
+                        <div className="settings-card-label" style={{ marginBottom: '8px' }}>
+                            <Key size={18} color="var(--accent)" />
+                            <span>Role Access Rights Matrix</span>
+                        </div>
+                        
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4' }}>
+                            Customize which pages and actions are available for the <strong>{selectedRoleTab}</strong> role. CRC actions are open for everyone.
+                        </p>
+                    </div>
+
                     <div className="settings-role-tabs">
                         {(['superuser', 'user', 'guest'] as UserRole[]).map((role) => (
                             <button
@@ -68,18 +115,6 @@ export function SettingsView() {
                         ))}
                     </div>
                 </div>
-            </div>
-
-            {/* Rights Table Card */}
-            <div className="settings-main-card" style={{ marginBottom: '24px' }}>
-                <div className="settings-card-label">
-                    <Key size={18} color="var(--accent)" />
-                    <span>Role Access Rights Matrix ({selectedRoleTab.charAt(0).toUpperCase() + selectedRoleTab.slice(1)})</span>
-                </div>
-                
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '-10px 0 20px 0', lineHeight: '1.4' }}>
-                    Customize which pages and actions are available for the <strong>{selectedRoleTab}</strong> role. CRC actions are open for everyone.
-                </p>
 
                 <div className="permissions-table-container">
                     <table className="permissions-table">
@@ -126,54 +161,6 @@ export function SettingsView() {
                             })}
                         </tbody>
                     </table>
-                </div>
-            </div>
-
-            {/* Checksum format setting */}
-            <div className="settings-main-card">
-                <div className="settings-card-label">
-                    <Radio size={18} color="var(--accent)" />
-                    <span>CRC Checksum Display Mode</span>
-                </div>
-
-                <div className="settings-options-grid">
-                    {/* Option 1: Single Letter */}
-                    <div
-                        className={`setting-choice-card ${crcFormat === 'letter' ? 'selected' : ''}`}
-                        onClick={() => setCrcFormat('letter')}
-                    >
-                        <div className="choice-card-top">
-                            <span className="choice-title">Single Letter</span>
-                            <div className="choice-radio">
-                                {crcFormat === 'letter' && <Check size={14} color="#ffffff" />}
-                            </div>
-                        </div>
-
-                        <div className="choice-example-badge">
-                            <span className="example-code">
-                                {sampleBase}<span>{sampleLetter}</span>
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Option 2: NATO Phonetic Word */}
-                    <div
-                        className={`setting-choice-card ${crcFormat === 'nato' ? 'selected' : ''}`}
-                        onClick={() => setCrcFormat('nato')}
-                    >
-                        <div className="choice-card-top">
-                            <span className="choice-title">NATO Phonetic Word</span>
-                            <div className="choice-radio">
-                                {crcFormat === 'nato' && <Check size={14} color="#ffffff" />}
-                            </div>
-                        </div>
-
-                        <div className="choice-example-badge" style={{ justifyContent: 'flex-start' }}>
-                            <span className="example-code">
-                                {sampleBase}<span>{sampleNato}</span>
-                            </span>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
