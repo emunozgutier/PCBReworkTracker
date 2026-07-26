@@ -94,6 +94,7 @@ const initDb = async (): Promise<void> => {
                 name TEXT NOT NULL,
                 username TEXT UNIQUE,
                 email TEXT,
+                totp_secret TEXT,
                 superuser INTEGER DEFAULT 0
             )`);
             db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_owners_username ON owners(username)`);
@@ -185,6 +186,9 @@ const initDb = async (): Promise<void> => {
             
             // Migration: Add email column to owners if it doesn't exist
             db.run(`ALTER TABLE owners ADD COLUMN email TEXT`, () => {});
+            
+            // Migration: Add totp_secret column to owners if it doesn't exist
+            db.run(`ALTER TABLE owners ADD COLUMN totp_secret TEXT`, () => {});
             
             // Migration: Add superuser column to owners if it doesn't exist
             db.run(`ALTER TABLE owners ADD COLUMN superuser INTEGER DEFAULT 0`, () => {
