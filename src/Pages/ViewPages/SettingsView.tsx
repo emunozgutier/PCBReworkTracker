@@ -96,9 +96,7 @@ export function SettingsView() {
                             <span>Role Access Rights Matrix</span>
                         </div>
                         
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4' }}>
-                            Customize which pages and actions are available for the <strong>{selectedRoleTab}</strong> role. CRC actions are open for everyone.
-                        </p>
+
                     </div>
 
                     <div className="settings-role-tabs">
