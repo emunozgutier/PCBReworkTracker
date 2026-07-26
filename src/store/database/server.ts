@@ -8,7 +8,8 @@ import { fileURLToPath } from 'url';
 import { db, initDb } from './db.js';
 import { apiLoggerMiddleware } from './logger.js';
 import { loginRouter } from '../../login/server.js';
-
+import { generateSecret, generateURI } from 'otplib';
+import QRCode from 'qrcode';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -580,14 +581,41 @@ app.post('/api/owners', (req: Request, res: Response) => {
         const isFirst = (row && row.count === 0);
         const superuserVal = isFirst ? 1 : (superuser ? 1 : 0);
         
-        db.run("INSERT INTO owners (name, username, email, superuser) VALUES (?, ?, ?, ?)", [name, cleanUsername, email || null, superuserVal], function(this: any, err: any) {
+        // Generate TOTP Secret
+        const totpSecret = generateSecret();
+        
+        db.run("INSERT INTO owners (name, username, email, superuser, totp_secret) VALUES (?, ?, ?, ?, ?)", [name, cleanUsername, email || null, superuserVal, totpSecret], async function(this: any, err: any) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
                     return res.status(400).json({ error: `Username "${cleanUsername}" is already taken.` });
                 }
                 return res.status(500).json({ error: err.message });
             }
-            res.status(201).json({ id: this.lastID, name, username: cleanUsername, email: email || null, superuser: superuserVal });
+            
+            try {
+                // Generate QR Code Image Base64
+                const otpauth = generateURI({ issuer: 'PCB Rework Tracker', label: cleanUsername || name, secret: totpSecret });
+                const qrCodeDataUrl = await QRCode.toDataURL(otpauth);
+                
+                res.status(201).json({ 
+                    id: this.lastID, 
+                    name, 
+                    username: cleanUsername, 
+                    email: email || null, 
+                    superuser: superuserVal,
+                    qrCodeDataUrl // Send back QR code for setup
+                });
+            } catch (qrErr: any) {
+                // If QR code generation fails, still return success but notify client
+                res.status(201).json({ 
+                    id: this.lastID, 
+                    name, 
+                    username: cleanUsername, 
+                    email: email || null, 
+                    superuser: superuserVal,
+                    error: "Failed to generate QR Code. Admin will need to reset it."
+                });
+            }
         });
     });
 });

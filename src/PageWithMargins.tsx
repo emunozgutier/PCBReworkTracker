@@ -22,8 +22,7 @@ import { TestBoardTypo } from './components/UrlManager/TestBoardTypo';
 import { WrongUrl } from './Pages/WrongPage/WrongUrl';
 import { FixedUrl } from './Pages/WrongPage/FixedUrl';
 import { GithubLink } from './components/GithubLink';
-import { SetupResendEmail } from './Pages/SetupResendEmail';
-import { GlobalResendWarningModal, ResendTopBarBadge } from './components/GlobalResendWarningModal';
+
 
 import { useAppState } from './store/useAppState';
 import { useGlobalSettings } from './store/useGlobalSettings';
@@ -107,8 +106,7 @@ export function PageWithMargins() {
         return <SettingsView />;
       case 'login':
         return <LoginView />;
-      case 'setup_resend':
-        return <SetupResendEmail />;
+
       default:
         if (!hasPermission('projects', 'view')) return <PermissionDenied pageLabel="Projects" />;
         return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} />;
@@ -127,13 +125,13 @@ export function PageWithMargins() {
 
   return (
     <div className={`app-container ${isMobile ? 'mobile-state' : ''}`} style={{ position: 'relative' }}>
-      <GlobalResendWarningModal />
+
       <UrlManager />
       <GithubLink />
 
       {/* User Login & Role Status Badge */}
       <div className="user-profile-badge" style={{ position: 'absolute', top: '16px', right: '20px', display: 'flex', alignItems: 'center', gap: '10px', zIndex: 900 }}>
-        <ResendTopBarBadge />
+
         <div style={{
           display: 'flex',
           alignItems: 'center',

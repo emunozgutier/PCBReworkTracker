@@ -17,14 +17,10 @@ interface AuthState {
     owner: Owner | null;
     loading: boolean;
     error: string | null;
-    otpSent: boolean;
-    
-    requestOtp: (email: string) => Promise<boolean>;
-    verifyOtp: (email: string, otp: string) => Promise<boolean>;
+    verifyTotp: (username: string, otp: string) => Promise<boolean>;
     verifySession: () => Promise<boolean>;
     logout: () => Promise<void>;
     clearError: () => void;
-    setOtpSent: (val: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -35,39 +31,15 @@ export const useAuthStore = create<AuthState>()(
             owner: null,
             loading: false,
             error: null,
-            otpSent: false,
-
             clearError: () => set({ error: null }),
-            setOtpSent: (val) => set({ otpSent: val }),
 
-            requestOtp: async (email) => {
+            verifyTotp: async (username, otp) => {
                 set({ loading: true, error: null });
                 try {
-                    const res = await apiFetch(`${API_BASE}/auth/request-otp`, {
+                    const res = await apiFetch(`${API_BASE}/auth/verify-totp`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email })
-                    });
-                    const data = await res.json();
-                    if (!res.ok) {
-                        set({ error: data.error || 'Failed to request code', loading: false });
-                        return false;
-                    }
-                    set({ loading: false, otpSent: true, email });
-                    return true;
-                } catch (err: any) {
-                    set({ error: err.message, loading: false });
-                    return false;
-                }
-            },
-
-            verifyOtp: async (email, otp) => {
-                set({ loading: true, error: null });
-                try {
-                    const res = await apiFetch(`${API_BASE}/auth/verify-otp`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, otp })
+                        body: JSON.stringify({ username, otp })
                     });
                     const data = await res.json();
                     if (!res.ok) {
@@ -75,8 +47,8 @@ export const useAuthStore = create<AuthState>()(
                         return false;
                     }
                     
-                    const { token, owner } = data;
-                    set({ token, email, owner, loading: false, otpSent: false });
+                    const { token, owner, email } = data;
+                    set({ token, email, owner, loading: false });
                     
                     // Automatically update simulation mode role
                     const role = owner.superuser === 1 ? 'superuser' : 'user';
@@ -110,7 +82,7 @@ export const useAuthStore = create<AuthState>()(
                         return true;
                     } else {
                         // Session expired
-                        set({ token: null, email: null, owner: null, otpSent: false });
+                        set({ token: null, email: null, owner: null });
                         useGlobalSettings.getState().setActiveRole('guest');
                         return false;
                     }
@@ -131,7 +103,7 @@ export const useAuthStore = create<AuthState>()(
                         });
                     } catch (e) {}
                 }
-                set({ token: null, email: null, owner: null, otpSent: false, error: null });
+                set({ token: null, email: null, owner: null, error: null });
                 useGlobalSettings.getState().setActiveRole('guest');
             }
         }),

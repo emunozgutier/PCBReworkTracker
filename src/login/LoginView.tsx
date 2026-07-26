@@ -2,82 +2,45 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from './client';
 import { useAppState } from '../store/useAppState';
 import { useOwnerStore } from '../store/useOwnerStore';
-import { API_BASE, apiFetch } from '../store/database/apiBridge';
-import { Mail, ShieldCheck, ArrowLeft, RefreshCw, Key, AlertTriangle, X } from 'lucide-react';
+import { ShieldCheck, RefreshCw, Key } from 'lucide-react';
 import './LoginView.css';
 
 export function LoginView() {
     const { 
         loading, 
         error, 
-        otpSent, 
-        requestOtp, 
-        verifyOtp, 
-        clearError, 
-        setOtpSent 
+        verifyTotp, 
+        clearError 
     } = useAuthStore();
     const { owners, fetchOwners } = useOwnerStore();
 
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
-    const [attempts, setAttempts] = useState(0);
     const digitRefs = useRef<(HTMLInputElement | null)[]>([]);
     const isVerifyingRef = useRef(false);
 
-    // Resend configuration modal state
-    const [resendConfigured, setResendConfigured] = useState<boolean | null>(null);
-    const [showResendModal, setShowResendModal] = useState(false);
-
-    // Clear error on mount and fetch owners & check Resend status
+    // Clear error on mount and fetch owners
     useEffect(() => {
         clearError();
         fetchOwners();
-        setAttempts(0);
-
-        apiFetch(`${API_BASE}/auth/resend-config`)
-            .then(res => res.json())
-            .then(data => {
-                setResendConfigured(data.configured);
-                if (!data.configured) {
-                    setShowResendModal(true);
-                }
-            })
-            .catch(() => {});
     }, [clearError, fetchOwners]);
-
-    // Handle email request
-    const handleEmailSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!email.trim() || !email.includes('@')) return;
-        await requestOtp(email.trim());
-        setAttempts(0); // Reset attempts when code is freshly requested
-    };
 
     // Auto-verify once 6 digits are fully entered
     useEffect(() => {
         const verifyAndRedirect = async () => {
-            if (otpSent && otpDigits.every(digit => digit !== '') && !loading && !isVerifyingRef.current) {
+            if (username && otpDigits.every(digit => digit !== '') && !loading && !isVerifyingRef.current) {
                 isVerifyingRef.current = true;
                 const code = otpDigits.join('');
-                // Clear digits immediately to prevent duplicate triggers on subsequent renders
+                
+                // Clear digits immediately to prevent duplicate triggers
                 setOtpDigits(['', '', '', '', '', '']);
 
                 try {
-                    const success = await verifyOtp(email, code);
+                    const success = await verifyTotp(username, code);
                     if (success) {
-                        setAttempts(0);
                         useAppState.getState().setPage('projects');
                     } else {
-                        const nextAttempts = attempts + 1;
-                        if (nextAttempts >= 3) {
-                            setAttempts(0);
-                            setOtpSent(false);
-                            useAuthStore.setState({ error: 'Too many failed attempts. Please request a new passcode.' });
-                        } else {
-                            setAttempts(nextAttempts);
-                            digitRefs.current[0]?.focus();
-                            useAuthStore.setState({ error: `Invalid passcode. ${3 - nextAttempts} attempts remaining.` });
-                        }
+                        digitRefs.current[0]?.focus();
                     }
                 } finally {
                     isVerifyingRef.current = false;
@@ -85,7 +48,7 @@ export function LoginView() {
             }
         };
         verifyAndRedirect();
-    }, [otpDigits, otpSent, email, verifyOtp, attempts, loading, setOtpSent]);
+    }, [otpDigits, username, verifyTotp, loading]);
 
     // Handle digit typing
     const handleDigitChange = (index: number, value: string) => {
@@ -134,24 +97,11 @@ export function LoginView() {
             <div className="login-glass-panel">
                 <div className="login-brand">
                     <div className="login-logo-circle">
-                        {otpSent ? <Key className="logo-icon glow-pulse" size={28} /> : <ShieldCheck className="logo-icon animate-bounce-slow" size={32} />}
+                        <ShieldCheck className="logo-icon animate-bounce-slow" size={32} />
                     </div>
                     <h2>PCB Rework Tracker</h2>
-                    {otpSent && <p className="subtitle">Verification Passcode</p>}
+                    <p className="subtitle">Secure Login</p>
                 </div>
-
-                {resendConfigured === false && (
-                    <div className="resend-config-banner">
-                        <span>⚠️ Resend Email API not configured.</span>
-                        <button
-                            type="button"
-                            className="resend-banner-btn"
-                            onClick={() => useAppState.getState().setPage('setup_resend')}
-                        >
-                            Set Up Resend
-                        </button>
-                    </div>
-                )}
 
                 {error && (
                     <div className="login-error-toast" onClick={clearError}>
@@ -159,171 +109,99 @@ export function LoginView() {
                     </div>
                 )}
 
-                {!otpSent ? (
-                    <form onSubmit={handleEmailSubmit} className="login-form">
-                        <div className="input-group">
-                            <label htmlFor="email">Work Email</label>
-                            <div className="input-with-icon">
-                                <Mail className="input-icon" size={18} />
-                                {owners && owners.filter(o => o.email).length > 0 ? (
-                                    <select
-                                        id="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                        disabled={loading}
-                                        style={{
-                                            width: '100%',
-                                            padding: '12px 12px 12px 40px',
-                                            border: '1px solid var(--border)',
-                                            background: 'var(--bg-app)',
-                                            color: 'var(--text-main)',
-                                            borderRadius: '8px',
-                                            fontSize: '0.95rem',
-                                            outline: 'none',
-                                            cursor: 'pointer',
-                                            appearance: 'auto'
-                                        }}
-                                    >
-                                        <option value="">-- Select Owner --</option>
-                                        {owners.filter(o => o.email).map(o => (
-                                            <option key={o.id} value={o.email} style={{ background: 'var(--bg-panel)', color: 'var(--text-main)' }}>
-                                                {o.name} ({o.email})
-                                            </option>
-                                        ))}
-                                    </select>
-                                ) : (
-                                    <input
-                                        type="email"
-                                        id="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="your.name@company.com"
-                                        required
-                                        disabled={loading}
-                                        autoFocus
-                                    />
-                                )}
-                            </div>
-                        </div>
-
-                        <button 
-                            type="submit" 
-                            className="login-btn" 
-                            disabled={loading || !email.includes('@')}
-                        >
-                            {loading ? (
-                                <RefreshCw className="spinner" size={18} />
+                <div className="login-form">
+                    <div className="input-group">
+                        <label htmlFor="username">Select User</label>
+                        <div className="input-with-icon">
+                            <Key className="input-icon" size={18} style={{ color: 'var(--text-secondary)' }} />
+                            {owners && owners.length > 0 ? (
+                                <select
+                                    id="username"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
+                                    disabled={loading}
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 12px 12px 40px',
+                                        border: '1px solid var(--border)',
+                                        background: 'var(--bg-app)',
+                                        color: 'var(--text-main)',
+                                        borderRadius: '8px',
+                                        fontSize: '0.95rem',
+                                        outline: 'none',
+                                        cursor: 'pointer',
+                                        appearance: 'auto'
+                                    }}
+                                >
+                                    <option value="">-- Select Your Name --</option>
+                                    {owners.map(o => (
+                                        <option key={o.id} value={o.username} style={{ background: 'var(--bg-panel)', color: 'var(--text-main)' }}>
+                                            {o.name} ({o.username})
+                                        </option>
+                                    ))}
+                                </select>
                             ) : (
-                                'Request Secure Passcode'
+                                <input
+                                    type="text"
+                                    id="username"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="Username"
+                                    required
+                                    disabled={loading}
+                                    autoFocus
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 12px 12px 40px',
+                                        border: '1px solid var(--border)',
+                                        background: 'var(--bg-app)',
+                                        color: 'var(--text-main)',
+                                        borderRadius: '8px',
+                                        fontSize: '0.95rem',
+                                        outline: 'none'
+                                    }}
+                                />
                             )}
-                        </button>
-                        
-                        <p className="login-note">
-                            We will send a 6-digit verification code to your inbox. Valid for 15 minutes.
-                        </p>
-
-                        <div style={{ textAlign: 'center', marginTop: '8px' }}>
-                            <button
-                                type="button"
-                                onClick={() => useAppState.getState().setPage('setup_resend')}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'var(--accent)',
-                                    fontSize: '0.82rem',
-                                    cursor: 'pointer',
-                                    textDecoration: 'underline',
-                                    opacity: 0.9
-                                }}
-                            >
-                                Configure Resend Email API Key
-                            </button>
-                        </div>
-                    </form>
-                ) : (
-                    <div className="login-form">
-                        <div className="otp-email-sent-badge">
-                            <span>Code dispatched to <strong>{email}</strong></span>
-                            <button 
-                                className="change-email-btn"
-                                onClick={() => {
-                                    setOtpSent(false);
-                                    setOtpDigits(['', '', '', '', '', '']);
-                                    clearError();
-                                }}
-                            >
-                                <ArrowLeft size={12} />
-                                <span>Change email</span>
-                            </button>
-                        </div>
-
-                        <div className="otp-digit-container">
-                            <label className="otp-label">Enter 6-Digit Passcode</label>
-                            <div className="otp-boxes">
-                                {otpDigits.map((digit, idx) => (
-                                    <input
-                                        key={idx}
-                                        ref={(el) => { digitRefs.current[idx] = el; }}
-                                        type="text"
-                                        maxLength={1}
-                                        value={digit}
-                                        onChange={(e) => handleDigitChange(idx, e.target.value)}
-                                        onKeyDown={(e) => handleKeyDown(idx, e)}
-                                        onPaste={handlePaste}
-                                        disabled={loading}
-                                        placeholder="-"
-                                        autoFocus={idx === 0}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-
-                        {loading && (
-                            <div className="otp-verifying-loader">
-                                <RefreshCw className="spinner" size={18} />
-                                <span>Authorizing session...</span>
-                            </div>
-                        )}
-
-                        <p className="login-note">
-                            Please check your inbox, terminal logs, or <code>src/login/email_sent.txt</code> to copy the code.
-                        </p>
-                    </div>
-                )}
-            </div>
-            {/* Pop-up Modal when Resend API is not configured */}
-            {showResendModal && (
-                <div className="resend-warning-modal-overlay">
-                    <div className="resend-warning-modal">
-                        <button className="modal-close-btn" onClick={() => setShowResendModal(false)}>
-                            <X size={18} />
-                        </button>
-                        <div className="modal-icon-header">
-                            <AlertTriangle className="warning-icon glow-amber" size={44} />
-                        </div>
-                        <h3>Resend Email API Not Configured</h3>
-                        <p>
-                            Real OTP email dispatching is currently inactive. Passcodes will log locally to <code>src/login/email_sent.txt</code> and console logs until an API key is set up.
-                        </p>
-                        <div className="modal-actions">
-                            <button 
-                                className="primary-setup-btn"
-                                onClick={() => useAppState.getState().setPage('setup_resend')}
-                            >
-                                <Key size={16} />
-                                <span>Set Up Resend Email API Now</span>
-                            </button>
-                            <button 
-                                className="secondary-dismiss-btn"
-                                onClick={() => setShowResendModal(false)}
-                            >
-                                Continue with Local Log Mode
-                            </button>
                         </div>
                     </div>
+
+                    <div className="otp-digit-container" style={{ marginTop: '20px' }}>
+                        <label className="otp-label" style={{ marginBottom: '8px', display: 'block', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>6-Digit Authenticator Code</label>
+                        <div className="otp-boxes">
+                            {otpDigits.map((digit, idx) => (
+                                <input
+                                    key={idx}
+                                    ref={(el) => { digitRefs.current[idx] = el; }}
+                                    type="text"
+                                    maxLength={1}
+                                    value={digit}
+                                    onChange={(e) => handleDigitChange(idx, e.target.value)}
+                                    onKeyDown={(e) => handleKeyDown(idx, e)}
+                                    onPaste={handlePaste}
+                                    disabled={loading || !username}
+                                    placeholder="-"
+                                    style={{
+                                        opacity: username ? 1 : 0.5,
+                                        cursor: username ? 'text' : 'not-allowed'
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                    {loading && (
+                        <div className="otp-verifying-loader" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '16px', color: 'var(--text-secondary)' }}>
+                            <RefreshCw className="spinner" size={18} />
+                            <span>Authorizing session...</span>
+                        </div>
+                    )}
+
+                    <p className="login-note" style={{ marginTop: '20px' }}>
+                        Open your Authenticator app (e.g., Google Authenticator, Authy) to view your 6-digit code. Sessions are valid for 3 days.
+                    </p>
                 </div>
-            )}
+            </div>
         </div>
     );
 }

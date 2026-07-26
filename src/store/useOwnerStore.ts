@@ -18,7 +18,7 @@ interface OwnerState {
     loading: boolean;
     error: string | null;
     fetchOwners: () => Promise<void>;
-    addOwner: (data: { name: string; username: string; email?: string; superuser?: number }) => Promise<boolean>;
+    addOwner: (data: { name: string; username: string; email?: string; superuser?: number }) => Promise<{ success: boolean; qrCodeDataUrl?: string }>;
     updateOwner: (id: number | string, data: { name: string; username: string; email?: string; superuser?: number }) => Promise<boolean>;
     deleteOwner: (id: number | string) => Promise<boolean>;
 }
@@ -52,14 +52,14 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
             
             if (!res.ok) {
                 set({ error: result.error || 'Failed to add owner', loading: false });
-                return false;
+                return { success: false };
             }
             
             await get().fetchOwners();
-            return true;
+            return { success: true, qrCodeDataUrl: result.qrCodeDataUrl };
         } catch (err: any) {
             set({ error: err.message, loading: false });
-            return false;
+            return { success: false };
         }
     },
 
