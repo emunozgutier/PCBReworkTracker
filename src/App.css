@@ -39,7 +39,7 @@ body {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 24px;
+  padding: 20px 24px 24px 24px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -47,7 +47,6 @@ body {
 
 .app-header {
   text-align: center;
-  margin-top: 40px;
   margin-bottom: 32px;
 }
 

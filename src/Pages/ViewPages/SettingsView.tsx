@@ -168,8 +168,7 @@ export function SettingsView() {
                             </div>
                         </div>
 
-                        <div className="choice-example-badge">
-                            <span className="example-tag">NATO:</span>
+                        <div className="choice-example-badge" style={{ justifyContent: 'flex-start' }}>
                             <span className="example-code">
                                 {sampleBase}<span>{sampleNato}</span>
                             </span>
