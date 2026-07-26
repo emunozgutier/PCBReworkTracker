@@ -11,7 +11,7 @@ export function TabBar() {
         { id: 'projects', label: 'Projects', icon: ClipboardList },
         { id: 'pcbs', label: 'PCBs', icon: CircuitBoard },
         { id: 'reworks', label: 'Reworks', icon: PenTool },
-        { id: 'owners', label: 'Owners', icon: Users },
+        { id: 'owners', label: 'Users', icon: Users },
         { id: 'tags', label: 'Tags', icon: Hash },
         { id: 'sandbox', label: 'CRC', icon: ShieldCheck },
         { id: 'settings', label: 'Settings', icon: Settings }

@@ -1,14 +1,64 @@
 import sqlite3 from 'sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const dbPath = path.resolve(__dirname, 'pcb_tracker.db');
-const db = new sqlite3.Database(dbPath);
+let dbInstance = new sqlite3.Database(dbPath);
 
-const initDb = (): Promise<void> => {
+const db = {
+    run: (...args: any[]) => dbInstance.run.apply(dbInstance, args as any),
+    all: (...args: any[]) => dbInstance.all.apply(dbInstance, args as any),
+    get: (...args: any[]) => dbInstance.get.apply(dbInstance, args as any),
+    serialize: (callback: () => void) => dbInstance.serialize(callback),
+    close: (callback?: (err: Error | null) => void) => dbInstance.close(callback)
+} as sqlite3.Database;
+
+const recreateDb = (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        dbInstance.close((err) => {
+            if (err && (err as any).code !== 'SQLITE_MISUSE') {
+                console.error("Error closing corrupted DB:", err);
+            }
+            try {
+                if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
+                if (fs.existsSync(`${dbPath}-wal`)) fs.unlinkSync(`${dbPath}-wal`);
+                if (fs.existsSync(`${dbPath}-shm`)) fs.unlinkSync(`${dbPath}-shm`);
+            } catch (e) {
+                console.error("Error deleting DB files:", e);
+            }
+            dbInstance = new sqlite3.Database(dbPath, (err) => {
+                if (err) return reject(err);
+                resolve();
+            });
+        });
+    });
+};
+
+const checkIntegrity = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+        dbInstance.get('PRAGMA integrity_check;', (err, row: any) => {
+            if (err) {
+                return resolve(false);
+            }
+            if (row && row.integrity_check === 'ok') {
+                return resolve(true);
+            }
+            resolve(false);
+        });
+    });
+};
+
+const initDb = async (): Promise<void> => {
+    let isHealthy = await checkIntegrity();
+    if (!isHealthy) {
+        console.warn("Database corrupted or invalid. Recreating from scratch...");
+        await recreateDb();
+    }
+
     return new Promise((resolve) => {
         db.serialize(() => {
             db.run('PRAGMA foreign_keys = ON');
