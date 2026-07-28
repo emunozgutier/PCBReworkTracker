@@ -17,7 +17,7 @@ interface OwnerState {
     loading: boolean;
     error: string | null;
     fetchOwners: () => Promise<void>;
-    addOwner: (data: { name: string; username: string; email?: string }) => Promise<boolean>;
+    addOwner: (data: { name: string; username: string; email?: string; otp_secret?: string }) => Promise<boolean>;
     updateOwner: (id: number | string, data: { name: string; username: string; email?: string }) => Promise<boolean>;
     deleteOwner: (id: number | string) => Promise<boolean>;
 }

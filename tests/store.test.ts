@@ -5,6 +5,7 @@ import { usePcbStore } from '../src/store/usePcbStore';
 import { useOwnerStore } from '../src/store/useOwnerStore';
 import { useTagStore } from '../src/store/useTagStore';
 import { useReworkStore } from '../src/store/useReworkStore';
+import { useAppState } from '../src/store/useAppState';
 
 describe('Store and Database Integration Tests', () => {
     let projectId: number;
@@ -17,6 +18,10 @@ describe('Store and Database Integration Tests', () => {
     const testPcbName = 'VITEST-PCB-001';
     const testOwnerName = 'Vitest Owner';
     const testTagName = 'VITEST-TAG';
+
+    beforeAll(() => {
+        useAppState.getState().setCurrentUser(null, 'Super User');
+    });
 
     it('should add a project', async () => {
         const store = useProjectStore.getState();

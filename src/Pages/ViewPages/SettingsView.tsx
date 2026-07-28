@@ -267,8 +267,8 @@ export function SettingsView() {
                                     <tr>
                                         <td>Add</td>
                                         <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
                                     </tr>
                                     <tr className="edit-row">
                                         <td>Edit Own</td>

@@ -93,7 +93,8 @@ const initDb = async () => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             username TEXT UNIQUE,
-            email TEXT
+            email TEXT,
+            otp_secret TEXT
         )`);
         dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_owners_username ON owners(username)`);
 
@@ -170,6 +171,8 @@ const initDb = async () => {
         
         // Migration: Add email column to owners if it doesn't exist
         dbInstance.run(`ALTER TABLE owners ADD COLUMN email TEXT`, () => {});
+        // Migration: Add otp_secret column to owners if it doesn't exist
+        dbInstance.run(`ALTER TABLE owners ADD COLUMN otp_secret TEXT`, () => {});
         
         dbInstance.run(`ALTER TABLE pcbs ADD COLUMN created_at DATETIME`, (err) => {
             if (err) {

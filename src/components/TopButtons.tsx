@@ -28,11 +28,11 @@ export function TopButtons() {
     if (currentUserRole === 'Super User') {
         canAdd = true;
     } else if (currentUserRole === 'User') {
-        // Users can add PCBs, reworks, and tags, but NOT projects or owners
-        canAdd = activeTab !== 'projects' && activeTab !== 'owners';
+        // Users can add PCBs, reworks, tags, and owners, but NOT projects
+        canAdd = activeTab !== 'projects';
     } else {
-        // Guests cannot add anything
-        canAdd = false;
+        // Guests can only add owners (users) to register
+        canAdd = activeTab === 'owners';
     }
 
     // Only display Add New button if not on settings and user has permissions

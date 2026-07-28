@@ -1,6 +1,50 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { cleanupTestData } from './cleanup';
+import crypto from 'crypto';
 import request from 'supertest';
+
+function base32ToBuf(base32) {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    let clean = base32.replace(/=+$/, '').toUpperCase();
+    let length = clean.length;
+    let bits = 0;
+    let value = 0;
+    let index = 0;
+    const buf = Buffer.alloc(Math.floor(length * 5 / 8));
+    
+    for (let i = 0; i < length; i++) {
+        const val = alphabet.indexOf(clean[i]);
+        if (val === -1) throw new Error("Invalid base32 character");
+        value = (value << 5) | val;
+        bits += 5;
+        if (bits >= 8) {
+            buf[index++] = (value >> (bits - 8)) & 255;
+            bits -= 8;
+        }
+    }
+    return buf;
+}
+
+function generateTotp(secret, time = Date.now()) {
+    const counter = Math.floor(time / 1000 / 30);
+    const key = base32ToBuf(secret);
+    
+    const countBuf = Buffer.alloc(8);
+    let tmp = counter;
+    for (let i = 7; i >= 0; i--) {
+        countBuf[i] = tmp & 0xff;
+        tmp = Math.floor(tmp / 256);
+    }
+    
+    const hmac = crypto.createHmac('sha1', key).update(countBuf).digest();
+    const offset = hmac[hmac.length - 1] & 0xf;
+    const code = ((hmac[offset] & 0x7f) << 24) |
+                 ((hmac[offset + 1] & 0xff) << 16) |
+                 ((hmac[offset + 2] & 0xff) << 8) |
+                 (hmac[offset + 3] & 0xff);
+                 
+    return String(code % 1000000).padStart(6, '0');
+}
 
 // Assuming server is running on localhost:5002, or we could just use a fetch test
 // Let's use standard fetch to hit the running dev server on localhost:5002
@@ -60,6 +104,50 @@ describe('Projects API - Silicon Version', () => {
         expect(Array.isArray(project.flavors)).toBe(true);
         expect(project.flavors.length).toBe(1);
         expect(project.flavors[0].name).toBe('Flavor1');
+    });
+
+
+    it('should setup OTP, verify it, and allow creating a new owner as a guest', async () => {
+        const uniqueUsername = `gowner${Date.now()}`;
+        // 1. Get OTP Setup
+        const resSetup = await fetch(`${API_URL}/otp/setup?username=${uniqueUsername}`);
+        expect(resSetup.status).toBe(200);
+        const setupData = await resSetup.json();
+        expect(setupData.secret).toBeDefined();
+        expect(setupData.otpauthUrl).toBeDefined();
+        
+        const secret = setupData.secret;
+        
+        // 2. Generate expected token
+        const token = generateTotp(secret);
+        
+        // 3. Verify OTP
+        const resVerify = await fetch(`${API_URL}/otp/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ secret, token })
+        });
+        expect(resVerify.status).toBe(200);
+        const verifyData = await resVerify.json();
+        expect(verifyData.valid).toBe(true);
+
+        // 4. Create new owner as guest
+        const res = await fetch(`${API_URL}/owners`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-User-Role': 'Guest'
+            },
+            body: JSON.stringify({
+                name: `Guest Owner ${uniqueUsername}`,
+                username: uniqueUsername,
+                otp_secret: secret
+            })
+        });
+        expect(res.status).toBe(201);
+        const data = await res.json();
+        expect(data.id).toBeDefined();
+        expect(data.name).toBe(`Guest Owner ${uniqueUsername}`);
     });
 
     it('should delete the test project', async () => {

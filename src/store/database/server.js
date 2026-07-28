@@ -1,4 +1,5 @@
 import express from 'express';
+import crypto from 'crypto';
 import cors from 'cors';
 import morgan from 'morgan';
 import multer from 'multer';
@@ -554,6 +555,90 @@ app.post('/api/pcbs', async (req, res) => {
     }
 });
 
+// --- OTP Helpers ---
+function base32ToBuf(base32) {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    let clean = base32.replace(/=+$/, '').toUpperCase();
+    let length = clean.length;
+    let bits = 0;
+    let value = 0;
+    let index = 0;
+    const buf = Buffer.alloc(Math.floor(length * 5 / 8));
+    
+    for (let i = 0; i < length; i++) {
+        const val = alphabet.indexOf(clean[i]);
+        if (val === -1) throw new Error("Invalid base32 character");
+        value = (value << 5) | val;
+        bits += 5;
+        if (bits >= 8) {
+            buf[index++] = (value >> (bits - 8)) & 255;
+            bits -= 8;
+        }
+    }
+    return buf;
+}
+
+function generateTotp(secret, time = Date.now()) {
+    const counter = Math.floor(time / 1000 / 30);
+    const key = base32ToBuf(secret);
+    
+    const countBuf = Buffer.alloc(8);
+    let tmp = counter;
+    for (let i = 7; i >= 0; i--) {
+        countBuf[i] = tmp & 0xff;
+        tmp = Math.floor(tmp / 256);
+    }
+    
+    const hmac = crypto.createHmac('sha1', key).update(countBuf).digest();
+    const offset = hmac[hmac.length - 1] & 0xf;
+    const code = ((hmac[offset] & 0x7f) << 24) |
+                 ((hmac[offset + 1] & 0xff) << 16) |
+                 ((hmac[offset + 2] & 0xff) << 8) |
+                 (hmac[offset + 3] & 0xff);
+                 
+    return String(code % 1000000).padStart(6, '0');
+}
+
+function verifyTotp(secret, token) {
+    const now = Date.now();
+    for (let i = -1; i <= 1; i++) {
+        const expected = generateTotp(secret, now + i * 30 * 1000);
+        if (expected === token) return true;
+    }
+    return false;
+}
+
+function generateSecret() {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    let secret = '';
+    for (let i = 0; i < 16; i++) {
+        secret += alphabet[Math.floor(Math.random() * alphabet.length)];
+    }
+    return secret;
+}
+
+// --- OTP API Endpoints ---
+app.get('/api/otp/setup', (req, res) => {
+    const { username } = req.query;
+    if (!username) return res.status(400).json({ error: "Username is required." });
+    const secret = generateSecret();
+    const otpauthUrl = `otpauth://totp/PCBReworkTracker:${username}?secret=${secret}&issuer=PCBReworkTracker`;
+    res.json({ secret, otpauthUrl });
+});
+
+app.post('/api/otp/verify', (req, res) => {
+    const { secret, token } = req.body;
+    if (!secret || !token) {
+        return res.status(400).json({ error: "Secret and token are required." });
+    }
+    try {
+        const isValid = verifyTotp(secret, token);
+        res.json({ valid: isValid });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
 // Owners API
 app.get('/api/owners', (req, res) => {
     const query = `
@@ -570,9 +655,9 @@ app.get('/api/owners', (req, res) => {
 });
 
 app.post('/api/owners', (req, res) => {
-    const { name, username, email } = req.body;
+    const { name, username, email, otp_secret } = req.body;
     const cleanUsername = username ? username.replace(/\s+/g, '').toLowerCase() : null;
-    db.run("INSERT INTO owners (name, username, email) VALUES (?, ?, ?)", [name, cleanUsername, email || null], function(err) {
+    db.run("INSERT INTO owners (name, username, email, otp_secret) VALUES (?, ?, ?, ?)", [name, cleanUsername, email || null, otp_secret || null], function(err) {
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {
                 return res.status(400).json({ error: `Username "${cleanUsername}" is already taken.` });
