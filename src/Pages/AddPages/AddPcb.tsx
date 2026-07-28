@@ -178,9 +178,16 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                     setBom('');
                 }
             }
-            if (ownerData.length > 0) setSelectedOwner(ownerData[0].id.toString());
+            if (ownerData.length > 0) {
+                const userMatch = currentUser ? ownerData.find(o => o.id === currentUser.id) : null;
+                if (userMatch) {
+                    setSelectedOwner(userMatch.id.toString());
+                } else {
+                    setSelectedOwner(ownerData[0].id.toString());
+                }
+            }
         }).catch(err => console.error('Failed to pre-fetch data:', err));
-    }, []);
+    }, [currentUser]);
 
     const handleProjectChange = (id: string) => {
         setSelectedProject(id);
@@ -366,7 +373,6 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                 id="owner" 
                                 value={selectedOwner} 
                                 onChange={(e) => setSelectedOwner(e.target.value)}
-                                disabled={currentUserRole === 'User'}
                             >
                                 <option value="">Unassigned</option>
                                 {owners.map(o => <option key={o.id} value={o.id}>@{o.username}</option>)}
