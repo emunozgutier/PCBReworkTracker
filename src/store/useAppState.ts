@@ -54,6 +54,32 @@ interface NavigationState {
     setCurrentUser: (user: any | null, role: 'Super User' | 'User' | 'Guest') => void;
 }
 
+// Load initial session from localStorage if valid
+let initialUser = null;
+let initialRole: 'Super User' | 'User' | 'Guest' = 'Guest';
+
+if (typeof window !== 'undefined') {
+    try {
+        const storedUser = localStorage.getItem('rework_user');
+        const storedRole = localStorage.getItem('rework_role');
+        const storedExpires = localStorage.getItem('rework_session_expires');
+
+        if (storedUser && storedRole && storedExpires) {
+            const expires = parseInt(storedExpires, 10);
+            if (Date.now() < expires) {
+                initialUser = JSON.parse(storedUser);
+                initialRole = storedRole as 'Super User' | 'User' | 'Guest';
+            } else {
+                localStorage.removeItem('rework_user');
+                localStorage.removeItem('rework_role');
+                localStorage.removeItem('rework_session_expires');
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load session from localStorage', e);
+    }
+}
+
 export const useAppState = create<NavigationState>((set) => ({
     page: 'projects',
     activeTab: 'projects',
@@ -69,10 +95,28 @@ export const useAppState = create<NavigationState>((set) => ({
     searchQuery: '',
     showFilters: false,
     showMobileSearch: false,
-    currentUser: null,
-    currentUserRole: 'Guest',
+    currentUser: initialUser,
+    currentUserRole: initialRole,
 
-    setCurrentUser: (currentUser, currentUserRole) => set({ currentUser, currentUserRole }),
+    setCurrentUser: (currentUser, currentUserRole) => {
+        set({ currentUser, currentUserRole });
+        if (typeof window !== 'undefined') {
+            try {
+                if (currentUserRole === 'Guest') {
+                    localStorage.removeItem('rework_user');
+                    localStorage.removeItem('rework_role');
+                    localStorage.removeItem('rework_session_expires');
+                } else {
+                    localStorage.setItem('rework_user', JSON.stringify(currentUser));
+                    localStorage.setItem('rework_role', currentUserRole);
+                    const expires = Date.now() + 7 * 24 * 60 * 60 * 1000; // 1 week
+                    localStorage.setItem('rework_session_expires', expires.toString());
+                }
+            } catch (e) {
+                console.error('Failed to save session to localStorage', e);
+            }
+        }
+    },
     setPage: (page) => set({ page }),
     setIsolatedView: (isolatedView) => set({ isolatedView }),
     
