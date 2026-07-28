@@ -7,6 +7,13 @@ import { FormGroup } from '../../components/forms/FormGroup';
 import { RemovePcb } from '../RemovePage/RemovePcb';
 import { useAppState } from '../../store/useAppState';
 
+const formatNA = (val: string | null | undefined): string => {
+    if (!val) return 'N/A';
+    const s = val.trim().toLowerCase();
+    if (s === 'na' || s === 'n/a' || s === 'not applicable') return 'N/A';
+    return val;
+};
+
 interface EditPCBProps {
     id: string | number;
     onBack: () => void;
@@ -192,13 +199,13 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                         <div className="form-group flex-1">
                             <label>Rev</label>
                             <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
-                                {noPartYet ? 'No part' : (selectedRevision || 'N/A')}
+                                {noPartYet ? 'No part' : formatNA(selectedRevision)}
                             </div>
                         </div>
                         <div className="form-group flex-1">
                             <label>Corner</label>
                             <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
-                                {noPartYet ? 'No part' : (siliconVersion || 'N/A')}
+                                {noPartYet ? 'No part' : formatNA(siliconVersion)}
                             </div>
                         </div>
                     </div>
@@ -223,19 +230,19 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                         <div className="form-group flex-1">
                             <label>Flavor</label>
                             <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
-                                {selectedFormfactor || 'N/A'}
+                                {formatNA(selectedFormfactor)}
                             </div>
                         </div>
                         <div className="form-group flex-1">
                             <label>Rev Number</label>
                             <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
-                                {pcbRev || 'N/A'}
+                                {formatNA(pcbRev)}
                             </div>
                         </div>
                         <div className="form-group flex-1">
                             <label>BOM</label>
                             <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
-                                {bom || 'Unknown'}
+                                {bom || 'N/A'}
                             </div>
                         </div>
                     </div>
