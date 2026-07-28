@@ -42,7 +42,7 @@ export function OwnerCardHeader({ owner, isExpanded, onToggle, onEdit }: OwnerCa
                 )}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text)', margin: 0, fontFamily: 'monospace' }}>
-                        {owner.username ? `@${owner.username}` : 'No username'}
+                        {owner.username ? owner.username : 'No username'}
                     </span>
                     <span style={{
                         fontSize: '0.7rem',

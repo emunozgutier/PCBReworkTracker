@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { User as UserIcon, ChevronDown, ShieldAlert, KeyRound, Save, RefreshCw } from 'lucide-react';
+import { User as UserIcon, ChevronDown, ShieldAlert, KeyRound, Save, RefreshCw, LogOut } from 'lucide-react';
 import { useAppState } from '../store/useAppState';
 import { useOwnerStore } from '../store/useOwnerStore';
 import { Popup } from '../components/Popup';
@@ -24,6 +24,13 @@ export function UserLoginButton() {
         fetchOwners();
     }, [fetchOwners]);
 
+    // Auto-select first owner when owners list loads
+    useEffect(() => {
+        if (!selectedUsername && owners.length > 0) {
+            setSelectedUsername(owners[0].username);
+        }
+    }, [owners, selectedUsername]);
+
     // Handle click outside to close dropdown
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -40,10 +47,10 @@ export function UserLoginButton() {
     let roleBadgeColor = 'var(--text-muted)';
     
     if (currentUserRole === 'Super User') {
-        displayLabel = currentUser ? `${currentUser.name} (Admin)` : 'Super User';
+        displayLabel = currentUser ? currentUser.username : 'Super User';
         roleBadgeColor = '#a855f7'; // purple
     } else if (currentUserRole === 'User' && currentUser) {
-        displayLabel = `${currentUser.name} (User)`;
+        displayLabel = currentUser.username;
         roleBadgeColor = 'var(--accent)'; // indigo
     }
 
@@ -189,7 +196,7 @@ export function UserLoginButton() {
                             <option disabled>──────────</option>
                             {owners.map(owner => (
                                 <option key={owner.id} value={owner.username}>
-                                    {owner.name} (@{owner.username})
+                                    {owner.name}
                                 </option>
                             ))}
                         </select>
@@ -216,6 +223,42 @@ export function UserLoginButton() {
                         </select>
                     </div>
 
+                    {/* Logout Button */}
+                    <button
+                        onClick={() => {
+                            setCurrentUser(null, 'Guest');
+                            setIsOpen(false);
+                        }}
+                        style={{
+                            width: '100%',
+                            padding: '8px',
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            borderRadius: '8px',
+                            color: '#ef4444',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            marginTop: '12px',
+                            marginBottom: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            fontSize: '0.85rem',
+                            transition: 'all 0.2s ease',
+                            fontFamily: 'inherit'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                        }}
+                    >
+                        <LogOut size={14} />
+                        <span>Logout</span>
+                    </button>
+
                     {/* Helper description of permissions */}
                     <div className="dropdown-footer">
                         <ShieldAlert size={14} />
@@ -232,7 +275,7 @@ export function UserLoginButton() {
                 isOpen={showLoginModal}
                 onClose={() => {
                     setShowLoginModal(false);
-                    setSelectedUsername('');
+                    setSelectedUsername(owners[0]?.username || '');
                     setLoginOtp('');
                     setLoginError('');
                 }}
@@ -258,42 +301,35 @@ export function UserLoginButton() {
                             }}
                             required
                         >
-                            <option value="">Choose your account...</option>
-                            <option value="admin">Super User (Administrator)</option>
-                            {owners.length > 0 && <option disabled>──────────</option>}
                             {owners.map(owner => (
                                 <option key={owner.id} value={owner.username}>
-                                    {owner.name} (@{owner.username})
+                                    {owner.name}
                                 </option>
                             ))}
                         </select>
                     </div>
 
-                    {selectedUsername && selectedUsername !== 'admin' && (
-                        <div className="form-group" style={{ marginBottom: '24px' }}>
-                            {hasOtpSecret ? (
-                                <>
-                                    <label htmlFor="login-otp-token">Google Authenticator OTP Code</label>
-                                    <input
-                                        id="login-otp-token"
-                                        type="text"
-                                        value={loginOtp}
-                                        onChange={(e) => setLoginOtp(e.target.value.replace(/\D/g, ''))}
-                                        placeholder="Enter 6-digit code"
-                                        maxLength={6}
-                                        pattern="[0-9]{6}"
-                                        required
-                                        autoFocus
-                                        style={{ textAlign: 'center', fontSize: '1.25rem', letterSpacing: '2px', fontWeight: 'bold' }}
-                                    />
-                                </>
-                            ) : (
-                                <div style={{ fontSize: '0.85rem', color: '#10b981', padding: '8px 12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.2)', textAlign: 'center' }}>
-                                    No OTP configuration found for this user. You can log in directly.
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    <div className="form-group" style={{ marginBottom: '24px' }}>
+                        <label htmlFor="login-otp-token">Google Authenticator OTP Code</label>
+                        <input
+                            id="login-otp-token"
+                            type="text"
+                            value={loginOtp}
+                            onChange={(e) => setLoginOtp(e.target.value.replace(/\D/g, ''))}
+                            placeholder={!selectedUsername ? "Select user first" : (!hasOtpSecret ? "OTP not configured" : "Enter 6-digit code")}
+                            maxLength={6}
+                            pattern="[0-9]{6}"
+                            required={selectedUsername ? hasOtpSecret : true}
+                            disabled={!selectedUsername || !hasOtpSecret}
+                            style={{ 
+                                textAlign: 'center', 
+                                fontSize: '1.25rem', 
+                                letterSpacing: '2px', 
+                                fontWeight: 'bold',
+                                opacity: !selectedUsername || !hasOtpSecret ? 0.6 : 1
+                            }}
+                        />
+                    </div>
 
                     <button
                         type="submit"
