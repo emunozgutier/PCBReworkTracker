@@ -660,16 +660,16 @@ app.get('/api/owners', (req, res) => {
 });
 
 app.post('/api/owners', (req, res) => {
-    const { name, username, email, otp_secret } = req.body;
+    const { name, username, email, otp_secret, crc_format } = req.body;
     const cleanUsername = username ? username.replace(/\s+/g, '').toLowerCase() : null;
-    db.run("INSERT INTO owners (name, username, email, otp_secret) VALUES (?, ?, ?, ?)", [name, cleanUsername, email || null, otp_secret || null], function(err) {
+    db.run("INSERT INTO owners (name, username, email, otp_secret, crc_format) VALUES (?, ?, ?, ?, ?)", [name, cleanUsername, email || null, otp_secret || null, crc_format || 'letter'], function(err) {
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {
                 return res.status(400).json({ error: `Username "${cleanUsername}" is already taken.` });
             }
             return res.status(500).json({ error: err.message });
         }
-        res.status(201).json({ id: this.lastID, name, username: cleanUsername, email: email || null });
+        res.status(201).json({ id: this.lastID, name, username: cleanUsername, email: email || null, crc_format: crc_format || 'letter' });
     });
 });
 
@@ -959,9 +959,9 @@ app.get('/api/owners/:id', (req, res) => {
 });
 
 app.put('/api/owners/:id', (req, res) => {
-    const { name, username, email } = req.body;
+    const { name, username, email, crc_format } = req.body;
     const cleanUsername = username ? username.replace(/\s+/g, '').toLowerCase() : null;
-    db.run("UPDATE owners SET name = ?, username = ?, email = ? WHERE id = ?", [name, cleanUsername, email || null, req.params.id], function(err) {
+    db.run("UPDATE owners SET name = ?, username = ?, email = ?, crc_format = ? WHERE id = ?", [name, cleanUsername, email || null, crc_format || null, req.params.id], function(err) {
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {
                 return res.status(400).json({ error: `Username "${cleanUsername}" is already in use.` });

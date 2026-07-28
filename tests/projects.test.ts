@@ -151,7 +151,7 @@ describe('Projects API - Silicon Version', () => {
         const verifyData = await resVerify.json();
         expect(verifyData.valid).toBe(true);
 
-        // 4. Create new owner as guest
+        // 4. Create new owner as guest with custom crc_format
         const res = await fetch(`${API_URL}/owners`, {
             method: 'POST',
             headers: { 
@@ -161,13 +161,36 @@ describe('Projects API - Silicon Version', () => {
             body: JSON.stringify({
                 name: `Vitest Guest Owner ${uniqueUsername}`,
                 username: uniqueUsername,
-                otp_secret: secret
+                otp_secret: secret,
+                crc_format: 'nato'
             })
         });
         expect(res.status).toBe(201);
         const data = await res.json();
         expect(data.id).toBeDefined();
         expect(data.name).toBe(`Vitest Guest Owner ${uniqueUsername}`);
+        expect(data.crc_format).toBe('nato');
+
+        // Fetch owner and verify database record
+        const getRes = await fetch(`${API_URL}/owners/${data.id}`);
+        const ownerDb = await getRes.json();
+        expect(ownerDb.crc_format).toBe('nato');
+
+        // Update owner details (including crc_format)
+        const updateRes = await fetch(`${API_URL}/owners/${data.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: `Vitest Updated Owner`,
+                username: uniqueUsername,
+                crc_format: 'letter'
+            })
+        });
+        expect(updateRes.status).toBe(200);
+
+        const checkRes = await fetch(`${API_URL}/owners/${data.id}`);
+        const updatedOwnerDb = await checkRes.json();
+        expect(updatedOwnerDb.crc_format).toBe('letter');
     });
 
     it('should allow superuser to reset OTP, log superuser actions, and confirm reset', async () => {

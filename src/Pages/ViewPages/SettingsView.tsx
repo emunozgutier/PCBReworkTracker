@@ -45,9 +45,8 @@ export function SettingsView() {
                 <div className="settings-options-grid">
                     {/* Option 1: Single Letter */}
                     <div
-                        className={`setting-choice-card ${crcFormat === 'letter' ? 'selected' : ''} ${!isSuperUser ? 'disabled' : ''}`}
+                        className={`setting-choice-card ${crcFormat === 'letter' ? 'selected' : ''}`}
                         onClick={() => {
-                            if (!isSuperUser) return;
                             setCrcFormat('letter');
                         }}
                     >
@@ -69,9 +68,8 @@ export function SettingsView() {
 
                     {/* Option 2: NATO Phonetic Word */}
                     <div
-                        className={`setting-choice-card ${crcFormat === 'nato' ? 'selected' : ''} ${!isSuperUser ? 'disabled' : ''}`}
+                        className={`setting-choice-card ${crcFormat === 'nato' ? 'selected' : ''}`}
                         onClick={() => {
-                            if (!isSuperUser) return;
                             setCrcFormat('nato');
                         }}
                     >
@@ -92,16 +90,6 @@ export function SettingsView() {
                         </div>
                     </div>
                 </div>
-
-                {!isSuperUser && (
-                    <div className="settings-lock-warning">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                        </svg>
-                        <span>Only Super Users have permission to modify display settings.</span>
-                    </div>
-                )}
             </div>
 
             {/* Card 2: Permissions Matrix */}
