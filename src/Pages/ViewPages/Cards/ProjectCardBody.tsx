@@ -138,12 +138,12 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
             <ProjectCardSummary project={project} />
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: isMobile ? 'nowrap' : 'wrap' }}>
-                {isSuperUser && (
-                    <EditButton 
-                        onClick={(e) => { e.stopPropagation(); editItem('projects_edit', project.id); }}
-                        label={isMobile ? "Edit" : "Edit Project"}
-                    />
-                )}
+                <EditButton 
+                    onClick={(e) => { e.stopPropagation(); editItem('projects_edit', project.id); }}
+                    disabled={!isSuperUser}
+                    title={!isSuperUser ? "This is only for super users" : "Edit project details"}
+                    label={isMobile ? "Edit" : "Edit Project"}
+                />
                 <ViewButton 
                     onClick={(e) => {
                         e.stopPropagation();
@@ -154,15 +154,15 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                     className="view-pcbs-btn"
                     label={isMobile ? "View" : "View PCBs Info"}
                 />
-                {isSuperUser && (
-                    <DeleteButton 
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setIsRemoveProjectOpen(true);
-                        }}
-                        label={isMobile ? "Delete" : "Delete Project"}
-                    />
-                )}
+                <DeleteButton 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsRemoveProjectOpen(true);
+                    }}
+                    disabled={!isSuperUser}
+                    title={!isSuperUser ? "This is only for super users" : "Delete project"}
+                    label={isMobile ? "Delete" : "Delete Project"}
+                />
             </div>
 
             <RemoveProject 

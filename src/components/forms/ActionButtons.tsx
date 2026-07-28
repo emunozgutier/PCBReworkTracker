@@ -17,6 +17,7 @@ const renderIcon = (icon: unknown) => {
 };
 
 export function EditButton({ label = "Edit", icon = Edit2, style, ...props }: ActionButtonProps) {
+    const isDisabled = props.disabled;
     return (
         <button 
             style={{ 
@@ -26,13 +27,14 @@ export function EditButton({ label = "Edit", icon = Edit2, style, ...props }: Ac
                 justifyContent: 'center',
                 gap: '8px', 
                 background: 'transparent', 
-                color: '#fbbf24', 
-                border: '1px solid rgba(245, 158, 11, 0.5)', 
+                color: isDisabled ? 'var(--text-muted)' : '#fbbf24', 
+                border: isDisabled ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(245, 158, 11, 0.5)', 
                 padding: '10px 16px', 
                 borderRadius: '8px', 
                 fontSize: '0.9rem', 
                 fontWeight: 600, 
-                cursor: 'pointer',
+                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                opacity: isDisabled ? 0.5 : 1,
                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 ...style 
             }}
@@ -133,6 +135,7 @@ export function QrButton({ label = "QR Code", icon = QrCode, style, ...props }: 
 }
 
 export function DeleteButton({ label = "Delete", icon = Trash2, style, ...props }: ActionButtonProps) {
+    const isDisabled = props.disabled;
     return (
         <button 
             style={{ 
@@ -142,13 +145,14 @@ export function DeleteButton({ label = "Delete", icon = Trash2, style, ...props 
                 justifyContent: 'center',
                 gap: '8px', 
                 background: 'transparent', 
-                color: '#ef4444', 
-                border: '1px solid rgba(239, 68, 68, 0.5)', 
+                color: isDisabled ? 'var(--text-muted)' : '#ef4444', 
+                border: isDisabled ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(239, 68, 68, 0.5)', 
                 padding: '10px 16px', 
                 borderRadius: '8px', 
                 fontSize: '0.9rem', 
                 fontWeight: 600, 
-                cursor: 'pointer',
+                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                opacity: isDisabled ? 0.5 : 1,
                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 ...style 
             }}
