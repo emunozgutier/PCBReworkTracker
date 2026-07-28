@@ -299,8 +299,8 @@ db.all("SELECT id FROM pcbs WHERE short_code IS NULL", [], (err, pcbs) => {
 });
 
     // Start Server
-    app.listen(port, '0.0.0.0', () => {
-        console.log(`Server running at http://0.0.0.0:${port}`);
+    app.listen(port, () => {
+        console.log(`Server running at http://localhost:${port}`);
     });
 }).catch(err => {
     console.error("Database initialization failed:", err);
