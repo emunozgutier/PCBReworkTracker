@@ -73,7 +73,9 @@ const initDb = async () => {
             project_key TEXT UNIQUE,
             silicon_corners TEXT,
             number_format TEXT DEFAULT 'decimal',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT,
+            updated_by TEXT
         )`);
         dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_key ON projects(project_key)`);
         dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_name ON projects(name COLLATE NOCASE)`);
@@ -126,6 +128,8 @@ const initDb = async () => {
             owner_id INTEGER,
             short_code TEXT UNIQUE,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT,
+            updated_by TEXT,
             FOREIGN KEY (project_id) REFERENCES projects (id),
             FOREIGN KEY (owner_id) REFERENCES owners (id)
         )`);
@@ -143,6 +147,8 @@ const initDb = async () => {
             owner_id INTEGER,
             image_path TEXT,
             rework_type TEXT DEFAULT 'Minor',
+            created_by TEXT,
+            updated_by TEXT,
             FOREIGN KEY (pcb_id) REFERENCES pcbs (id),
             FOREIGN KEY (owner_id) REFERENCES owners (id)
         )`);
@@ -182,6 +188,14 @@ const initDb = async () => {
         dbInstance.run(`ALTER TABLE owners ADD COLUMN otp_reset_expires INTEGER`, () => {});
         dbInstance.run(`ALTER TABLE owners ADD COLUMN otp_reset_by TEXT`, () => {});
         dbInstance.run(`ALTER TABLE owners ADD COLUMN otp_reset_at TEXT`, () => {});
+        
+        // Migration: Add created_by and updated_by columns to tables if they don't exist
+        dbInstance.run(`ALTER TABLE projects ADD COLUMN created_by TEXT`, () => {});
+        dbInstance.run(`ALTER TABLE projects ADD COLUMN updated_by TEXT`, () => {});
+        dbInstance.run(`ALTER TABLE pcbs ADD COLUMN created_by TEXT`, () => {});
+        dbInstance.run(`ALTER TABLE pcbs ADD COLUMN updated_by TEXT`, () => {});
+        dbInstance.run(`ALTER TABLE reworks ADD COLUMN created_by TEXT`, () => {});
+        dbInstance.run(`ALTER TABLE reworks ADD COLUMN updated_by TEXT`, () => {});
         
         dbInstance.run(`ALTER TABLE pcbs ADD COLUMN created_at DATETIME`, (err) => {
             if (err) {

@@ -452,7 +452,8 @@ app.post('/api/projects', async (req, res) => {
 
     try {
         const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : await generateProjectKey(cleanName);
-        db.run("INSERT INTO projects (name, description, revisions, project_key, silicon_corners, number_format) VALUES (?, ?, ?, ?, ?, ?)", [cleanName, description, revisions, finalProjectKey, silicon_corners || null, number_format || 'decimal'], function(err) {
+        const creator = req.headers['x-user-username'] || 'guest';
+        db.run("INSERT INTO projects (name, description, revisions, project_key, silicon_corners, number_format, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [cleanName, description, revisions, finalProjectKey, silicon_corners || null, number_format || 'decimal', creator, creator], function(err) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
                     if (err.message.includes('projects.name')) {
@@ -546,8 +547,9 @@ app.post('/api/pcbs', async (req, res) => {
     }
     try {
         const short_code = await generateShortCode();
-        const query = "INSERT INTO pcbs (board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))";
-        db.run(query, [numPart, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code], function(err) {
+        const creator = req.headers['x-user-username'] || 'guest';
+        const query = "INSERT INTO pcbs (board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, created_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)";
+        db.run(query, [numPart, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, creator, creator], function(err) {
             if (err) return res.status(500).json({ error: err.message });
             res.status(201).json({ id: this.lastID, board_number, short_code });
         });
@@ -761,8 +763,9 @@ app.post('/api/reworks', upload.any(), deduplicate, serializeWrites, (req, res) 
             
             // 3. Insert new rework
             const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
-            const insertQuery = "INSERT INTO reworks (pcb_id, rework_number, title, description, owner_id, image_path, rework_type) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            db.run(insertQuery, [pcb_id, sequence, title || null, description, finalOwnerId, image_path, rework_type || 'Minor'], function(err) {
+            const creator = req.headers['x-user-username'] || 'guest';
+            const insertQuery = "INSERT INTO reworks (pcb_id, rework_number, title, description, owner_id, image_path, rework_type, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            db.run(insertQuery, [pcb_id, sequence, title || null, description, finalOwnerId, image_path, rework_type || 'Minor', creator, creator], function(err) {
                 if (err) return res.status(500).json({ error: err.message });
                 const reworkId = this.lastID;
                 
@@ -792,7 +795,8 @@ app.put('/api/projects/:id', (req, res) => {
         const oldFormat = row ? (row.number_format || 'hex') : 'hex';
         const oldProjectKey = row ? row.project_key : null;
         
-        db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, silicon_corners = ?, number_format = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, silicon_corners || null, number_format || 'decimal', req.params.id], function(err) {
+        const editor = req.headers['x-user-username'] || 'guest';
+        db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, silicon_corners = ?, number_format = ?, updated_by = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, silicon_corners || null, number_format || 'decimal', editor, req.params.id], function(err) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
                     if (err.message.includes('projects.name')) {
@@ -898,8 +902,9 @@ app.put('/api/pcbs/:id', (req, res) => {
         if (isNaN(val)) val = parseInt(numPart, 16);
         if (!isNaN(val)) numPart = val.toString();
     }
-    const query = "UPDATE pcbs SET board_number = ?, status = ?, board_flavor = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ?, bom = ?, project_id = ?, owner_id = ? WHERE id = ?";
-    db.run(query, [numPart, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, req.params.id], function(err) {
+    const editor = req.headers['x-user-username'] || 'guest';
+    const query = "UPDATE pcbs SET board_number = ?, status = ?, board_flavor = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ?, bom = ?, project_id = ?, owner_id = ?, updated_by = ? WHERE id = ?";
+    db.run(query, [numPart, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, editor, req.params.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ updated: this.changes });
     });
@@ -1137,7 +1142,8 @@ app.put('/api/reworks/:id', (req, res) => {
             return res.status(400).json({ error: "Rework log is older than 2 weeks and cannot be edited." });
         }
 
-        db.run("UPDATE reworks SET pcb_id = ?, title = ?, description = ?, owner_id = ?, rework_type = ? WHERE id = ?", [pcb_id, title || null, description, finalOwnerId, rework_type || 'Minor', reworkId], function(err) {
+        const editor = req.headers['x-user-username'] || 'guest';
+        db.run("UPDATE reworks SET pcb_id = ?, title = ?, description = ?, owner_id = ?, rework_type = ?, updated_by = ? WHERE id = ?", [pcb_id, title || null, description, finalOwnerId, rework_type || 'Minor', editor, reworkId], function(err) {
             if (err) return res.status(500).json({ error: err.message });
             
             let changes = this.changes;
