@@ -10,6 +10,11 @@ interface OwnerCardHeaderProps {
 
 export function OwnerCardHeader({ owner, isExpanded, onToggle, onEdit }: OwnerCardHeaderProps) {
     const isMobile = useAppState(state => state.isMobile);
+    const { currentUser, currentUserRole } = useAppState();
+
+    const isSuperUser = currentUserRole === 'Super User';
+    const isSelf = currentUser && owner.id.toString() === currentUser.id.toString();
+    const canEdit = isSuperUser || (currentUserRole === 'User' && isSelf);
 
     return (
         <div 
@@ -18,14 +23,16 @@ export function OwnerCardHeader({ owner, isExpanded, onToggle, onEdit }: OwnerCa
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', width: '100%', cursor: 'pointer' }}
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <button 
-                    className="edit-button" 
-                    onClick={(e) => { e.stopPropagation(); onEdit(owner.id); }}
-                    style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
-                    title="Edit Owner"
-                >
-                    <Edit2 size={16} />
-                </button>
+                {canEdit && (
+                    <button 
+                        className="edit-button" 
+                        onClick={(e) => { e.stopPropagation(); onEdit(owner.id); }}
+                        style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
+                        title="Edit Owner"
+                    >
+                        <Edit2 size={16} />
+                    </button>
+                )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text)', margin: 0, fontFamily: 'monospace' }}>

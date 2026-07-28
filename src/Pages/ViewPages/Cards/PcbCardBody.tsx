@@ -28,8 +28,8 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
         pcb.owner_username === currentUser.username || 
         pcb.owner === currentUser.name
     );
-    const canEditPcb = isSuperUser || (currentUserRole === 'User' && isOwner);
-    const canDeletePcb = isSuperUser || (currentUserRole === 'User' && isOwner);
+    const canEditPcb = isSuperUser;
+    const canDeletePcb = isSuperUser;
     const canAddRework = isSuperUser || currentUserRole === 'User';
 
     const [attachedTags, setAttachedTags] = useState<any[]>([]);
@@ -75,7 +75,6 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     };
 
     const handleRemoveTagDirect = async (tag: any) => {
-        if (tag.type === 'personal') return; 
         setTagToRemove(tag);
     };
 
@@ -215,8 +214,14 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                 {activeTabName === 'Tags' && (
                     <>
                         {(() => {
-                            const filteredAttached = attachedTags.filter(t => t.type !== 'personal');
-                            const filteredAvailable = tags.filter(t => t.type !== 'personal' && !attachedTags.some(at => at.id === t.id));
+                            const allowedTag = (t: any) => {
+                                if (t.type === 'public') return true;
+                                if (currentUserRole === 'Super User') return true;
+                                if (!currentUser) return false;
+                                return t.owner_id === currentUser.id || t.owner_username === currentUser.username;
+                            };
+                            const filteredAttached = attachedTags.filter(allowedTag);
+                            const filteredAvailable = tags.filter(t => allowedTag(t) && !attachedTags.some(at => at.id === t.id));
 
                             return (
                                 <div>

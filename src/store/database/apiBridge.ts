@@ -1,4 +1,5 @@
 import { useDemoStore } from '../useDemoStore';
+import { useAppState } from '../useAppState';
 import demoData from './demoData.json';
 
 export const API_BASE = `http://${window.location.hostname}:5002/api`;
@@ -37,7 +38,18 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
     const isDemoMode = useDemoStore.getState().isDemoMode;
     
     if (!isDemoMode) {
-        return fetch(fullUrl, options);
+        const { currentUser, currentUserRole } = useAppState.getState();
+        const headers = new Headers(options?.headers);
+        const username = currentUser?.username || (currentUserRole === 'Super User' ? 'admin' : 'guest');
+        const name = currentUser?.name || (currentUserRole === 'Super User' ? 'Super User' : 'Guest');
+        headers.set('X-User-Username', username);
+        headers.set('X-User-Name', name);
+        headers.set('X-User-Role', currentUserRole);
+        
+        return fetch(fullUrl, {
+            ...options,
+            headers
+        });
     }
 
     const method = options?.method || 'GET';

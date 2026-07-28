@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp, Edit2 } from 'lucide-react';
 import { formatTagName } from '../../../store/useTagStore';
+import { useAppState } from '../../../store/useAppState';
 
 interface TagCardHeaderProps {
     tag: any;
@@ -9,6 +10,16 @@ interface TagCardHeaderProps {
 }
 
 export function TagCardHeader({ tag, isExpanded, onToggle, onEdit }: TagCardHeaderProps) {
+    const { currentUser, currentUserRole } = useAppState();
+
+    const isSuperUser = currentUserRole === 'Super User';
+    const isOwner = currentUser && tag.type === 'personal' && (
+        tag.owner_id?.toString() === currentUser.id?.toString() ||
+        tag.owner_username === currentUser.username ||
+        tag.owner_name === currentUser.name
+    );
+    const canEdit = isSuperUser || (currentUserRole === 'User' && tag.type === 'personal' && isOwner);
+
     return (
         <div 
             className="card-header-main" 
@@ -16,14 +27,16 @@ export function TagCardHeader({ tag, isExpanded, onToggle, onEdit }: TagCardHead
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', width: '100%', cursor: 'pointer' }}
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <button 
-                    className="edit-button" 
-                    onClick={(e) => { e.stopPropagation(); onEdit(tag.id); }}
-                    style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
-                    title="Edit Tag"
-                >
-                    <Edit2 size={16} />
-                </button>
+                {canEdit && (
+                    <button 
+                        className="edit-button" 
+                        onClick={(e) => { e.stopPropagation(); onEdit(tag.id); }}
+                        style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
+                        title="Edit Tag"
+                    >
+                        <Edit2 size={16} />
+                    </button>
+                )}
                 <div 
                     style={{ 
                         width: 14, height: 14, borderRadius: '4px', 

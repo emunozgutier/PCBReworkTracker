@@ -28,8 +28,8 @@ export function TopButtons() {
     if (currentUserRole === 'Super User') {
         canAdd = true;
     } else if (currentUserRole === 'User') {
-        // Users can add PCBs, reworks, owners, and tags, but NOT projects
-        canAdd = activeTab !== 'projects';
+        // Users can add PCBs, reworks, and tags, but NOT projects or owners
+        canAdd = activeTab !== 'projects' && activeTab !== 'owners';
     } else {
         // Guests cannot add anything
         canAdd = false;

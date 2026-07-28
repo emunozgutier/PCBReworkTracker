@@ -116,7 +116,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
         rawPcb.owner_username === currentUser.username ||
         rawPcb.owner === currentUser.name
     );
-    const hasAccess = isSuperUser || (currentUserRole === 'User' && isOwner);
+    const hasAccess = isSuperUser;
 
     if (!hasAccess) {
         return (
