@@ -49,6 +49,79 @@ export function OwnerCardBody({ owner, onEdit }: OwnerCardBodyProps) {
 
     return (
         <div className="card-expanded-content" style={{ padding: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {onEdit && (
+                    <button
+                        onClick={() => canEdit && onEdit(owner.id)}
+                        disabled={!canEdit}
+                        title={!canEdit ? "You can only edit your own profile" : "Edit profile details"}
+                        className={canEdit ? "submit-button" : ""}
+                        style={{
+                            margin: 0,
+                            padding: '8px 16px',
+                            fontSize: '0.85rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            background: canEdit ? 'var(--accent)' : 'none',
+                            border: canEdit ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
+                            color: canEdit ? '#fff' : 'var(--text-muted)',
+                            borderRadius: '10px',
+                            cursor: canEdit ? 'pointer' : 'not-allowed',
+                            fontFamily: 'inherit',
+                            fontWeight: 600,
+                            transition: 'all 0.2s ease',
+                            opacity: canEdit ? 1 : 0.5
+                        }}
+                    >
+                        <Edit2 size={14} />
+                        <span>Edit Profile</span>
+                    </button>
+                )}
+
+                <button
+                    onClick={handleResetOtp}
+                    disabled={isResetting || !isSuperUser}
+                    title={!isSuperUser ? "This is only for super users" : "Generate temporary OTP reset link"}
+                    style={{
+                        background: 'none',
+                        border: `1px solid ${isSuperUser ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255, 255, 255, 0.1)'}`,
+                        color: isSuperUser ? '#ef4444' : 'var(--text-muted)',
+                        padding: '8px 16px',
+                        borderRadius: '10px',
+                        cursor: isSuperUser ? 'pointer' : 'not-allowed',
+                        fontSize: '0.85rem',
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontFamily: 'inherit',
+                        transition: 'all 0.2s ease',
+                        margin: 0,
+                        opacity: isSuperUser ? 1 : 0.5
+                    }}
+                    onMouseEnter={(e) => {
+                        if (isSuperUser) {
+                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (isSuperUser) {
+                            e.currentTarget.style.background = 'none';
+                        }
+                    }}
+                >
+                    <KeyRound size={14} />
+                    <span>{isResetting ? 'Resetting...' : 'Reset OTP'}</span>
+                </button>
+            </div>
+
+            {error && (
+                <div style={{ color: '#ef4444', padding: '10px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.3)', fontSize: '0.8rem' }}>
+                    {error}
+                </div>
+            )}
+
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                 <tbody>
                     <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
@@ -85,56 +158,6 @@ export function OwnerCardBody({ owner, onEdit }: OwnerCardBodyProps) {
                     </tr>
                 </tbody>
             </table>
-
-            {error && (
-                <div style={{ color: '#ef4444', padding: '10px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.3)', fontSize: '0.8rem' }}>
-                    {error}
-                </div>
-            )}
-
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                {canEdit && onEdit && (
-                    <button
-                        onClick={() => onEdit(owner.id)}
-                        className="submit-button"
-                        style={{ margin: 0, padding: '8px 16px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}
-                    >
-                        <Edit2 size={14} />
-                        <span>Edit Profile</span>
-                    </button>
-                )}
-
-                {isSuperUser && (
-                    <button
-                        onClick={handleResetOtp}
-                        disabled={isResetting}
-                        style={{
-                            background: 'none',
-                            border: '1px solid rgba(239, 68, 68, 0.4)',
-                            color: '#ef4444',
-                            padding: '8px 16px',
-                            borderRadius: '10px',
-                            cursor: 'pointer',
-                            fontSize: '0.85rem',
-                            fontWeight: 600,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            fontFamily: 'inherit',
-                            transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'none';
-                        }}
-                    >
-                        <KeyRound size={14} />
-                        <span>{isResetting ? 'Resetting...' : 'Reset OTP'}</span>
-                    </button>
-                )}
-            </div>
 
             {resetLink && (
                 <div style={{
