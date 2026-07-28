@@ -260,13 +260,10 @@ export function UserLoginButton() {
                     </button>
 
                     {/* Helper description of permissions */}
-                    {(currentUserRole === 'Super User' || currentUserRole === 'Guest') && (
+                    {currentUserRole === 'Guest' && (
                         <div className="dropdown-footer">
                             <ShieldAlert size={14} />
-                            <span>
-                                {currentUserRole === 'Super User' && 'Full write & delete access'}
-                                {currentUserRole === 'Guest' && 'Read-only access'}
-                            </span>
+                            <span>Read-only access</span>
                         </div>
                     )}
                 </div>
