@@ -57,7 +57,10 @@ describe('Projects API - Silicon Version', () => {
     it('should create a test project', async () => {
         const res = await fetch(`${API_URL}/projects`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-User-Username': 'vitest_project_creator'
+            },
             body: JSON.stringify({
                 name: 'Test Project Dione',
                 description: 'Test',
@@ -71,12 +74,22 @@ describe('Projects API - Silicon Version', () => {
         expect(res.status).toBe(201);
         projectId = data.id;
         expect(projectId).toBeDefined();
+
+        // Verify audit logs on project creation
+        const getProjectsRes = await fetch(`${API_URL}/projects`);
+        const projects = await getProjectsRes.json();
+        const project = projects.find(p => p.id === projectId);
+        expect(project.created_by).toBe('vitest_project_creator');
+        expect(project.updated_by).toBe('vitest_project_creator');
     });
 
     it('should update the project by adding B0 silicon version', async () => {
         const res = await fetch(`${API_URL}/projects/${projectId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-User-Username': 'vitest_project_editor'
+            },
             body: JSON.stringify({
                 name: 'Test Project Dione',
                 description: 'Test',
@@ -88,6 +101,13 @@ describe('Projects API - Silicon Version', () => {
         });
         const data = await res.json();
         expect(res.status).toBe(200);
+
+        // Verify audit logs on project update
+        const getProjectsRes = await fetch(`${API_URL}/projects`);
+        const projects = await getProjectsRes.json();
+        const project = projects.find(p => p.id === projectId);
+        expect(project.created_by).toBe('vitest_project_creator');
+        expect(project.updated_by).toBe('vitest_project_editor');
         expect(data.updated).toBeDefined();
     });
 

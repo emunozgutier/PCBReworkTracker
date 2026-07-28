@@ -168,7 +168,10 @@ describe('Reworks API - Silicon Swap', () => {
         // 1. Create a fresh PCB
         const resPcb = await fetch(`${API_URL}/pcbs`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-User-Username': 'vitest_pcb_creator'
+            },
             body: JSON.stringify({
                 project_id: projectId,
                 board_number: '7777_test_edit',
@@ -179,20 +182,41 @@ describe('Reworks API - Silicon Swap', () => {
         const pcbData = await resPcb.json();
         const testPcbId = pcbData.id;
 
+        // Verify created_by and updated_by on the PCB
+        const checkPcbRes = await fetch(`${API_URL}/pcbs/${testPcbId}`);
+        const checkPcb = await checkPcbRes.json();
+        expect(checkPcb.created_by).toBe('vitest_pcb_creator');
+        expect(checkPcb.updated_by).toBe('vitest_pcb_creator');
+
         // 2. Add a rework log
         const fd = new FormData();
         fd.append('pcb_id', testPcbId);
         fd.append('title', 'Original Title');
         fd.append('description', 'Original Description');
         fd.append('rework_type', 'Minor');
-        const resRw = await fetch(`${API_URL}/reworks`, { method: 'POST', body: fd });
+        const resRw = await fetch(`${API_URL}/reworks`, { 
+            method: 'POST', 
+            headers: {
+                'X-User-Username': 'vitest_rework_creator'
+            },
+            body: fd 
+        });
         const rwData = await resRw.json();
         const rwId = rwData.id;
+
+        // Verify created_by and updated_by on the Rework
+        const checkRwRes = await fetch(`${API_URL}/reworks/${rwId}`);
+        const checkRw = await checkRwRes.json();
+        expect(checkRw.created_by).toBe('vitest_rework_creator');
+        expect(checkRw.updated_by).toBe('vitest_rework_creator');
 
         // 3. Edit should succeed normally
         const updateResOk = await fetch(`${API_URL}/reworks/${rwId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-User-Username': 'vitest_rework_editor'
+            },
             body: JSON.stringify({
                 pcb_id: testPcbId,
                 title: 'Updated Title',
@@ -201,6 +225,12 @@ describe('Reworks API - Silicon Swap', () => {
             })
         });
         expect(updateResOk.status).toBe(200);
+
+        // Verify updated_by on the Rework is changed
+        const finalRwRes = await fetch(`${API_URL}/reworks/${rwId}`);
+        const finalRw = await finalRwRes.json();
+        expect(finalRw.created_by).toBe('vitest_rework_creator');
+        expect(finalRw.updated_by).toBe('vitest_rework_editor');
 
         // 4. Update its timestamp to 15 days ago (older than 2 weeks)
         await updateReworkTimestamp(rwId, 15);
