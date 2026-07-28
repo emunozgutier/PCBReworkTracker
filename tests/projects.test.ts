@@ -150,6 +150,80 @@ describe('Projects API - Silicon Version', () => {
         expect(data.name).toBe(`Vitest Guest Owner ${uniqueUsername}`);
     });
 
+    it('should allow superuser to reset OTP, log superuser actions, and confirm reset', async () => {
+        // 1. Create a user to reset
+        const resetUsername = `vitest_reset_${Date.now()}`;
+        const initialSecret = 'ABCDEF234567XYZ2';
+        const userRes = await fetch(`${API_URL}/owners`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: `Vitest Reset User`,
+                username: resetUsername,
+                otp_secret: initialSecret
+            })
+        });
+        expect(userRes.status).toBe(201);
+        const createdUser = await userRes.json();
+
+        // 2. Guest attempt to reset OTP should fail
+        const guestResetRes = await fetch(`${API_URL}/owners/${createdUser.id}/reset-otp`, {
+            method: 'POST',
+            headers: { 'X-User-Role': 'Guest' }
+        });
+        expect(guestResetRes.status).toBe(403);
+
+        // 3. Super User reset OTP should succeed
+        const superResetRes = await fetch(`${API_URL}/owners/${createdUser.id}/reset-otp`, {
+            method: 'POST',
+            headers: { 
+                'X-User-Role': 'Super User',
+                'X-User-Username': 'vitest_super_admin'
+            }
+        });
+        expect(superResetRes.status).toBe(200);
+        const resetData = await superResetRes.json();
+        expect(resetData.token).toBeDefined();
+        expect(resetData.resetLink).toBe(`/reset-otp?token=${resetData.token}`);
+
+        // 4. Verify database audit logs
+        const auditRes = await fetch(`${API_URL}/owners/${createdUser.id}`);
+        expect(auditRes.status).toBe(200);
+        const auditedOwner = await auditRes.json();
+        expect(auditedOwner.otp_reset_by).toBe('vitest_super_admin');
+        expect(auditedOwner.otp_reset_at).toBeDefined();
+        expect(auditedOwner.otp_reset_token).toBe(resetData.token);
+
+        // 5. Fetch reset info via token
+        const infoRes = await fetch(`${API_URL}/otp/reset-info?token=${resetData.token}`);
+        expect(infoRes.status).toBe(200);
+        const infoData = await infoRes.json();
+        expect(infoData.valid).toBe(true);
+        expect(infoData.owner.username).toBe(resetUsername);
+
+        // 6. Generate a new valid OTP token to confirm reset
+        const newSecret = 'WXYZABC234567XYZ';
+        const verifyCode = generateTotp(newSecret);
+
+        const confirmRes = await fetch(`${API_URL}/otp/reset-confirm`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                token: resetData.token,
+                secret: newSecret,
+                code: verifyCode
+            })
+        });
+        expect(confirmRes.status).toBe(200);
+
+        // 7. Verify fields are cleared and otp_secret is updated
+        const finalCheckRes = await fetch(`${API_URL}/owners/${createdUser.id}`);
+        const finalOwner = await finalCheckRes.json();
+        expect(finalOwner.otp_secret).toBe(newSecret);
+        expect(finalOwner.otp_reset_token).toBeNull();
+        expect(finalOwner.otp_reset_expires).toBeNull();
+    });
+
     it('should delete the test project', async () => {
         if (!projectId) return;
         const res = await fetch(`${API_URL}/projects/${projectId}`, {

@@ -10,7 +10,7 @@ type Page =
     | 'owners' | 'owners_add' | 'owners_edit'
     | 'tags' | 'tags_add' | 'tags_edit'
     | 'wrong_url' | 'fixed_url'
-    | 'sandbox' | 'settings';
+    | 'sandbox' | 'settings' | 'reset_otp';
 
 interface NavigationState {
     page: Page;

@@ -48,6 +48,12 @@ export function UrlManager() {
         const handlePopState = () => {
             const rawPath = getNormalizedPath();
             
+            // OTP Reset page
+            if (rawPath.startsWith('/reset-otp')) {
+                useAppState.getState().setPage('reset_otp');
+                return;
+            }
+
             // Projects
             if (rawPath.startsWith('/project/') || rawPath.startsWith('/projects/')) {
                 usePcbStore.getState().resetFilters();

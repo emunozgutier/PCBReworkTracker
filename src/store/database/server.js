@@ -57,7 +57,8 @@ function deduplicate(req, res, next) {
 
     const fileSignature = (req.files || []).map(f => `${f.originalname}-${f.size}`).join(',');
     const bodyKey = JSON.stringify(req.body || {});
-    const key = `${req.method}:${req.originalUrl}:${bodyKey}:${fileSignature}`;
+    const username = req.headers['x-user-username'] || 'guest';
+    const key = `${req.method}:${req.originalUrl}:${bodyKey}:${fileSignature}:${username}`;
 
     if (inFlightRequests.has(key)) {
         console.log(`[Server Deduplicate] Duplicate request detected for key: ${key}.`);
@@ -979,6 +980,99 @@ app.delete('/api/owners/:id', (req, res) => {
             res.json({ deleted: this.changes });
         });
     });
+});
+
+// --- OTP Reset Management (Super User Audit Logged) ---
+app.post('/api/owners/:id/reset-otp', (req, res) => {
+    const userRole = req.headers['x-user-role'];
+    if (userRole !== 'Super User') {
+        return res.status(403).json({ error: 'Only Super Users can initiate an OTP reset.' });
+    }
+
+    const ownerId = req.params.id;
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = Date.now() + 15 * 60 * 1000; // 15 mins
+    const superuser = req.headers['x-user-username'] || 'admin';
+    const resetAt = new Date().toISOString();
+
+    db.run(
+        `UPDATE owners SET 
+            otp_reset_token = ?, 
+            otp_reset_expires = ?, 
+            otp_reset_by = ?, 
+            otp_reset_at = ?
+         WHERE id = ?`,
+        [token, expires, superuser, resetAt, ownerId],
+        function(err) {
+            if (err) return res.status(500).json({ error: err.message });
+            if (this.changes === 0) return res.status(404).json({ error: 'Owner not found.' });
+
+            const resetLink = `/reset-otp?token=${token}`;
+            res.json({ success: true, resetLink, token });
+        }
+    );
+});
+
+app.get('/api/otp/reset-info', (req, res) => {
+    const { token } = req.query;
+    if (!token) return res.status(400).json({ error: 'Token is required.' });
+
+    db.get(
+        "SELECT id, name, username, otp_reset_expires FROM owners WHERE otp_reset_token = ?",
+        [token],
+        (err, row) => {
+            if (err) return res.status(500).json({ error: err.message });
+            if (!row) return res.status(404).json({ error: 'Reset link is invalid or expired.' });
+
+            if (row.otp_reset_expires < Date.now()) {
+                return res.status(400).json({ error: 'Reset link has expired.' });
+            }
+
+            res.json({ valid: true, owner: { id: row.id, name: row.name, username: row.username } });
+        }
+    );
+});
+
+app.post('/api/otp/reset-confirm', (req, res) => {
+    const { token, secret, code } = req.body;
+    if (!token || !secret || !code) {
+        return res.status(400).json({ error: 'Token, secret, and code are required.' });
+    }
+
+    db.get(
+        "SELECT id, otp_reset_expires FROM owners WHERE otp_reset_token = ?",
+        [token],
+        (err, row) => {
+            if (err) return res.status(500).json({ error: err.message });
+            if (!row) return res.status(404).json({ error: 'Reset token is invalid or expired.' });
+
+            if (row.otp_reset_expires < Date.now()) {
+                return res.status(400).json({ error: 'Reset token has expired.' });
+            }
+
+            try {
+                const isValid = verifyTotp(secret, code);
+                if (!isValid) {
+                    return res.status(400).json({ error: 'Invalid verification code.' });
+                }
+
+                db.run(
+                    `UPDATE owners SET 
+                        otp_secret = ?,
+                        otp_reset_token = NULL,
+                        otp_reset_expires = NULL
+                     WHERE id = ?`,
+                    [secret, row.id],
+                    function(updateErr) {
+                        if (updateErr) return res.status(500).json({ error: updateErr.message });
+                        res.json({ success: true });
+                    }
+                );
+            } catch (totpErr) {
+                res.status(400).json({ error: totpErr.message });
+            }
+        }
+    );
 });
 
 // --- Tags API Expansions ---

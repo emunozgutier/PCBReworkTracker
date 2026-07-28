@@ -17,6 +17,7 @@ import { EditPCB } from './Pages/EditPages/EditPcb';
 import { EditUser } from './Pages/EditPages/EditUser';
 import { EditRework } from './Pages/EditPages/EditRework';
 import { EditTab } from './Pages/EditPages/EditTab';
+import { ResetOtp } from './Pages/EditPages/ResetOtp';
 import { UrlManager } from './components/UrlManager';
 import { WrongUrl } from './Pages/WrongPage/WrongUrl';
 import { FixedUrl } from './Pages/WrongPage/FixedUrl';
@@ -50,6 +51,11 @@ export function PageWithMargins() {
       
       case 'wrong_url': return <WrongUrl />;
       case 'fixed_url': return <FixedUrl />;
+      case 'reset_otp': {
+        const searchParams = new URLSearchParams(window.location.search);
+        const resetToken = searchParams.get('token');
+        return <ResetOtp token={resetToken} onBack={goBack} />;
+      }
       
       case 'projects':
         return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} />;

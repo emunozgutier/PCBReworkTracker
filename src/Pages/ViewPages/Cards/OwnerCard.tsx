@@ -18,9 +18,8 @@ export function OwnerCard({ owner, onEdit }: OwnerCardProps) {
                 owner={owner} 
                 isExpanded={isExpanded} 
                 onToggle={toggleExpand} 
-                onEdit={onEdit} 
             />
-            {isExpanded && <OwnerCardBody owner={owner} />}
+            {isExpanded && <OwnerCardBody owner={owner} onEdit={onEdit} />}
         </div>
     );
 }

@@ -6,10 +6,9 @@ interface OwnerCardHeaderProps {
     owner: any;
     isExpanded: boolean;
     onToggle: () => void;
-    onEdit: (id: number | string) => void;
 }
 
-export function OwnerCardHeader({ owner, isExpanded, onToggle, onEdit }: OwnerCardHeaderProps) {
+export function OwnerCardHeader({ owner, isExpanded, onToggle }: OwnerCardHeaderProps) {
     const isMobile = useAppState(state => state.isMobile);
     const { currentUser, currentUserRole } = useAppState();
     const { owners } = useOwnerStore();
@@ -30,16 +29,6 @@ export function OwnerCardHeader({ owner, isExpanded, onToggle, onEdit }: OwnerCa
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', width: '100%', cursor: 'pointer' }}
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {canEdit && (
-                    <button 
-                        className="edit-button" 
-                        onClick={(e) => { e.stopPropagation(); onEdit(owner.id); }}
-                        style={{ background: 'none', border: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'center', cursor: 'pointer', position: 'static' }}
-                        title="Edit Owner"
-                    >
-                        <Edit2 size={16} />
-                    </button>
-                )}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text)', margin: 0, fontFamily: 'monospace' }}>
                         {owner.username ? owner.username : 'No username'}
