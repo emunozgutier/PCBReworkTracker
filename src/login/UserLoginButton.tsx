@@ -260,14 +260,15 @@ export function UserLoginButton() {
                     </button>
 
                     {/* Helper description of permissions */}
-                    <div className="dropdown-footer">
-                        <ShieldAlert size={14} />
-                        <span>
-                            {currentUserRole === 'Super User' && 'Full write & delete access'}
-                            {currentUserRole === 'User' && 'Add new. Edit/delete own items only'}
-                            {currentUserRole === 'Guest' && 'Read-only access'}
-                        </span>
-                    </div>
+                    {(currentUserRole === 'Super User' || currentUserRole === 'Guest') && (
+                        <div className="dropdown-footer">
+                            <ShieldAlert size={14} />
+                            <span>
+                                {currentUserRole === 'Super User' && 'Full write & delete access'}
+                                {currentUserRole === 'Guest' && 'Read-only access'}
+                            </span>
+                        </div>
+                    )}
                 </div>
             )}
 
