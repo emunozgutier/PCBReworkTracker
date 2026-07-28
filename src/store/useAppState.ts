@@ -47,6 +47,11 @@ interface NavigationState {
     setSearchQuery: (query: string) => void;
     setShowFilters: (show: boolean) => void;
     setShowMobileSearch: (show: boolean) => void;
+    
+    // Auth & Permissions
+    currentUser: any | null;
+    currentUserRole: 'Super User' | 'User' | 'Guest';
+    setCurrentUser: (user: any | null, role: 'Super User' | 'User' | 'Guest') => void;
 }
 
 export const useAppState = create<NavigationState>((set) => ({
@@ -64,7 +69,10 @@ export const useAppState = create<NavigationState>((set) => ({
     searchQuery: '',
     showFilters: false,
     showMobileSearch: false,
+    currentUser: null,
+    currentUserRole: 'Guest',
 
+    setCurrentUser: (currentUser, currentUserRole) => set({ currentUser, currentUserRole }),
     setPage: (page) => set({ page }),
     setIsolatedView: (isolatedView) => set({ isolatedView }),
     

@@ -24,7 +24,8 @@ interface ProjectCardBodyProps {
 export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     const { pcbs: allPcbs, setSelectedProjects, setSelectedBoardNumbers } = usePcbStore();
     const { deleteProject } = useProjectStore();
-    const { setActiveTab, editItem, setExpandedPcb, setIsolatedView, setPage, isMobile } = useAppState();
+    const { setActiveTab, editItem, setExpandedPcb, setIsolatedView, setPage, isMobile, currentUserRole } = useAppState();
+    const isSuperUser = currentUserRole === 'Super User';
     
     const [isRemoveProjectOpen, setIsRemoveProjectOpen] = useState(false);
 
@@ -137,10 +138,12 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
             <ProjectCardSummary project={project} />
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: isMobile ? 'nowrap' : 'wrap' }}>
-                <EditButton 
-                    onClick={(e) => { e.stopPropagation(); editItem('projects_edit', project.id); }}
-                    label={isMobile ? "Edit" : "Edit Project"}
-                />
+                {isSuperUser && (
+                    <EditButton 
+                        onClick={(e) => { e.stopPropagation(); editItem('projects_edit', project.id); }}
+                        label={isMobile ? "Edit" : "Edit Project"}
+                    />
+                )}
                 <ViewButton 
                     onClick={(e) => {
                         e.stopPropagation();
@@ -151,13 +154,15 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                     className="view-pcbs-btn"
                     label={isMobile ? "View" : "View PCBs Info"}
                 />
-                <DeleteButton 
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setIsRemoveProjectOpen(true);
-                    }}
-                    label={isMobile ? "Delete" : "Delete Project"}
-                />
+                {isSuperUser && (
+                    <DeleteButton 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsRemoveProjectOpen(true);
+                        }}
+                        label={isMobile ? "Delete" : "Delete Project"}
+                    />
+                )}
             </div>
 
             <RemoveProject 

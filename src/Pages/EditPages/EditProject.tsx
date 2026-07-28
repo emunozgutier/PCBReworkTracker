@@ -7,6 +7,8 @@ import { useProjectStore } from '../../store/useProjectStore';
 import { usePcbStore } from '../../store/usePcbStore';
 import { RemoveProject } from '../RemovePage/RemoveProject';
 
+import { useAppState } from '../../store/useAppState';
+
 interface EditProjectProps {
     id: string | number;
     onBack: () => void;
@@ -14,6 +16,24 @@ interface EditProjectProps {
 }
 
 export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
+    const { currentUserRole } = useAppState();
+
+    if (currentUserRole !== 'Super User') {
+        return (
+            <div className="add-page-container">
+                <header className="add-page-header">
+                    <button onClick={onBack} className="back-button">
+                        <ArrowLeft size={20} />
+                    </button>
+                    <h2>Access Denied</h2>
+                </header>
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <p>Only Super Users have permission to edit projects.</p>
+                </div>
+            </div>
+        );
+    }
+
     const [name, setName] = useState('');
     const [revisions, setRevisions] = useState('');
     const [siliconCorners, setSiliconCorners] = useState('');

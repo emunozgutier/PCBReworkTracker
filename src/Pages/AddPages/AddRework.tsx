@@ -67,7 +67,23 @@ const compressImage = async (file: File, maxSizeMB: number = 10, maxDimension: n
 };
 
 export function AddRework({ onBack, onSuccess }: AddReworkProps) {
-    const { selectedId } = useAppState();
+    const { selectedId, currentUser, currentUserRole } = useAppState();
+
+    if (currentUserRole === 'Guest') {
+        return (
+            <div className="add-page-container">
+                <header className="add-page-header">
+                    <button onClick={onBack} className="back-button">
+                        <ArrowLeft size={20} />
+                    </button>
+                    <h2>Access Denied</h2>
+                </header>
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <p>Guests do not have permission to add new Reworks.</p>
+                </div>
+            </div>
+        );
+    }
     const [pcbs, setPcbs] = useState<any[]>([]);
     const [projects, setProjects] = useState<any[]>([]);
     const [selectedPcb, setSelectedPcb] = useState('');
@@ -112,6 +128,15 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
 
     useEffect(() => {
         fetchOwners();
+    }, [selectedId, fetchOwners]);
+
+    useEffect(() => {
+        if (currentUser && currentUserRole === 'User') {
+            setOwnerId(currentUser.id.toString());
+        }
+    }, [currentUser, currentUserRole]);
+
+    useEffect(() => {
         Promise.all([
             apiFetch(`${API_BASE}/pcbs`).then(res => res.json()),
             apiFetch(`${API_BASE}/projects`).then(res => res.json())
@@ -449,7 +474,12 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                 </div>
                 <div className="form-group">
                     <label htmlFor="owner">Assigned Owner</label>
-                    <select id="owner" value={ownerId} onChange={(e) => setOwnerId(e.target.value)}>
+                    <select 
+                        id="owner" 
+                        value={ownerId} 
+                        onChange={(e) => setOwnerId(e.target.value)}
+                        disabled={currentUserRole === 'User'}
+                    >
                         <option value="-1">-- Unassigned --</option>
                         {owners.map(o => <option key={o.id} value={o.id.toString()}>@{o.username}</option>)}
                     </select>

@@ -13,7 +13,8 @@ export function TopButtons() {
         showFilters,
         setShowFilters,
         showMobileSearch,
-        setShowMobileSearch
+        setShowMobileSearch,
+        currentUserRole
     } = useAppState();
 
     // PCBs and Tags (tags) have search and filters
@@ -22,8 +23,20 @@ export function TopButtons() {
 
     const hasFilters = activeTab === 'pcbs';
 
-    // Only display Add New button if not on sandbox or settings
-    const showAddButton = activeTab !== 'sandbox' && activeTab !== 'settings';
+    // Check permissions for Add button
+    let canAdd = false;
+    if (currentUserRole === 'Super User') {
+        canAdd = true;
+    } else if (currentUserRole === 'User') {
+        // Users can add PCBs, reworks, owners, and tags, but NOT projects
+        canAdd = activeTab !== 'projects';
+    } else {
+        // Guests cannot add anything
+        canAdd = false;
+    }
+
+    // Only display Add New button if not on settings and user has permissions
+    const showAddButton = activeTab !== 'settings' && canAdd;
 
     // Retrieve PCB filters state
     const {

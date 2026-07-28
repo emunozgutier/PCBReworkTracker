@@ -6,6 +6,8 @@ import { usePcbStore } from '../../store/usePcbStore';
 import { FormGroup } from '../../components/forms/FormGroup';
 import { generateCRC } from '../../components/UrlManager/crc';
 
+import { useAppState } from '../../store/useAppState';
+
 const isNA = (str: string) => {
     if (!str) return false;
     const s = str.trim().toLowerCase();
@@ -18,6 +20,24 @@ interface AddPCBProps {
 }
 
 export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
+    const { currentUser, currentUserRole } = useAppState();
+
+    if (currentUserRole === 'Guest') {
+        return (
+            <div className="add-page-container">
+                <header className="add-page-header">
+                    <button onClick={onBack} className="back-button">
+                        <ArrowLeft size={20} />
+                    </button>
+                    <h2>Access Denied</h2>
+                </header>
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <p>Guests do not have permission to add new PCBs.</p>
+                </div>
+            </div>
+        );
+    }
+
     const [boardNumber, setBoardNumber] = useState('');
 
     const [lastAutoAssignedProject, setLastAutoAssignedProject] = useState('');
@@ -38,6 +58,12 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     useEffect(() => {
         if (pcbs.length === 0) fetchPcbs();
     }, [fetchPcbs, pcbs.length]);
+
+    useEffect(() => {
+        if (currentUser && currentUserRole === 'User') {
+            setSelectedOwner(currentUser.id.toString());
+        }
+    }, [currentUser, currentUserRole]);
 
     const selectedProjData = projects.find(p => p.id.toString() === selectedProject);
     const availablePcbFlavors = selectedProjData?.flavors || [];
@@ -318,6 +344,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                 id="owner" 
                                 value={selectedOwner} 
                                 onChange={(e) => setSelectedOwner(e.target.value)}
+                                disabled={currentUserRole === 'User'}
                             >
                                 <option value="">Unassigned</option>
                                 {owners.map(o => <option key={o.id} value={o.id}>@{o.username}</option>)}

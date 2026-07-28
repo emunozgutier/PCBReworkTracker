@@ -5,6 +5,7 @@ import { API_BASE, apiFetch } from '../../store/database/apiBridge';
 import { usePcbStore } from '../../store/usePcbStore';
 import { FormGroup } from '../../components/forms/FormGroup';
 import { RemovePcb } from '../RemovePage/RemovePcb';
+import { useAppState } from '../../store/useAppState';
 
 interface EditPCBProps {
     id: string | number;
@@ -13,6 +14,8 @@ interface EditPCBProps {
 }
 
 export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
+    const { currentUser, currentUserRole } = useAppState();
+
     const [boardNumber, setBoardNumber] = useState('');
     const [status, setStatus] = useState('In Progress');
     const [pcbRev, setPcbRev] = useState('');
@@ -107,6 +110,30 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
 
     if (loading) return <div className="loading">Loading PCB...</div>;
 
+    const isSuperUser = currentUserRole === 'Super User';
+    const isOwner = currentUser && rawPcb && (
+        rawPcb.owner_id === currentUser.id ||
+        rawPcb.owner_username === currentUser.username ||
+        rawPcb.owner === currentUser.name
+    );
+    const hasAccess = isSuperUser || (currentUserRole === 'User' && isOwner);
+
+    if (!hasAccess) {
+        return (
+            <div className="add-page-container">
+                <header className="add-page-header">
+                    <button onClick={onBack} className="back-button">
+                        <ArrowLeft size={20} />
+                    </button>
+                    <h2>Access Denied</h2>
+                </header>
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <p>You do not have permission to edit this PCB board.</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="add-page-container">
             <header className="add-page-header">
@@ -119,7 +146,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                 </button>
             </header>
 
-                        <form onSubmit={handleUpdate} className="add-form">
+            <form onSubmit={handleUpdate} className="add-form">
                 <FormGroup title="Instance">
                     <div className="form-row">
                         <div className="form-group flex-1">
@@ -134,6 +161,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                                 id="owner" 
                                 value={selectedOwner} 
                                 onChange={(e) => setSelectedOwner(e.target.value)}
+                                disabled={currentUserRole === 'User'}
                             >
                                 <option value="">Unassigned</option>
                                 {owners.map(o => <option key={o.id} value={o.id}>@{o.username}</option>)}

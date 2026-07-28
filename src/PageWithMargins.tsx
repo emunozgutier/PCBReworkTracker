@@ -18,7 +18,6 @@ import { EditUser } from './Pages/EditPages/EditUser';
 import { EditRework } from './Pages/EditPages/EditRework';
 import { EditTab } from './Pages/EditPages/EditTab';
 import { UrlManager } from './components/UrlManager';
-import { TestBoardTypo } from './components/UrlManager/TestBoardTypo';
 import { WrongUrl } from './Pages/WrongPage/WrongUrl';
 import { FixedUrl } from './Pages/WrongPage/FixedUrl';
 import { GithubLink } from './components/GithubLink';
@@ -51,7 +50,6 @@ export function PageWithMargins() {
       
       case 'wrong_url': return <WrongUrl />;
       case 'fixed_url': return <FixedUrl />;
-      case 'sandbox': return <TestBoardTypo />;
       
       case 'projects':
         return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} />;

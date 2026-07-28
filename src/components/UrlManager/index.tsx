@@ -89,13 +89,12 @@ export function UrlManager() {
             const pathSegments = rawPath.split('/').filter(Boolean);
             const path = pathSegments[0] || 'projects';
             
-            if (path === 'crc') {
-                useAppState.getState().setActiveTab('sandbox');
-                useAppState.getState().setPage('sandbox');
+            if (path === 'crc' || path === 'sandbox') {
+                useAppState.getState().setActiveTab('settings');
                 return;
             }
             
-            const validPages = ['project', 'projects', 'pcb', 'pcbs', 'rework', 'reworks', 'owners', 'tags'];
+            const validPages = ['project', 'projects', 'pcb', 'pcbs', 'rework', 'reworks', 'owners', 'tags', 'settings'];
             
             if (validPages.includes(path)) {
                 // Normalize singulars
@@ -149,9 +148,7 @@ export function UrlManager() {
         const search = window.location.search;
         let targetUrl = `${base}/${activeTab}${search}`;
         
-        if (page === 'sandbox') {
-            targetUrl = `${base}/crc${search}`;
-        } else if (activeTab === 'projects' && expandedProject) {
+        if (activeTab === 'projects' && expandedProject) {
             targetUrl = `${base}/projects/${encodeURIComponent(expandedProject)}${search}`;
         } else if (activeTab === 'pcbs' && expandedPcb) {
             targetUrl = `${base}/pcbs/${encodeURIComponent(expandedPcb)}${isolatedView ? '/view' : ''}${search}`;

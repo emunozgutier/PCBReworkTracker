@@ -17,8 +17,17 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
     const [showDescriptionModal, setShowDescriptionModal] = useState(false);
     const [isRemoveOpen, setIsRemoveOpen] = useState(false);
     const { deleteRework } = useReworkStore();
-    const { editItem, isMobile } = useAppState();
+    const { editItem, isMobile, currentUser, currentUserRole } = useAppState();
     const { checkReworkEditRequirements } = useDeleteEditRequirements();
+
+    const isSuperUser = currentUserRole === 'Super User';
+    const isOwner = currentUser && (
+        rework.owner_id === currentUser.id || 
+        rework.owner_username === currentUser.username || 
+        rework.owner_name === currentUser.name
+    );
+    const canEditRework = isSuperUser || (currentUserRole === 'User' && isOwner);
+    const canDeleteRework = isSuperUser || (currentUserRole === 'User' && isOwner);
 
     const confirmRemoveRework = async () => {
         const success = await deleteRework(rework.id);
@@ -43,22 +52,26 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
     return (
         <div className="card-expanded-content" style={{ marginTop: '6px', paddingTop: '6px' }}>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                <EditButton 
-                    onClick={(e) => { 
-                        e.stopPropagation(); 
-                        const { requirementsMet, daysOld } = checkReworkEditRequirements(rework);
-                        if (!requirementsMet) {
-                            alert(`This rework log is older than 2 weeks (Age: ${daysOld.toFixed(1)} days) and cannot be edited.`);
-                            return;
-                        }
-                        editItem('reworks_edit', rework.id); 
-                    }}
-                    label={isMobile ? "Edit" : "Edit Rework"}
-                />
-                <DeleteButton 
-                    onClick={(e) => { e.stopPropagation(); setIsRemoveOpen(true); }}
-                    label={isMobile ? "Delete" : "Delete Rework"}
-                />
+                {canEditRework && (
+                    <EditButton 
+                        onClick={(e) => { 
+                            e.stopPropagation(); 
+                            const { requirementsMet, daysOld } = checkReworkEditRequirements(rework);
+                            if (!requirementsMet) {
+                                alert(`This rework log is older than 2 weeks (Age: ${daysOld.toFixed(1)} days) and cannot be edited.`);
+                                return;
+                            }
+                            editItem('reworks_edit', rework.id); 
+                        }}
+                        label={isMobile ? "Edit" : "Edit Rework"}
+                    />
+                )}
+                {canDeleteRework && (
+                    <DeleteButton 
+                        onClick={(e) => { e.stopPropagation(); setIsRemoveOpen(true); }}
+                        label={isMobile ? "Delete" : "Delete Rework"}
+                    />
+                )}
             </div>
 
             <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>

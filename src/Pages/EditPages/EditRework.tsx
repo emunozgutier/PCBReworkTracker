@@ -7,6 +7,7 @@ import { useOwnerStore } from '../../store/useOwnerStore';
 import { FormGroup } from '../../components/forms/FormGroup';
 import { useDeleteEditRequirements } from '../../store/useDeleteEditRequirements';
 import { BoardName } from '../../components/BoardName';
+import { useAppState } from '../../store/useAppState';
 
 interface EditReworkProps {
     id: string | number;
@@ -15,6 +16,7 @@ interface EditReworkProps {
 }
 
 export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
+    const { currentUser, currentUserRole } = useAppState();
     const [pcbs, setPcbs] = useState<any[]>([]);
     const [projects, setProjects] = useState<any[]>([]);
     const [selectedPcb, setSelectedPcb] = useState('');
@@ -31,6 +33,7 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
     const [saving, setSaving] = useState(false);
     const [isEditable, setIsEditable] = useState(true);
     const [reworkAgeDays, setReworkAgeDays] = useState(0);
+    const [rawRework, setRawRework] = useState<any>(null);
 
 
     const activePcb = pcbs.find(p => p.id.toString() === selectedPcb);
@@ -46,16 +49,30 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
             setPcbs(pcbData);
             setProjects(projData);
             if (rework) {
+                setRawRework(rework);
                 setSelectedPcb(rework.pcb_id.toString());
                 setTitle(rework.title || '');
-                setDescription(rework.description);
+                setDescription(rework.description || '');
                 setOwnerId(rework.owner_id ? rework.owner_id.toString() : '-1');
                 setReworkType(rework.rework_type || 'Minor');
                 
-                // Validate if rework is older than 2 weeks (14 days)
-                const { requirementsMet, daysOld } = useDeleteEditRequirements.getState().checkReworkEditRequirements(rework);
-                setIsEditable(requirementsMet);
-                setReworkAgeDays(daysOld);
+                const { isAgeValid } = useDeleteEditRequirements.getState().checkReworkEditRequirements(rework);
+                setIsEditable(isAgeValid);
+                setReworkAgeDays(useDeleteEditRequirements.getState().getReworkAgeDays(rework));
+
+                if (rework.rework_type === 'Silicon Swap') {
+                    const parts = (rework.new_product || '').split(' ');
+                    if (parts.length > 2) {
+                        const corner = parts[parts.length - 1];
+                        const rev = parts[parts.length - 2];
+                        if (rev === 'part' && parts[parts.length - 3] === 'No') {
+                            setNoPartYet(true);
+                        } else {
+                            setSelectedRevision(rev);
+                            setSiliconVersion(corner);
+                        }
+                    }
+                }
             }
             setLoading(false);
         }).catch(err => {
@@ -72,25 +89,14 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
         e.preventDefault();
         setSaving(true);
         let new_product = undefined;
-        if (reworkType === 'Silicon Swap' && activePcb && selectedProjData) {
-            let rawProduct = activePcb.product || '';
+        if (reworkType === 'Silicon Swap') {
+            const pcb = pcbs.find(p => p.id.toString() === selectedPcb);
             let foundFormfactor = '';
             let finalPcbRev = '';
-
-            if (selectedProjData.flavors && selectedProjData.flavors.length > 0) {
-                for (const ff of selectedProjData.flavors) {
-                    if (rawProduct.startsWith(ff.name)) {
-                        foundFormfactor = ff.name;
-                        rawProduct = rawProduct.slice(ff.name.length).trim();
-                        for (const rev of ff.revisions) {
-                            if (rawProduct.startsWith(rev)) {
-                                finalPcbRev = rev;
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
+            
+            if (pcb) {
+                foundFormfactor = pcb.board_flavor || '';
+                finalPcbRev = pcb.board_rev || '';
             }
 
             const cornerPart = noPartYet ? "" : siliconVersion;
@@ -120,6 +126,30 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
 
     if (loading) return <div className="loading">Loading Rework...</div>;
 
+    const isSuperUser = currentUserRole === 'Super User';
+    const isOwner = currentUser && rawRework && (
+        rawRework.owner_id === currentUser.id ||
+        rawRework.owner_username === currentUser.username ||
+        rawRework.owner_name === currentUser.name
+    );
+    const hasAccess = isSuperUser || (currentUserRole === 'User' && isOwner);
+
+    if (!hasAccess) {
+        return (
+            <div className="add-page-container">
+                <header className="add-page-header">
+                    <button onClick={onBack} className="back-button">
+                        <ArrowLeft size={20} />
+                    </button>
+                    <h2>Access Denied</h2>
+                </header>
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <p>You do not have permission to edit this rework record.</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="add-page-container">
             <header className="add-page-header">
@@ -138,20 +168,12 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
                     backgroundColor: 'rgba(249, 115, 22, 0.1)', 
                     border: '1px solid rgba(249, 115, 22, 0.2)', 
                     borderRadius: '8px', 
-                    padding: '12px 16px', 
-                    fontSize: '0.95rem', 
-                    marginBottom: '20px', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px', 
-                    lineHeight: '1.4' 
+                    padding: '12px 16px',
+                    marginBottom: '20px',
+                    fontSize: '0.9rem',
+                    lineHeight: '1.4'
                 }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                    <span>This rework log is older than 2 weeks (Age: {reworkAgeDays.toFixed(1)} days) and cannot be edited.</span>
+                    <strong>Read-Only:</strong> This rework log is {reworkAgeDays.toFixed(1)} days old (exceeds the 14-day modification window) and cannot be updated.
                 </div>
             )}
 
@@ -269,7 +291,12 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
                 </div>
                 <div className="form-group">
                     <label htmlFor="owner">Assigned Owner</label>
-                    <select id="owner" value={ownerId} onChange={(e) => setOwnerId(e.target.value)}>
+                    <select 
+                        id="owner" 
+                        value={ownerId} 
+                        onChange={(e) => setOwnerId(e.target.value)}
+                        disabled={currentUserRole === 'User'}
+                    >
                         <option value="-1">-- Unassigned --</option>
                         {owners.map(o => <option key={o.id} value={o.id.toString()}>@{o.username}</option>)}
                     </select>

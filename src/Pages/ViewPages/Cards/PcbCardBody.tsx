@@ -20,7 +20,17 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const { reworks, fetchReworks, setSelectedBoards } = useReworkStore();
     const { tags, fetchTags } = useTagStore();
     const { fetchPcbs, deletePcb } = usePcbStore();
-    const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile } = useAppState();
+    const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile, currentUser, currentUserRole } = useAppState();
+
+    const isSuperUser = currentUserRole === 'Super User';
+    const isOwner = currentUser && (
+        pcb.owner_id === currentUser.id || 
+        pcb.owner_username === currentUser.username || 
+        pcb.owner === currentUser.name
+    );
+    const canEditPcb = isSuperUser || (currentUserRole === 'User' && isOwner);
+    const canDeletePcb = isSuperUser || (currentUserRole === 'User' && isOwner);
+    const canAddRework = isSuperUser || currentUserRole === 'User';
 
     const [attachedTags, setAttachedTags] = useState<any[]>([]);
     const [isAssigningTag, setIsAssigningTag] = useState(false);
@@ -103,17 +113,19 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     return (
         <div className="card-expanded-content">
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                <EditButton 
-                    onClick={(e) => { e.stopPropagation(); editItem('pcbs_edit', pcb.id); }}
-                    label={isMobile ? "Edit" : "Edit PCB"}
-                />
+                {canEditPcb && (
+                    <EditButton 
+                        onClick={(e) => { e.stopPropagation(); editItem('pcbs_edit', pcb.id); }}
+                        label={isMobile ? "Edit" : "Edit PCB"}
+                    />
+                )}
 
                 <QrButton 
                     onClick={(e) => { e.stopPropagation(); setQrModalBoard(pcb.board_number); }}
                     label={isMobile ? "QR" : "QR Code"}
                 />
                 
-                {isLocalhost && (
+                {isLocalhost && canDeletePcb && (
                     <DeleteButton 
                         onClick={(e) => { e.stopPropagation(); setIsRemovePcbOpen(true); }}
                         label={isMobile ? "Delete" : "Delete PCB"}
@@ -143,12 +155,14 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                     icon={null}
                                     style={{ flex: 'none' }}
                                 />
-                                <AddButton 
-                                    onClick={(e) => { e.stopPropagation(); addItem('reworks_add', pcb.id); }}
-                                    label="Add Rework"
-                                    icon={null}
-                                    style={{ flex: 'none' }}
-                                />
+                                {canAddRework && (
+                                    <AddButton 
+                                        onClick={(e) => { e.stopPropagation(); addItem('reworks_add', pcb.id); }}
+                                        label="Add Rework"
+                                        icon={null}
+                                        style={{ flex: 'none' }}
+                                    />
+                                )}
                             </div>
                         </div>
                         {pcbReworks.length > 0 ? (

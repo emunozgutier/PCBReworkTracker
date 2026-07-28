@@ -3,6 +3,7 @@ import { ArrowLeft, Save, HelpCircle } from 'lucide-react';
 import { FormTabs } from '../../components/forms/FormTabs';
 import { MultipleInputs } from '../../components/forms/MultipleInputs';
 import { useProjectStore } from '../../store/useProjectStore';
+import { useAppState } from '../../store/useAppState';
 
 interface AddProjectProps {
     onBack: () => void;
@@ -28,6 +29,24 @@ function generateUniqueKey(name: string, existingKeys: string[]): string {
 }
 
 export function AddProject({ onBack, onSuccess }: AddProjectProps) {
+    const { currentUserRole } = useAppState();
+
+    if (currentUserRole !== 'Super User') {
+        return (
+            <div className="add-page-container">
+                <header className="add-page-header">
+                    <button onClick={onBack} className="back-button">
+                        <ArrowLeft size={20} />
+                    </button>
+                    <h2>Access Denied</h2>
+                </header>
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <p>Only Super Users have permission to add new projects.</p>
+                </div>
+            </div>
+        );
+    }
+
     const [name, setName] = useState('');
     const [revisions, setRevisions] = useState('A0');
     const [siliconCorners, setSiliconCorners] = useState('TT');

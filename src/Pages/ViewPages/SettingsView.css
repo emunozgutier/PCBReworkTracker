@@ -2,6 +2,9 @@
     max-width: 800px;
     margin: 0 auto;
     padding: 16px 0 32px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .settings-main-card {
@@ -116,5 +119,129 @@
 @media (max-width: 640px) {
     .settings-page-wrapper {
         padding: 8px 0;
+        gap: 16px;
     }
+}
+
+.settings-description {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0 0 20px 0;
+    line-height: 1.5;
+}
+
+.calculator-input-container {
+    margin-bottom: 20px;
+}
+
+.calculator-input {
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-element);
+    color: var(--text);
+    font-size: 1.05rem;
+    font-weight: 500;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.calculator-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* Disabled Setting Cards (non-Super User) */
+.setting-choice-card.disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.setting-choice-card.disabled:hover {
+    transform: none;
+    border-color: var(--border);
+    background: rgba(15, 23, 42, 0.6);
+    box-shadow: none;
+}
+
+/* Lock Warning Banner */
+.settings-lock-warning {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 20px;
+    background: rgba(245, 158, 11, 0.05);
+    border: 1px dashed rgba(245, 158, 11, 0.25);
+    padding: 10px 14px;
+    border-radius: 10px;
+}
+
+.settings-lock-warning svg {
+    color: #f59e0b; /* Amber warning color */
+    flex-shrink: 0;
+}
+
+/* Permissions Matrix Table */
+.permissions-table-container {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.permissions-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.85rem;
+}
+
+.permissions-table th {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px 16px;
+    font-weight: 700;
+    color: var(--text-h);
+    border-bottom: 1px solid var(--border);
+}
+
+.permissions-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+}
+
+.permissions-table tr:last-child td {
+    border-bottom: none;
+}
+
+.permissions-table tr.active-row {
+    background: rgba(99, 102, 241, 0.06);
+}
+
+.permissions-table tr.active-row td.role-cell {
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.role-cell {
+    font-weight: 600;
+    color: var(--text-h);
+}
+
+.allowed-cell {
+    color: #10b981 !important; /* Emerald */
+    font-weight: 500;
+}
+
+.restricted-cell {
+    color: #f97316 !important; /* Orange / Amber */
+    font-weight: 500;
+}
+
+.denied-cell {
+    color: var(--text-muted) !important;
 }
