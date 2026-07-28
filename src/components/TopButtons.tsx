@@ -35,8 +35,9 @@ export function TopButtons() {
         canAdd = activeTab === 'owners';
     }
 
+    const isGuestPcbAdd = activeTab === 'pcbs' && currentUserRole === 'Guest';
     // Only display Add New button if not on settings and user has permissions
-    const showAddButton = activeTab !== 'settings' && canAdd;
+    const showAddButton = activeTab !== 'settings' && (canAdd || isGuestPcbAdd);
 
     // Retrieve PCB filters state
     const {
@@ -110,7 +111,13 @@ export function TopButtons() {
                         </button>
                     )}
                     {showAddButton && (
-                        <button className="add-button" onClick={onAdd}>
+                        <button 
+                            className="add-button" 
+                            onClick={onAdd}
+                            disabled={isGuestPcbAdd}
+                            title={isGuestPcbAdd ? "Only users can add PCBs" : undefined}
+                            style={isGuestPcbAdd ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+                        >
                             <Plus size={18} />
                             <span>Add New</span>
                         </button>

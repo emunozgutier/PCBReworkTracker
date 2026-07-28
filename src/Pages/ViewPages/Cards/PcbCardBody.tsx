@@ -112,24 +112,24 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     return (
         <div className="card-expanded-content">
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                {canEditPcb && (
-                    <EditButton 
-                        onClick={(e) => { e.stopPropagation(); editItem('pcbs_edit', pcb.id); }}
-                        label={isMobile ? "Edit" : "Edit PCB"}
-                    />
-                )}
+                <EditButton 
+                    onClick={(e) => { e.stopPropagation(); editItem('pcbs_edit', pcb.id); }}
+                    disabled={!isSuperUser}
+                    title={!isSuperUser ? "Only super users can do that" : "Edit PCB"}
+                    label={isMobile ? "Edit" : "Edit PCB"}
+                />
 
                 <QrButton 
                     onClick={(e) => { e.stopPropagation(); setQrModalBoard(pcb.board_number); }}
                     label={isMobile ? "QR" : "QR Code"}
                 />
                 
-                {isLocalhost && canDeletePcb && (
-                    <DeleteButton 
-                        onClick={(e) => { e.stopPropagation(); setIsRemovePcbOpen(true); }}
-                        label={isMobile ? "Delete" : "Delete PCB"}
-                    />
-                )}
+                <DeleteButton 
+                    onClick={(e) => { e.stopPropagation(); setIsRemovePcbOpen(true); }}
+                    disabled={!isSuperUser}
+                    title={!isSuperUser ? "Only super users can do that" : "Delete PCB"}
+                    label={isMobile ? "Delete" : "Delete PCB"}
+                />
             </div>
 
             <div style={{ marginTop: '20px' }}>
