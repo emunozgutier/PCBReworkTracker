@@ -48,4 +48,13 @@ describe('Global Settings Store Unit Tests', () => {
         expect(formatCrc('G', 'letter')).toBe('G');
         expect(formatCrc('G', 'nato')).toBe('Golf');
     });
+
+    it('should pick the biggest silicon revision correctly where C0 > B1 > B0 > A2', () => {
+        const { getBiggestRevision } = require('../src/Pages/AddPages/AddPcb');
+        expect(getBiggestRevision(['A2', 'B0', 'B1', 'C0'])).toBe('C0');
+        expect(getBiggestRevision(['B0', 'B1'])).toBe('B1');
+        expect(getBiggestRevision(['A2', 'B0'])).toBe('B0');
+        expect(getBiggestRevision(['A2'])).toBe('A2');
+        expect(getBiggestRevision([])).toBe('');
+    });
 });

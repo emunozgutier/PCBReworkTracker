@@ -14,6 +14,28 @@ const isNA = (str: string) => {
     return s === 'n/a' || s === 'na' || s === 'not applicable';
 };
 
+export const getBiggestRevision = (revisions: string[]): string => {
+    if (!revisions || revisions.length === 0) return '';
+    const sorted = [...revisions].sort((a, b) => {
+        const matchA = a.trim().match(/^([A-Za-z]+)(\d+)$/);
+        const matchB = b.trim().match(/^([A-Za-z]+)(\d+)$/);
+        if (!matchA && !matchB) return b.localeCompare(a);
+        if (!matchA) return 1;
+        if (!matchB) return -1;
+        
+        const letterA = matchA[1].toUpperCase();
+        const letterB = matchB[1].toUpperCase();
+        if (letterA !== letterB) {
+            return letterB.localeCompare(letterA); // Descending
+        }
+        
+        const numA = parseInt(matchA[2], 10);
+        const numB = parseInt(matchB[2], 10);
+        return numB - numA; // Descending
+    });
+    return sorted[0];
+};
+
 interface AddPCBProps {
     onBack: () => void;
     onSuccess: () => void;
@@ -145,13 +167,13 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                 if (firstProj.flavors && firstProj.flavors.length > 0) {
                     setSelectedPcbFlavor(firstProj.flavors[0].name);
                     const revs = (firstProj.revisions || []).filter((s: string) => !isNA(s));
-                    setSelectedRevision(revs.length > 0 ? revs[0] : '');
+                    setSelectedRevision(getBiggestRevision(revs));
                     setPcbRev(firstProj.flavors[0].revisions[0] || '');
                     setBom(firstProj.flavors[0].boms ? firstProj.flavors[0].boms[0] : '');
                 } else if (firstProj.revisions && firstProj.revisions.length > 0) {
                     setSelectedPcbFlavor('');
                     const revs = (firstProj.revisions || []).filter((s: string) => !isNA(s));
-                    setSelectedRevision(revs.length > 0 ? revs[0] : '');
+                    setSelectedRevision(getBiggestRevision(revs));
                     setPcbRev('');
                     setBom('');
                 }
@@ -174,13 +196,13 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         if (project && project.flavors && project.flavors.length > 0) {
             setSelectedPcbFlavor(project.flavors[0].name);
             const revs = (project.revisions || []).filter((s: string) => !isNA(s));
-            setSelectedRevision(revs.length > 0 ? revs[0] : '');
+            setSelectedRevision(getBiggestRevision(revs));
             setPcbRev(project.flavors[0].revisions[0] || '');
             setBom(project.flavors[0].boms ? project.flavors[0].boms[0] : '');
         } else if (project && project.revisions && project.revisions.length > 0) {
             setSelectedPcbFlavor('');
             const revs = (project.revisions || []).filter((s: string) => !isNA(s));
-            setSelectedRevision(revs.length > 0 ? revs[0] : '');
+            setSelectedRevision(getBiggestRevision(revs));
             setPcbRev('');
             setBom('');
         } else {
