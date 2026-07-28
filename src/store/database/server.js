@@ -617,12 +617,14 @@ function generateSecret() {
     return secret;
 }
 
-// --- OTP API Endpoints ---
 app.get('/api/otp/setup', (req, res) => {
-    const { username } = req.query;
+    const { username, host } = req.query;
     if (!username) return res.status(400).json({ error: "Username is required." });
     const secret = generateSecret();
-    const otpauthUrl = `otpauth://totp/PCBReworkTracker:${username}?secret=${secret}&issuer=PCBReworkTracker`;
+    const cleanHost = host ? host.replace(/^https?:\/\//i, '') : 'PCBReworkTracker';
+    const issuer = `ReworkTracker (${cleanHost})`;
+    const label = `${issuer}:${username}`;
+    const otpauthUrl = `otpauth://totp/${encodeURIComponent(label)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
     res.json({ secret, otpauthUrl });
 });
 

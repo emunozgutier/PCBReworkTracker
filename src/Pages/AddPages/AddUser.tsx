@@ -27,7 +27,8 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
         setOtpError('');
         setVerifying(true);
         try {
-            const res = await apiFetch(`${API_BASE}/otp/setup?username=${encodeURIComponent(username.trim())}`);
+            const host = window.location.host;
+            const res = await apiFetch(`${API_BASE}/otp/setup?username=${encodeURIComponent(username.trim())}&host=${encodeURIComponent(host)}`);
             if (!res.ok) throw new Error('Failed to generate OTP setup.');
             const data = await res.json();
             

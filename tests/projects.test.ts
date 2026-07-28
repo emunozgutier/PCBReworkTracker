@@ -108,7 +108,7 @@ describe('Projects API - Silicon Version', () => {
 
 
     it('should setup OTP, verify it, and allow creating a new owner as a guest', async () => {
-        const uniqueUsername = `gowner${Date.now()}`;
+        const uniqueUsername = `vitest_gowner_${Date.now()}`;
         // 1. Get OTP Setup
         const resSetup = await fetch(`${API_URL}/otp/setup?username=${uniqueUsername}`);
         expect(resSetup.status).toBe(200);
@@ -139,7 +139,7 @@ describe('Projects API - Silicon Version', () => {
                 'X-User-Role': 'Guest'
             },
             body: JSON.stringify({
-                name: `Guest Owner ${uniqueUsername}`,
+                name: `Vitest Guest Owner ${uniqueUsername}`,
                 username: uniqueUsername,
                 otp_secret: secret
             })
@@ -147,7 +147,7 @@ describe('Projects API - Silicon Version', () => {
         expect(res.status).toBe(201);
         const data = await res.json();
         expect(data.id).toBeDefined();
-        expect(data.name).toBe(`Guest Owner ${uniqueUsername}`);
+        expect(data.name).toBe(`Vitest Guest Owner ${uniqueUsername}`);
     });
 
     it('should delete the test project', async () => {

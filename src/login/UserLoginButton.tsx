@@ -47,7 +47,11 @@ export function UserLoginButton() {
         } else {
             const foundOwner = owners.find(o => o.username === val);
             if (foundOwner) {
-                setCurrentUser(foundOwner, 'User');
+                const isOnlyUser = owners.length === 1;
+                const minId = owners.length > 0 ? Math.min(...owners.map(o => o.id)) : -1;
+                const isFirstUser = foundOwner.id === minId;
+                const role = (isOnlyUser || isFirstUser) ? 'Super User' : 'User';
+                setCurrentUser(foundOwner, role);
             }
         }
     };
