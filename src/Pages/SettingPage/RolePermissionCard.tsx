@@ -14,8 +14,13 @@ export function RolePermissionCard() {
     }, [allowGuestMinorRework]);
 
     const isSuperUser = currentUserRole === 'Super User';
+    console.log("RolePermissionCard render: currentUserRole=", currentUserRole, "isSuperUser=", isSuperUser, "localGuestMinorRework=", localGuestMinorRework);
 
     const handleSaveChanges = () => {
+        setAllowGuestMinorRework(localGuestGuest => {
+            console.log("Saving changes! Set allowGuestMinorRework to:", localGuestMinorRework);
+            return localGuestMinorRework;
+        });
         setAllowGuestMinorRework(localGuestMinorRework);
         alert("Permissions updated and saved successfully!");
     };
@@ -43,7 +48,7 @@ export function RolePermissionCard() {
             superUserAllowed: true, 
             userAllowed: true, 
             guestAllowed: localGuestMinorRework,
-            canEditGuest: isSuperUser,
+            canEditGuest: true,
             onGuestClick: () => setLocalGuestMinorRework(!localGuestMinorRework)
         },
         { name: 'Edit Own', superUserAllowed: true, userAllowed: true, guestAllowed: false, isEditRow: true },

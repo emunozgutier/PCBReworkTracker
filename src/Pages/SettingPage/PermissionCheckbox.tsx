@@ -8,6 +8,7 @@ interface PermissionCheckboxProps {
 }
 
 export function PermissionCheckbox({ allowed, active, canEdit, onClick }: PermissionCheckboxProps) {
+    console.log("PermissionCheckbox render: allowed=", allowed, "active=", active, "canEdit=", canEdit, "hasOnClick=", !!onClick);
     return (
         <td
             className={`cb-cell ${active ? 'active-cell' : ''}`}
