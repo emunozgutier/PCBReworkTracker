@@ -48,6 +48,12 @@ export function UrlManager() {
         const handlePopState = () => {
             const rawPath = getNormalizedPath();
             
+            // settings test page
+            if (rawPath === '/settings/test' || rawPath === '/settings/test/') {
+                useAppState.getState().setPage('settings_test');
+                return;
+            }
+
             // OTP Reset page
             if (rawPath.startsWith('/reset-otp')) {
                 useAppState.getState().setPage('reset_otp');
@@ -149,6 +155,15 @@ export function UrlManager() {
         if (base.endsWith('/')) base = base.slice(0, -1);
         
         // Don't push state if we are inside a form view
+        if (page === 'settings_test') {
+            const search = window.location.search;
+            const targetUrl = `${base}/settings/test${search}`;
+            const currentPath = window.location.pathname + window.location.search;
+            if (currentPath !== targetUrl) {
+                window.history.pushState({}, '', targetUrl);
+            }
+            return;
+        }
         if (page !== activeTab && page.includes('_')) return;
 
         const search = window.location.search;
