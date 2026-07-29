@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { TopSettingPage } from '../src/Pages/SettingPage/TopSettingPage';
-import { useGlobalSettings } from '../src/store/useGlobalSettings';
 import { useAppState } from '../src/store/useAppState';
 import { act } from 'react';
 
@@ -14,8 +13,7 @@ describe('TopSettingPage Permissions Checkbox Toggle', () => {
         document.body.appendChild(container);
         
         // Reset settings state
-        useGlobalSettings.setState({ allowGuestMinorRework: false });
-        useAppState.setState({ currentUserRole: 'Super User' });
+        useAppState.setState({ allowGuestMinorRework: false, currentUserRole: 'Super User' });
     });
 
     it('should visually toggle checkbox when clicked and save successfully', async () => {
@@ -57,7 +55,7 @@ describe('TopSettingPage Permissions Checkbox Toggle', () => {
         });
 
         // Verify that the global settings store was updated
-        expect(useGlobalSettings.getState().allowGuestMinorRework).toBe(true);
+        expect(useAppState.getState().allowGuestMinorRework).toBe(true);
 
         root.unmount();
     });

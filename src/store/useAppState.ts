@@ -1,7 +1,9 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { usePcbStore } from './localDataBaseCopy/usePcbStore';
 import { useReworkStore } from './localDataBaseCopy/useReworkStore';
 import { useTagStore } from './localDataBaseCopy/useTagStore';
+import { apiFetch, API_BASE } from './database/apiBridge';
 
 type Page = 
     | 'projects' | 'projects_add' | 'projects_edit'
@@ -52,6 +54,14 @@ interface NavigationState {
     currentUser: any | null;
     currentUserRole: 'Super User' | 'User' | 'Guest';
     setCurrentUser: (user: any | null, role: 'Super User' | 'User' | 'Guest') => void;
+
+    // Global Settings merged
+    crcFormat: 'letter' | 'nato';
+    allowGuestMinorRework: boolean;
+    setCrcFormat: (crcFormat: 'letter' | 'nato') => void;
+    toggleCrcFormat: () => void;
+    setAllowGuestMinorRework: (allowed: boolean) => void;
+    resetSettings: () => void;
 }
 
 // Load initial session from localStorage if valid
@@ -80,111 +90,194 @@ if (typeof window !== 'undefined') {
     }
 }
 
-export const useAppState = create<NavigationState>((set) => ({
-    page: 'projects',
-    activeTab: 'projects',
-    selectedId: null,
-    isMobile: typeof window !== 'undefined' ? window.innerWidth <= 768 : false,
-    expandedProject: null,
-    expandedPcb: null,
-    expandedRework: null,
-    isolatedView: false,
-    qrModalBoard: null,
-    mistypedUrl: null,
-    correctedUrl: null,
-    searchQuery: '',
-    showFilters: false,
-    showMobileSearch: false,
-    currentUser: initialUser,
-    currentUserRole: initialRole,
+function getInitialCrcFormat(): 'letter' | 'nato' {
+    if (typeof window !== 'undefined') {
+        const hash = window.location.hash || '';
+        if (hash.includes('nato')) return 'nato';
+        if (hash.includes('letter')) return 'letter';
+        
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('crc') === 'nato') return 'nato';
+        if (params.get('crc') === 'letter') return 'letter';
+    }
+    return 'letter';
+}
 
-    setCurrentUser: (currentUser, currentUserRole) => {
-        set({ currentUser, currentUserRole });
-        if (typeof window !== 'undefined') {
-            try {
-                if (currentUserRole === 'Guest') {
-                    localStorage.removeItem('rework_user');
-                    localStorage.removeItem('rework_role');
-                    localStorage.removeItem('rework_session_expires');
-                } else {
-                    localStorage.setItem('rework_user', JSON.stringify(currentUser));
-                    localStorage.setItem('rework_role', currentUserRole);
-                    const expires = Date.now() + 7 * 24 * 60 * 60 * 1000; // 1 week
-                    localStorage.setItem('rework_session_expires', expires.toString());
-                }
-            } catch (e) {
-                console.error('Failed to save session to localStorage', e);
-            }
-        }
-    },
-    setPage: (page) => set({ page }),
-    setIsolatedView: (isolatedView) => set({ isolatedView }),
-    
-    setExpandedProject: (name) => {
-        set({ expandedProject: name });
-    },
-
-    setExpandedPcb: (name) => {
-        set({ expandedPcb: name });
-    },
-
-    setExpandedRework: (id) => {
-        set({ expandedRework: id });
-    },
-
-    setQrModalBoard: (name) => set({ qrModalBoard: name }),
-    setMistypedUrl: (url) => set({ mistypedUrl: url }),
-    setCorrectedUrl: (url) => set({ correctedUrl: url }),
-    setSearchQuery: (searchQuery) => set({ searchQuery }),
-    setShowFilters: (showFilters) => set({ showFilters }),
-    setShowMobileSearch: (showMobileSearch) => set({ showMobileSearch }),
-
-    setActiveTab: (tab) => {
-        usePcbStore.getState().resetFilters();
-        useReworkStore.getState().resetFilters();
-        useTagStore.getState().resetFilters();
-
-        set({ 
-            activeTab: tab, 
-            page: tab as Page, // When we switch tabs, we go to the main list page
+export const useAppState = create<NavigationState>()(
+    persist(
+        (set, get) => ({
+            page: 'projects',
+            activeTab: 'projects',
             selectedId: null,
+            isMobile: typeof window !== 'undefined' ? window.innerWidth <= 768 : false,
             expandedProject: null,
             expandedPcb: null,
             expandedRework: null,
+            isolatedView: false,
+            qrModalBoard: null,
+            mistypedUrl: null,
+            correctedUrl: null,
             searchQuery: '',
             showFilters: false,
-            showMobileSearch: false
-        });
-    },
+            showMobileSearch: false,
+            currentUser: initialUser,
+            currentUserRole: initialRole,
 
-    editItem: (page, id) => set({ 
-        page, 
-        selectedId: id 
-    }),
+            // Global Settings
+            crcFormat: getInitialCrcFormat(),
+            allowGuestMinorRework: true,
 
-    addItem: (page, prefillId) => {
-        const baseTab = page.split('_')[0];
-        if (typeof window !== 'undefined' && useAppState.getState().activeTab !== baseTab) {
-            set({ 
-                activeTab: baseTab,
+            setCrcFormat: (crcFormat) => {
+                set({ crcFormat });
+
+                // If logged in user changes setting, save to database
+                const { currentUser, currentUserRole } = get();
+                if (currentUser && currentUserRole !== 'Guest') {
+                    apiFetch(`${API_BASE}/owners/${currentUser.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: currentUser.name,
+                            username: currentUser.username,
+                            email: currentUser.email,
+                            crc_format: crcFormat
+                        })
+                    }).then(res => {
+                        if (res.ok) {
+                            const updatedUser = { ...currentUser, crc_format: crcFormat };
+                            get().setCurrentUser(updatedUser, currentUserRole);
+                        }
+                    }).catch(err => {
+                        console.error('Failed to sync crc_format setting to DB:', err);
+                    });
+                }
+            },
+
+            toggleCrcFormat: () => {
+                const nextFormat = get().crcFormat === 'letter' ? 'nato' : 'letter';
+                get().setCrcFormat(nextFormat);
+            },
+
+            setAllowGuestMinorRework: (allowGuestMinorRework) => {
+                set({ allowGuestMinorRework });
+            },
+
+            resetSettings: () => set({
+                crcFormat: getInitialCrcFormat(),
+                allowGuestMinorRework: true
+            }),
+
+            setCurrentUser: (currentUser, currentUserRole) => {
+                set({ currentUser, currentUserRole });
+                if (currentUser && currentUser.crc_format) {
+                    set({ crcFormat: currentUser.crc_format });
+                } else if (!currentUser) {
+                    set({ crcFormat: 'letter' });
+                }
+                if (typeof window !== 'undefined') {
+                    try {
+                        if (currentUserRole === 'Guest') {
+                            localStorage.removeItem('rework_user');
+                            localStorage.removeItem('rework_role');
+                            localStorage.removeItem('rework_session_expires');
+                        } else {
+                            localStorage.setItem('rework_user', JSON.stringify(currentUser));
+                            localStorage.setItem('rework_role', currentUserRole);
+                            const expires = Date.now() + 7 * 24 * 60 * 60 * 1000; // 1 week
+                            localStorage.setItem('rework_session_expires', expires.toString());
+                        }
+                    } catch (e) {
+                        console.error('Failed to save session to localStorage', e);
+                    }
+                }
+            },
+            setPage: (page) => set({ page }),
+            setIsolatedView: (isolatedView) => set({ isolatedView }),
+            
+            setExpandedProject: (name) => {
+                set({ expandedProject: name });
+            },
+
+            setExpandedPcb: (name) => {
+                set({ expandedPcb: name });
+            },
+
+            setExpandedRework: (id) => {
+                set({ expandedRework: id });
+            },
+
+            setQrModalBoard: (name) => set({ qrModalBoard: name }),
+            setMistypedUrl: (url) => set({ mistypedUrl: url }),
+            setCorrectedUrl: (url) => set({ correctedUrl: url }),
+            setSearchQuery: (searchQuery) => set({ searchQuery }),
+            setShowFilters: (showFilters) => set({ showFilters }),
+            setShowMobileSearch: (showMobileSearch) => set({ showMobileSearch }),
+
+            setActiveTab: (tab) => {
+                usePcbStore.getState().resetFilters();
+                useReworkStore.getState().resetFilters();
+                useTagStore.getState().resetFilters();
+
+                set({ 
+                    activeTab: tab, 
+                    page: tab as Page, // When we switch tabs, we go to the main list page
+                    selectedId: null,
+                    expandedProject: null,
+                    expandedPcb: null,
+                    expandedRework: null,
+                    searchQuery: '',
+                    showFilters: false,
+                    showMobileSearch: false
+                });
+            },
+
+            editItem: (page, id) => set({ 
                 page, 
-                selectedId: prefillId || null 
-            });
-            return;
+                selectedId: id 
+            }),
+
+            addItem: (page, prefillId) => {
+                const baseTab = page.split('_')[0];
+                if (typeof window !== 'undefined' && get().activeTab !== baseTab) {
+                    set({ 
+                        activeTab: baseTab,
+                        page, 
+                        selectedId: prefillId || null 
+                    });
+                    return;
+                }
+                set({ 
+                    page, 
+                    selectedId: prefillId || null 
+                });
+            },
+
+            goBack: () => set((state) => ({ 
+                page: state.activeTab as Page, 
+                selectedId: null 
+            })),
+
+            setIsMobile: (isMobile) => set({ isMobile }),
+        }),
+        {
+            name: 'pcb-rework-tracker-global-settings',
+            partialize: (state) => ({
+                crcFormat: state.crcFormat,
+                allowGuestMinorRework: state.allowGuestMinorRework
+            }),
+            storage: createJSONStorage(() => {
+                if (typeof window !== 'undefined' && window.localStorage) {
+                    return window.localStorage;
+                }
+                return {
+                    getItem: () => null,
+                    setItem: () => {},
+                    removeItem: () => {},
+                };
+            }),
         }
-        set({ 
-            page, 
-            selectedId: prefillId || null 
-        });
-    },
-
-    goBack: () => set((state) => ({ 
-        page: state.activeTab as Page, 
-        selectedId: null 
-    })),
-
-    setIsMobile: (isMobile) => set({ isMobile }),
-}));
+    )
+);
 
 // Initialize listener
 if (typeof window !== 'undefined') {

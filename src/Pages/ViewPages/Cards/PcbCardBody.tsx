@@ -11,9 +11,6 @@ import { formatTagName } from '../../../store/localDataBaseCopy/useTagStore';
 import { EditButton, ViewButton, AddButton, QrButton, DeleteButton } from '../../../components/forms/ActionButtons';
 import { RemovePcb } from '../../RemovePage/RemovePcb';
 import { ReworkCardBody } from './ReworkCardBody';
-
-import { useGlobalSettings } from '../../../store/useGlobalSettings';
-
 interface PcbCardBodyProps {
     pcb: any;
 }
@@ -22,8 +19,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const { reworks, fetchReworks, setSelectedBoards } = useReworkStore();
     const { tags, fetchTags } = useTagStore();
     const { fetchPcbs, deletePcb } = usePcbStore();
-    const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile, currentUser, currentUserRole } = useAppState();
-    const { allowGuestMinorRework } = useGlobalSettings();
+    const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile, currentUser, currentUserRole, allowGuestMinorRework } = useAppState();
 
     const isSuperUser = currentUserRole === 'Super User';
     const isOwner = currentUser && (

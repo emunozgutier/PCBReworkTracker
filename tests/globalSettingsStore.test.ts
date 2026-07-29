@@ -1,45 +1,44 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useGlobalSettings, DEFAULT_GLOBAL_SETTINGS } from '../src/store/useGlobalSettings';
+import { useAppState } from '../src/store/useAppState';
 import { formatCrc, getNatoWord } from '../src/components/UrlManager/crc';
 import { getBiggestRevision } from '../src/Pages/AddPages/AddPcb';
 
 describe('Global Settings Store Unit Tests', () => {
     beforeEach(() => {
         // Reset settings before each test
-        useGlobalSettings.getState().resetSettings();
+        useAppState.getState().resetSettings();
     });
 
     it('should initialize with default crcFormat of "letter"', () => {
-        const state = useGlobalSettings.getState();
+        const state = useAppState.getState();
         expect(state.crcFormat).toBe('letter');
-        expect(DEFAULT_GLOBAL_SETTINGS.crcFormat).toBe('letter');
     });
 
     it('should set crcFormat to "nato"', () => {
-        const store = useGlobalSettings.getState();
+        const store = useAppState.getState();
         store.setCrcFormat('nato');
 
-        expect(useGlobalSettings.getState().crcFormat).toBe('nato');
+        expect(useAppState.getState().crcFormat).toBe('nato');
     });
 
     it('should toggle crcFormat between "letter" and "nato"', () => {
-        const store = useGlobalSettings.getState();
+        const store = useAppState.getState();
         expect(store.crcFormat).toBe('letter');
 
         store.toggleCrcFormat();
-        expect(useGlobalSettings.getState().crcFormat).toBe('nato');
+        expect(useAppState.getState().crcFormat).toBe('nato');
 
-        useGlobalSettings.getState().toggleCrcFormat();
-        expect(useGlobalSettings.getState().crcFormat).toBe('letter');
+        useAppState.getState().toggleCrcFormat();
+        expect(useAppState.getState().crcFormat).toBe('letter');
     });
 
     it('should reset settings to default values', () => {
-        const store = useGlobalSettings.getState();
+        const store = useAppState.getState();
         store.setCrcFormat('nato');
-        expect(useGlobalSettings.getState().crcFormat).toBe('nato');
+        expect(useAppState.getState().crcFormat).toBe('nato');
 
         store.resetSettings();
-        expect(useGlobalSettings.getState().crcFormat).toBe('letter');
+        expect(useAppState.getState().crcFormat).toBe('letter');
     });
 
     it('should format CRC characters properly using formatCrc and getNatoWord helpers', () => {

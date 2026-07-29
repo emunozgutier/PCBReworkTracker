@@ -1,10 +1,10 @@
 import { COLORS } from '../store/useStyles';
-import { useGlobalSettings } from '../store/useGlobalSettings';
+import { useAppState } from '../store/useAppState';
 import { formatCrc } from './UrlManager/crc';
 import './BoardName.css';
 
 export function BoardName({ name, isHex, crcColor = COLORS.purple }: { name: string; isHex?: boolean; crcColor?: string }) {
-    const { crcFormat } = useGlobalSettings();
+    const { crcFormat } = useAppState();
 
     if (!name) return null;
     

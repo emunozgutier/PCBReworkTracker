@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import { ShieldCheck } from 'lucide-react';
-import { useGlobalSettings } from '../../store/useGlobalSettings';
+import { useAppState } from '../../store/useAppState';
 import { useCurrentUser } from '../../store/localDataBaseCopy/useCurrentUser';
 import { usePermissionsStore, usePermissionsTable } from '../../store/usePermissionsStore';
 import { RolePermissionSubTable } from './RolePermissionSubTable';
 
 export function RolePermissionCard() {
-    const { allowGuestMinorRework, setAllowGuestMinorRework } = useGlobalSettings();
+    const { allowGuestMinorRework, setAllowGuestMinorRework } = useAppState();
     const { currentUserRole, isSuperUser } = useCurrentUser();
     const localGuestMinorRework = usePermissionsStore((state) => state.localGuestMinorRework);
     const setLocalGuestMinorRework = usePermissionsStore((state) => state.setLocalGuestMinorRework);

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
-import { useGlobalSettings } from '../../store/useGlobalSettings';
+import { useAppState } from '../../store/useAppState';
 import { generateCRC, getNatoWord } from '../../components/UrlManager/crc';
 
 export function CheckSumCard() {
-    const { crcFormat, setCrcFormat } = useGlobalSettings();
+    const { crcFormat, setCrcFormat } = useAppState();
     const [calcInput, setCalcInput] = useState('MAP-0001');
 
     const cleanInput = calcInput.trim().toUpperCase();
