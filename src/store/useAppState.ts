@@ -151,6 +151,14 @@ export const useAppState = create<NavigationState>()(
                         console.error('Failed to sync crc_format setting to DB:', err);
                     });
                 }
+
+                apiFetch(`${API_BASE}/settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ crcFormat })
+                }).catch(err => {
+                    console.error('Failed to save crcFormat to DB settings:', err);
+                });
             },
 
             toggleCrcFormat: () => {
@@ -160,12 +168,31 @@ export const useAppState = create<NavigationState>()(
 
             setAllowGuestMinorRework: (allowGuestMinorRework) => {
                 set({ allowGuestMinorRework });
+                apiFetch(`${API_BASE}/settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ allowGuestMinorRework: allowGuestMinorRework ? 'true' : 'false' })
+                }).catch(err => {
+                    console.error('Failed to save allowGuestMinorRework to DB:', err);
+                });
             },
 
-            resetSettings: () => set({
-                crcFormat: getInitialCrcFormat(),
-                allowGuestMinorRework: true
-            }),
+            resetSettings: () => {
+                set({
+                    crcFormat: getInitialCrcFormat(),
+                    allowGuestMinorRework: true
+                });
+                apiFetch(`${API_BASE}/settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        crcFormat: getInitialCrcFormat(),
+                        allowGuestMinorRework: 'true'
+                    })
+                }).catch(err => {
+                    console.error('Failed to reset DB settings:', err);
+                });
+            },
 
             setCurrentUser: (currentUser, currentUserRole) => {
                 set({ currentUser, currentUserRole });

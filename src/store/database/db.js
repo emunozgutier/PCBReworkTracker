@@ -115,6 +115,18 @@ const initDb = async () => {
         )`);
         dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_tags_owner_name ON tags(owner_id, name COLLATE NOCASE)`);
 
+        // Global Settings Table
+        dbInstance.run(`CREATE TABLE IF NOT EXISTS global_settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        )`);
+        dbInstance.run(`INSERT OR IGNORE INTO global_settings (key, value) VALUES ('crcFormat', 'letter')`);
+        dbInstance.run(`INSERT OR IGNORE INTO global_settings (key, value) VALUES ('allowGuestMinorRework', 'true')`);
+        dbInstance.run(`INSERT OR IGNORE INTO global_settings (key, value) VALUES ('priority_Silicon Swap', 'High')`);
+        dbInstance.run(`INSERT OR IGNORE INTO global_settings (key, value) VALUES ('priority_Major Rework', 'High')`);
+        dbInstance.run(`INSERT OR IGNORE INTO global_settings (key, value) VALUES ('priority_Minor Rework', 'Low')`);
+        dbInstance.run(`INSERT OR IGNORE INTO global_settings (key, value) VALUES ('priority_Resistor Swap', 'Low')`);
+
         // PCBs Table
         dbInstance.run(`CREATE TABLE IF NOT EXISTS pcbs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

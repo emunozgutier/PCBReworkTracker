@@ -1263,4 +1263,33 @@ app.post('/api/test/cleanup', (req, res) => {
     });
 });
 
+app.get('/api/settings', (req, res) => {
+    db.all("SELECT * FROM global_settings", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        const settings = {};
+        rows.forEach(r => {
+            settings[r.key] = r.value;
+        });
+        res.json(settings);
+    });
+});
+
+app.post('/api/settings', (req, res) => {
+    const userRole = req.headers['x-user-role'];
+    if (userRole !== 'Super User') {
+        return res.status(403).json({ error: 'Only Super Users can modify settings.' });
+    }
+
+    const updates = req.body;
+    db.serialize(() => {
+        const stmt = db.prepare("INSERT OR REPLACE INTO global_settings (key, value) VALUES (?, ?)");
+        Object.keys(updates).forEach(key => {
+            stmt.run(key, String(updates[key]));
+        });
+        stmt.finalize(() => {
+            res.json({ success: true });
+        });
+    });
+});
+
 

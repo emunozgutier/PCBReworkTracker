@@ -1,5 +1,8 @@
+import { useEffect } from 'react';
 import { NetworkQRCode } from './Pages/ViewPages/Cards/NetworkQRCode';
 import { TabBar } from './components/TabBar';
+import { usePermissionsStore } from './store/localDataBaseCopy/usePermissionsStore';
+import { usePriorityStore } from './store/localDataBaseCopy/usePriorityStore';
 import { TopButtons } from './components/TopButtons';
 import { ProjectView } from './Pages/ViewPages/ProjectView';
 import { PcbView } from './Pages/ViewPages/PcbView';
@@ -30,6 +33,13 @@ import { useAppState } from './store/useAppState';
 
 export function PageWithMargins() {
   const { page, selectedId, editItem, addItem, goBack, isMobile } = useAppState();
+  const fetchPermissions = usePermissionsStore(state => state.fetchPermissions);
+  const fetchPriorities = usePriorityStore(state => state.fetchPriorities);
+
+  useEffect(() => {
+    fetchPermissions();
+    fetchPriorities();
+  }, [fetchPermissions, fetchPriorities]);
 
   const handleSuccess = () => {
     // Refresh data and go back
