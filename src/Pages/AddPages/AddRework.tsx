@@ -286,9 +286,9 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                                 <label htmlFor="rework_type">Rework Type</label>
                                 <select id="rework_type" value={reworkType} onChange={(e) => setReworkType(e.target.value)}>
                                     <option value="Minor">Minor - still works</option>
-                                    <option value="Major">Major - something wrong</option>
+                                    {currentUserRole !== 'Guest' && <option value="Major">Major - something wrong</option>}
                                     <option value="Resistor Swap">Resistor Swap</option>
-                                    <option value="Silicon Swap">Silicon Swap</option>
+                                    {currentUserRole !== 'Guest' && <option value="Silicon Swap">Silicon Swap</option>}
                                 </select>
                             </div>
                         </div>
@@ -396,9 +396,9 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                             <label htmlFor="rework_type">Rework Type</label>
                             <select id="rework_type" value={reworkType} onChange={(e) => setReworkType(e.target.value)}>
                                 <option value="Minor">Minor - still works</option>
-                                <option value="Major">Major - something wrong</option>
+                                {currentUserRole !== 'Guest' && <option value="Major">Major - something wrong</option>}
                                 <option value="Resistor Swap">Resistor Swap</option>
-                                <option value="Silicon Swap">Silicon Swap</option>
+                                {currentUserRole !== 'Guest' && <option value="Silicon Swap">Silicon Swap</option>}
                             </select>
                         </div>
                         {reworkType === 'Silicon Swap' && (

@@ -12,6 +12,8 @@ import { EditButton, ViewButton, AddButton, QrButton, DeleteButton } from '../..
 import { RemovePcb } from '../../RemovePage/RemovePcb';
 import { ReworkCardBody } from './ReworkCardBody';
 
+import { useGlobalSettings } from '../../../store/useGlobalSettings';
+
 interface PcbCardBodyProps {
     pcb: any;
 }
@@ -21,6 +23,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const { tags, fetchTags } = useTagStore();
     const { fetchPcbs, deletePcb } = usePcbStore();
     const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile, currentUser, currentUserRole } = useAppState();
+    const { allowGuestMinorRework } = useGlobalSettings();
 
     const isSuperUser = currentUserRole === 'Super User';
     const isOwner = currentUser && (
@@ -30,7 +33,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     );
     const canEditPcb = isSuperUser;
     const canDeletePcb = isSuperUser;
-    const canAddRework = isSuperUser || currentUserRole === 'User';
+    const canAddRework = isSuperUser || currentUserRole === 'User' || (currentUserRole === 'Guest' && allowGuestMinorRework);
 
     const [attachedTags, setAttachedTags] = useState<any[]>([]);
     const [isAssigningTag, setIsAssigningTag] = useState(false);

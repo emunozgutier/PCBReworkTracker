@@ -7,11 +7,13 @@ export type CrcFormatOption = 'letter' | 'nato';
 
 export interface GlobalSettingsProperties {
     crcFormat: CrcFormatOption;
+    allowGuestMinorRework: boolean;
 }
 
 export interface GlobalSettingsActions {
     setCrcFormat: (crcFormat: CrcFormatOption) => void;
     toggleCrcFormat: () => void;
+    setAllowGuestMinorRework: (allowed: boolean) => void;
     resetSettings: () => void;
 }
 
@@ -39,6 +41,7 @@ const getInitialCrcFormat = (): CrcFormatOption => {
 
 export const DEFAULT_GLOBAL_SETTINGS: GlobalSettingsProperties = {
     crcFormat: getInitialCrcFormat(),
+    allowGuestMinorRework: false,
 };
 
 export const useGlobalSettings = create<GlobalSettingsState>()(
@@ -75,6 +78,10 @@ export const useGlobalSettings = create<GlobalSettingsState>()(
             toggleCrcFormat: () => {
                 const nextFormat = useGlobalSettings.getState().crcFormat === 'letter' ? 'nato' : 'letter';
                 useGlobalSettings.getState().setCrcFormat(nextFormat);
+            },
+
+            setAllowGuestMinorRework: (allowGuestMinorRework) => {
+                set({ allowGuestMinorRework });
             },
 
             resetSettings: () => set(DEFAULT_GLOBAL_SETTINGS),

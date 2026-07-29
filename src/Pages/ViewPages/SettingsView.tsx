@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ShieldCheck, CheckSquare, Square, MinusSquare } from 'lucide-react';
 import { useGlobalSettings } from '../../store/useGlobalSettings';
 import { useAppState } from '../../store/useAppState';
@@ -6,12 +6,22 @@ import { generateCRC, getNatoWord } from '../../components/UrlManager/crc';
 import './SettingsView.css';
 
 export function SettingsView() {
-    const { crcFormat, setCrcFormat } = useGlobalSettings();
+    const { crcFormat, setCrcFormat, allowGuestMinorRework, setAllowGuestMinorRework } = useGlobalSettings();
     const { currentUserRole } = useAppState();
     const [calcInput, setCalcInput] = useState('MAP-0001');
     const [selectedResource, setSelectedResource] = useState('projects');
+    const [localGuestMinorRework, setLocalGuestMinorRework] = useState(allowGuestMinorRework);
+
+    useEffect(() => {
+        setLocalGuestMinorRework(allowGuestMinorRework);
+    }, [allowGuestMinorRework]);
 
     const isSuperUser = currentUserRole === 'Super User';
+
+    const handleSaveChanges = () => {
+        setAllowGuestMinorRework(localGuestMinorRework);
+        alert("Permissions updated and saved successfully!");
+    };
 
     // Dynamic CRC calculation logic
     const cleanInput = calcInput.trim().toUpperCase();
@@ -102,21 +112,33 @@ export function SettingsView() {
                     Overview of user capabilities based on active session role. Adjust your session role in the controller in the top-right corner to test permissions.
                 </p>
 
-                {/* Resource Selector Dropdown */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Show Permissions For:</span>
-                    <select 
-                        value={selectedResource} 
-                        onChange={e => setSelectedResource(e.target.value)}
-                        className="calculator-input"
-                        style={{ width: '200px', padding: '6px 12px', fontSize: '0.9rem', borderRadius: '8px', margin: 0 }}
-                    >
-                        <option value="projects">Projects</option>
-                        <option value="pcbs">PCBs</option>
-                        <option value="reworks">Reworks</option>
-                        <option value="users">Users</option>
-                        <option value="tags">Tags</option>
-                    </select>
+                {/* Resource Selector Dropdown & Save Button */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Show Permissions For:</span>
+                        <select 
+                            value={selectedResource} 
+                            onChange={e => setSelectedResource(e.target.value)}
+                            className="calculator-input"
+                            style={{ width: '200px', padding: '6px 12px', fontSize: '0.9rem', borderRadius: '8px', margin: 0 }}
+                        >
+                            <option value="projects">Projects</option>
+                            <option value="pcbs">PCBs</option>
+                            <option value="reworks">Reworks</option>
+                            <option value="users">Users</option>
+                            <option value="tags">Tags</option>
+                        </select>
+                    </div>
+                    {isSuperUser && (
+                        <button
+                            type="button"
+                            onClick={handleSaveChanges}
+                            className="submit-button"
+                            style={{ margin: 0, padding: '8px 16px', fontSize: '0.85rem', borderRadius: '8px', width: 'auto', background: 'var(--accent)' }}
+                        >
+                            Save Changes
+                        </button>
+                    )}
                 </div>
 
                 <div className="permissions-table-container">
@@ -213,7 +235,27 @@ export function SettingsView() {
                                         <td>Add Low Priority</td>
                                         <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
                                         <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}>
+                                            {isSuperUser ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setLocalGuestMinorRework(!localGuestMinorRework)}
+                                                    style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: 'auto', padding: '4px' }}
+                                                >
+                                                    {localGuestMinorRework ? (
+                                                        <CheckSquare size={16} className="allowed-cb" />
+                                                    ) : (
+                                                        <Square size={16} className="denied-cb" />
+                                                    )}
+                                                </button>
+                                            ) : (
+                                                allowGuestMinorRework ? (
+                                                    <CheckSquare size={16} className="allowed-cb" />
+                                                ) : (
+                                                    <Square size={16} className="denied-cb" />
+                                                )
+                                            )}
+                                        </td>
                                     </tr>
                                     <tr className="edit-row">
                                         <td>Edit Own</td>
