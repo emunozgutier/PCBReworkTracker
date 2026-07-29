@@ -35,7 +35,7 @@ describe('TopSettingPage Permissions Checkbox Toggle', () => {
         expect(cells.length).toBe(4);
         const guestCell = cells[3]; // Guest checkbox cell
 
-        // Inspect checkbox icon class (initiallyDenied-cb)
+        // Inspect checkbox icon class (initially denied-cb)
         let svg = guestCell.querySelector('svg');
         expect(svg?.classList.contains('denied-cb')).toBe(true);
 
@@ -44,7 +44,7 @@ describe('TopSettingPage Permissions Checkbox Toggle', () => {
             guestCell.dispatchEvent(new MouseEvent('click', { bubbles: true }));
         });
 
-        // Verify that it toggled visually to allowed-cb
+        // Verify that it toggles visually to allowed-cb
         svg = guestCell.querySelector('svg');
         expect(svg?.classList.contains('allowed-cb')).toBe(true);
 

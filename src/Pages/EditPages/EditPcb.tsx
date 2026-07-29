@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/database/apiBridge';
-import { usePcbStore } from '../../store/usePcbStore';
+import { usePcbStore } from '../../store/localDataBaseCopy/usePcbStore';
 import { FormGroup } from '../../components/forms/FormGroup';
 import { RemovePcb } from '../RemovePage/RemovePcb';
 import { useAppState } from '../../store/useAppState';

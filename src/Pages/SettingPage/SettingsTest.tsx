@@ -9,7 +9,9 @@ interface SettingsTestProps {
 
 export function SettingsTest({ onBack }: SettingsTestProps) {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
-    const [testChecked, setTestChecked] = useState(false);
+    const [testChecked, setTestChecked] = useState(true);
+
+    const isProjectsPath = typeof window !== 'undefined' && window.location.pathname.includes('/projects/test');
 
     return (
         <div className="settings-page-wrapper" style={{ padding: '24px 20px', maxWidth: '600px', margin: '0 auto', textAlign: 'left' }}>
@@ -31,7 +33,7 @@ export function SettingsTest({ onBack }: SettingsTestProps) {
                 }}
             >
                 <ArrowLeft size={16} />
-                <span>Back to Settings</span>
+                <span>{isProjectsPath ? 'Back to Projects' : 'Back to Settings'}</span>
             </button>
 
             <div className="settings-main-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

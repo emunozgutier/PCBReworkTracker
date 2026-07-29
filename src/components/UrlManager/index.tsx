@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useAppState } from '../../store/useAppState';
-import { usePcbStore } from '../../store/usePcbStore';
-import { useReworkStore } from '../../store/useReworkStore';
+import { usePcbStore } from '../../store/localDataBaseCopy/usePcbStore';
+import { useReworkStore } from '../../store/localDataBaseCopy/useReworkStore';
 
 const getNormalizedPath = () => {
     if (typeof window === 'undefined') return '/';
@@ -49,7 +49,7 @@ export function UrlManager() {
             const rawPath = getNormalizedPath();
             
             // settings test page
-            if (rawPath === '/settings/test' || rawPath === '/settings/test/') {
+            if (rawPath === '/settings/test' || rawPath === '/settings/test/' || rawPath === '/projects/test' || rawPath === '/projects/test/') {
                 useAppState.getState().setPage('settings_test');
                 return;
             }
@@ -157,7 +157,8 @@ export function UrlManager() {
         // Don't push state if we are inside a form view
         if (page === 'settings_test') {
             const search = window.location.search;
-            const targetUrl = `${base}/settings/test${search}`;
+            const isProjectsPath = window.location.pathname.includes('/projects/test');
+            const targetUrl = `${base}/${isProjectsPath ? 'projects/test' : 'settings/test'}${search}`;
             const currentPath = window.location.pathname + window.location.search;
             if (currentPath !== targetUrl) {
                 window.history.pushState({}, '', targetUrl);

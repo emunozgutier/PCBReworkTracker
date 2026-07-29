@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
-import { useReworkStore } from '../../../store/useReworkStore';
-import { useTagStore } from '../../../store/useTagStore';
+import { useReworkStore } from '../../../store/localDataBaseCopy/useReworkStore';
+import { useTagStore } from '../../../store/localDataBaseCopy/useTagStore';
 import { useAppState } from '../../../store/useAppState';
-import { usePcbStore } from '../../../store/usePcbStore';
+import { usePcbStore } from '../../../store/localDataBaseCopy/usePcbStore';
 import { API_BASE, apiFetch } from '../../../store/database/apiBridge';
 import { FormTabs } from '../../../components/forms/FormTabs';
 import { RemoveTag } from '../../RemovePage/RemoveTag';
 import { Tag as TagIcon, X } from 'lucide-react';
-import { formatTagName } from '../../../store/useTagStore';
+import { formatTagName } from '../../../store/localDataBaseCopy/useTagStore';
 import { EditButton, ViewButton, AddButton, QrButton, DeleteButton } from '../../../components/forms/ActionButtons';
 import { RemovePcb } from '../../RemovePage/RemovePcb';
 import { ReworkCardBody } from './ReworkCardBody';

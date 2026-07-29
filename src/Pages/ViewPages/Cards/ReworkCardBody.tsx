@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { PictureCard } from './PictureCard';
 import { useAppState } from '../../../store/useAppState';
-import { useReworkStore } from '../../../store/useReworkStore';
-import { usePcbStore } from '../../../store/usePcbStore';
+import { useReworkStore } from '../../../store/localDataBaseCopy/useReworkStore';
+import { usePcbStore } from '../../../store/localDataBaseCopy/usePcbStore';
 import { EditButton, DeleteButton } from '../../../components/forms/ActionButtons';
 import { COLORS } from '../../../store/useStyles';
 import { RemoveRework } from '../../RemovePage/RemoveRework';

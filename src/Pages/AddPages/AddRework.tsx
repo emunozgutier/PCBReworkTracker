@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/database/apiBridge';
-import { useReworkStore } from '../../store/useReworkStore';
+import { useReworkStore } from '../../store/localDataBaseCopy/useReworkStore';
 import { useAppState } from '../../store/useAppState';
-import { useOwnerStore } from '../../store/useOwnerStore';
+import { useOwnerStore } from '../../store/localDataBaseCopy/useOwnerStore';
 import { FormGroup } from '../../components/forms/FormGroup';
 import { BoardName } from '../../components/BoardName';
 

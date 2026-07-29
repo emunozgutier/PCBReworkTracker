@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { ReworkCard } from './Cards/ReworkCard';
-import { useReworkStore } from '../../store/useReworkStore';
+import { useReworkStore } from '../../store/localDataBaseCopy/useReworkStore';
 
 interface ReworkViewProps {
     title: string;

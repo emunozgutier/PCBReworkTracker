@@ -41,7 +41,7 @@ const getInitialCrcFormat = (): CrcFormatOption => {
 
 export const DEFAULT_GLOBAL_SETTINGS: GlobalSettingsProperties = {
     crcFormat: getInitialCrcFormat(),
-    allowGuestMinorRework: false,
+    allowGuestMinorRework: true,
 };
 
 export const useGlobalSettings = create<GlobalSettingsState>()(

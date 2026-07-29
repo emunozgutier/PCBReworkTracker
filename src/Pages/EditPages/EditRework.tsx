@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/database/apiBridge';
-import { useReworkStore } from '../../store/useReworkStore';
-import { useOwnerStore } from '../../store/useOwnerStore';
+import { useReworkStore } from '../../store/localDataBaseCopy/useReworkStore';
+import { useOwnerStore } from '../../store/localDataBaseCopy/useOwnerStore';
 import { FormGroup } from '../../components/forms/FormGroup';
 import { useDeleteEditRequirements } from '../../store/useDeleteEditRequirements';
 import { BoardName } from '../../components/BoardName';

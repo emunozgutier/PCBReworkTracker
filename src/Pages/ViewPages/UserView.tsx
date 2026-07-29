@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { OwnerCard } from './Cards/OwnerCard';
-import { useOwnerStore } from '../../store/useOwnerStore';
+import { useOwnerStore } from '../../store/localDataBaseCopy/useOwnerStore';
 
 interface UserViewProps {
     title: string;

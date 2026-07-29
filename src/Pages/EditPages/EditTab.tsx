@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/database/apiBridge';
-import { useTagStore } from '../../store/useTagStore';
-import { useOwnerStore } from '../../store/useOwnerStore';
+import { useTagStore } from '../../store/localDataBaseCopy/useTagStore';
+import { useOwnerStore } from '../../store/localDataBaseCopy/useOwnerStore';
 import { useAppState } from '../../store/useAppState';
 import { COLORS } from '../../store/useStyles';
 

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { API_BASE } from '../store/database/apiBridge';
-import { apiFetch } from '../store/database/apiBridge';
-import { useAppState } from './useAppState';
+import { API_BASE } from '../database/apiBridge';
+import { apiFetch } from '../database/apiBridge';
+import { useAppState } from '../useAppState';
 
 export interface Pcb {
     id: number;

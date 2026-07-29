@@ -3,8 +3,8 @@ import { ArrowLeft, Save, Trash2, HelpCircle } from 'lucide-react';
 import { FormTabs } from '../../components/forms/FormTabs';
 import { MultipleInputs } from '../../components/forms/MultipleInputs';
 import { API_BASE, apiFetch } from '../../store/database/apiBridge';
-import { useProjectStore } from '../../store/useProjectStore';
-import { usePcbStore } from '../../store/usePcbStore';
+import { useProjectStore } from '../../store/localDataBaseCopy/useProjectStore';
+import { usePcbStore } from '../../store/localDataBaseCopy/usePcbStore';
 import { RemoveProject } from '../RemovePage/RemoveProject';
 
 import { useAppState } from '../../store/useAppState';

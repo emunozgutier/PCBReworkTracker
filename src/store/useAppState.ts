@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { usePcbStore } from './usePcbStore';
-import { useReworkStore } from './useReworkStore';
-import { useTagStore } from './useTagStore';
+import { usePcbStore } from './localDataBaseCopy/usePcbStore';
+import { useReworkStore } from './localDataBaseCopy/useReworkStore';
+import { useTagStore } from './localDataBaseCopy/useTagStore';
 
 type Page = 
     | 'projects' | 'projects_add' | 'projects_edit'

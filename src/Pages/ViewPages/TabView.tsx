@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { TagCard } from './Cards/TagCard';
 
-import { useTagStore } from '../../store/useTagStore';
+import { useTagStore } from '../../store/localDataBaseCopy/useTagStore';
 import { useAppState } from '../../store/useAppState';
 
 interface TabViewProps {

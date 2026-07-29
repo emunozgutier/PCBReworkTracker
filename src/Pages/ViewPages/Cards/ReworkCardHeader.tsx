@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useAppState } from '../../../store/useAppState';
-import { usePcbStore } from '../../../store/usePcbStore';
+import { usePcbStore } from '../../../store/localDataBaseCopy/usePcbStore';
 import { COLORS } from '../../../store/useStyles';
 
 import { BoardName } from '../../../components/BoardName';
