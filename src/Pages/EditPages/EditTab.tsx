@@ -61,7 +61,7 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
         e.preventDefault();
         setSaving(true);
 
-        const finalType = isSuperUser ? type : 'personal';
+        const finalType = type;
         const finalOwnerId = finalType === 'personal'
             ? (isSuperUser ? (ownerId || null) : (currentUser ? currentUser.id : null))
             : null;
@@ -132,45 +132,31 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
                     />
                 </div>
 
-                {isSuperUser ? (
-                    <>
-                        <div className="form-group">
-                            <label htmlFor="type">Tag Type</label>
-                            <select 
-                                id="type" 
-                                value={type} 
-                                onChange={(e) => setType(e.target.value as 'public' | 'personal')}
-                            >
-                                <option value="public">Public</option>
-                                <option value="personal">Personal</option>
-                            </select>
-                        </div>
+                <div className="form-group">
+                    <label htmlFor="type">Tag Type</label>
+                    <select 
+                        id="type" 
+                        value={type} 
+                        onChange={(e) => setType(e.target.value as 'public' | 'personal')}
+                    >
+                        <option value="public">Public</option>
+                        <option value="personal">Private</option>
+                    </select>
+                </div>
 
-                        {type === 'personal' && (
-                            <div className="form-group">
-                                <label htmlFor="owner_id">Assigned Owner</label>
-                                <select 
-                                    id="owner_id" 
-                                    value={ownerId} 
-                                    onChange={(e) => setOwnerId(e.target.value)}
-                                >
-                                    <option value="">Unassigned</option>
-                                    {owners.map(o => (
-                                        <option key={o.id} value={o.id}>{o.name} (@{o.username})</option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
-                    </>
-                ) : (
+                {type === 'personal' && isSuperUser && (
                     <div className="form-group">
-                        <label>Tag Type</label>
-                        <input 
-                            type="text" 
-                            value={`Personal (Assigned to @${currentUser?.username || currentUser?.name})`}
-                            disabled 
-                            className="disabled-input-locked"
-                        />
+                        <label htmlFor="owner_id">Assigned Owner</label>
+                        <select 
+                            id="owner_id" 
+                            value={ownerId} 
+                            onChange={(e) => setOwnerId(e.target.value)}
+                        >
+                            <option value="">Unassigned</option>
+                            {owners.map(o => (
+                                <option key={o.id} value={o.id}>{o.name} (@{o.username})</option>
+                            ))}
+                        </select>
                     </div>
                 )}
 

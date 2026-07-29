@@ -106,7 +106,7 @@ export function TagFilter() {
                             {['public', 'personal'].map(type => {
                                 const count = tags.filter((tag: any) => tag.type === type && matchTag(tag, 'type')).length;
                                 if (count === 0 && hasAnyOtherFilter('type')) return null;
-                                return <option key={type} value={type}>{type === 'public' ? 'Public' : 'Personal'} ({count})</option>;
+                                return <option key={type} value={type}>{type === 'public' ? 'Public' : 'Private'} ({count})</option>;
                             })}
                         </PcbFilterElement>
 
@@ -138,7 +138,7 @@ export function TagFilter() {
                     {['public', 'personal'].map(type => {
                         const count = tags.filter((tag: any) => tag.type === type && matchTag(tag, 'type')).length;
                         if (count === 0 && hasAnyOtherFilter('type')) return null;
-                        return <option key={type} value={type}>{type === 'public' ? 'Public' : 'Personal'} ({count})</option>;
+                        return <option key={type} value={type}>{type === 'public' ? 'Public' : 'Private'} ({count})</option>;
                     })}
                 </PcbFilterElement>
 

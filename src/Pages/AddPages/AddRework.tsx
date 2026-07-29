@@ -5,6 +5,7 @@ import { API_BASE, apiFetch } from '../../store/database/apiBridge';
 import { useReworkStore } from '../../store/localDataBaseCopy/useReworkStore';
 import { useAppState } from '../../store/useAppState';
 import { useOwnerStore } from '../../store/localDataBaseCopy/useOwnerStore';
+import { usePriorityStore } from '../../store/localDataBaseCopy/usePriorityStore';
 import { FormGroup } from '../../components/forms/FormGroup';
 import { BoardName } from '../../components/BoardName';
 
@@ -67,9 +68,10 @@ const compressImage = async (file: File, maxSizeMB: number = 10, maxDimension: n
 };
 
 export function AddRework({ onBack, onSuccess }: AddReworkProps) {
-    const { selectedId, currentUser, currentUserRole } = useAppState();
+    const { selectedId, currentUser, currentUserRole, allowGuestMinorRework } = useAppState();
+    const priorities = usePriorityStore((state) => state.priorities);
 
-    if (currentUserRole === 'Guest') {
+    if (currentUserRole === 'Guest' && !allowGuestMinorRework) {
         return (
             <div className="add-page-container">
                 <header className="add-page-header">
@@ -98,6 +100,27 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
     const { owners, fetchOwners } = useOwnerStore();
     const { addRework, loading } = useReworkStore();
     const [typedCrc, setTypedCrc] = useState('');
+
+    const reworkTypeOptions = [
+        { value: 'Minor', label: 'Minor - still works', dbKey: 'Minor Rework' },
+        { value: 'Major', label: 'Major - something wrong', dbKey: 'Major Rework' },
+        { value: 'Resistor Swap', label: 'Resistor Swap', dbKey: 'Resistor Swap' },
+        { value: 'Silicon Swap', label: 'Silicon Swap', dbKey: 'Silicon Swap' }
+    ];
+
+    const allowedOptions = reworkTypeOptions.filter(opt => {
+        if (currentUserRole === 'Guest') {
+            const priority = priorities[opt.dbKey] || 'Low';
+            return priority === 'Low';
+        }
+        return true;
+    });
+
+    useEffect(() => {
+        if (allowedOptions.length > 0 && !allowedOptions.some(opt => opt.value === reworkType)) {
+            setReworkType(allowedOptions[0].value);
+        }
+    }, [currentUserRole, priorities, reworkType]);
 
     const getPcbDetails = (pcbIdStr: string) => {
         if (!pcbIdStr) return { baseName: '', crc: '', hasCrc: false };
@@ -285,10 +308,9 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                             <div className="form-group flex-1">
                                 <label htmlFor="rework_type">Rework Type</label>
                                 <select id="rework_type" value={reworkType} onChange={(e) => setReworkType(e.target.value)}>
-                                    <option value="Minor">Minor - still works</option>
-                                    {currentUserRole !== 'Guest' && <option value="Major">Major - something wrong</option>}
-                                    <option value="Resistor Swap">Resistor Swap</option>
-                                    {currentUserRole !== 'Guest' && <option value="Silicon Swap">Silicon Swap</option>}
+                                    {allowedOptions.map(opt => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
                                 </select>
                             </div>
                         </div>
@@ -395,10 +417,9 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                         <div className="form-group">
                             <label htmlFor="rework_type">Rework Type</label>
                             <select id="rework_type" value={reworkType} onChange={(e) => setReworkType(e.target.value)}>
-                                <option value="Minor">Minor - still works</option>
-                                {currentUserRole !== 'Guest' && <option value="Major">Major - something wrong</option>}
-                                <option value="Resistor Swap">Resistor Swap</option>
-                                {currentUserRole !== 'Guest' && <option value="Silicon Swap">Silicon Swap</option>}
+                                {allowedOptions.map(opt => (
+                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
                             </select>
                         </div>
                         {reworkType === 'Silicon Swap' && (

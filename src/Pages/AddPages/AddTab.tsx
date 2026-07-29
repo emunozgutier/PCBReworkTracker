@@ -41,7 +41,7 @@ export function AddTab({ onBack, onSuccess }: AddTabProps) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        const finalType = currentUserRole === 'Super User' ? type : 'personal';
+        const finalType = type;
         const finalOwnerId = finalType === 'personal'
             ? (currentUserRole === 'Super User' ? (ownerId || null) : (currentUser ? currentUser.id : null))
             : null;
@@ -101,45 +101,31 @@ export function AddTab({ onBack, onSuccess }: AddTabProps) {
                     />
                 </div>
 
-                {currentUserRole === 'Super User' ? (
-                    <>
-                        <div className="form-group">
-                            <label htmlFor="type">Tag Type</label>
-                            <select 
-                                id="type" 
-                                value={type} 
-                                onChange={(e) => setType(e.target.value as 'public' | 'personal')}
-                            >
-                                <option value="public">Public</option>
-                                <option value="personal">Personal</option>
-                            </select>
-                        </div>
+                <div className="form-group">
+                    <label htmlFor="type">Tag Type</label>
+                    <select 
+                        id="type" 
+                        value={type} 
+                        onChange={(e) => setType(e.target.value as 'public' | 'personal')}
+                    >
+                        <option value="public">Public</option>
+                        <option value="personal">Private</option>
+                    </select>
+                </div>
 
-                        {type === 'personal' && (
-                            <div className="form-group">
-                                <label htmlFor="owner_id">Assigned Owner</label>
-                                <select 
-                                    id="owner_id" 
-                                    value={ownerId} 
-                                    onChange={(e) => setOwnerId(e.target.value)}
-                                >
-                                    <option value="">Unassigned</option>
-                                    {owners.map(o => (
-                                        <option key={o.id} value={o.id}>{o.name} (@{o.username})</option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
-                    </>
-                ) : (
+                {type === 'personal' && currentUserRole === 'Super User' && (
                     <div className="form-group">
-                        <label>Tag Type</label>
-                        <input 
-                            type="text" 
-                            value={`Personal (Assigned to @${currentUser?.username || currentUser?.name})`}
-                            disabled 
-                            className="disabled-input-locked"
-                        />
+                        <label htmlFor="owner_id">Assigned Owner</label>
+                        <select 
+                            id="owner_id" 
+                            value={ownerId} 
+                            onChange={(e) => setOwnerId(e.target.value)}
+                        >
+                            <option value="">Unassigned</option>
+                            {owners.map(o => (
+                                <option key={o.id} value={o.id}>{o.name} (@{o.username})</option>
+                            ))}
+                        </select>
                     </div>
                 )}
 
