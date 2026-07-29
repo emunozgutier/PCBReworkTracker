@@ -6,7 +6,7 @@ import { PcbView } from './Pages/ViewPages/PcbView';
 import { ReworkView } from './Pages/ViewPages/ReworkView';
 import { UserView } from './Pages/ViewPages/UserView';
 import { TabView } from './Pages/ViewPages/TabView';
-import { SettingsView } from './Pages/ViewPages/SettingsView';
+import { TopSettingPage } from './Pages/SettingPage/TopSettingPage';
 import { AddProject } from './Pages/AddPages/AddProject';
 import { AddPCB } from './Pages/AddPages/AddPcb';
 import { AddUser } from './Pages/AddPages/AddUser';
@@ -68,7 +68,7 @@ export function PageWithMargins() {
       case 'tags':
         return <TabView title="Tags" onAdd={() => addItem('tags_add')} onEdit={(id) => editItem('tags_edit', id)} />;
       case 'settings':
-        return <SettingsView />;
+        return <TopSettingPage />;
       default:
         return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} />;
     }
