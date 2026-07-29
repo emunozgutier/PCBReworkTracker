@@ -13,13 +13,7 @@ export function RolePermissionCard() {
         setLocalGuestMinorRework(allowGuestMinorRework);
     }, [allowGuestMinorRework]);
 
-    console.log("RolePermissionCard render: currentUserRole=", currentUserRole, "isSuperUser=", isSuperUser, "localGuestMinorRework=", localGuestMinorRework);
-
     const handleSaveChanges = () => {
-        setAllowGuestMinorRework(localGuestGuest => {
-            console.log("Saving changes! Set allowGuestMinorRework to:", localGuestMinorRework);
-            return localGuestMinorRework;
-        });
         setAllowGuestMinorRework(localGuestMinorRework);
         alert("Permissions updated and saved successfully!");
     };
