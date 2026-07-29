@@ -8,15 +8,23 @@ import { RolePermissionSubTable } from './RolePermissionSubTable';
 export function RolePermissionCard() {
     const { allowGuestMinorRework, setAllowGuestMinorRework } = useAppState();
     const { currentUserRole, isSuperUser } = useCurrentUser();
-    const localGuestMinorRework = usePermissionsStore((state) => state.localGuestMinorRework);
-    const setLocalGuestMinorRework = usePermissionsStore((state) => state.setLocalGuestMinorRework);
+    const localGuestMinorRework = usePermissionsStore((state) => !!state.permissions['Reworks__Add Low Priority__guest']);
 
     useEffect(() => {
-        setLocalGuestMinorRework(allowGuestMinorRework);
-    }, [allowGuestMinorRework, setLocalGuestMinorRework]);
+        const current = usePermissionsStore.getState().permissions;
+        if (current['Reworks__Add Low Priority__guest'] !== allowGuestMinorRework) {
+            usePermissionsStore.setState({
+                permissions: {
+                    ...current,
+                    'Reworks__Add Low Priority__guest': allowGuestMinorRework
+                }
+            });
+        }
+    }, [allowGuestMinorRework]);
 
     const handleSaveChanges = () => {
-        setAllowGuestMinorRework(localGuestMinorRework);
+        const currentVal = !!usePermissionsStore.getState().permissions['Reworks__Add Low Priority__guest'];
+        setAllowGuestMinorRework(currentVal);
         alert("Permissions updated and saved successfully!");
     };
 

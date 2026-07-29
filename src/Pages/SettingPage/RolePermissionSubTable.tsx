@@ -6,8 +6,9 @@ interface ActionItem {
     userAllowed: boolean;
     guestAllowed: boolean;
     isEditRow?: boolean;
+    onSuperUserClick?: () => void;
+    onUserClick?: () => void;
     onGuestClick?: () => void;
-    canEditGuest?: boolean;
 }
 
 interface RolePermissionSubTableProps {
@@ -15,9 +16,10 @@ interface RolePermissionSubTableProps {
     rowSpan: number;
     actions: ActionItem[];
     currentUserRole: string;
+    isSuperUser: boolean;
 }
 
-export function RolePermissionSubTable({ resourceName, rowSpan, actions, currentUserRole }: RolePermissionSubTableProps) {
+export function RolePermissionSubTable({ resourceName, rowSpan, actions, currentUserRole, isSuperUser }: RolePermissionSubTableProps) {
     return (
         <>
             {actions.map((action, idx) => (
@@ -31,17 +33,19 @@ export function RolePermissionSubTable({ resourceName, rowSpan, actions, current
                     <PermissionCheckbox
                         allowed={action.superUserAllowed}
                         active={currentUserRole === 'Super User'}
-                        canEdit={false}
+                        canEdit={isSuperUser}
+                        onClick={action.onSuperUserClick}
                     />
                     <PermissionCheckbox
                         allowed={action.userAllowed}
                         active={currentUserRole === 'User'}
-                        canEdit={false}
+                        canEdit={isSuperUser}
+                        onClick={action.onUserClick}
                     />
                     <PermissionCheckbox
                         allowed={action.guestAllowed}
                         active={currentUserRole === 'Guest'}
-                        canEdit={!!action.canEditGuest}
+                        canEdit={isSuperUser}
                         onClick={action.onGuestClick}
                     />
                 </tr>
