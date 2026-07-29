@@ -22,6 +22,14 @@ describe('TopSettingPage Permissions Checkbox Toggle', () => {
             root.render(<TopSettingPage />);
         });
 
+        // Select 'Reworks' subtable from dropdown
+        const select = document.querySelector('#subtable-select') as HTMLSelectElement;
+        expect(select).toBeDefined();
+        await act(async () => {
+            select.value = 'Reworks';
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+
         // Find the Guest column cell for "Add Low Priority"
         // Let's search inside the rows for one containing "Add Low Priority"
         const rows = Array.from(document.querySelectorAll('tr'));
@@ -52,6 +60,14 @@ describe('TopSettingPage Permissions Checkbox Toggle', () => {
 
         await act(async () => {
             saveBtn!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        });
+
+        // Find and click the "Confirm & Save" button inside the Review popup modal
+        const confirmBtn = Array.from(document.querySelectorAll('button')).find(btn => btn.textContent?.includes('Confirm & Save'));
+        expect(confirmBtn).toBeDefined();
+
+        await act(async () => {
+            confirmBtn!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
         });
 
         // Verify that the global settings store was updated
