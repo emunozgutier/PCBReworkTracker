@@ -9,7 +9,6 @@ export function SettingsView() {
     const { crcFormat, setCrcFormat, allowGuestMinorRework, setAllowGuestMinorRework } = useGlobalSettings();
     const { currentUserRole } = useAppState();
     const [calcInput, setCalcInput] = useState('MAP-0001');
-    const [selectedResource, setSelectedResource] = useState('projects');
     const [localGuestMinorRework, setLocalGuestMinorRework] = useState(allowGuestMinorRework);
 
     useEffect(() => {
@@ -112,24 +111,9 @@ export function SettingsView() {
                     Overview of user capabilities based on active session role. Adjust your session role in the controller in the top-right corner to test permissions.
                 </p>
 
-                {/* Resource Selector Dropdown & Save Button */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Show Permissions For:</span>
-                        <select 
-                            value={selectedResource} 
-                            onChange={e => setSelectedResource(e.target.value)}
-                            className="calculator-input"
-                            style={{ width: '200px', padding: '6px 12px', fontSize: '0.9rem', borderRadius: '8px', margin: 0 }}
-                        >
-                            <option value="projects">Projects</option>
-                            <option value="pcbs">PCBs</option>
-                            <option value="reworks">Reworks</option>
-                            <option value="users">Users</option>
-                            <option value="tags">Tags</option>
-                        </select>
-                    </div>
-                    {isSuperUser && (
+                {/* Save Changes button on top of the table */}
+                {isSuperUser && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
                         <button
                             type="button"
                             onClick={handleSaveChanges}
@@ -138,8 +122,8 @@ export function SettingsView() {
                         >
                             Save Changes
                         </button>
-                    )}
-                </div>
+                    </div>
+                )}
 
                 <div className="permissions-table-container">
                     <table className="permissions-table">
@@ -154,203 +138,179 @@ export function SettingsView() {
                         </thead>
                         <tbody>
                             {/* Projects */}
-                            {selectedResource === 'projects' && (
-                                <>
-                                    <tr>
-                                        <td className="resource-cell" rowSpan={4}>Projects</td>
-                                        <td>View</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Add</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Edit</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Delete</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                </>
-                            )}
+                            <tr>
+                                <td className="resource-cell" rowSpan={4}>Projects</td>
+                                <td>View</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                            </tr>
+                            <tr>
+                                <td>Add</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
+                            <tr>
+                                <td>Edit</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
+                            <tr>
+                                <td>Delete</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
 
                             {/* PCBs */}
-                            {selectedResource === 'pcbs' && (
-                                <>
-                                    <tr>
-                                        <td className="resource-cell" rowSpan={4}>PCBs</td>
-                                        <td>View</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Add</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Edit</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Delete</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                </>
-                            )}
+                            <tr>
+                                <td className="resource-cell" rowSpan={4}>PCBs</td>
+                                <td>View</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                            </tr>
+                            <tr>
+                                <td>Add</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
+                            <tr>
+                                <td>Edit</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
+                            <tr>
+                                <td>Delete</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
 
                             {/* Reworks */}
-                            {selectedResource === 'reworks' && (
-                                <>
-                                    <tr>
-                                        <td className="resource-cell" rowSpan={7}>Reworks</td>
-                                        <td>View</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Add High Priority</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Add Low Priority</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}>
-                                            {isSuperUser ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setLocalGuestMinorRework(!localGuestMinorRework)}
-                                                    style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: 'auto', padding: '4px' }}
-                                                >
-                                                    {localGuestMinorRework ? (
-                                                        <CheckSquare size={16} className="allowed-cb" />
-                                                    ) : (
-                                                        <Square size={16} className="denied-cb" />
-                                                    )}
-                                                </button>
-                                            ) : (
-                                                allowGuestMinorRework ? (
-                                                    <CheckSquare size={16} className="allowed-cb" />
-                                                ) : (
-                                                    <Square size={16} className="denied-cb" />
-                                                )
-                                            )}
-                                        </td>
-                                    </tr>
-                                    <tr className="edit-row">
-                                        <td>Edit Own</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                    <tr className="edit-row">
-                                        <td>Edit Others</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Delete Own</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Delete Others</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                </>
-                            )}
+                            <tr>
+                                <td className="resource-cell" rowSpan={7}>Reworks</td>
+                                <td>View</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                            </tr>
+                            <tr>
+                                <td>Add High Priority</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
+                            <tr>
+                                <td>Add Low Priority</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td 
+                                    className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}
+                                    onClick={isSuperUser ? () => {
+                                        console.log("CELL CLICKED! Old state:", localGuestMinorRework);
+                                        setLocalGuestMinorRework(!localGuestMinorRework);
+                                    } : undefined}
+                                    style={isSuperUser ? { cursor: 'pointer', transition: 'background-color 0.2s' } : undefined}
+                                    onMouseEnter={isSuperUser ? (e) => { e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.1)'; } : undefined}
+                                    onMouseLeave={isSuperUser ? (e) => { e.currentTarget.style.backgroundColor = ''; } : undefined}
+                                >
+                                    {console.log("Rendering checkbox: localGuestMinorRework=", localGuestMinorRework, "allowGuestMinorRework=", allowGuestMinorRework)}
+                                    {localGuestMinorRework ? (
+                                        <CheckSquare size={16} className="allowed-cb" style={{ pointerEvents: 'none' }} />
+                                    ) : (
+                                        <Square size={16} className="denied-cb" style={{ pointerEvents: 'none' }} />
+                                    )}
+                                </td>
+                            </tr>
+                            <tr className="edit-row">
+                                <td>Edit Own</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
+                            <tr className="edit-row">
+                                <td>Edit Others</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
+                            <tr>
+                                <td>Delete Own</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
+                            <tr>
+                                <td>Delete Others</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
 
                             {/* Users */}
-                            {selectedResource === 'users' && (
-                                <>
-                                    <tr>
-                                        <td className="resource-cell" rowSpan={5}>Users</td>
-                                        <td>View</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Add</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                    </tr>
-                                    <tr className="edit-row">
-                                        <td>Edit Own</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                    <tr className="edit-row">
-                                        <td>Edit Others</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Delete</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                </>
-                            )}
+                            <tr>
+                                <td className="resource-cell" rowSpan={5}>Users</td>
+                                <td>View</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                            </tr>
+                            <tr>
+                                <td>Add</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                            </tr>
+                            <tr className="edit-row">
+                                <td>Edit Own</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
+                            <tr className="edit-row">
+                                <td>Edit Others</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
+                            <tr>
+                                <td>Delete</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
 
                             {/* Tags */}
-                            {selectedResource === 'tags' && (
-                                <>
-                                    <tr>
-                                        <td className="resource-cell" rowSpan={4}>Tags</td>
-                                        <td>View</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Add</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Edit</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Delete</td>
-                                        <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                        <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
-                                    </tr>
-                                </>
-                            )}
+                            <tr>
+                                <td className="resource-cell" rowSpan={4}>Tags</td>
+                                <td>View</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                            </tr>
+                            <tr>
+                                <td>Add</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
+                            <tr>
+                                <td>Edit</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
+                            <tr>
+                                <td>Delete</td>
+                                <td className={`cb-cell ${currentUserRole === 'Super User' ? 'active-cell' : ''}`}><CheckSquare size={16} className="allowed-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'User' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                                <td className={`cb-cell ${currentUserRole === 'Guest' ? 'active-cell' : ''}`}><Square size={16} className="denied-cb" /></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
