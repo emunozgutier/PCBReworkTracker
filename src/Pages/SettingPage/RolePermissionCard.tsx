@@ -1,69 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { useGlobalSettings } from '../../store/useGlobalSettings';
-import { useCurrentUser } from '../../store/useCurrentUser';
+import { useCurrentUser } from '../../store/localDataBaseCopy/useCurrentUser';
+import { usePermissionsStore, usePermissionsTable } from '../../store/usePermissionsStore';
 import { RolePermissionSubTable } from './RolePermissionSubTable';
 
 export function RolePermissionCard() {
     const { allowGuestMinorRework, setAllowGuestMinorRework } = useGlobalSettings();
     const { currentUserRole, isSuperUser } = useCurrentUser();
-    const [localGuestMinorRework, setLocalGuestMinorRework] = useState(allowGuestMinorRework);
+    const localGuestMinorRework = usePermissionsStore((state) => state.localGuestMinorRework);
+    const setLocalGuestMinorRework = usePermissionsStore((state) => state.setLocalGuestMinorRework);
 
     useEffect(() => {
         setLocalGuestMinorRework(allowGuestMinorRework);
-    }, [allowGuestMinorRework]);
+    }, [allowGuestMinorRework, setLocalGuestMinorRework]);
 
     const handleSaveChanges = () => {
         setAllowGuestMinorRework(localGuestMinorRework);
         alert("Permissions updated and saved successfully!");
     };
 
-    // Actions configurations
-    const projectActions = [
-        { name: 'View', superUserAllowed: true, userAllowed: true, guestAllowed: true },
-        { name: 'Add', superUserAllowed: true, userAllowed: false, guestAllowed: false },
-        { name: 'Edit', superUserAllowed: true, userAllowed: false, guestAllowed: false },
-        { name: 'Delete', superUserAllowed: true, userAllowed: false, guestAllowed: false },
-    ];
-
-    const pcbActions = [
-        { name: 'View', superUserAllowed: true, userAllowed: true, guestAllowed: true },
-        { name: 'Add', superUserAllowed: true, userAllowed: true, guestAllowed: false },
-        { name: 'Edit', superUserAllowed: true, userAllowed: false, guestAllowed: false },
-        { name: 'Delete', superUserAllowed: true, userAllowed: false, guestAllowed: false },
-    ];
-
-    const reworkActions = [
-        { name: 'View', superUserAllowed: true, userAllowed: true, guestAllowed: true },
-        { name: 'Add High Priority', superUserAllowed: true, userAllowed: true, guestAllowed: false },
-        { 
-            name: 'Add Low Priority', 
-            superUserAllowed: true, 
-            userAllowed: true, 
-            guestAllowed: localGuestMinorRework,
-            canEditGuest: true,
-            onGuestClick: () => setLocalGuestMinorRework(!localGuestMinorRework)
-        },
-        { name: 'Edit Own', superUserAllowed: true, userAllowed: true, guestAllowed: false, isEditRow: true },
-        { name: 'Edit Others', superUserAllowed: true, userAllowed: false, guestAllowed: false, isEditRow: true },
-        { name: 'Delete Own', superUserAllowed: true, userAllowed: true, guestAllowed: false },
-        { name: 'Delete Others', superUserAllowed: true, userAllowed: false, guestAllowed: false },
-    ];
-
-    const userActions = [
-        { name: 'View', superUserAllowed: true, userAllowed: true, guestAllowed: true },
-        { name: 'Add', superUserAllowed: true, userAllowed: true, guestAllowed: true },
-        { name: 'Edit Own', superUserAllowed: true, userAllowed: true, guestAllowed: false, isEditRow: true },
-        { name: 'Edit Others', superUserAllowed: true, userAllowed: false, guestAllowed: false, isEditRow: true },
-        { name: 'Delete', superUserAllowed: true, userAllowed: false, guestAllowed: false },
-    ];
-
-    const tagActions = [
-        { name: 'View', superUserAllowed: true, userAllowed: true, guestAllowed: true },
-        { name: 'Add', superUserAllowed: true, userAllowed: false, guestAllowed: false },
-        { name: 'Edit', superUserAllowed: true, userAllowed: false, guestAllowed: false },
-        { name: 'Delete', superUserAllowed: true, userAllowed: false, guestAllowed: false },
-    ];
+    const { projectActions, pcbActions, reworkActions, userActions, tagActions } = usePermissionsTable();
 
     return (
         <div className="settings-main-card">
