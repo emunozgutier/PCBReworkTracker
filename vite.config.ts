@@ -1,6 +1,20 @@
 import { defineConfig } from 'vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
+import os from 'os'
+
+function getLocalIps() {
+  const ips = ['localhost'];
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const net of interfaces[name] || []) {
+      if (net.family === 'IPv4' && !net.internal) {
+        ips.push(net.address);
+      }
+    }
+  }
+  return ips;
+}
 
 // https://vite.dev/config/
 export default defineConfig(({ command }) => {
@@ -12,7 +26,7 @@ export default defineConfig(({ command }) => {
     // Automatically use repository name only in production builds (GitHub Pages)
     base: command === 'build' ? '/Rework-Tracker/' : '/',
     define: {
-      __LOCAL_IP__: JSON.stringify('192.168.1.152'),
+      __LOCAL_IPS__: JSON.stringify(getLocalIps()),
       __PORT__: 5001
     },
     server: {

@@ -9,6 +9,17 @@ export function NetworkQRCode() {
     const [qrInfo, setQrInfo] = useState<{ version: number, size: number } | null>(null);
     const { qrModalBoard, setQrModalBoard } = useAppState();
     
+    const availableHosts = typeof __LOCAL_IPS__ !== 'undefined' ? __LOCAL_IPS__ : [window.location.hostname];
+    const defaultHost = availableHosts.includes('192.168.56.1') ? '192.168.56.1' : availableHosts[0];
+    const [selectedHost, setSelectedHost] = useState(() => {
+        return localStorage.getItem('qr_selected_host') || defaultHost;
+    });
+
+    const handleHostChange = (host: string) => {
+        setSelectedHost(host);
+        localStorage.setItem('qr_selected_host', host);
+    };
+
     let url = '';
     let displayDomain = '';
     let displayPath = '';
@@ -21,10 +32,9 @@ export function NetworkQRCode() {
             displayPath = `/${cleanBase}pcbs/${encodeURIComponent(qrModalBoard)}/view`.replace(/\/\//g, '/');
             url = displayDomain + displayPath;
         } else {
-            const localIp = typeof __LOCAL_IP__ !== 'undefined' ? __LOCAL_IP__ : window.location.hostname;
             const port = typeof __PORT__ !== 'undefined' ? __PORT__ : window.location.port;
             const portSuffix = port ? `:${port}` : '';
-            displayDomain = `http://${localIp}${portSuffix}`;
+            displayDomain = `http://${selectedHost}${portSuffix}`;
             displayPath = `/pcbs/${encodeURIComponent(qrModalBoard)}/view`;
             url = displayDomain + displayPath;
         }
@@ -67,6 +77,32 @@ export function NetworkQRCode() {
             maxWidth="380px"
         >
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                <div style={{ width: '100%', marginBottom: '16px' }}>
+                    <label htmlFor="qr-host-select" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '6px', display: 'block', fontWeight: 600 }}>Target Base IP/Host:</label>
+                    <select
+                        id="qr-host-select"
+                        value={selectedHost}
+                        onChange={(e) => handleHostChange(e.target.value)}
+                        style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            background: 'rgba(0,0,0,0.3)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '8px',
+                            color: 'var(--text)',
+                            fontSize: '0.9rem',
+                            outline: 'none',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        {availableHosts.map(host => (
+                            <option key={host} value={host} style={{ background: '#1e293b' }}>
+                                {host === 'localhost' ? 'localhost (Local PC)' : host === '192.168.56.1' ? '192.168.56.1 (PC IP Address)' : host}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                
                 <div style={{ 
                     backgroundColor: '#fff', 
                     padding: '16px', 
