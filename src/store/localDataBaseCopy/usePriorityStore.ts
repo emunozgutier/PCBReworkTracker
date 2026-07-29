@@ -16,77 +16,60 @@ const defaultPriorities: Record<string, 'High' | 'Low'> = {
     'Resistor Swap': 'Low',
 };
 
-export const usePriorityStore = create<PriorityStore>()(
-    persist(
-        (set) => ({
-            priorities: { ...defaultPriorities },
-            setPriorities: async (priorities) => {
-                set({ priorities });
-                const updates: Record<string, string> = {};
-                Object.keys(priorities).forEach(key => {
-                    updates[`priority_${key}`] = priorities[key];
-                });
-                try {
-                    await apiFetch(`${API_BASE}/settings`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(updates)
-                    });
-                } catch (err) {
-                    console.error('Failed to sync priorities to DB:', err);
-                }
-            },
-            resetPriorities: async () => {
-                set({ priorities: { ...defaultPriorities } });
-                const updates: Record<string, string> = {};
-                Object.keys(defaultPriorities).forEach(key => {
-                    updates[`priority_${key}`] = defaultPriorities[key];
-                });
-                try {
-                    await apiFetch(`${API_BASE}/settings`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(updates)
-                    });
-                } catch (err) {
-                    console.error('Failed to reset priorities on DB:', err);
-                }
-            },
-            fetchPriorities: async () => {
-                try {
-                    const res = await apiFetch(`${API_BASE}/settings`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        const loadedPriorities: Record<string, 'High' | 'Low'> = {};
-                        let foundAny = false;
-                        Object.keys(data).forEach(key => {
-                            if (key.startsWith('priority_')) {
-                                const originalKey = key.substring('priority_'.length);
-                                loadedPriorities[originalKey] = data[key] as 'High' | 'Low';
-                                foundAny = true;
-                            }
-                        });
-                        if (foundAny) {
-                            set({ priorities: { ...defaultPriorities, ...loadedPriorities } });
-                        }
+export const usePriorityStore = create<PriorityStore>((set) => ({
+    priorities: { ...defaultPriorities },
+    setPriorities: async (priorities) => {
+        set({ priorities });
+        const updates: Record<string, string> = {};
+        Object.keys(priorities).forEach(key => {
+            updates[`priority_${key}`] = priorities[key];
+        });
+        try {
+            await apiFetch(`${API_BASE}/settings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+        } catch (err) {
+            console.error('Failed to sync priorities to DB:', err);
+        }
+    },
+    resetPriorities: async () => {
+        set({ priorities: { ...defaultPriorities } });
+        const updates: Record<string, string> = {};
+        Object.keys(defaultPriorities).forEach(key => {
+            updates[`priority_${key}`] = defaultPriorities[key];
+        });
+        try {
+            await apiFetch(`${API_BASE}/settings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+        } catch (err) {
+            console.error('Failed to reset priorities on DB:', err);
+        }
+    },
+    fetchPriorities: async () => {
+        try {
+            const res = await apiFetch(`${API_BASE}/settings`);
+            if (res.ok) {
+                const data = await res.json();
+                const loadedPriorities: Record<string, 'High' | 'Low'> = {};
+                let foundAny = false;
+                Object.keys(data).forEach(key => {
+                    if (key.startsWith('priority_')) {
+                        const originalKey = key.substring('priority_'.length);
+                        loadedPriorities[originalKey] = data[key] as 'High' | 'Low';
+                        foundAny = true;
                     }
-                } catch (err) {
-                    console.error('Failed to fetch priorities from DB:', err);
+                });
+                if (foundAny) {
+                    set({ priorities: { ...defaultPriorities, ...loadedPriorities } });
                 }
             }
-        }),
-        {
-            name: 'pcb-rework-tracker-priorities-state',
-            storage: createJSONStorage(() => {
-                if (typeof window !== 'undefined' && window.localStorage) {
-                    return window.localStorage;
-                }
-                return {
-                    getItem: () => null,
-                    setItem: () => {},
-                    removeItem: () => {},
-                };
-            }),
+        } catch (err) {
+            console.error('Failed to fetch priorities from DB:', err);
         }
-    )
-);
+    }
+}));

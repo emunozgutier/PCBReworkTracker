@@ -47,87 +47,70 @@ const initialPermissions: Record<string, boolean> = {
     'Tags__Delete__superUser': true, 'Tags__Delete__user': false, 'Tags__Delete__guest': false,
 };
 
-export const usePermissionsStore = create<PermissionsStore>()(
-    persist(
-        (set) => ({
-            permissions: { ...initialPermissions },
-            setPermissions: async (permissions) => {
-                set({ permissions });
-                const updates: Record<string, string> = {};
-                Object.keys(permissions).forEach(key => {
-                    updates[`permission_${key}`] = permissions[key] ? 'true' : 'false';
-                });
-                try {
-                    await apiFetch(`${API_BASE}/settings`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(updates)
-                    });
-                } catch (err) {
-                    console.error('Failed to sync permissions to DB:', err);
-                }
-            },
-            resetPermissions: async () => {
-                set({ permissions: { ...initialPermissions } });
-                const updates: Record<string, string> = {};
-                Object.keys(initialPermissions).forEach(key => {
-                    updates[`permission_${key}`] = initialPermissions[key] ? 'true' : 'false';
-                });
-                try {
-                    await apiFetch(`${API_BASE}/settings`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(updates)
-                    });
-                } catch (err) {
-                    console.error('Failed to reset permissions on DB:', err);
-                }
-            },
-            fetchPermissions: async () => {
-                try {
-                    const res = await apiFetch(`${API_BASE}/settings`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        const loadedPerms: Record<string, boolean> = {};
-                        let foundAny = false;
-                        Object.keys(data).forEach(key => {
-                            if (key.startsWith('permission_')) {
-                                const originalKey = key.substring('permission_'.length);
-                                loadedPerms[originalKey] = data[key] === 'true';
-                                foundAny = true;
-                            }
-                        });
-                        if (foundAny) {
-                            set({ permissions: { ...initialPermissions, ...loadedPerms } });
-                            const guestVal = loadedPerms['Reworks__Add Low Priority__guest'];
-                            if (guestVal !== undefined) {
-                                useAppState.getState().setAllowGuestMinorRework(guestVal);
-                            }
-                        }
-                        if (data.crcFormat) {
-                            useAppState.getState().setCrcFormat(data.crcFormat as 'letter' | 'nato');
-                        }
-                        if (data.allowGuestMinorRework) {
-                            useAppState.getState().setAllowGuestMinorRework(data.allowGuestMinorRework === 'true');
-                        }
+export const usePermissionsStore = create<PermissionsStore>((set) => ({
+    permissions: { ...initialPermissions },
+    setPermissions: async (permissions) => {
+        set({ permissions });
+        const updates: Record<string, string> = {};
+        Object.keys(permissions).forEach(key => {
+            updates[`permission_${key}`] = permissions[key] ? 'true' : 'false';
+        });
+        try {
+            await apiFetch(`${API_BASE}/settings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+        } catch (err) {
+            console.error('Failed to sync permissions to DB:', err);
+        }
+    },
+    resetPermissions: async () => {
+        set({ permissions: { ...initialPermissions } });
+        const updates: Record<string, string> = {};
+        Object.keys(initialPermissions).forEach(key => {
+            updates[`permission_${key}`] = initialPermissions[key] ? 'true' : 'false';
+        });
+        try {
+            await apiFetch(`${API_BASE}/settings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+        } catch (err) {
+            console.error('Failed to reset permissions on DB:', err);
+        }
+    },
+    fetchPermissions: async () => {
+        try {
+            const res = await apiFetch(`${API_BASE}/settings`);
+            if (res.ok) {
+                const data = await res.json();
+                const loadedPerms: Record<string, boolean> = {};
+                let foundAny = false;
+                Object.keys(data).forEach(key => {
+                    if (key.startsWith('permission_')) {
+                        const originalKey = key.substring('permission_'.length);
+                        loadedPerms[originalKey] = data[key] === 'true';
+                        foundAny = true;
                     }
-                } catch (err) {
-                    console.error('Failed to fetch permissions from DB:', err);
+                });
+                if (foundAny) {
+                    set({ permissions: { ...initialPermissions, ...loadedPerms } });
+                    const guestVal = loadedPerms['Reworks__Add Low Priority__guest'];
+                    if (guestVal !== undefined) {
+                        useAppState.getState().setAllowGuestMinorRework(guestVal);
+                    }
+                }
+                if (data.crcFormat) {
+                    useAppState.getState().setCrcFormat(data.crcFormat as 'letter' | 'nato');
+                }
+                if (data.allowGuestMinorRework) {
+                    useAppState.getState().setAllowGuestMinorRework(data.allowGuestMinorRework === 'true');
                 }
             }
-        }),
-        {
-            name: 'pcb-rework-tracker-permissions-state',
-            storage: createJSONStorage(() => {
-                if (typeof window !== 'undefined' && window.localStorage) {
-                    return window.localStorage;
-                }
-                return {
-                    getItem: () => null,
-                    setItem: () => {},
-                    removeItem: () => {},
-                };
-            }),
+        } catch (err) {
+            console.error('Failed to fetch permissions from DB:', err);
         }
-    )
-);
+    }
+}));
