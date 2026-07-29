@@ -1,19 +1,8 @@
 import { create } from 'zustand';
-
-export interface ActionItem {
-    name: string;
-    superUserAllowed: boolean;
-    userAllowed: boolean;
-    guestAllowed: boolean;
-    isEditRow?: boolean;
-    onSuperUserClick?: () => void;
-    onUserClick?: () => void;
-    onGuestClick?: () => void;
-}
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface PermissionsStore {
     permissions: Record<string, boolean>;
-    togglePermission: (resource: string, action: string, role: 'superUser' | 'user' | 'guest') => void;
     setPermissions: (perms: Record<string, boolean>) => void;
     resetPermissions: () => void;
 }
@@ -54,88 +43,25 @@ const initialPermissions: Record<string, boolean> = {
     'Tags__Delete__superUser': true, 'Tags__Delete__user': false, 'Tags__Delete__guest': false,
 };
 
-export const usePermissionsStore = create<PermissionsStore>((set) => ({
-    permissions: { ...initialPermissions },
-    togglePermission: (resource, action, role) => set((state) => {
-        const key = `${resource}__${action}__${role}`;
-        return {
-            permissions: {
-                ...state.permissions,
-                [key]: !state.permissions[key]
-            }
-        };
-    }),
-    setPermissions: (perms) => set({ permissions: perms }),
-    resetPermissions: () => set({ permissions: { ...initialPermissions } }),
-}));
-
-export function usePermissionsTable() {
-    const permissions = usePermissionsStore((state) => state.permissions);
-    const togglePermission = usePermissionsStore((state) => state.togglePermission);
-
-    const buildActions = (resource: string, list: { name: string; isEditRow?: boolean }[]): ActionItem[] => {
-        return list.map((item) => {
-            const superUserAllowed = !!permissions[`${resource}__${item.name}__superUser`];
-            const userAllowed = !!permissions[`${resource}__${item.name}__user`];
-            const guestAllowed = !!permissions[`${resource}__${item.name}__guest`];
-            
-            return {
-                name: item.name,
-                superUserAllowed,
-                userAllowed,
-                guestAllowed,
-                isEditRow: item.isEditRow,
-                onSuperUserClick: () => togglePermission(resource, item.name, 'superUser'),
-                onUserClick: () => togglePermission(resource, item.name, 'user'),
-                onGuestClick: () => togglePermission(resource, item.name, 'guest'),
-            };
-        });
-    };
-
-    const projectActions = buildActions('Projects', [
-        { name: 'View' },
-        { name: 'Add' },
-        { name: 'Edit' },
-        { name: 'Delete' },
-    ]);
-
-    const pcbActions = buildActions('PCBs', [
-        { name: 'View' },
-        { name: 'Add' },
-        { name: 'Edit' },
-        { name: 'Delete' },
-    ]);
-
-    const reworkActions = buildActions('Reworks', [
-        { name: 'View' },
-        { name: 'Add High Priority' },
-        { name: 'Add Low Priority' },
-        { name: 'Edit Own', isEditRow: true },
-        { name: 'Edit Others', isEditRow: true },
-        { name: 'Delete Own' },
-        { name: 'Delete Others' },
-    ]);
-
-    const userActions = buildActions('Users', [
-        { name: 'View' },
-        { name: 'Add' },
-        { name: 'Edit Own', isEditRow: true },
-        { name: 'Edit Others', isEditRow: true },
-        { name: 'Delete' },
-    ]);
-
-    const tagActions = buildActions('Tags', [
-        { name: 'View' },
-        { name: 'Add' },
-        { name: 'Edit' },
-        { name: 'Delete' },
-    ]);
-
-    return {
-        projectActions,
-        pcbActions,
-        reworkActions,
-        userActions,
-        tagActions,
-    };
-}
+export const usePermissionsStore = create<PermissionsStore>()(
+    persist(
+        (set) => ({
+            permissions: { ...initialPermissions },
+            setPermissions: (permissions) => set({ permissions }),
+            resetPermissions: () => set({ permissions: { ...initialPermissions } }),
+        }),
+        {
+            name: 'pcb-rework-tracker-permissions-state',
+            storage: createJSONStorage(() => {
+                if (typeof window !== 'undefined' && window.localStorage) {
+                    return window.localStorage;
+                }
+                return {
+                    getItem: () => null,
+                    setItem: () => {},
+                    removeItem: () => {},
+                };
+            }),
+        }
+    )
+);

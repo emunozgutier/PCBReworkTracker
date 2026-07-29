@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { useAppState } from '../../store/useAppState';
 import { useCurrentUser } from '../../store/localDataBaseCopy/useCurrentUser';
-import { usePermissionsStore, usePermissionsTable } from '../../store/localDataBaseCopy/usePermissionsStore';
+import { usePermissionsStore } from '../../store/localDataBaseCopy/usePermissionsStore';
 import { RolePermissionSubTable } from './RolePermissionSubTable';
 
 export function RolePermissionCard() {
@@ -10,36 +10,101 @@ export function RolePermissionCard() {
     const { currentUserRole, isSuperUser } = useCurrentUser();
     const [selectedSubTable, setSelectedSubTable] = useState<'Projects' | 'PCBs' | 'Reworks' | 'Users' | 'Tags'>('Projects');
     const [showSavePopup, setShowSavePopup] = useState(false);
-    
-    // Captured snapshot of permissions upon mount/reset
+
+    const committedPermissions = usePermissionsStore((state) => state.permissions);
+    const setPermissions = usePermissionsStore((state) => state.setPermissions);
+
+    // Local draft state of permissions
+    const [draftPermissions, setDraftPermissions] = useState<Record<string, boolean>>({});
+
+    // Keep snapshot of permissions state on mount/reset/sync
     const [initialPermissions, setInitialPermissions] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
+        // Sync appState allowed setting with permissions store first
         const current = usePermissionsStore.getState().permissions;
-        
-        // Sync allowGuestMinorRework with internal store
-        usePermissionsStore.setState({
-            permissions: {
-                ...current,
-                'Reworks__Add Low Priority__guest': allowGuestMinorRework
-            }
-        });
-        
-        // Record initial state snapshot
-        setInitialPermissions({
+        const synced = {
             ...current,
             'Reworks__Add Low Priority__guest': allowGuestMinorRework
-        });
+        };
+        usePermissionsStore.setState({ permissions: synced });
+        setDraftPermissions(synced);
+        setInitialPermissions(synced);
     }, [allowGuestMinorRework]);
 
-    const localPerms = usePermissionsStore((state) => state.permissions);
-    const { projectActions, pcbActions, reworkActions, userActions, tagActions } = usePermissionsTable();
+    // Helper function to build actions mapping reading from and modifying local draftPermissions state
+    const buildActions = (resource: string, list: { name: string; isEditRow?: boolean }[]): ActionItem[] => {
+        return list.map((item) => {
+            const superUserAllowed = !!draftPermissions[`${resource}__${item.name}__superUser`];
+            const userAllowed = !!draftPermissions[`${resource}__${item.name}__user`];
+            const guestAllowed = !!draftPermissions[`${resource}__${item.name}__guest`];
+            
+            return {
+                name: item.name,
+                superUserAllowed,
+                userAllowed,
+                guestAllowed,
+                isEditRow: item.isEditRow,
+                onSuperUserClick: () => {
+                    const key = `${resource}__${item.name}__superUser`;
+                    setDraftPermissions(prev => ({ ...prev, [key]: !prev[key] }));
+                },
+                onUserClick: () => {
+                    const key = `${resource}__${item.name}__user`;
+                    setDraftPermissions(prev => ({ ...prev, [key]: !prev[key] }));
+                },
+                onGuestClick: () => {
+                    const key = `${resource}__${item.name}__guest`;
+                    setDraftPermissions(prev => ({ ...prev, [key]: !prev[key] }));
+                },
+            };
+        });
+    };
 
-    // Compute diff comparison list
+    const projectActions = buildActions('Projects', [
+        { name: 'View' },
+        { name: 'Add' },
+        { name: 'Edit' },
+        { name: 'Delete' },
+    ]);
+
+    const pcbActions = buildActions('PCBs', [
+        { name: 'View' },
+        { name: 'Add' },
+        { name: 'Edit' },
+        { name: 'Delete' },
+    ]);
+
+    const reworkActions = buildActions('Reworks', [
+        { name: 'View' },
+        { name: 'Add High Priority' },
+        { name: 'Add Low Priority' },
+        { name: 'Edit Own', isEditRow: true },
+        { name: 'Edit Others', isEditRow: true },
+        { name: 'Delete Own' },
+        { name: 'Delete Others' },
+    ]);
+
+    const userActions = buildActions('Users', [
+        { name: 'View' },
+        { name: 'Add' },
+        { name: 'Edit Own', isEditRow: true },
+        { name: 'Edit Others', isEditRow: true },
+        { name: 'Delete' },
+    ]);
+
+    const tagActions = buildActions('Tags', [
+        { name: 'View' },
+        { name: 'Add' },
+        { name: 'Edit' },
+        { name: 'Delete' },
+    ]);
+
+    // Compute diff comparison list between draft and initially committed snapshot
     const diffList: string[] = [];
-    Object.keys(localPerms).forEach((key) => {
+    Object.keys(draftPermissions).forEach((key) => {
         const originalValue = initialPermissions[key];
-        const currentValue = localPerms[key];
+        const currentValue = draftPermissions[key];
         if (originalValue !== undefined && originalValue !== currentValue) {
             const parts = key.split('__');
             if (parts.length === 3) {
@@ -59,14 +124,22 @@ export function RolePermissionCard() {
     });
 
     const handleConfirmSave = () => {
-        const currentVal = !!localPerms['Reworks__Add Low Priority__guest'];
+        const currentVal = !!draftPermissions['Reworks__Add Low Priority__guest'];
         setAllowGuestMinorRework(currentVal);
         
+        // Commit draftPermissions to global store (which triggers persistence in localStorage)
+        setPermissions(draftPermissions);
+        
         // Update initial state snapshot to clear diff visual
-        setInitialPermissions({ ...localPerms });
+        setInitialPermissions({ ...draftPermissions });
         
         setShowSavePopup(false);
-        alert("Permissions updated and saved successfully!");
+    };
+
+    const handleCancelChanges = () => {
+        // Discard local draft modifications by reverting to committed settings snapshot
+        setDraftPermissions({ ...initialPermissions });
+        setShowSavePopup(false);
     };
 
     return (
@@ -247,7 +320,7 @@ export function RolePermissionCard() {
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
                             <button
                                 type="button"
-                                onClick={() => setShowSavePopup(false)}
+                                onClick={handleCancelChanges}
                                 style={{
                                     background: 'rgba(255, 255, 255, 0.05)',
                                     color: 'var(--text-h)',
