@@ -8,21 +8,21 @@ const __dirname = path.dirname(__filename);
 
 const dbPath = path.resolve(__dirname, 'pcb_tracker.db');
 
-let dbInstance = new sqlite3.Database(dbPath);
+let dbInstance: sqlite3.Database = new sqlite3.Database(dbPath);
 
 const db = {
-    run: (...args) => dbInstance.run(...args),
-    all: (...args) => dbInstance.all(...args),
-    get: (...args) => dbInstance.get(...args),
-    serialize: (...args) => dbInstance.serialize(...args),
-    prepare: (...args) => dbInstance.prepare(...args),
-    close: (...args) => dbInstance.close(...args)
+    run: (sql: string, ...args: any[]): sqlite3.Database => (dbInstance.run as any)(sql, ...args),
+    all: (sql: string, ...args: any[]): sqlite3.Database => (dbInstance.all as any)(sql, ...args),
+    get: (sql: string, ...args: any[]): sqlite3.Database => (dbInstance.get as any)(sql, ...args),
+    serialize: (callback?: () => void): void => dbInstance.serialize(callback),
+    prepare: (sql: string, ...args: any[]): sqlite3.Statement => (dbInstance.prepare as any)(sql, ...args),
+    close: (callback?: (err: Error | null) => void): void => dbInstance.close(callback)
 };
 
-const recreateDb = () => {
+const recreateDb = (): Promise<void> => {
     return new Promise((resolve, reject) => {
         dbInstance.close((err) => {
-            if (err && err.code !== 'SQLITE_MISUSE') {
+            if (err && (err as any).code !== 'SQLITE_MISUSE') {
                 console.error("Error closing corrupted DB:", err);
             }
             try {
@@ -40,9 +40,9 @@ const recreateDb = () => {
     });
 };
 
-const checkIntegrity = () => {
+const checkIntegrity = (): Promise<boolean> => {
     return new Promise((resolve) => {
-        dbInstance.get('PRAGMA integrity_check;', (err, row) => {
+        dbInstance.get('PRAGMA integrity_check;', (err: Error | null, row: any) => {
             if (err) {
                 return resolve(false);
             }
@@ -54,7 +54,7 @@ const checkIntegrity = () => {
     });
 };
 
-const initDb = async () => {
+const initDb = async (): Promise<void> => {
     let isHealthy = await checkIntegrity();
     if (!isHealthy) {
         console.warn("Database corrupted or invalid. Recreating from scratch...");
@@ -182,7 +182,7 @@ const initDb = async () => {
         dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_tags_name_nocase ON tags(name COLLATE NOCASE)`);
 
         // Migration: Add number_format column to projects if it doesn't exist
-        dbInstance.run(`ALTER TABLE projects ADD COLUMN number_format TEXT DEFAULT 'decimal'`, (err) => {
+        dbInstance.run(`ALTER TABLE projects ADD COLUMN number_format TEXT DEFAULT 'decimal'`, (err: Error | null) => {
             // Ignore error if column already exists
         });
 
@@ -212,13 +212,13 @@ const initDb = async () => {
         dbInstance.run(`ALTER TABLE reworks ADD COLUMN created_by TEXT`, () => {});
         dbInstance.run(`ALTER TABLE reworks ADD COLUMN updated_by TEXT`, () => {});
         
-        dbInstance.run(`ALTER TABLE pcbs ADD COLUMN created_at DATETIME`, (err) => {
+        dbInstance.run(`ALTER TABLE pcbs ADD COLUMN created_at DATETIME`, (err: Error | null) => {
             if (err) {
                 console.log("Migration created_at log:", err.message);
             } else {
                 console.log("Migration created_at: successfully created column!");
             }
-            dbInstance.run("UPDATE pcbs SET created_at = datetime('now') WHERE created_at IS NULL", (updateErr) => {
+            dbInstance.run("UPDATE pcbs SET created_at = datetime('now') WHERE created_at IS NULL", (updateErr: Error | null) => {
                 if (updateErr) {
                     console.log("Migration created_at update error:", updateErr.message);
                 } else {

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { Request, Response, NextFunction } from 'express';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,8 +12,13 @@ if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true });
 }
 
+interface ParsedUA {
+    browser: string;
+    os: string;
+}
+
 // Basic User-Agent parser (very lightweight)
-const parseUserAgent = (ua) => {
+const parseUserAgent = (ua: string | undefined): ParsedUA => {
     if (!ua) return { browser: 'Unknown', os: 'Unknown' };
     
     let browser = 'Unknown';
@@ -33,7 +39,7 @@ const parseUserAgent = (ua) => {
 };
 
 // Escape a field for CSV following RFC 4180
-const escapeCsvField = (val) => {
+const escapeCsvField = (val: any): string => {
     if (val === null || val === undefined) {
         return '';
     }
@@ -51,18 +57,18 @@ const escapeCsvField = (val) => {
 };
 
 // Calculate week identifier in format YYYY_weekWW
-const getWeekIdentifier = (date) => {
+const getWeekIdentifier = (date: Date): string => {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const dayNum = d.getUTCDay() || 7;
     d.setUTCDate(d.getUTCDate() + 4 - dayNum);
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
     const paddedWeek = String(weekNo).padStart(2, '0');
     return `${d.getUTCFullYear()}_week${paddedWeek}`;
 };
 
 // 60-day rotation cleanup for weekly logs
-export const cleanupOldLogs = () => {
+export const cleanupOldLogs = (): void => {
     try {
         const files = fs.readdirSync(logDir);
         const now = Date.now();
@@ -90,7 +96,7 @@ export const cleanupOldLogs = () => {
 // Start the cleanup interval (every 1 hour)
 setInterval(cleanupOldLogs, 60 * 60 * 1000);
 
-export const apiLoggerMiddleware = (req, res, next) => {
+export const apiLoggerMiddleware = (req: Request, res: Response, next: NextFunction): void => {
     // Only log API data requests (ignore static picture fetches)
     if (!req.path.startsWith('/api') || req.path.startsWith('/api/pictures')) {
         return next();
@@ -102,17 +108,17 @@ export const apiLoggerMiddleware = (req, res, next) => {
     // Intercept response
     const originalJson = res.json;
     const originalSend = res.send;
-    let responseBody = null;
+    let responseBody: any = null;
 
-    res.json = function (body) {
+    res.json = function (this: Response, body: any) {
         responseBody = body;
         return originalJson.call(this, body);
-    };
+    } as any;
 
-    res.send = function (body) {
+    res.send = function (this: Response, body: any) {
         if (!responseBody) responseBody = body; // capture if json wasn't called
         return originalSend.call(this, body);
-    };
+    } as any;
 
     res.on('finish', () => {
         const duration = Date.now() - startTime;
@@ -125,7 +131,7 @@ export const apiLoggerMiddleware = (req, res, next) => {
         const name = req.headers['x-user-name'] || 'Guest';
         const role = req.headers['x-user-role'] || 'Guest';
 
-        const logEntry = {
+        const logEntry: any = {
             timestamp: now.toISOString(),
             ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
             user: {

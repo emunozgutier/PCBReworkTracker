@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -6,8 +6,8 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { db, initDb } from './db.js';
-import { apiLoggerMiddleware } from './logger.js';
+import { db, initDb } from './db';
+import { apiLoggerMiddleware } from './logger';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,7 +20,7 @@ const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         const dir = path.join(__dirname, '../../../pictures');
         if (!fs.existsSync(dir)){
-            fs.mkdirSync(dir);
+            fs.mkdirSync(dir, { recursive: true });
         }
         cb(null, dir);
     },
@@ -42,27 +42,40 @@ app.use((req, res, next) => {
 app.use(apiLoggerMiddleware);
 
 // --- Request Deduplication & Serialization Middlewares ---
-const inFlightRequests = new Map();
+interface CustomRequest extends Request {
+    _deduplicated?: boolean;
+    _serialized?: boolean;
+    files?: any;
+}
 
-function deduplicate(req, res, next) {
-    if (req.method === 'GET' || req.method === 'DELETE') {
+interface InFlightRequest {
+    listeners: Array<(response: any) => void>;
+    response: any | null;
+}
+
+const inFlightRequests = new Map<string, InFlightRequest>();
+
+function deduplicate(req: Request, res: Response, next: NextFunction) {
+    const creq = req as CustomRequest;
+    if (creq.method === 'GET' || creq.method === 'DELETE') {
         return next();
     }
     
     // Prevent double execution if registered both globally and locally
-    if (req._deduplicated) {
+    if (creq._deduplicated) {
         return next();
     }
-    req._deduplicated = true;
+    creq._deduplicated = true;
 
-    const fileSignature = (req.files || []).map(f => `${f.originalname}-${f.size}`).join(',');
-    const bodyKey = JSON.stringify(req.body || {});
-    const username = req.headers['x-user-username'] || 'guest';
-    const key = `${req.method}:${req.originalUrl}:${bodyKey}:${fileSignature}:${username}`;
+    const filesArray = Array.isArray(creq.files) ? creq.files : [];
+    const fileSignature = filesArray.map((f: any) => `${f.originalname}-${f.size}`).join(',');
+    const bodyKey = JSON.stringify(creq.body || {});
+    const username = creq.headers['x-user-username'] || 'guest';
+    const key = `${creq.method}:${creq.originalUrl}:${bodyKey}:${fileSignature}:${username}`;
 
     if (inFlightRequests.has(key)) {
         console.log(`[Server Deduplicate] Duplicate request detected for key: ${key}.`);
-        const pending = inFlightRequests.get(key);
+        const pending = inFlightRequests.get(key)!;
         
         if (pending.response) {
             console.log(`[Server Deduplicate] Returning cached response for key: ${key}.`);
@@ -80,14 +93,14 @@ function deduplicate(req, res, next) {
         return;
     }
 
-    const pending = {
+    const pending: InFlightRequest = {
         listeners: [],
         response: null
     };
     inFlightRequests.set(key, pending);
 
     const originalSend = res.send;
-    res.send = function (body) {
+    res.send = function (this: Response, body: any) {
         res.send = originalSend;
 
         const responseData = {
@@ -112,7 +125,8 @@ function deduplicate(req, res, next) {
                 console.error('[Server Deduplicate] Failed to notify listener:', e);
             }
         });
-    };
+        return res;
+    } as any;
 
     res.on('close', () => {
         if (inFlightRequests.has(key) && inFlightRequests.get(key) === pending && !pending.response) {
@@ -134,19 +148,20 @@ function deduplicate(req, res, next) {
 
 let writeQueue = Promise.resolve();
 
-function serializeWrites(req, res, next) {
-    if (req.method === 'GET') {
+function serializeWrites(req: Request, res: Response, next: NextFunction) {
+    const creq = req as CustomRequest;
+    if (creq.method === 'GET') {
         return next();
     }
     
     // Prevent double execution if registered both globally and locally
-    if (req._serialized) {
+    if (creq._serialized) {
         return next();
     }
-    req._serialized = true;
+    creq._serialized = true;
 
     writeQueue = writeQueue.then(() => {
-        return new Promise((resolve) => {
+        return new Promise<void>((resolve) => {
             let resolved = false;
             const release = () => {
                 if (!resolved) {
@@ -172,7 +187,7 @@ function serializeWrites(req, res, next) {
 }
 
 // Apply deduplication to all JSON write operations first
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
     const isMultipart = req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data');
     if (isMultipart) {
         return next();
@@ -181,7 +196,7 @@ app.use((req, res, next) => {
 });
 
 // Apply serialization to JSON write operations second
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
     const isMultipart = req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data');
     if (isMultipart) {
         return next();
@@ -194,23 +209,21 @@ app.use('/api/pictures', express.static(path.join(__dirname, '../../../pictures'
 // Initialize Database
 initDb().then(() => {
 
-
 // Migration: Split product_name_and_rev into board_flavor, board_rev, silicon_rev, silicon_corner
-db.all("SELECT id, product_name_and_rev, project_id FROM pcbs WHERE product_name_and_rev IS NOT NULL AND board_flavor IS NULL", [], (err, pcbs) => {
+db.all("SELECT id, product_name_and_rev, project_id FROM pcbs WHERE product_name_and_rev IS NOT NULL AND board_flavor IS NULL", [], (err: Error | null, pcbs: any[]) => {
     if (!err && pcbs && pcbs.length > 0) {
-        db.all("SELECT id, formfactors, silicon_corners FROM projects", [], (err, projects) => {
-            if (err || !projects) return;
+        db.all("SELECT id, formfactors, silicon_corners FROM projects", [], (errProj: Error | null, projects: any[]) => {
+            if (errProj || !projects) return;
             pcbs.forEach(pcb => {
                 const project = projects.find(p => p.id === pcb.project_id);
                 let rawProduct = pcb.product_name_and_rev || '';
-                let foundRev = '';
                 let foundFormfactor = '';
                 let foundSilicon = '';
 
                 if (project) {
                     if (project.silicon_corners) {
-                        let parsedCorners = [];
-                        try { parsedCorners = typeof project.silicon_corners === 'string' ? project.silicon_corners.split(',').map(s => s.trim()).filter(Boolean) : []; } catch(e){}
+                        let parsedCorners: string[] = [];
+                        try { parsedCorners = typeof project.silicon_corners === 'string' ? project.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean) : []; } catch(e){}
                         for (const corner of parsedCorners) {
                             if (rawProduct.endsWith(` ${corner}`) || rawProduct === corner) {
                                 foundSilicon = corner;
@@ -221,7 +234,7 @@ db.all("SELECT id, product_name_and_rev, project_id FROM pcbs WHERE product_name
                     }
 
                     if (project.formfactors) {
-                        let parsedFF = [];
+                        let parsedFF: any[] = [];
                         try { parsedFF = JSON.parse(project.formfactors); } catch(e){}
                         for (const ff of parsedFF) {
                             if (rawProduct.startsWith(ff.name)) {
@@ -244,7 +257,7 @@ db.all("SELECT id, product_name_and_rev, project_id FROM pcbs WHERE product_name
                     }
                 }
 
-                db.run("UPDATE pcbs SET board_flavor = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ? WHERE id = ?", [foundFormfactor, boardRev, siliconRev, foundSilicon, pcb.id], (err) => {
+                db.run("UPDATE pcbs SET board_flavor = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ? WHERE id = ?", [foundFormfactor, boardRev, siliconRev, foundSilicon, pcb.id], (errRun: Error | null) => {
                     // Check if this was the last item to migrate
                     if (pcbs.indexOf(pcb) === pcbs.length - 1) {
                         // After all updates, safely drop the old column
@@ -262,13 +275,11 @@ db.all("SELECT id, product_name_and_rev, project_id FROM pcbs WHERE product_name
 });
 
 // Migration: Extract formfactors from projects into pcb_flavors
-db.all("SELECT id, formfactors FROM projects", [], (err, projects) => {
+db.all("SELECT id, formfactors FROM projects", [], (err: Error | null, projects: any[]) => {
     if (!err && projects && projects.length > 0) {
-        let hasFormfactors = false;
         projects.forEach(project => {
             if (project.formfactors) {
-                hasFormfactors = true;
-                let parsedFF = [];
+                let parsedFF: any[] = [];
                 try { parsedFF = JSON.parse(project.formfactors); } catch(e){}
                 parsedFF.forEach(ff => {
                     db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [
@@ -276,8 +287,8 @@ db.all("SELECT id, formfactors FROM projects", [], (err, projects) => {
                         ff.name, 
                         JSON.stringify(ff.revisions || []), 
                         JSON.stringify(ff.boms || [])
-                    ], (err) => {
-                        if (err) console.error("Migration error inserting flavor:", err.message);
+                    ], (errRun: Error | null) => {
+                        if (errRun) console.error("Migration error inserting flavor:", errRun.message);
                     });
                 });
             }
@@ -289,7 +300,7 @@ db.all("SELECT id, formfactors FROM projects", [], (err, projects) => {
 });
 
 // Migration: add short codes to existing PCBs
-db.all("SELECT id FROM pcbs WHERE short_code IS NULL", [], (err, pcbs) => {
+db.all("SELECT id FROM pcbs WHERE short_code IS NULL", [], (err: Error | null, pcbs: any[]) => {
     if (!err && pcbs && pcbs.length > 0) {
         pcbs.forEach(async pcb => {
             try {
@@ -312,18 +323,18 @@ db.all("SELECT id FROM pcbs WHERE short_code IS NULL", [], (err, pcbs) => {
 // Routes
 
 // Dashboard Summary
-app.get('/api/dashboard', (req, res) => {
-    const stats = {};
-    db.get("SELECT COUNT(*) as count FROM projects", [], (err, row) => {
+app.get('/api/dashboard', (req: Request, res: Response) => {
+    const stats: any = {};
+    db.get("SELECT COUNT(*) as count FROM projects", [], (err: Error | null, row: any) => {
         if (err || !row) stats.projects = 0; else stats.projects = row.count;
-        db.get("SELECT COUNT(*) as count FROM pcbs", [], (err, row) => {
-            if (err || !row) stats.pcbs = 0; else stats.pcbs = row.count;
-            db.get("SELECT COUNT(*) as count FROM owners", [], (err, row) => {
-                if (err || !row) stats.owners = 0; else stats.owners = row.count;
-                db.get("SELECT COUNT(*) as count FROM reworks", [], (err, row) => {
-                    if (err || !row) stats.reworks = 0; else stats.reworks = row.count;
-                    db.get("SELECT COUNT(*) as count FROM tags", [], (err, row) => {
-                        if (err || !row) stats.tags = 0; else stats.tags = row.count;
+        db.get("SELECT COUNT(*) as count FROM pcbs", [], (errPcb: Error | null, rowPcb: any) => {
+            if (errPcb || !rowPcb) stats.pcbs = 0; else stats.pcbs = rowPcb.count;
+            db.get("SELECT COUNT(*) as count FROM owners", [], (errOwner: Error | null, rowOwner: any) => {
+                if (errOwner || !rowOwner) stats.owners = 0; else stats.owners = rowOwner.count;
+                db.get("SELECT COUNT(*) as count FROM reworks", [], (errRework: Error | null, rowRework: any) => {
+                    if (errRework || !rowRework) stats.reworks = 0; else stats.reworks = rowRework.count;
+                    db.get("SELECT COUNT(*) as count FROM tags", [], (errTag: Error | null, rowTag: any) => {
+                        if (errTag || !rowTag) stats.tags = 0; else stats.tags = rowTag.count;
                         res.json(stats);
                     });
                 });
@@ -335,7 +346,7 @@ app.get('/api/dashboard', (req, res) => {
 // --- Helpers ---
 const CHARSET = 'ABCDEFGHJKMNPQRSTUVWXY';
 
-function generateCRC(input) {
+function generateCRC(input: string): string {
     let sum = 0;
     for (let i = 0; i < input.length; i++) {
         const char = input[i].toUpperCase();
@@ -346,7 +357,7 @@ function generateCRC(input) {
 
 const RESERVED_URLS = new Set(['project', 'projects', 'pcb', 'pcbs', 'rework', 'reworks', 'owners', 'tags', 'crc', 'api', 'demo']);
 
-function generateShortCode(attempt = 1) {
+function generateShortCode(attempt = 1): Promise<string> {
     return new Promise((resolve, reject) => {
         if (attempt > 20) return reject(new Error("Unable to generate short code"));
         const chars = 'ABCDEFGHJKMNPQRSTUVWXYabcdefghjkmnpqrstuvwxy3456789';
@@ -359,7 +370,7 @@ function generateShortCode(attempt = 1) {
             return resolve(generateShortCode(attempt + 1));
         }
         
-        db.get("SELECT id FROM pcbs WHERE short_code = ?", [code], (err, row) => {
+        db.get("SELECT id FROM pcbs WHERE short_code = ?", [code], (err: Error | null, row: any) => {
             if (err) return reject(err);
             if (row) resolve(generateShortCode(attempt + 1));
             else resolve(code);
@@ -367,7 +378,7 @@ function generateShortCode(attempt = 1) {
     });
 }
 
-function sanitizeProjectName(name) {
+function sanitizeProjectName(name: string): string {
     if (!name) return "";
     // Remove non-alphanumeric characters but keep spaces for splitting
     const clean = name.replace(/[^a-zA-Z0-9\s]/g, '');
@@ -379,7 +390,7 @@ function sanitizeProjectName(name) {
         .join('');
 }
 
-function generateProjectKey(name, attempt = 1) {
+function generateProjectKey(name: string, attempt = 1): Promise<string> {
     return new Promise((resolve, reject) => {
         if (attempt > 20) return reject(new Error("Unable to generate unique project key"));
         
@@ -396,7 +407,7 @@ function generateProjectKey(name, attempt = 1) {
             proposedKey = chars[i1] + chars[i2] + chars[i3];
         }
 
-        db.get("SELECT id FROM projects WHERE project_key = ?", [proposedKey], (err, row) => {
+        db.get("SELECT id FROM projects WHERE project_key = ?", [proposedKey], (err: Error | null, row: any) => {
             if (err) return reject(err);
             if (row) {
                 resolve(generateProjectKey(name, attempt + 1));
@@ -408,7 +419,7 @@ function generateProjectKey(name, attempt = 1) {
 }
 
 // Projects API
-app.get('/api/projects', (req, res) => {
+app.get('/api/projects', (req: Request, res: Response) => {
     const query = `
         SELECT projects.*, 
         COUNT(pcbs.id) as pcb_count,
@@ -417,11 +428,11 @@ app.get('/api/projects', (req, res) => {
         LEFT JOIN pcbs ON projects.id = pcbs.project_id
         GROUP BY projects.id
     `;
-    db.all(query, [], (err, rows) => {
+    db.all(query, [], (err: Error | null, rows: any[]) => {
         if (err) return res.status(500).json({ error: err.message });
         
-        db.all("SELECT * FROM pcb_flavors", [], (err, flavors) => {
-            if (err) return res.status(500).json({ error: err.message });
+        db.all("SELECT * FROM pcb_flavors", [], (errFlavors: Error | null, flavors: any[]) => {
+            if (errFlavors) return res.status(500).json({ error: errFlavors.message });
             
             res.json(rows.map(row => {
                 const projectFlavors = flavors.filter(f => f.project_id === row.id).map(f => ({
@@ -435,7 +446,7 @@ app.get('/api/projects', (req, res) => {
                 
                 return {
                     ...row,
-                    revisions: row.revisions ? row.revisions.split(',').map(r => r.trim()) : [],
+                    revisions: row.revisions ? row.revisions.split(',').map((r: string) => r.trim()) : [],
                     flavors: projectFlavors,
                     pcbs: row.pcb_list ? row.pcb_list.split(',') : []
                 };
@@ -444,7 +455,7 @@ app.get('/api/projects', (req, res) => {
     });
 });
 
-app.post('/api/projects', async (req, res) => {
+app.post('/api/projects', async (req: Request, res: Response) => {
     const { name, description, revisions, project_key, flavors, silicon_corners, number_format } = req.body;
     const cleanName = sanitizeProjectName(name);
     
@@ -453,7 +464,7 @@ app.post('/api/projects', async (req, res) => {
     try {
         const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : await generateProjectKey(cleanName);
         const creator = req.headers['x-user-username'] || 'guest';
-        db.run("INSERT INTO projects (name, description, revisions, project_key, silicon_corners, number_format, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [cleanName, description, revisions, finalProjectKey, silicon_corners || null, number_format || 'decimal', creator, creator], function(err) {
+        db.run("INSERT INTO projects (name, description, revisions, project_key, silicon_corners, number_format, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [cleanName, description, revisions, finalProjectKey, silicon_corners || null, number_format || 'decimal', creator, creator], function(this: any, err: Error | null) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
                     if (err.message.includes('projects.name')) {
@@ -468,22 +479,22 @@ app.post('/api/projects', async (req, res) => {
             const newProjectId = this.lastID;
             
             if (flavors && flavors.length > 0) {
-                flavors.forEach(f => {
-                    db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [newProjectId, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])], (err) => {
-                        if (err) console.error("Error inserting flavor (POST):", err.message, f);
+                flavors.forEach((f: any) => {
+                    db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [newProjectId, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])], (errFlavor: Error | null) => {
+                        if (errFlavor) console.error("Error inserting flavor (POST):", errFlavor.message, f);
                     });
                 });
             }
             
             res.status(201).json({ id: newProjectId, name: cleanName, project_key: finalProjectKey });
         });
-    } catch (err) {
+    } catch (err: any) {
         res.status(500).json({ error: err.message });
     }
 });
 
 // PCBs API
-app.get('/api/pcbs', (req, res) => {
+app.get('/api/pcbs', (req: Request, res: Response) => {
     const query = `
         SELECT pcbs.*, projects.name as project_name, projects.project_key, projects.number_format as number_format, owners.name as owner_name, owners.username as owner_username,
                (SELECT GROUP_CONCAT(tag_id) FROM pcb_tags WHERE pcb_id = pcbs.id) as tag_ids
@@ -491,7 +502,7 @@ app.get('/api/pcbs', (req, res) => {
         LEFT JOIN projects ON pcbs.project_id = projects.id
         LEFT JOIN owners ON pcbs.owner_id = owners.id
     `;
-    db.all(query, [], (err, rows) => {
+    db.all(query, [], (err: Error | null, rows: any[]) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows.map(row => {
             let fullBoardName = row.board_number;
@@ -532,7 +543,7 @@ app.get('/api/pcbs', (req, res) => {
     });
 });
 
-app.post('/api/pcbs', async (req, res) => {
+app.post('/api/pcbs', async (req: Request, res: Response) => {
     const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id } = req.body;
     let numPart = board_number;
     if (board_number && board_number.includes('-')) {
@@ -549,17 +560,17 @@ app.post('/api/pcbs', async (req, res) => {
         const short_code = await generateShortCode();
         const creator = req.headers['x-user-username'] || 'guest';
         const query = "INSERT INTO pcbs (board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, created_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)";
-        db.run(query, [numPart, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, creator, creator], function(err) {
+        db.run(query, [numPart, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, creator, creator], function(this: any, err: Error | null) {
             if (err) return res.status(500).json({ error: err.message });
             res.status(201).json({ id: this.lastID, board_number, short_code });
         });
-    } catch (err) {
+    } catch (err: any) {
         res.status(500).json({ error: err.message });
     }
 });
 
 // --- OTP Helpers ---
-function base32ToBuf(base32) {
+function base32ToBuf(base32: string): Buffer {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
     let clean = base32.replace(/=+$/, '').toUpperCase();
     let length = clean.length;
@@ -581,7 +592,7 @@ function base32ToBuf(base32) {
     return buf;
 }
 
-function generateTotp(secret, time = Date.now()) {
+function generateTotp(secret: string, time = Date.now()): string {
     const counter = Math.floor(time / 1000 / 30);
     const key = base32ToBuf(secret);
     
@@ -602,7 +613,7 @@ function generateTotp(secret, time = Date.now()) {
     return String(code % 1000000).padStart(6, '0');
 }
 
-function verifyTotp(secret, token) {
+function verifyTotp(secret: string, token: string): boolean {
     const now = Date.now();
     for (let i = -1; i <= 1; i++) {
         const expected = generateTotp(secret, now + i * 30 * 1000);
@@ -611,7 +622,7 @@ function verifyTotp(secret, token) {
     return false;
 }
 
-function generateSecret() {
+function generateSecret(): string {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
     let secret = '';
     for (let i = 0; i < 16; i++) {
@@ -620,18 +631,18 @@ function generateSecret() {
     return secret;
 }
 
-app.get('/api/otp/setup', (req, res) => {
+app.get('/api/otp/setup', (req: Request, res: Response) => {
     const { username, host } = req.query;
     if (!username) return res.status(400).json({ error: "Username is required." });
     const secret = generateSecret();
-    const cleanHost = host ? host.replace(/^https?:\/\//i, '') : 'PCBReworkTracker';
+    const cleanHost = host ? (host as string).replace(/^https?:\/\//i, '') : 'PCBReworkTracker';
     const issuer = `ReworkTracker (${cleanHost})`;
     const label = `${issuer}:${username}`;
     const otpauthUrl = `otpauth://totp/${encodeURIComponent(label)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
     res.json({ secret, otpauthUrl });
 });
 
-app.post('/api/otp/verify', (req, res) => {
+app.post('/api/otp/verify', (req: Request, res: Response) => {
     const { secret, token } = req.body;
     if (!secret || !token) {
         return res.status(400).json({ error: "Secret and token are required." });
@@ -639,13 +650,13 @@ app.post('/api/otp/verify', (req, res) => {
     try {
         const isValid = verifyTotp(secret, token);
         res.json({ valid: isValid });
-    } catch (err) {
+    } catch (err: any) {
         res.status(400).json({ error: err.message });
     }
 });
 
 // Owners API
-app.get('/api/owners', (req, res) => {
+app.get('/api/owners', (req: Request, res: Response) => {
     const query = `
         SELECT owners.*,
             (SELECT COUNT(*) FROM pcbs WHERE pcbs.owner_id = owners.id) AS pcb_count,
@@ -653,16 +664,16 @@ app.get('/api/owners', (req, res) => {
             (SELECT COUNT(*) FROM tags WHERE tags.owner_id = owners.id) AS tag_count
         FROM owners
     `;
-    db.all(query, [], (err, rows) => {
+    db.all(query, [], (err: Error | null, rows: any[]) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
 
-app.post('/api/owners', (req, res) => {
+app.post('/api/owners', (req: Request, res: Response) => {
     const { name, username, email, otp_secret, crc_format } = req.body;
     const cleanUsername = username ? username.replace(/\s+/g, '').toLowerCase() : null;
-    db.run("INSERT INTO owners (name, username, email, otp_secret, crc_format) VALUES (?, ?, ?, ?, ?)", [name, cleanUsername, email || null, otp_secret || null, crc_format || 'letter'], function(err) {
+    db.run("INSERT INTO owners (name, username, email, otp_secret, crc_format) VALUES (?, ?, ?, ?, ?)", [name, cleanUsername, email || null, otp_secret || null, crc_format || 'letter'], function(this: any, err: Error | null) {
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {
                 return res.status(400).json({ error: `Username "${cleanUsername}" is already taken.` });
@@ -674,7 +685,7 @@ app.post('/api/owners', (req, res) => {
 });
 
 // Tags API
-app.get('/api/tags', (req, res) => {
+app.get('/api/tags', (req: Request, res: Response) => {
     const query = `
         SELECT tags.*, owners.name as owner_name, owners.username as owner_username, COUNT(pcb_tags.pcb_id) as pcb_count
         FROM tags
@@ -682,23 +693,23 @@ app.get('/api/tags', (req, res) => {
         LEFT JOIN pcb_tags ON tags.id = pcb_tags.tag_id
         GROUP BY tags.id
     `;
-    db.all(query, [], (err, rows) => {
+    db.all(query, [], (err: Error | null, rows: any[]) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
 
-app.post('/api/tags', (req, res) => {
+app.post('/api/tags', (req: Request, res: Response) => {
     const { name, color, owner_id, type } = req.body;
     const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
-    db.run("INSERT INTO tags (name, color, owner_id, type) VALUES (?, ?, ?, ?)", [name, color, finalOwnerId, type || 'public'], function(err) {
+    db.run("INSERT INTO tags (name, color, owner_id, type) VALUES (?, ?, ?, ?)", [name, color, finalOwnerId, type || 'public'], function(this: any, err: Error | null) {
         if (err) return res.status(500).json({ error: err.message });
         res.status(201).json({ id: this.lastID, name });
     });
 });
 
 // Reworks API
-app.get('/api/reworks', (req, res) => {
+app.get('/api/reworks', (req: Request, res: Response) => {
     const query = `
         SELECT reworks.*, pcbs.board_number, owners.name as owner_name, owners.username as owner_username
         FROM reworks 
@@ -706,17 +717,17 @@ app.get('/api/reworks', (req, res) => {
         LEFT JOIN owners ON reworks.owner_id = owners.id
         ORDER BY timestamp DESC
     `;
-    db.all(query, [], (err, rows) => {
+    db.all(query, [], (err: Error | null, rows: any[]) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
 
-app.post('/api/reworks', upload.any(), deduplicate, serializeWrites, (req, res) => {
+app.post('/api/reworks', upload.any(), deduplicate, serializeWrites, (req: Request, res: Response) => {
     const { pcb_id, title, description, owner_id, rework_type, new_product, new_silicon_rev, new_silicon_corner } = req.body;
     
     // 1. Get the PCB board_number
-    db.get("SELECT pcbs.*, projects.project_key, projects.number_format FROM pcbs LEFT JOIN projects ON pcbs.project_id = projects.id WHERE pcbs.id = ?", [pcb_id], (err, row) => {
+    db.get("SELECT pcbs.*, projects.project_key, projects.number_format FROM pcbs LEFT JOIN projects ON pcbs.project_id = projects.id WHERE pcbs.id = ?", [pcb_id], (err: Error | null, row: any) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: "PCB not found" });
         
@@ -732,17 +743,18 @@ app.post('/api/reworks', upload.any(), deduplicate, serializeWrites, (req, res) 
         }
         
         // 2. Query existing reworks to find the next sequence
-        db.get("SELECT MAX(rework_number) as max_num FROM reworks WHERE pcb_id = ?", [pcb_id], (err, result) => {
-            if (err) return res.status(500).json({ error: err.message });
+        db.get("SELECT MAX(rework_number) as max_num FROM reworks WHERE pcb_id = ?", [pcb_id], (errRework: Error | null, result: any) => {
+            if (errRework) return res.status(500).json({ error: errRework.message });
             
             let sequence = (result && result.max_num) ? result.max_num + 1 : 1;
             
             const reworkName = `${boardName}-R${String(sequence).padStart(3, '0')}`;
             
             // Post-process the uploaded files dynamically to match the reworkName
-            let finalPaths = [];
-            if (req.files && req.files.length > 0) {
-                req.files.slice(0, 3).forEach((file, index) => {
+            let finalPaths: string[] = [];
+            const reqFiles = req.files as Express.Multer.File[] | undefined;
+            if (reqFiles && reqFiles.length > 0) {
+                reqFiles.slice(0, 3).forEach((file, index) => {
                     const ext = path.extname(file.originalname) || '.jpg';
                     const newFileName = `${reworkName}-PIC-${index + 1}${ext}`;
                     const oldPath = path.join(__dirname, '../../../pictures', file.filename);
@@ -753,8 +765,8 @@ app.post('/api/reworks', upload.any(), deduplicate, serializeWrites, (req, res) 
                             fs.renameSync(oldPath, newPath);
                             finalPaths.push(`/pictures/${newFileName}`);
                         }
-                    } catch (err) {
-                        console.error('Failed to rename picture file:', err);
+                    } catch (errRename) {
+                        console.error('Failed to rename picture file:', errRename);
                         finalPaths.push(`/pictures/${file.filename}`); // Fallback
                     }
                 });
@@ -765,13 +777,13 @@ app.post('/api/reworks', upload.any(), deduplicate, serializeWrites, (req, res) 
             const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
             const creator = req.headers['x-user-username'] || 'guest';
             const insertQuery = "INSERT INTO reworks (pcb_id, rework_number, title, description, owner_id, image_path, rework_type, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            db.run(insertQuery, [pcb_id, sequence, title || null, description, finalOwnerId, image_path, rework_type || 'Minor', creator, creator], function(err) {
-                if (err) return res.status(500).json({ error: err.message });
+            db.run(insertQuery, [pcb_id, sequence, title || null, description, finalOwnerId, image_path, rework_type || 'Minor', creator, creator], function(this: any, errInsert: Error | null) {
+                if (errInsert) return res.status(500).json({ error: errInsert.message });
                 const reworkId = this.lastID;
                 
                 // 4. Update PCB if it's a Silicon Swap
                 if (rework_type === 'Silicon Swap' && new_silicon_rev !== undefined) {
-                    db.run("UPDATE pcbs SET silicon_rev = ?, silicon_corner = ? WHERE id = ?", [new_silicon_rev, new_silicon_corner, pcb_id], function(updateErr) {
+                    db.run("UPDATE pcbs SET silicon_rev = ?, silicon_corner = ? WHERE id = ?", [new_silicon_rev, new_silicon_corner, pcb_id], function(this: any, updateErr: Error | null) {
                         if (updateErr) return res.status(500).json({ error: updateErr.message });
                         res.status(201).json({ id: reworkId, pcb_id, rework_number: sequence, title: title || null, rework_type, image_path, new_product });
                     });
@@ -784,59 +796,57 @@ app.post('/api/reworks', upload.any(), deduplicate, serializeWrites, (req, res) 
 });
 
 // --- Projects API Expansions ---
-app.put('/api/projects/:id', (req, res) => {
+app.put('/api/projects/:id', (req: Request, res: Response) => {
     const { name, description, revisions, project_key, flavors, silicon_corners, number_format } = req.body;
     const cleanName = sanitizeProjectName(name);
 
     if (!cleanName) return res.status(400).json({ error: "Project name is required" });
     const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : null;
 
-    db.get("SELECT number_format, project_key FROM projects WHERE id = ?", [req.params.id], (err, row) => {
-        const oldFormat = row ? (row.number_format || 'hex') : 'hex';
+    db.get("SELECT number_format, project_key FROM projects WHERE id = ?", [req.params.id], (err: Error | null, row: any) => {
         const oldProjectKey = row ? row.project_key : null;
         
         const editor = req.headers['x-user-username'] || 'guest';
-        db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, silicon_corners = ?, number_format = ?, updated_by = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, silicon_corners || null, number_format || 'decimal', editor, req.params.id], function(err) {
-            if (err) {
-                if (err.message.includes('UNIQUE constraint failed')) {
-                    if (err.message.includes('projects.name')) {
+        db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, silicon_corners = ?, number_format = ?, updated_by = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, silicon_corners || null, number_format || 'decimal', editor, req.params.id], function(this: any, errUpdate: Error | null) {
+            if (errUpdate) {
+                if (errUpdate.message.includes('UNIQUE constraint failed')) {
+                    if (errUpdate.message.includes('projects.name')) {
                         return res.status(400).json({ error: `A project with the name "${cleanName}" already exists.` });
                     }
-                    if (err.message.includes('projects.project_key')) {
+                    if (errUpdate.message.includes('projects.project_key')) {
                         return res.status(400).json({ error: `The project key "${finalProjectKey}" is already in use.` });
                     }
                 }
-                return res.status(500).json({ error: err.message });
+                return res.status(500).json({ error: errUpdate.message });
             }
             
             db.run("DELETE FROM pcb_flavors WHERE project_id = ?", [req.params.id], () => {
                 if (flavors && flavors.length > 0) {
-                    flavors.forEach(f => {
-                        db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [req.params.id, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])], (err) => {
-                            if (err) console.error("Error inserting flavor (PUT):", err.message, f);
+                    flavors.forEach((f: any) => {
+                        db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [req.params.id, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])], (errFlavor: Error | null) => {
+                            if (errFlavor) console.error("Error inserting flavor (PUT):", errFlavor.message, f);
                         });
                     });
                 }
             });
 
             const changes = this.changes;
-            const newFormat = number_format || 'decimal';
             
             res.json({ updated: changes, name: cleanName });
         });
     });
 });
 
-app.delete('/api/projects/:id', (req, res) => {
-    db.run("DELETE FROM projects WHERE id = ?", [req.params.id], function(err) {
+app.delete('/api/projects/:id', (req: Request, res: Response) => {
+    db.run("DELETE FROM projects WHERE id = ?", [req.params.id], function(this: any, err: Error | null) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ deleted: this.changes });
     });
 });
 
 // --- PCBs API Expansions ---
-app.get('/api/pcbs/:id', (req, res) => {
-    db.get("SELECT pcbs.*, projects.project_key, projects.number_format FROM pcbs LEFT JOIN projects ON pcbs.project_id = projects.id WHERE pcbs.id = ?", [req.params.id], (err, row) => {
+app.get('/api/pcbs/:id', (req: Request, res: Response) => {
+    db.get("SELECT pcbs.*, projects.project_key, projects.number_format FROM pcbs LEFT JOIN projects ON pcbs.project_id = projects.id WHERE pcbs.id = ?", [req.params.id], (err: Error | null, row: any) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: "PCB not found" });
 
@@ -858,7 +868,7 @@ app.get('/api/pcbs/:id', (req, res) => {
 });
 
 // PCB Tags Association API
-app.get('/api/pcbs/:id/tags', (req, res) => {
+app.get('/api/pcbs/:id/tags', (req: Request, res: Response) => {
     const query = `
         SELECT tags.*, owners.username as owner_username, owners.name as owner_name 
         FROM tags 
@@ -866,30 +876,30 @@ app.get('/api/pcbs/:id/tags', (req, res) => {
         LEFT JOIN owners ON tags.owner_id = owners.id
         WHERE pcb_tags.pcb_id = ?
     `;
-    db.all(query, [req.params.id], (err, rows) => {
+    db.all(query, [req.params.id], (err: Error | null, rows: any[]) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
 
-app.post('/api/pcbs/:id/tags', express.json(), (req, res) => {
+app.post('/api/pcbs/:id/tags', express.json(), (req: Request, res: Response) => {
     const pcbId = req.params.id;
     const tagId = req.body.tag_id;
     if (!tagId) return res.status(400).json({ error: 'tag_id is required' });
-    db.run("INSERT OR IGNORE INTO pcb_tags (pcb_id, tag_id) VALUES (?, ?)", [pcbId, tagId], function(err) {
+    db.run("INSERT OR IGNORE INTO pcb_tags (pcb_id, tag_id) VALUES (?, ?)", [pcbId, tagId], function(this: any, err: Error | null) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ success: true, changes: this.changes });
     });
 });
 
-app.delete('/api/pcbs/:id/tags/:tag_id', (req, res) => {
-    db.run("DELETE FROM pcb_tags WHERE pcb_id = ? AND tag_id = ?", [req.params.id, req.params.tag_id], function(err) {
+app.delete('/api/pcbs/:id/tags/:tag_id', (req: Request, res: Response) => {
+    db.run("DELETE FROM pcb_tags WHERE pcb_id = ? AND tag_id = ?", [req.params.id, req.params.tag_id], function(this: any, err: Error | null) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ deleted: this.changes });
     });
 });
 
-app.put('/api/pcbs/:id', (req, res) => {
+app.put('/api/pcbs/:id', (req: Request, res: Response) => {
     const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id } = req.body;
     let numPart = board_number;
     if (board_number && board_number.includes('-')) {
@@ -904,13 +914,13 @@ app.put('/api/pcbs/:id', (req, res) => {
     }
     const editor = req.headers['x-user-username'] || 'guest';
     const query = "UPDATE pcbs SET board_number = ?, status = ?, board_flavor = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ?, bom = ?, project_id = ?, owner_id = ?, updated_by = ? WHERE id = ?";
-    db.run(query, [numPart, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, editor, req.params.id], function(err) {
+    db.run(query, [numPart, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, editor, req.params.id], function(this: any, err: Error | null) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ updated: this.changes });
     });
 });
 
-app.delete('/api/pcbs/:id', (req, res) => {
+app.delete('/api/pcbs/:id', (req: Request, res: Response) => {
     const pcbId = parseInt(req.params.id, 10);
     const checkQuery = `
         SELECT 
@@ -919,7 +929,7 @@ app.delete('/api/pcbs/:id', (req, res) => {
         FROM pcbs 
         WHERE id = ?
     `;
-    db.get(checkQuery, [pcbId], (err, row) => {
+    db.get(checkQuery, [pcbId], (err: Error | null, row: any) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: "PCB not found" });
 
@@ -942,8 +952,8 @@ app.delete('/api/pcbs/:id', (req, res) => {
 
         db.serialize(() => {
             db.run("DELETE FROM pcb_tags WHERE pcb_id = ?", [pcbId]);
-            db.run("DELETE FROM pcbs WHERE id = ?", [pcbId], function(err) {
-                if (err) return res.status(500).json({ error: err.message });
+            db.run("DELETE FROM pcbs WHERE id = ?", [pcbId], function(this: any, errDelete: Error | null) {
+                if (errDelete) return res.status(500).json({ error: errDelete.message });
                 res.json({ deleted: this.changes });
             });
         });
@@ -951,17 +961,17 @@ app.delete('/api/pcbs/:id', (req, res) => {
 });
 
 // --- Owners API Expansions ---
-app.get('/api/owners/:id', (req, res) => {
-    db.get("SELECT * FROM owners WHERE id = ?", [req.params.id], (err, row) => {
+app.get('/api/owners/:id', (req: Request, res: Response) => {
+    db.get("SELECT * FROM owners WHERE id = ?", [req.params.id], (err: Error | null, row: any) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(row);
     });
 });
 
-app.put('/api/owners/:id', (req, res) => {
+app.put('/api/owners/:id', (req: Request, res: Response) => {
     const { name, username, email, crc_format } = req.body;
     const cleanUsername = username ? username.replace(/\s+/g, '').toLowerCase() : null;
-    db.run("UPDATE owners SET name = ?, username = ?, email = ?, crc_format = ? WHERE id = ?", [name, cleanUsername, email || null, crc_format || null, req.params.id], function(err) {
+    db.run("UPDATE owners SET name = ?, username = ?, email = ?, crc_format = ? WHERE id = ?", [name, cleanUsername, email || null, crc_format || null, req.params.id], function(this: any, err: Error | null) {
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {
                 return res.status(400).json({ error: `Username "${cleanUsername}" is already in use.` });
@@ -972,7 +982,7 @@ app.put('/api/owners/:id', (req, res) => {
     });
 });
 
-app.delete('/api/owners/:id', (req, res) => {
+app.delete('/api/owners/:id', (req: Request, res: Response) => {
     const ownerId = req.params.id;
     // Automatically detach the owner from all dependencies to bypass Foreign Key constraint restrictions safely
     db.serialize(() => {
@@ -980,7 +990,7 @@ app.delete('/api/owners/:id', (req, res) => {
         db.run("UPDATE reworks SET owner_id = NULL WHERE owner_id = ?", [ownerId]);
         db.run("UPDATE tags SET owner_id = NULL WHERE owner_id = ?", [ownerId]);
 
-        db.run("DELETE FROM owners WHERE id = ?", [ownerId], function(err) {
+        db.run("DELETE FROM owners WHERE id = ?", [ownerId], function(this: any, err: Error | null) {
             if (err) return res.status(500).json({ error: err.message });
             res.json({ deleted: this.changes });
         });
@@ -988,7 +998,7 @@ app.delete('/api/owners/:id', (req, res) => {
 });
 
 // --- OTP Reset Management (Super User Audit Logged) ---
-app.post('/api/owners/:id/reset-otp', (req, res) => {
+app.post('/api/owners/:id/reset-otp', (req: Request, res: Response) => {
     const userRole = req.headers['x-user-role'];
     if (userRole !== 'Super User') {
         return res.status(403).json({ error: 'Only Super Users can initiate an OTP reset.' });
@@ -1008,7 +1018,7 @@ app.post('/api/owners/:id/reset-otp', (req, res) => {
             otp_reset_at = ?
          WHERE id = ?`,
         [token, expires, superuser, resetAt, ownerId],
-        function(err) {
+        function(this: any, err: Error | null) {
             if (err) return res.status(500).json({ error: err.message });
             if (this.changes === 0) return res.status(404).json({ error: 'Owner not found.' });
 
@@ -1018,14 +1028,14 @@ app.post('/api/owners/:id/reset-otp', (req, res) => {
     );
 });
 
-app.get('/api/otp/reset-info', (req, res) => {
+app.get('/api/otp/reset-info', (req: Request, res: Response) => {
     const { token } = req.query;
     if (!token) return res.status(400).json({ error: 'Token is required.' });
 
     db.get(
         "SELECT id, name, username, otp_reset_expires FROM owners WHERE otp_reset_token = ?",
         [token],
-        (err, row) => {
+        (err: Error | null, row: any) => {
             if (err) return res.status(500).json({ error: err.message });
             if (!row) return res.status(404).json({ error: 'Reset link is invalid or expired.' });
 
@@ -1038,7 +1048,7 @@ app.get('/api/otp/reset-info', (req, res) => {
     );
 });
 
-app.post('/api/otp/reset-confirm', (req, res) => {
+app.post('/api/otp/reset-confirm', (req: Request, res: Response) => {
     const { token, secret, code } = req.body;
     if (!token || !secret || !code) {
         return res.status(400).json({ error: 'Token, secret, and code are required.' });
@@ -1047,7 +1057,7 @@ app.post('/api/otp/reset-confirm', (req, res) => {
     db.get(
         "SELECT id, otp_reset_expires FROM owners WHERE otp_reset_token = ?",
         [token],
-        (err, row) => {
+        (err: Error | null, row: any) => {
             if (err) return res.status(500).json({ error: err.message });
             if (!row) return res.status(404).json({ error: 'Reset token is invalid or expired.' });
 
@@ -1068,12 +1078,12 @@ app.post('/api/otp/reset-confirm', (req, res) => {
                         otp_reset_expires = NULL
                      WHERE id = ?`,
                     [secret, row.id],
-                    function(updateErr) {
+                    function(updateErr: Error | null) {
                         if (updateErr) return res.status(500).json({ error: updateErr.message });
                         res.json({ success: true });
                     }
                 );
-            } catch (totpErr) {
+            } catch (totpErr: any) {
                 res.status(400).json({ error: totpErr.message });
             }
         }
@@ -1081,14 +1091,14 @@ app.post('/api/otp/reset-confirm', (req, res) => {
 });
 
 // --- Tags API Expansions ---
-app.get('/api/tags/:id', (req, res) => {
-    db.get("SELECT * FROM tags WHERE id = ?", [req.params.id], (err, row) => {
+app.get('/api/tags/:id', (req: Request, res: Response) => {
+    db.get("SELECT * FROM tags WHERE id = ?", [req.params.id], (err: Error | null, row: any) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(row);
     });
 });
 
-app.get('/api/tags/:id/pcbs', (req, res) => {
+app.get('/api/tags/:id/pcbs', (req: Request, res: Response) => {
     const query = `
         SELECT pcbs.*, projects.project_key 
         FROM pcbs 
@@ -1096,42 +1106,42 @@ app.get('/api/tags/:id/pcbs', (req, res) => {
         LEFT JOIN projects ON pcbs.project_id = projects.id
         WHERE pcb_tags.tag_id = ?
     `;
-    db.all(query, [req.params.id], (err, rows) => {
+    db.all(query, [req.params.id], (err: Error | null, rows: any[]) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
 
-app.put('/api/tags/:id', (req, res) => {
+app.put('/api/tags/:id', (req: Request, res: Response) => {
     const { name, color, owner_id, type } = req.body;
     const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
-    db.run("UPDATE tags SET name = ?, color = ?, owner_id = ?, type = ? WHERE id = ?", [name, color, finalOwnerId, type || 'public', req.params.id], function(err) {
+    db.run("UPDATE tags SET name = ?, color = ?, owner_id = ?, type = ? WHERE id = ?", [name, color, finalOwnerId, type || 'public', req.params.id], function(this: any, err: Error | null) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ updated: this.changes });
     });
 });
 
-app.delete('/api/tags/:id', (req, res) => {
-    db.run("DELETE FROM tags WHERE id = ?", [req.params.id], function(err) {
+app.delete('/api/tags/:id', (req: Request, res: Response) => {
+    db.run("DELETE FROM tags WHERE id = ?", [req.params.id], function(this: any, err: Error | null) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ deleted: this.changes });
     });
 });
 
 // --- Reworks API Expansions ---
-app.get('/api/reworks/:id', (req, res) => {
-    db.get("SELECT * FROM reworks WHERE id = ?", [req.params.id], (err, row) => {
+app.get('/api/reworks/:id', (req: Request, res: Response) => {
+    db.get("SELECT * FROM reworks WHERE id = ?", [req.params.id], (err: Error | null, row: any) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(row);
     });
 });
 
-app.put('/api/reworks/:id', (req, res) => {
+app.put('/api/reworks/:id', (req: Request, res: Response) => {
     const reworkId = parseInt(req.params.id, 10);
     const { pcb_id, title, description, owner_id, rework_type, new_product } = req.body;
     const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
 
-    db.get("SELECT * FROM reworks WHERE id = ?", [reworkId], (err, rework) => {
+    db.get("SELECT * FROM reworks WHERE id = ?", [reworkId], (err: Error | null, rework: any) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!rework) return res.status(404).json({ error: "Rework log not found." });
 
@@ -1143,12 +1153,12 @@ app.put('/api/reworks/:id', (req, res) => {
         }
 
         const editor = req.headers['x-user-username'] || 'guest';
-        db.run("UPDATE reworks SET pcb_id = ?, title = ?, description = ?, owner_id = ?, rework_type = ?, updated_by = ? WHERE id = ?", [pcb_id, title || null, description, finalOwnerId, rework_type || 'Minor', editor, reworkId], function(err) {
-            if (err) return res.status(500).json({ error: err.message });
+        db.run("UPDATE reworks SET pcb_id = ?, title = ?, description = ?, owner_id = ?, rework_type = ?, updated_by = ? WHERE id = ?", [pcb_id, title || null, description, finalOwnerId, rework_type || 'Minor', editor, reworkId], function(this: any, errUpdate: Error | null) {
+            if (errUpdate) return res.status(500).json({ error: errUpdate.message });
             
             let changes = this.changes;
             if (rework_type === 'Silicon Swap' && new_product) {
-                db.run("UPDATE pcbs SET product_name_and_rev = ? WHERE id = ?", [new_product, pcb_id], function(updateErr) {
+                db.run("UPDATE pcbs SET product_name_and_rev = ? WHERE id = ?", [new_product, pcb_id], function(updateErr: Error | null) {
                     return res.json({ updated: changes });
                 });
             } else {
@@ -1158,15 +1168,15 @@ app.put('/api/reworks/:id', (req, res) => {
     });
 });
 
-app.delete('/api/reworks/:id', (req, res) => {
+app.delete('/api/reworks/:id', (req: Request, res: Response) => {
     const reworkId = parseInt(req.params.id, 10);
     
-    db.get("SELECT * FROM reworks WHERE id = ?", [reworkId], (err, rework) => {
+    db.get("SELECT * FROM reworks WHERE id = ?", [reworkId], (err: Error | null, rework: any) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!rework) return res.status(404).json({ error: "Rework not found" });
 
-        db.get("SELECT COUNT(*) as newer_count FROM reworks WHERE pcb_id = ? AND id > ?", [rework.pcb_id, reworkId], (err, row) => {
-            if (err) return res.status(500).json({ error: err.message });
+        db.get("SELECT COUNT(*) as newer_count FROM reworks WHERE pcb_id = ? AND id > ?", [rework.pcb_id, reworkId], (errRow: Error | null, row: any) => {
+            if (errRow) return res.status(500).json({ error: errRow.message });
             if (row && row.newer_count > 0) {
                 return res.status(400).json({ error: "Cannot delete rework because there are newer rework logs after it on this board." });
             }
@@ -1184,15 +1194,15 @@ app.delete('/api/reworks/:id', (req, res) => {
                 return res.status(400).json({ error: "Cannot delete rework because it was created more than 3 days ago." });
             }
 
-            db.run("DELETE FROM reworks WHERE id = ?", [reworkId], function(err) {
-                if (err) return res.status(500).json({ error: err.message });
+            db.run("DELETE FROM reworks WHERE id = ?", [reworkId], function(this: any, errDelete: Error | null) {
+                if (errDelete) return res.status(500).json({ error: errDelete.message });
                 res.json({ deleted: this.changes });
             });
         });
     });
 });
 
-app.post('/api/test/cleanup', (req, res) => {
+app.post('/api/test/cleanup', (req: Request, res: Response) => {
     db.serialize(() => {
         db.run('PRAGMA foreign_keys = OFF');
         
@@ -1256,17 +1266,17 @@ app.post('/api/test/cleanup', (req, res) => {
                OR username LIKE '%vitest%'
         `);
 
-        db.run('PRAGMA foreign_keys = ON', (err) => {
+        db.run('PRAGMA foreign_keys = ON', (err: Error | null) => {
             if (err) return res.status(500).json({ error: err.message });
             res.json({ message: "Test data successfully cleaned up" });
         });
     });
 });
 
-app.get('/api/settings', (req, res) => {
-    db.all("SELECT * FROM global_settings", [], (err, rows) => {
+app.get('/api/settings', (req: Request, res: Response) => {
+    db.all("SELECT * FROM global_settings", [], (err: Error | null, rows: any[]) => {
         if (err) return res.status(500).json({ error: err.message });
-        const settings = {};
+        const settings: any = {};
         rows.forEach(r => {
             settings[r.key] = r.value;
         });
@@ -1274,7 +1284,7 @@ app.get('/api/settings', (req, res) => {
     });
 });
 
-app.post('/api/settings', (req, res) => {
+app.post('/api/settings', (req: Request, res: Response) => {
     const userRole = req.headers['x-user-role'];
     if (userRole !== 'Super User') {
         return res.status(403).json({ error: 'Only Super Users can modify settings.' });
@@ -1291,5 +1301,3 @@ app.post('/api/settings', (req, res) => {
         });
     });
 });
-
-
