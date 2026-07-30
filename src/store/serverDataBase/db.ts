@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 const dbPath = path.resolve(__dirname, 'pcb_tracker.db');
 
 let dbInstance: sqlite3.Database = new sqlite3.Database(dbPath);
+dbInstance.configure("busyTimeout", 10000);
 
 const db = {
     run: (sql: string, ...args: any[]): sqlite3.Database => (dbInstance.run as any)(sql, ...args),
@@ -34,6 +35,7 @@ const recreateDb = (): Promise<void> => {
             }
             dbInstance = new sqlite3.Database(dbPath, (err) => {
                 if (err) return reject(err);
+                dbInstance.configure("busyTimeout", 10000);
                 resolve();
             });
         });

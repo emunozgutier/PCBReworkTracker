@@ -161,29 +161,43 @@ function serializeWrites(req: Request, res: Response, next: NextFunction) {
     }
     creq._serialized = true;
 
-    writeQueue = writeQueue.then(() => {
-        return new Promise<void>((resolve) => {
-            let resolved = false;
-            const release = () => {
-                if (!resolved) {
-                    resolved = true;
-                    resolve();
-                }
-            };
+    let resolved = false;
+    let releaseFn = () => {};
 
-            const timeoutId = setTimeout(release, 10000); // 10s safety fallback
+    const cleanup = () => {
+        if (!resolved) {
+            resolved = true;
+            releaseFn();
+        }
+    };
 
-            res.on('finish', () => {
-                clearTimeout(timeoutId);
-                release();
-            });
-            res.on('close', () => {
-                clearTimeout(timeoutId);
-                release();
-            });
+    const timeoutId = setTimeout(cleanup, 10000); // 10s safety fallback
 
-            next();
-        });
+    res.on('finish', () => {
+        clearTimeout(timeoutId);
+        cleanup();
+    });
+    res.on('close', () => {
+        clearTimeout(timeoutId);
+        cleanup();
+    });
+
+    const currentFinished = new Promise<void>((resolve) => {
+        releaseFn = resolve;
+        if (resolved) {
+            resolve();
+        }
+    });
+
+    const previousFinished = writeQueue;
+    writeQueue = writeQueue.then(() => currentFinished);
+
+    previousFinished.then(() => {
+        if (req.destroyed || res.writableEnded || resolved) {
+            cleanup();
+            return;
+        }
+        next();
     });
 }
 

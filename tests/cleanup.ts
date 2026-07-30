@@ -1,4 +1,4 @@
-﻿import sqlite3 from 'sqlite3';
+import sqlite3 from 'sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -9,6 +9,7 @@ export function cleanupTestData(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
         const dbPath = path.resolve(__dirname, '../src/store/serverDataBase/pcb_tracker.db');
         const db = new sqlite3.Database(dbPath);
+        db.configure("busyTimeout", 10000);
 
         db.serialize(() => {
             db.run('PRAGMA foreign_keys = OFF');
@@ -80,6 +81,7 @@ export function updateCreatedAt(pcbId: number, daysAgo: number): Promise<void> {
     return new Promise<void>((resolve, reject) => {
         const dbPath = path.resolve(__dirname, '../src/store/serverDataBase/pcb_tracker.db');
         const db = new sqlite3.Database(dbPath);
+        db.configure("busyTimeout", 10000);
         
         // Calculate date YYYY-MM-DD HH:MM:SS
         const targetDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
@@ -104,6 +106,7 @@ export function updateReworkTimestamp(reworkId: number, daysAgo: number): Promis
     return new Promise<void>((resolve, reject) => {
         const dbPath = path.resolve(__dirname, '../src/store/serverDataBase/pcb_tracker.db');
         const db = new sqlite3.Database(dbPath);
+        db.configure("busyTimeout", 10000);
         
         const targetDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
         const yyyy = targetDate.getUTCFullYear();

@@ -12,7 +12,9 @@ const API_URL = 'http://localhost:5002/api';
 const dbPath = path.resolve(__dirname, '../src/store/serverDataBase/pcb_tracker.db');
 
 function getDbConnection() {
-    return new sqlite3.Database(dbPath);
+    const conn = new sqlite3.Database(dbPath);
+    conn.configure("busyTimeout", 10000);
+    return conn;
 }
 
 function updateLoginAttempts(username: string, attempts: any[]): Promise<void> {
