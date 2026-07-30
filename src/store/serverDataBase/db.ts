@@ -102,7 +102,8 @@ const initDb = async (): Promise<void> => {
             otp_reset_expires INTEGER,
             otp_reset_by TEXT,
             otp_reset_at TEXT,
-            crc_format TEXT
+            crc_format TEXT,
+            login_attempts TEXT
         )`);
         dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_owners_username ON owners(username)`);
 
@@ -203,6 +204,8 @@ const initDb = async (): Promise<void> => {
         dbInstance.run(`ALTER TABLE owners ADD COLUMN otp_reset_by TEXT`, () => {});
         dbInstance.run(`ALTER TABLE owners ADD COLUMN otp_reset_at TEXT`, () => {});
         dbInstance.run(`ALTER TABLE owners ADD COLUMN crc_format TEXT`, () => {});
+        // Migration: Add login_attempts column to owners if it doesn't exist
+        dbInstance.run(`ALTER TABLE owners ADD COLUMN login_attempts TEXT`, () => {});
         
         // Migration: Add created_by and updated_by columns to tables if they don't exist
         dbInstance.run(`ALTER TABLE projects ADD COLUMN created_by TEXT`, () => {});

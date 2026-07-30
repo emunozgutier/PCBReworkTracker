@@ -190,7 +190,7 @@ function serializeWrites(req: Request, res: Response, next: NextFunction) {
 // Apply deduplication to all JSON write operations first
 app.use((req: Request, res: Response, next: NextFunction) => {
     const isMultipart = req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data');
-    if (isMultipart) {
+    if (isMultipart || req.originalUrl.startsWith('/api/otp/')) {
         return next();
     }
     deduplicate(req, res, next);
@@ -643,17 +643,117 @@ app.get('/api/otp/setup', (req: Request, res: Response) => {
     res.json({ secret, otpauthUrl });
 });
 
+interface LoginAttempt {
+    timestamp: number;
+    success: boolean;
+}
+
 app.post('/api/otp/verify', (req: Request, res: Response) => {
-    const { secret, token } = req.body;
-    if (!secret || !token) {
-        return res.status(400).json({ error: "Secret and token are required." });
+    const { secret, token, username } = req.body;
+
+    // If username is not provided, this is a stateless verify call (e.g. from AddUser setup)
+    if (!username) {
+        if (!secret || !token) {
+            return res.status(400).json({ error: "Secret and token are required." });
+        }
+        try {
+            const isValid = verifyTotp(secret, token);
+            return res.json({ valid: isValid });
+        } catch (err: any) {
+            return res.status(400).json({ error: err.message });
+        }
     }
-    try {
-        const isValid = verifyTotp(secret, token);
-        res.json({ valid: isValid });
-    } catch (err: any) {
-        res.status(400).json({ error: err.message });
-    }
+
+    const cleanUsername = username.replace(/\s+/g, '').toLowerCase();
+
+    db.get("SELECT id, login_attempts FROM owners WHERE username = ?", [cleanUsername], (err: Error | null, row: any) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (!row) {
+            return res.status(404).json({ error: "User not found." });
+        }
+
+        let attempts: LoginAttempt[] = [];
+        if (row.login_attempts) {
+            try {
+                attempts = JSON.parse(row.login_attempts);
+            } catch (e) {
+                attempts = [];
+            }
+        }
+
+        if (!Array.isArray(attempts)) {
+            attempts = [];
+        }
+
+        // Check if currently locked out (3 failed attempts within 15 minutes, locked for 30 minutes)
+        if (attempts.length === 3 && attempts.every(a => !a.success)) {
+            const oldest = attempts[0].timestamp;
+            const latest = attempts[2].timestamp;
+            if (latest - oldest <= 15 * 60 * 1000) {
+                const lockoutEndTime = latest + 30 * 60 * 1000;
+                const now = Date.now();
+                if (now < lockoutEndTime) {
+                    const minutesLeft = Math.ceil((lockoutEndTime - now) / (60 * 1000));
+                    return res.status(403).json({
+                        error: `This account is temporarily locked due to multiple failed login attempts. Please try again in ${minutesLeft} minute${minutesLeft !== 1 ? 's' : ''}.`
+                    });
+                }
+            }
+        }
+
+        // If secret is not provided (user has no OTP), login is always successful
+        let isValid = true;
+        if (secret) {
+            if (!token) {
+                isValid = false;
+            } else {
+                try {
+                    isValid = verifyTotp(secret, token);
+                } catch (totpErr) {
+                    isValid = false;
+                }
+            }
+        }
+
+        // Record the attempt
+        const newAttempt: LoginAttempt = {
+            timestamp: Date.now(),
+            success: isValid
+        };
+
+        attempts.push(newAttempt);
+        if (attempts.length > 3) {
+            attempts.shift();
+        }
+
+        db.run("UPDATE owners SET login_attempts = ? WHERE id = ?", [JSON.stringify(attempts), row.id], (updateErr: Error | null) => {
+            if (updateErr) {
+                return res.status(500).json({ error: updateErr.message });
+            }
+
+            if (!isValid) {
+                // If it was failed, check if this triggers a new lockout
+                if (attempts.length === 3 && attempts.every(a => !a.success)) {
+                    const oldest = attempts[0].timestamp;
+                    const latest = attempts[2].timestamp;
+                    if (latest - oldest <= 15 * 60 * 1000) {
+                        return res.status(403).json({
+                            valid: false,
+                            error: "Invalid verification code. This account has been locked for 30 minutes due to 3 failed login attempts."
+                        });
+                    }
+                }
+                return res.status(400).json({
+                    valid: false,
+                    error: "Invalid 6-digit verification code. Please check your authenticator."
+                });
+            }
+
+            return res.json({ valid: true });
+        });
+    });
 });
 
 // Owners API

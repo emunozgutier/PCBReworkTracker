@@ -111,33 +111,36 @@ export function UserLoginButton() {
         }
 
         if (selectedOwner) {
-            if (hasOtpSecret) {
-                if (!loginOtp || loginOtp.length !== 6) {
-                    setLoginError('Please enter a 6-digit verification code.');
-                    return;
+            if (hasOtpSecret && (!loginOtp || loginOtp.length !== 6)) {
+                setLoginError('Please enter a 6-digit verification code.');
+                return;
+            }
+            setLoginVerifying(true);
+            try {
+                const res = await apiFetch(`${API_BASE}/otp/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        username: selectedOwner.username,
+                        secret: hasOtpSecret ? selectedOwner.otp_secret : null, 
+                        token: hasOtpSecret ? loginOtp : null 
+                    })
+                });
+                
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || 'Verification failed.');
                 }
-                setLoginVerifying(true);
-                try {
-                    const res = await apiFetch(`${API_BASE}/otp/verify`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ secret: selectedOwner.otp_secret, token: loginOtp })
-                    });
-                    if (!res.ok) throw new Error('Verification failed.');
-                    const data = await res.json();
-                    
-                    if (!data.valid) {
-                        setLoginError('Invalid 6-digit verification code. Please check your authenticator.');
-                        setLoginVerifying(false);
-                        return;
-                    }
-                } catch (err: any) {
-                    setLoginError(err.message || 'Error verifying OTP code.');
-                    setLoginVerifying(false);
-                    return;
-                } finally {
-                    setLoginVerifying(false);
+                
+                if (!data.valid) {
+                    throw new Error('Invalid 6-digit verification code. Please check your authenticator.');
                 }
+            } catch (err: any) {
+                setLoginError(err.message || 'Error verifying OTP code.');
+                setLoginVerifying(false);
+                return;
+            } finally {
+                setLoginVerifying(false);
             }
 
             // Successfully authenticated or bypassed OTP!
