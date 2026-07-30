@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useAppState } from '../../store/useAppState';
-import { useTagStore } from '../../store/localDataBaseCopy/useTagStore';
-import { useOwnerStore } from '../../store/localDataBaseCopy/useOwnerStore';
+import { useTagStore } from '../../store/clientDataBase/useTagStore';
+import { useOwnerStore } from '../../store/clientDataBase/useOwnerStore';
 import { COLORS } from '../../store/useStyles';
 import { PcbFilterElement } from './PcbFilterElement';
 import { PcbFilterGroup } from './PcbFilterGroup';

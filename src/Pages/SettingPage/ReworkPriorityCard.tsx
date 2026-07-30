@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
-import { useCurrentUser } from '../../store/localDataBaseCopy/useCurrentUser';
-import { usePriorityStore } from '../../store/localDataBaseCopy/usePriorityStore';
+import { useCurrentUser } from '../../store/clientDataBase/useCurrentUser';
+import { usePriorityStore } from '../../store/clientDataBase/usePriorityStore';
 
 export function ReworkPriorityCard() {
     const { isSuperUser } = useCurrentUser();

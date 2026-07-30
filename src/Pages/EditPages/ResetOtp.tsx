@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { ArrowLeft, RefreshCw, Save, CheckCircle2 } from 'lucide-react';
 import QRCode from 'qrcode';
-import { API_BASE, apiFetch } from '../../store/database/apiBridge';
+import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
 
 interface ResetOtpProps {
     token: string | null;

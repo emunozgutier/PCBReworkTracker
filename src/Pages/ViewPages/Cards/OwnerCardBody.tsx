@@ -1,7 +1,7 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Edit2, KeyRound, Copy, Check } from 'lucide-react';
 import { useAppState } from '../../../store/useAppState';
-import { apiFetch, API_BASE } from '../../../store/database/apiBridge';
+import { apiFetch, API_BASE } from '../../../store/serverDataBase/apiBridge';
 
 interface OwnerCardBodyProps {
     owner: any;

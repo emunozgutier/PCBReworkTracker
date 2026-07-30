@@ -15,6 +15,7 @@ const db = {
     all: (...args) => dbInstance.all(...args),
     get: (...args) => dbInstance.get(...args),
     serialize: (...args) => dbInstance.serialize(...args),
+    prepare: (...args) => dbInstance.prepare(...args),
     close: (...args) => dbInstance.close(...args)
 };
 

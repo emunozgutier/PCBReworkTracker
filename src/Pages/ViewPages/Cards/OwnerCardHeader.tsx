@@ -1,6 +1,6 @@
-import { Edit2, ChevronDown, ChevronUp } from 'lucide-react';
+﻿import { Edit2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAppState } from '../../../store/useAppState';
-import { useOwnerStore } from '../../../store/localDataBaseCopy/useOwnerStore';
+import { useOwnerStore } from '../../../store/clientDataBase/useOwnerStore';
 
 interface OwnerCardHeaderProps {
     owner: any;

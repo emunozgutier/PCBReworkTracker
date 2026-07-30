@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+﻿import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { cleanupTestData } from './cleanup';
-import { useProjectStore } from '../src/store/localDataBaseCopy/useProjectStore';
-import { usePcbStore } from '../src/store/localDataBaseCopy/usePcbStore';
-import { useOwnerStore } from '../src/store/localDataBaseCopy/useOwnerStore';
-import { useTagStore } from '../src/store/localDataBaseCopy/useTagStore';
-import { useReworkStore } from '../src/store/localDataBaseCopy/useReworkStore';
+import { useProjectStore } from '../src/store/clientDataBase/useProjectStore';
+import { usePcbStore } from '../src/store/clientDataBase/usePcbStore';
+import { useOwnerStore } from '../src/store/clientDataBase/useOwnerStore';
+import { useTagStore } from '../src/store/clientDataBase/useTagStore';
+import { useReworkStore } from '../src/store/clientDataBase/useReworkStore';
 import { useAppState } from '../src/store/useAppState';
 
 describe('Store and Database Integration Tests', () => {

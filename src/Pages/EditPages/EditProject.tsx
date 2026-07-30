@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2, HelpCircle } from 'lucide-react';
 import { FormTabs } from '../../components/forms/FormTabs';
 import { MultipleInputs } from '../../components/forms/MultipleInputs';
-import { API_BASE, apiFetch } from '../../store/database/apiBridge';
-import { useProjectStore } from '../../store/localDataBaseCopy/useProjectStore';
-import { usePcbStore } from '../../store/localDataBaseCopy/usePcbStore';
+import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
+import { useProjectStore } from '../../store/clientDataBase/useProjectStore';
+import { usePcbStore } from '../../store/clientDataBase/usePcbStore';
 import { RemoveProject } from '../RemovePage/RemoveProject';
 
 import { useAppState } from '../../store/useAppState';

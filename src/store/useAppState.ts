@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { usePcbStore } from './localDataBaseCopy/usePcbStore';
-import { useReworkStore } from './localDataBaseCopy/useReworkStore';
-import { useTagStore } from './localDataBaseCopy/useTagStore';
-import { apiFetch, API_BASE } from './database/apiBridge';
+import { usePcbStore } from './clientDataBase/usePcbStore';
+import { useReworkStore } from './clientDataBase/useReworkStore';
+import { useTagStore } from './clientDataBase/useTagStore';
+import { apiFetch, API_BASE } from './serverDataBase/apiBridge';
 
 type Page = 
     | 'projects' | 'projects_add' | 'projects_edit'

@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { ProjectCard } from './Cards/ProjectCard';
-import { useProjectStore } from '../../store/localDataBaseCopy/useProjectStore';
-import { usePcbStore } from '../../store/localDataBaseCopy/usePcbStore';
+import { useProjectStore } from '../../store/clientDataBase/useProjectStore';
+import { usePcbStore } from '../../store/clientDataBase/usePcbStore';
 
 interface ProjectViewProps {
     title: string;

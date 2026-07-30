@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { NetworkQRCode } from './Pages/ViewPages/Cards/NetworkQRCode';
 import { TabBar } from './components/TabBar';
-import { usePermissionsStore } from './store/localDataBaseCopy/usePermissionsStore';
-import { usePriorityStore } from './store/localDataBaseCopy/usePriorityStore';
+import { usePermissionsStore } from './store/clientDataBase/usePermissionsStore';
+import { usePriorityStore } from './store/clientDataBase/usePriorityStore';
 import { TopButtons } from './components/TopButtons';
 import { ProjectView } from './Pages/ViewPages/ProjectView';
 import { PcbView } from './Pages/ViewPages/PcbView';

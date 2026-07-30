@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+﻿import { describe, it, expect, beforeEach } from 'vitest';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { ReworkPriorityCard } from '../src/Pages/SettingPage/ReworkPriorityCard';
 import { useAppState } from '../src/store/useAppState';
-import { usePriorityStore } from '../src/store/localDataBaseCopy/usePriorityStore';
+import { usePriorityStore } from '../src/store/clientDataBase/usePriorityStore';
 import { act } from 'react';
 
 describe('ReworkPriorityCard Edit and Save Flow', () => {

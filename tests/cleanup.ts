@@ -1,4 +1,4 @@
-import sqlite3 from 'sqlite3';
+﻿import sqlite3 from 'sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 
 export function cleanupTestData(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-        const dbPath = path.resolve(__dirname, '../src/store/database/pcb_tracker.db');
+        const dbPath = path.resolve(__dirname, '../src/store/serverDataBase/pcb_tracker.db');
         const db = new sqlite3.Database(dbPath);
 
         db.serialize(() => {
@@ -78,7 +78,7 @@ export function cleanupTestData(): Promise<void> {
 
 export function updateCreatedAt(pcbId: number, daysAgo: number): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-        const dbPath = path.resolve(__dirname, '../src/store/database/pcb_tracker.db');
+        const dbPath = path.resolve(__dirname, '../src/store/serverDataBase/pcb_tracker.db');
         const db = new sqlite3.Database(dbPath);
         
         // Calculate date YYYY-MM-DD HH:MM:SS
@@ -102,7 +102,7 @@ export function updateCreatedAt(pcbId: number, daysAgo: number): Promise<void> {
 
 export function updateReworkTimestamp(reworkId: number, daysAgo: number): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-        const dbPath = path.resolve(__dirname, '../src/store/database/pcb_tracker.db');
+        const dbPath = path.resolve(__dirname, '../src/store/serverDataBase/pcb_tracker.db');
         const db = new sqlite3.Database(dbPath);
         
         const targetDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);

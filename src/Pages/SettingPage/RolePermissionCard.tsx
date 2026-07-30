@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { useAppState } from '../../store/useAppState';
-import { useCurrentUser } from '../../store/localDataBaseCopy/useCurrentUser';
-import { usePermissionsStore } from '../../store/localDataBaseCopy/usePermissionsStore';
+import { useCurrentUser } from '../../store/clientDataBase/useCurrentUser';
+import { usePermissionsStore } from '../../store/clientDataBase/usePermissionsStore';
 import { RolePermissionSubTable } from './RolePermissionSubTable';
 
 export function RolePermissionCard() {

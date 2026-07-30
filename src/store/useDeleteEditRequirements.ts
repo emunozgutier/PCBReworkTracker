@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { useReworkStore } from './localDataBaseCopy/useReworkStore';
+import { useReworkStore } from './clientDataBase/useReworkStore';
 
 interface DeleteEditRequirementsState {
     pcbDeleteLimitDays: number;

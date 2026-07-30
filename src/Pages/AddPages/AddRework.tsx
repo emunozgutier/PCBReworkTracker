@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 
-import { API_BASE, apiFetch } from '../../store/database/apiBridge';
-import { useReworkStore } from '../../store/localDataBaseCopy/useReworkStore';
+import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
+import { useReworkStore } from '../../store/clientDataBase/useReworkStore';
 import { useAppState } from '../../store/useAppState';
-import { useOwnerStore } from '../../store/localDataBaseCopy/useOwnerStore';
-import { usePriorityStore } from '../../store/localDataBaseCopy/usePriorityStore';
+import { useOwnerStore } from '../../store/clientDataBase/useOwnerStore';
+import { usePriorityStore } from '../../store/clientDataBase/usePriorityStore';
 import { FormGroup } from '../../components/forms/FormGroup';
 import { BoardName } from '../../components/BoardName';
 

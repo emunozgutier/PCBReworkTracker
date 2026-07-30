@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { API_BASE } from '../database/apiBridge';
-import { apiFetch } from '../database/apiBridge';
+import { API_BASE } from '../serverDataBase/apiBridge';
+import { apiFetch } from '../serverDataBase/apiBridge';
 
 export interface Tag {
     id: number;

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { API_BASE, apiFetch } from '../database/apiBridge';
+import { API_BASE, apiFetch } from '../serverDataBase/apiBridge';
 
 interface PriorityStore {
     priorities: Record<string, 'High' | 'Low'>;

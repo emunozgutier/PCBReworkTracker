@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 
-import { API_BASE, apiFetch } from '../../store/database/apiBridge';
-import { usePcbStore } from '../../store/localDataBaseCopy/usePcbStore';
+import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
+import { usePcbStore } from '../../store/clientDataBase/usePcbStore';
 import { FormGroup } from '../../components/forms/FormGroup';
 import { generateCRC } from '../../components/UrlManager/crc';
 
