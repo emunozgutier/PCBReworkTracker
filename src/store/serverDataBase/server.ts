@@ -1,4 +1,5 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -17,14 +18,14 @@ const port = 5002;
 
 // Configure Multer Storage
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
+    destination: function (_req, _file, cb) {
         const dir = path.join(__dirname, '../../../pictures');
         if (!fs.existsSync(dir)){
             fs.mkdirSync(dir, { recursive: true });
         }
         cb(null, dir);
     },
-    filename: function (req, file, cb) {
+    filename: function (_req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, uniqueSuffix + path.extname(file.originalname));
     }
@@ -35,7 +36,7 @@ const upload = multer({ storage: storage });
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
-app.use((req, res, next) => {
+app.use((_req, res, next) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     next();
 });
@@ -257,7 +258,7 @@ db.all("SELECT id, product_name_and_rev, project_id FROM pcbs WHERE product_name
                     }
                 }
 
-                db.run("UPDATE pcbs SET board_flavor = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ? WHERE id = ?", [foundFormfactor, boardRev, siliconRev, foundSilicon, pcb.id], (errRun: Error | null) => {
+                db.run("UPDATE pcbs SET board_flavor = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ? WHERE id = ?", [foundFormfactor, boardRev, siliconRev, foundSilicon, pcb.id], (_errRun: Error | null) => {
                     // Check if this was the last item to migrate
                     if (pcbs.indexOf(pcb) === pcbs.length - 1) {
                         // After all updates, safely drop the old column
@@ -323,7 +324,7 @@ db.all("SELECT id FROM pcbs WHERE short_code IS NULL", [], (err: Error | null, p
 // Routes
 
 // Dashboard Summary
-app.get('/api/dashboard', (req: Request, res: Response) => {
+app.get('/api/dashboard', (_req: Request, res: Response) => {
     const stats: any = {};
     db.get("SELECT COUNT(*) as count FROM projects", [], (err: Error | null, row: any) => {
         if (err || !row) stats.projects = 0; else stats.projects = row.count;
@@ -419,7 +420,7 @@ function generateProjectKey(name: string, attempt = 1): Promise<string> {
 }
 
 // Projects API
-app.get('/api/projects', (req: Request, res: Response) => {
+app.get('/api/projects', (_req: Request, res: Response) => {
     const query = `
         SELECT projects.*, 
         COUNT(pcbs.id) as pcb_count,
@@ -494,7 +495,7 @@ app.post('/api/projects', async (req: Request, res: Response) => {
 });
 
 // PCBs API
-app.get('/api/pcbs', (req: Request, res: Response) => {
+app.get('/api/pcbs', (_req: Request, res: Response) => {
     const query = `
         SELECT pcbs.*, projects.name as project_name, projects.project_key, projects.number_format as number_format, owners.name as owner_name, owners.username as owner_username,
                (SELECT GROUP_CONCAT(tag_id) FROM pcb_tags WHERE pcb_id = pcbs.id) as tag_ids
@@ -656,7 +657,7 @@ app.post('/api/otp/verify', (req: Request, res: Response) => {
 });
 
 // Owners API
-app.get('/api/owners', (req: Request, res: Response) => {
+app.get('/api/owners', (_req: Request, res: Response) => {
     const query = `
         SELECT owners.*,
             (SELECT COUNT(*) FROM pcbs WHERE pcbs.owner_id = owners.id) AS pcb_count,
@@ -685,7 +686,7 @@ app.post('/api/owners', (req: Request, res: Response) => {
 });
 
 // Tags API
-app.get('/api/tags', (req: Request, res: Response) => {
+app.get('/api/tags', (_req: Request, res: Response) => {
     const query = `
         SELECT tags.*, owners.name as owner_name, owners.username as owner_username, COUNT(pcb_tags.pcb_id) as pcb_count
         FROM tags
@@ -709,7 +710,7 @@ app.post('/api/tags', (req: Request, res: Response) => {
 });
 
 // Reworks API
-app.get('/api/reworks', (req: Request, res: Response) => {
+app.get('/api/reworks', (_req: Request, res: Response) => {
     const query = `
         SELECT reworks.*, pcbs.board_number, owners.name as owner_name, owners.username as owner_username
         FROM reworks 
@@ -803,9 +804,7 @@ app.put('/api/projects/:id', (req: Request, res: Response) => {
     if (!cleanName) return res.status(400).json({ error: "Project name is required" });
     const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : null;
 
-    db.get("SELECT number_format, project_key FROM projects WHERE id = ?", [req.params.id], (err: Error | null, row: any) => {
-        const oldProjectKey = row ? row.project_key : null;
-        
+    db.get("SELECT number_format, project_key FROM projects WHERE id = ?", [req.params.id], (_err: Error | null, _row: any) => {
         const editor = req.headers['x-user-username'] || 'guest';
         db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, silicon_corners = ?, number_format = ?, updated_by = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, silicon_corners || null, number_format || 'decimal', editor, req.params.id], function(this: any, errUpdate: Error | null) {
             if (errUpdate) {
@@ -921,7 +920,7 @@ app.put('/api/pcbs/:id', (req: Request, res: Response) => {
 });
 
 app.delete('/api/pcbs/:id', (req: Request, res: Response) => {
-    const pcbId = parseInt(req.params.id, 10);
+    const pcbId = parseInt(req.params.id as string, 10);
     const checkQuery = `
         SELECT 
             created_at, 
@@ -1137,7 +1136,7 @@ app.get('/api/reworks/:id', (req: Request, res: Response) => {
 });
 
 app.put('/api/reworks/:id', (req: Request, res: Response) => {
-    const reworkId = parseInt(req.params.id, 10);
+    const reworkId = parseInt(req.params.id as string, 10);
     const { pcb_id, title, description, owner_id, rework_type, new_product } = req.body;
     const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
 
@@ -1158,7 +1157,7 @@ app.put('/api/reworks/:id', (req: Request, res: Response) => {
             
             let changes = this.changes;
             if (rework_type === 'Silicon Swap' && new_product) {
-                db.run("UPDATE pcbs SET product_name_and_rev = ? WHERE id = ?", [new_product, pcb_id], function(updateErr: Error | null) {
+                db.run("UPDATE pcbs SET product_name_and_rev = ? WHERE id = ?", [new_product, pcb_id], function(_updateErr: Error | null) {
                     return res.json({ updated: changes });
                 });
             } else {
@@ -1169,7 +1168,7 @@ app.put('/api/reworks/:id', (req: Request, res: Response) => {
 });
 
 app.delete('/api/reworks/:id', (req: Request, res: Response) => {
-    const reworkId = parseInt(req.params.id, 10);
+    const reworkId = parseInt(req.params.id as string, 10);
     
     db.get("SELECT * FROM reworks WHERE id = ?", [reworkId], (err: Error | null, rework: any) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -1202,7 +1201,7 @@ app.delete('/api/reworks/:id', (req: Request, res: Response) => {
     });
 });
 
-app.post('/api/test/cleanup', (req: Request, res: Response) => {
+app.post('/api/test/cleanup', (_req: Request, res: Response) => {
     db.serialize(() => {
         db.run('PRAGMA foreign_keys = OFF');
         
@@ -1273,7 +1272,7 @@ app.post('/api/test/cleanup', (req: Request, res: Response) => {
     });
 });
 
-app.get('/api/settings', (req: Request, res: Response) => {
+app.get('/api/settings', (_req: Request, res: Response) => {
     db.all("SELECT * FROM global_settings", [], (err: Error | null, rows: any[]) => {
         if (err) return res.status(500).json({ error: err.message });
         const settings: any = {};

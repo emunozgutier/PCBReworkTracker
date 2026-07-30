@@ -61,7 +61,7 @@ const initDb = async (): Promise<void> => {
         await recreateDb();
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve) => {
         dbInstance.serialize(() => {
             dbInstance.run('PRAGMA foreign_keys = ON');
         
@@ -182,7 +182,7 @@ const initDb = async (): Promise<void> => {
         dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_tags_name_nocase ON tags(name COLLATE NOCASE)`);
 
         // Migration: Add number_format column to projects if it doesn't exist
-        dbInstance.run(`ALTER TABLE projects ADD COLUMN number_format TEXT DEFAULT 'decimal'`, (err: Error | null) => {
+        dbInstance.run(`ALTER TABLE projects ADD COLUMN number_format TEXT DEFAULT 'decimal'`, (_err: Error | null) => {
             // Ignore error if column already exists
         });
 

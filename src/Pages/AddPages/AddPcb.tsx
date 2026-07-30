@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
@@ -179,7 +179,7 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                 }
             }
             if (ownerData.length > 0) {
-                const userMatch = currentUser ? ownerData.find(o => o.id === currentUser.id) : null;
+                const userMatch = currentUser ? ownerData.find((o: any) => o.id === currentUser.id) : null;
                 if (userMatch) {
                     setSelectedOwner(userMatch.id.toString());
                 } else {

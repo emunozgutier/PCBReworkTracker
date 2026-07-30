@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useReworkStore } from '../../../store/clientDataBase/useReworkStore';
 import { useTagStore } from '../../../store/clientDataBase/useTagStore';
 import { useAppState } from '../../../store/useAppState';
@@ -22,13 +22,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile, currentUser, currentUserRole, allowGuestMinorRework } = useAppState();
 
     const isSuperUser = currentUserRole === 'Super User';
-    const isOwner = currentUser && (
-        pcb.owner_id === currentUser.id || 
-        pcb.owner_username === currentUser.username || 
-        pcb.owner === currentUser.name
-    );
-    const canEditPcb = isSuperUser;
-    const canDeletePcb = isSuperUser;
+
     const canAddRework = isSuperUser || currentUserRole === 'User' || (currentUserRole === 'Guest' && allowGuestMinorRework);
 
     const [attachedTags, setAttachedTags] = useState<any[]>([]);
@@ -104,7 +98,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
             }
             return b.id - a.id;
         });
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
 
 
 

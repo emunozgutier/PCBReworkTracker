@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { User as UserIcon, ChevronDown, ShieldAlert, KeyRound, Save, RefreshCw, LogOut } from 'lucide-react';
+import { User as UserIcon, ChevronDown, KeyRound, RefreshCw, LogOut } from 'lucide-react';
 import { useAppState } from '../store/useAppState';
 import { useOwnerStore } from '../store/clientDataBase/useOwnerStore';
 import { Popup } from '../components/Popup';
@@ -258,14 +258,6 @@ export function UserLoginButton() {
                         <LogOut size={14} />
                         <span>Logout</span>
                     </button>
-
-                    {/* Helper description of permissions */}
-                    {currentUserRole === 'Guest' && (
-                        <div className="dropdown-footer">
-                            <ShieldAlert size={14} />
-                            <span>Read-only access</span>
-                        </div>
-                    )}
                 </div>
             )}
 

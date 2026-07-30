@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
@@ -21,7 +21,7 @@ interface EditPCBProps {
 }
 
 export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
-    const { currentUser, currentUserRole } = useAppState();
+    const { currentUserRole } = useAppState();
 
     const [boardNumber, setBoardNumber] = useState('');
     const [status, setStatus] = useState('In Progress');
@@ -118,11 +118,6 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     if (loading) return <div className="loading">Loading PCB...</div>;
 
     const isSuperUser = currentUserRole === 'Super User';
-    const isOwner = currentUser && rawPcb && (
-        rawPcb.owner_id === currentUser.id ||
-        rawPcb.owner_username === currentUser.username ||
-        rawPcb.owner === currentUser.name
-    );
     const hasAccess = isSuperUser;
 
     if (!hasAccess) {
@@ -168,7 +163,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                                 id="owner" 
                                 value={selectedOwner} 
                                 onChange={(e) => setSelectedOwner(e.target.value)}
-                                disabled={currentUserRole === 'User'}
+                                disabled={(currentUserRole as string) === 'User'}
                             >
                                 <option value="">Unassigned</option>
                                 {owners.map(o => <option key={o.id} value={o.id}>@{o.username}</option>)}

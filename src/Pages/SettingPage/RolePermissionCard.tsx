@@ -1,9 +1,10 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { useAppState } from '../../store/useAppState';
 import { useCurrentUser } from '../../store/clientDataBase/useCurrentUser';
 import { usePermissionsStore } from '../../store/clientDataBase/usePermissionsStore';
 import { RolePermissionSubTable } from './RolePermissionSubTable';
+import type { ActionItem } from './RolePermissionSubTable';
 
 export function RolePermissionCard() {
     const { allowGuestMinorRework, setAllowGuestMinorRework } = useAppState();
@@ -11,7 +12,6 @@ export function RolePermissionCard() {
     const [selectedSubTable, setSelectedSubTable] = useState<'Projects' | 'PCBs' | 'Reworks' | 'Users' | 'Tags'>('Projects');
     const [showSavePopup, setShowSavePopup] = useState(false);
 
-    const committedPermissions = usePermissionsStore((state) => state.permissions);
     const setPermissions = usePermissionsStore((state) => state.setPermissions);
 
     // Local draft state of permissions

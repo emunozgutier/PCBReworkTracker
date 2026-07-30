@@ -1,4 +1,4 @@
-﻿import { Edit2, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useAppState } from '../../../store/useAppState';
 import { useOwnerStore } from '../../../store/clientDataBase/useOwnerStore';
 
@@ -10,12 +10,7 @@ interface OwnerCardHeaderProps {
 
 export function OwnerCardHeader({ owner, isExpanded, onToggle }: OwnerCardHeaderProps) {
     const isMobile = useAppState(state => state.isMobile);
-    const { currentUser, currentUserRole } = useAppState();
     const { owners } = useOwnerStore();
-
-    const isSuperUser = currentUserRole === 'Super User';
-    const isSelf = currentUser && owner.id.toString() === currentUser.id.toString();
-    const canEdit = isSuperUser || (currentUserRole === 'User' && isSelf);
 
     const isOnlyUser = owners.length === 1;
     const minId = owners.length > 0 ? Math.min(...owners.map(o => o.id)) : -1;

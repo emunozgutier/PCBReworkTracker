@@ -1,6 +1,6 @@
 import { PermissionCheckbox } from './PermissionCheckbox';
 
-interface ActionItem {
+export interface ActionItem {
     name: string;
     superUserAllowed: boolean;
     userAllowed: boolean;
