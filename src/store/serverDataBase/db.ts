@@ -134,7 +134,6 @@ const initDb = async (): Promise<void> => {
             key TEXT PRIMARY KEY,
             value TEXT
         )`);
-        dbInstance.run(`INSERT OR IGNORE INTO global_settings (key, value) VALUES ('crcFormat', 'letter')`);
         dbInstance.run(`INSERT OR IGNORE INTO global_settings (key, value) VALUES ('allowGuestMinorRework', 'true')`);
         dbInstance.run(`INSERT OR IGNORE INTO global_settings (key, value) VALUES ('priority_Silicon Swap', 'High')`);
         dbInstance.run(`INSERT OR IGNORE INTO global_settings (key, value) VALUES ('priority_Major Rework', 'High')`);

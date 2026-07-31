@@ -106,9 +106,6 @@ export const usePermissionsStore = create<PermissionsStore>((set) => ({
                         useAppState.getState().setAllowGuestMinorRework(guestVal);
                     }
                 }
-                if (data.crcFormat) {
-                    useAppState.getState().setCrcFormat(data.crcFormat as 'letter' | 'nato');
-                }
                 if (data.allowGuestMinorRework) {
                     useAppState.getState().setAllowGuestMinorRework(data.allowGuestMinorRework === 'true');
                 }
