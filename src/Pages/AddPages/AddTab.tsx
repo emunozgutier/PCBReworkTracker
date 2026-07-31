@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { COLORS } from '../../store/useStyles';
 import { useTagStore } from '../../store/clientDataBase/useTagStore';
 import { useAppState } from '../../store/useAppState';
-import { useOwnerStore } from '../../store/clientDataBase/useOwnerStore';
 
 interface AddTabProps {
     onBack: () => void;
@@ -14,11 +13,7 @@ export function AddTab({ onBack, onSuccess }: AddTabProps) {
     const [name, setName] = useState('');
     const [color, setColor] = useState('#818cf8');
     const { addTag, loading } = useTagStore();
-    const { currentUser, currentUserRole } = useAppState();
-    const { owners, fetchOwners } = useOwnerStore();
-
-    const type = 'public';
-    const ownerId = '';
+    const { currentUserRole } = useAppState();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

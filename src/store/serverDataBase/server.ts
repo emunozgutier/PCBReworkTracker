@@ -1046,7 +1046,7 @@ app.post('/api/projects/:id/schematics', upload.any(), (req: Request, res: Respo
                                 }
                                 insertedSchematics.push({
                                     id: this.lastID,
-                                    project_id: parseInt(projectId),
+                                    project_id: parseInt(projectId as string),
                                     filename: originalName,
                                     path: relativePath,
                                     uploaded_at: new Date().toISOString()

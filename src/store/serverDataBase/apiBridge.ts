@@ -188,7 +188,7 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
             if (method === 'POST') {
                 const created: any[] = [];
                 if (options?.body && options.body instanceof FormData) {
-                    for (const [key, value] of options.body.entries()) {
+                    for (const [, value] of options.body.entries()) {
                         const file = value as any;
                         if (file && typeof file === 'object' && file.name) {
                              const sch = {

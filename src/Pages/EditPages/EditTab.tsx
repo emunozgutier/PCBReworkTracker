@@ -3,7 +3,6 @@ import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
 import { useTagStore } from '../../store/clientDataBase/useTagStore';
-import { useOwnerStore } from '../../store/clientDataBase/useOwnerStore';
 import { useAppState } from '../../store/useAppState';
 import { COLORS } from '../../store/useStyles';
 
@@ -16,19 +15,10 @@ interface EditTabProps {
 export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
     const [name, setName] = useState('');
     const [color, setColor] = useState('#818cf8');
-    const [type, setType] = useState<'public' | 'personal'>('public');
-    const [ownerId, setOwnerId] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const { updateTag, deleteTag } = useTagStore();
-    const { owners, fetchOwners } = useOwnerStore();
-    const { currentUser, currentUserRole } = useAppState();
+    const { currentUserRole } = useAppState();
     const [saving, setSaving] = useState(false);
-
-    useEffect(() => {
-        if (owners.length === 0) {
-            fetchOwners();
-        }
-    }, [fetchOwners, owners.length]);
 
     useEffect(() => {
         apiFetch(`${API_BASE}/tags/${id}`)
@@ -37,8 +27,6 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
                 if (data) {
                     setName(data.name);
                     setColor(data.color || '#818cf8');
-                    setType(data.type || 'public');
-                    setOwnerId(data.owner_id ? data.owner_id.toString() : '');
                 }
                 setLoading(false);
             })
