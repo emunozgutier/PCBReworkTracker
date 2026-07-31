@@ -3,10 +3,18 @@ import { API_BASE } from '../serverDataBase/apiBridge';
 import { apiFetch } from '../serverDataBase/apiBridge';
 import { useAppState } from '../useAppState';
 
+export interface PcbRevisionDetail {
+    name: string;
+    boms: string[];
+    schematic?: string | null;
+}
+
 export interface PcbFlavor {
+    id?: number;
     name: string;
     revisions: string[];
     boms?: string[];
+    revisionDetails?: PcbRevisionDetail[];
 }
 
 export interface Project {
@@ -32,8 +40,8 @@ interface ProjectState {
     fetchSchematics: (projectId: number | string) => Promise<void>;
     uploadSchematics: (projectId: number | string, files: File[]) => Promise<boolean>;
     deleteSchematic: (projectId: number | string, schematicId: number | string) => Promise<boolean>;
-    addProject: (data: { name: string; description: string; revisions: string; project_key: string; flavors?: PcbFlavor[]; silicon_corners?: string; number_format?: string }, files?: File[]) => Promise<boolean>;
-    updateProject: (id: number | string, data: { name: string; description: string; revisions: string; project_key: string; flavors?: PcbFlavor[]; silicon_corners?: string; number_format?: string }, files?: File[]) => Promise<boolean>;
+    addProject: (data: { name: string; description: string; revisions: string; project_key: string; flavors?: any[]; silicon_corners?: string; number_format?: string }, files?: File[]) => Promise<boolean>;
+    updateProject: (id: number | string, data: { name: string; description: string; revisions: string; project_key: string; flavors?: any[]; silicon_corners?: string; number_format?: string }, files?: File[]) => Promise<boolean>;
     deleteProject: (id: number | string) => Promise<boolean>;
 }
 
@@ -49,7 +57,25 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             const res = await apiFetch(`${API_BASE}/projects`);
             if (!res.ok) throw new Error('Failed to fetch projects');
             const data = await res.json();
-            set({ projects: data, loading: false });
+            const normalizedData = data.map((p: any) => ({
+                ...p,
+                flavors: p.flavors?.map((f: any) => {
+                    const rawRevs = f.revisions || [];
+                    const isDetailed = rawRevs.length > 0 && typeof rawRevs[0] === 'object';
+                    const revisionDetails = isDetailed 
+                        ? rawRevs 
+                        : rawRevs.map((r: string) => ({ name: r, boms: f.boms || [], schematic: null }));
+                    const revisionNames = isDetailed 
+                        ? rawRevs.map((r: any) => r.name) 
+                        : rawRevs;
+                    return {
+                        ...f,
+                        revisions: revisionNames,
+                        revisionDetails
+                    };
+                })
+            }));
+            set({ projects: normalizedData, loading: false });
         } catch (err: any) {
             set({ error: err.message, loading: false });
         }

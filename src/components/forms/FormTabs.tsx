@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Edit } from 'lucide-react';
 
 interface FormTabsProps {
     tabs: string[];
@@ -8,6 +8,11 @@ interface FormTabsProps {
     onAddTab?: () => void;
     onDeleteActiveTab?: () => void;
     canDeleteActiveTab?: boolean;
+    fallbackPrefix?: string;
+    deleteLabel?: string;
+    deleteDisabledTitle?: string;
+    onRenameActiveTab?: () => void;
+    renameLabel?: string;
     children?: React.ReactNode;
 }
 
@@ -18,6 +23,11 @@ export function FormTabs({
     onAddTab, 
     onDeleteActiveTab, 
     canDeleteActiveTab = true,
+    fallbackPrefix = 'Flavor',
+    deleteLabel = 'Delete This Flavor',
+    deleteDisabledTitle = 'Cannot delete flavor currently assigned to PCBs.',
+    onRenameActiveTab,
+    renameLabel = 'Rename',
     children
 }: FormTabsProps) {
     return (
@@ -72,7 +82,7 @@ export function FormTabs({
                             }}
                             onClick={() => onTabChange(idx)}
                         >
-                            <span>{tabName || `Flavor ${idx + 1}`}</span>
+                            <span>{tabName || `${fallbackPrefix} ${idx + 1}`}</span>
                         </div>
                     );
                 })}
@@ -120,33 +130,65 @@ export function FormTabs({
             <div style={{ padding: '16px', background: 'var(--card-bg)', border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 8px 8px' }}>
                 {children}
 
-                {onDeleteActiveTab && tabs.length > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', paddingTop: '16px', borderTop: '1px dashed var(--border)' }}>
-                        <button 
-                            type="button" 
-                            onClick={canDeleteActiveTab ? onDeleteActiveTab : undefined}
-                            disabled={!canDeleteActiveTab}
-                            title={!canDeleteActiveTab ? "Cannot delete flavor currently assigned to PCBs." : "Delete This Flavor"}
-                            style={{ 
-                                padding: '6px 12px', 
-                                background: canDeleteActiveTab ? 'rgba(239, 68, 68, 0.05)' : 'transparent', 
-                                border: '1px solid',
-                                borderColor: canDeleteActiveTab ? 'rgba(239, 68, 68, 0.2)' : 'var(--border)', 
-                                borderRadius: '4px', 
-                                cursor: canDeleteActiveTab ? 'pointer' : 'not-allowed', 
-                                color: canDeleteActiveTab ? '#ef4444' : 'var(--text-muted)', 
-                                fontSize: '0.85rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                opacity: canDeleteActiveTab ? 1 : 0.5
-                            }}
-                            onMouseEnter={(e) => { if (canDeleteActiveTab) e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
-                            onMouseLeave={(e) => { if (canDeleteActiveTab) e.currentTarget.style.background = 'rgba(239, 68, 68, 0.05)'; }}
-                        >
-                            <Trash2 size={14} />
-                            Delete This Flavor
-                        </button>
+                {(onDeleteActiveTab || onRenameActiveTab) && tabs.length > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px', paddingTop: '16px', borderTop: '1px dashed var(--border)' }}>
+                        {onRenameActiveTab && (
+                            <button
+                                type="button"
+                                onClick={onRenameActiveTab}
+                                style={{
+                                    padding: '6px 12px',
+                                    background: 'rgba(255, 255, 255, 0.02)',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    color: 'var(--text-muted)',
+                                    fontSize: '0.85rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.borderColor = 'var(--accent)';
+                                    e.currentTarget.style.color = 'var(--text)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = 'var(--border)';
+                                    e.currentTarget.style.color = 'var(--text-muted)';
+                                }}
+                            >
+                                <Edit size={14} />
+                                {renameLabel}
+                            </button>
+                        )}
+                        {onDeleteActiveTab && (
+                            <button 
+                                type="button" 
+                                onClick={canDeleteActiveTab ? onDeleteActiveTab : undefined}
+                                disabled={!canDeleteActiveTab}
+                                title={!canDeleteActiveTab ? deleteDisabledTitle : deleteLabel}
+                                style={{ 
+                                    padding: '6px 12px', 
+                                    background: canDeleteActiveTab ? 'rgba(239, 68, 68, 0.05)' : 'transparent', 
+                                    border: '1px solid',
+                                    borderColor: canDeleteActiveTab ? 'rgba(239, 68, 68, 0.2)' : 'var(--border)', 
+                                    borderRadius: '4px', 
+                                    cursor: canDeleteActiveTab ? 'pointer' : 'not-allowed', 
+                                    color: canDeleteActiveTab ? '#ef4444' : 'var(--text-muted)', 
+                                    fontSize: '0.85rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    opacity: canDeleteActiveTab ? 1 : 0.5
+                                }}
+                                onMouseEnter={(e) => { if (canDeleteActiveTab) e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
+                                onMouseLeave={(e) => { if (canDeleteActiveTab) e.currentTarget.style.background = 'rgba(239, 68, 68, 0.05)'; }}
+                            >
+                                <Trash2 size={14} />
+                                {deleteLabel}
+                            </button>
+                        )}
                     </div>
                 )}
             </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Save, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Save, HelpCircle, Upload } from 'lucide-react';
 import { FormTabs } from '../../components/forms/FormTabs';
 import { MultipleInputs } from '../../components/forms/MultipleInputs';
 import { useProjectStore } from '../../store/clientDataBase/useProjectStore';
@@ -48,14 +48,26 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     }
 
     const [name, setName] = useState('');
+    interface AddProjectRevision {
+        name: string;
+        boms: string;
+        schematic?: string | null;
+    }
+    interface AddProjectFlavor {
+        name: string;
+        revisions: AddProjectRevision[];
+    }
+
     const [revisions, setRevisions] = useState('A0');
     const [siliconCorners, setSiliconCorners] = useState('TT');
     const [projectKey, setProjectKey] = useState('');
     const [numberFormat, setNumberFormat] = useState<'hex' | 'decimal'>('decimal');
-    const [flavors, setFlavors] = useState<{name: string, revisions: string, boms?: string}[]>([
-        { name: 'Validation', revisions: '1.0', boms: 'BOM1, BOM2' }
+    const [flavors, setFlavors] = useState<AddProjectFlavor[]>([
+        { name: 'Validation', revisions: [{ name: '1.0', boms: 'BOM1, BOM2', schematic: null }] }
     ]);
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [activeTab, setActiveTab] = useState(0);
+    const [activeRevTab, setActiveRevTab] = useState(0);
     const [isKeyManuallyEdited, setIsKeyManuallyEdited] = useState(false);
     const [autoKeyError, setAutoKeyError] = useState('');
     
@@ -100,15 +112,22 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const payloadPcbFlavors = flavors.filter(f => f.name.trim() !== '').map(f => ({
-            name: f.name.trim(),
-            revisions: f.revisions.split(',').map(r => r.trim()).filter(Boolean),
-            boms: f.boms ? f.boms.split(',').map(b => b.trim()).filter(Boolean) : []
-        }));
+        const payloadPcbFlavors = flavors.filter(f => f.name.trim() !== '').map(f => {
+            const allBoms = Array.from(new Set(f.revisions.flatMap(r => r.boms.split(',').map(b => b.trim()).filter(Boolean))));
+            return {
+                name: f.name.trim(),
+                revisions: f.revisions.map(r => ({
+                    name: r.name.trim(),
+                    boms: r.boms.split(',').map(b => b.trim()).filter(Boolean),
+                    schematic: r.schematic || null
+                })),
+                boms: allBoms
+            };
+        });
         const success = await addProject({ 
             name, description: '', revisions, project_key: projectKey, 
             flavors: payloadPcbFlavors, silicon_corners: siliconCorners, number_format: numberFormat 
-        }, []);
+        }, selectedFiles);
         if (success) {
             onSuccess();
         }
@@ -213,13 +232,15 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                         activeTab={activeTab}
                         onTabChange={setActiveTab}
                         onAddTab={() => {
-                            setFlavors([...flavors, { name: '', revisions: '', boms: '' }]);
+                            setFlavors([...flavors, { name: '', revisions: [{ name: '1.0', boms: '', schematic: null }] }]);
                             setActiveTab(flavors.length);
+                            setActiveRevTab(0);
                         }}
                         onDeleteActiveTab={() => {
                             const newFf = flavors.filter((_, i) => i !== activeTab);
                             setFlavors(newFf);
                             setActiveTab(Math.max(0, activeTab - 1));
+                            setActiveRevTab(0);
                         }}
                     >
                         {flavors[activeTab] && (
@@ -239,28 +260,135 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                     />
                                 </div>
                                 <div>
-                                    <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>PCB Revisions</label>
-                                    <MultipleInputs
-                                        value={flavors[activeTab].revisions}
-                                        onChange={(val) => {
+                                    <label style={{ fontSize: '0.85rem', marginBottom: '8px', display: 'block' }}>PCB Revisions & Configuration</label>
+                                    <FormTabs
+                                        tabs={flavors[activeTab].revisions.map(r => r.name)}
+                                        activeTab={activeRevTab}
+                                        onTabChange={setActiveRevTab}
+                                        fallbackPrefix="Revision"
+                                        deleteLabel="Delete This Revision"
+                                        deleteDisabledTitle="At least one revision is required."
+                                        onAddTab={() => {
+                                            const name = prompt("Enter revision name:");
+                                            if (!name) return;
+                                            const trimmed = name.trim();
+                                            if (!trimmed) return;
+                                            if (flavors[activeTab].revisions.some(r => r.name.toLowerCase() === trimmed.toLowerCase())) {
+                                                alert("Revision name already exists.");
+                                                return;
+                                            }
+                                            const newRevs = [...flavors[activeTab].revisions, { name: trimmed, boms: '', schematic: null }];
                                             const newFf = [...flavors];
-                                            newFf[activeTab].revisions = val;
+                                            newFf[activeTab].revisions = newRevs;
+                                            setFlavors(newFf);
+                                            setActiveRevTab(newRevs.length - 1);
+                                        }}
+                                        onRenameActiveTab={() => {
+                                            const currentName = flavors[activeTab].revisions[activeRevTab].name;
+                                            const name = prompt("Enter new revision name:", currentName);
+                                            if (!name) return;
+                                            const trimmed = name.trim();
+                                            if (!trimmed || trimmed === currentName) return;
+                                            if (flavors[activeTab].revisions.some(r => r.name.toLowerCase() === trimmed.toLowerCase())) {
+                                                alert("Revision name already exists.");
+                                                return;
+                                            }
+                                            const newFf = [...flavors];
+                                            newFf[activeTab].revisions[activeRevTab].name = trimmed;
                                             setFlavors(newFf);
                                         }}
-                                        placeholder="e.g. 1.0, 1.1"
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>BOM Options</label>
-                                    <MultipleInputs
-                                        value={flavors[activeTab].boms || ''}
-                                        onChange={(val) => {
+                                        renameLabel="Rename Revision"
+                                        canDeleteActiveTab={flavors[activeTab].revisions.length > 1}
+                                        onDeleteActiveTab={() => {
+                                            const newRevs = flavors[activeTab].revisions.filter((_, i) => i !== activeRevTab);
                                             const newFf = [...flavors];
-                                            newFf[activeTab].boms = val;
+                                            newFf[activeTab].revisions = newRevs;
                                             setFlavors(newFf);
+                                            setActiveRevTab(Math.max(0, activeRevTab - 1));
                                         }}
-                                        placeholder="e.g. BOM1, BOM2"
-                                    />
+                                    >
+                                        {flavors[activeTab].revisions[activeRevTab] && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block' }}>BOM Options</label>
+                                                    <MultipleInputs
+                                                        value={flavors[activeTab].revisions[activeRevTab].boms}
+                                                        onChange={(val) => {
+                                                            const newFf = [...flavors];
+                                                            newFf[activeTab].revisions[activeRevTab].boms = val;
+                                                            setFlavors(newFf);
+                                                        }}
+                                                        placeholder="e.g. BOM1, BOM2"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block' }}>Schematic PDF</label>
+                                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                        <select
+                                                            value={flavors[activeTab].revisions[activeRevTab].schematic || ''}
+                                                            style={{ flex: 1, padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)' }}
+                                                            onChange={e => {
+                                                                const newFf = [...flavors];
+                                                                newFf[activeTab].revisions[activeRevTab].schematic = e.target.value;
+                                                                setFlavors(newFf);
+                                                            }}
+                                                        >
+                                                            <option value="">-- No Schematic --</option>
+                                                            {selectedFiles.map(f => (
+                                                                <option key={f.name} value={f.name}>{f.name}</option>
+                                                            ))}
+                                                        </select>
+                                                        
+                                                        <input 
+                                                            type="file"
+                                                            accept=".pdf"
+                                                            style={{ display: 'none' }}
+                                                            id={`rev-schematic-file-${activeTab}-${activeRevTab}`}
+                                                            onChange={(e) => {
+                                                                if (e.target.files && e.target.files[0]) {
+                                                                    const file = e.target.files[0];
+                                                                    if (!selectedFiles.some(f => f.name === file.name)) {
+                                                                        setSelectedFiles([...selectedFiles, file]);
+                                                                    }
+                                                                    const newFf = [...flavors];
+                                                                    newFf[activeTab].revisions[activeRevTab].schematic = file.name;
+                                                                    setFlavors(newFf);
+                                                                }
+                                                            }}
+                                                        />
+                                                        <label 
+                                                            htmlFor={`rev-schematic-file-${activeTab}-${activeRevTab}`}
+                                                            className="action-btn-hover"
+                                                            style={{
+                                                                padding: '8px 12px',
+                                                                background: 'rgba(255, 255, 255, 0.02)',
+                                                                border: '1px dashed var(--border)',
+                                                                borderRadius: '4px',
+                                                                cursor: 'pointer',
+                                                                fontSize: '0.85rem',
+                                                                fontWeight: 500,
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '4px',
+                                                                color: 'var(--text-muted)'
+                                                            }}
+                                                            onMouseEnter={(e) => {
+                                                                e.currentTarget.style.borderColor = 'var(--accent)';
+                                                                e.currentTarget.style.color = 'var(--text)';
+                                                            }}
+                                                            onMouseLeave={(e) => {
+                                                                e.currentTarget.style.borderColor = 'var(--border)';
+                                                                e.currentTarget.style.color = 'var(--text-muted)';
+                                                            }}
+                                                        >
+                                                            <Upload size={14} />
+                                                            Upload New
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </FormTabs>
                                 </div>
                             </div>
                         )}
