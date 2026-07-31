@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
@@ -202,11 +202,11 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
                             height: '48px',
                             minWidth: '200px'
                         }}>
-                            {activePcb ? (
-                                <BoardName name={activePcb.board_number} isHex={selectedProjData?.number_format === 'hex'} />
-                            ) : (
-                                'Unknown'
-                            )}
+                             {activePcb ? (
+                                 <BoardName name={activePcb.board_number} isHex={selectedProjData?.number_format === 'hex'} />
+                             ) : (
+                                 pcbs.length === 0 ? 'Loading...' : 'Unknown'
+                             )}
                         </div>
                     </div>
                 </FormGroup>
