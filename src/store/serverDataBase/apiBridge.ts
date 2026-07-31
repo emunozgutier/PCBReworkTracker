@@ -13,14 +13,14 @@ let internalProjectSchematics = [
         id: 1,
         project_id: 1, // Ash (typically project ID 1 in demoData)
         filename: "Ash_Board_V1_Schematic.pdf",
-        path: "/pictures/demo_schematic.pdf",
+        path: "/schematics/demo_schematic.pdf",
         uploaded_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
     },
     {
         id: 2,
         project_id: 1, // Ash
         filename: "Ash_Board_V2_Datasheet.pdf",
-        path: "/pictures/demo_schematic.pdf",
+        path: "/schematics/demo_schematic.pdf",
         uploaded_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
     }
 ] as any[];
@@ -191,11 +191,11 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
                     for (const [key, value] of options.body.entries()) {
                         const file = value as any;
                         if (file && typeof file === 'object' && file.name) {
-                            const sch = {
+                             const sch = {
                                 id: Date.now() + Math.floor(Math.random() * 1000) + created.length,
                                 project_id: projectId,
                                 filename: file.name,
-                                path: "/pictures/demo_schematic.pdf",
+                                path: "/schematics/demo_schematic.pdf",
                                 uploaded_at: new Date().toISOString()
                             };
                             internalProjectSchematics.push(sch);
@@ -208,7 +208,7 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
                         id: Date.now(),
                         project_id: projectId,
                         filename: "datasheet_revA.pdf",
-                        path: "/pictures/demo_schematic.pdf",
+                        path: "/schematics/demo_schematic.pdf",
                         uploaded_at: new Date().toISOString()
                     };
                     internalProjectSchematics.push(sch);
