@@ -12,6 +12,7 @@ export function RolePermissionCard() {
     const [selectedSubTable, setSelectedSubTable] = useState<'Projects' | 'PCBs' | 'Reworks' | 'Users' | 'Tags' | 'Schematics'>('Projects');
     const [showSavePopup, setShowSavePopup] = useState(false);
 
+    const permissions = usePermissionsStore((state) => state.permissions);
     const setPermissions = usePermissionsStore((state) => state.setPermissions);
 
     // Local draft state of permissions
@@ -21,16 +22,16 @@ export function RolePermissionCard() {
     const [initialPermissions, setInitialPermissions] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
-        // Sync appState allowed setting with permissions store first
-        const current = usePermissionsStore.getState().permissions;
         const synced = {
-            ...current,
+            ...permissions,
             'Reworks__Add Low Priority__guest': allowGuestMinorRework
         };
-        usePermissionsStore.setState({ permissions: synced });
+        if (permissions['Reworks__Add Low Priority__guest'] !== allowGuestMinorRework) {
+            usePermissionsStore.setState({ permissions: synced });
+        }
         setDraftPermissions(synced);
         setInitialPermissions(synced);
-    }, [allowGuestMinorRework]);
+    }, [permissions, allowGuestMinorRework]);
 
     // Helper function to build actions mapping reading from and modifying local draftPermissions state
     const buildActions = (resource: string, list: { name: string; isEditRow?: boolean }[]): ActionItem[] => {
