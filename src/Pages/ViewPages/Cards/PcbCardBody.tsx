@@ -6,13 +6,14 @@ import { usePcbStore } from '../../../store/clientDataBase/usePcbStore';
 import { API_BASE, apiFetch } from '../../../store/serverDataBase/apiBridge';
 import { FormTabs } from '../../../components/forms/FormTabs';
 import { RemoveTag } from '../../RemovePage/RemoveTag';
-import { Tag as TagIcon, X } from 'lucide-react';
+import { Tag as TagIcon, X, FileText } from 'lucide-react';
 import { formatTagName } from '../../../store/clientDataBase/useTagStore';
 import { EditButton, ViewButton, AddButton, QrButton, DeleteButton } from '../../../components/forms/ActionButtons';
 import { RemovePcb } from '../../RemovePage/RemovePcb';
 import { ReworkCardBody } from './ReworkCardBody';
 import { COLORS } from '../../../store/useStyles';
 import { InfoPill } from '../../../components/InfoPill';
+import { useProjectStore } from '../../../store/clientDataBase/useProjectStore';
 interface PcbCardBodyProps {
     pcb: any;
 }
@@ -46,6 +47,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const { tags, fetchTags } = useTagStore();
     const { fetchPcbs, deletePcb } = usePcbStore();
     const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile, currentUser, currentUserRole, allowGuestMinorRework } = useAppState();
+    const { projects, projectSchematics, fetchSchematics } = useProjectStore();
 
     const isSuperUser = currentUserRole === 'Super User';
 
@@ -73,6 +75,28 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
             }
         } catch (err) { }
     };
+
+    const project = projects.find(p => p.id === pcb.project_id);
+
+    let schematicFilename = '';
+    if (project && pcb.board_flavor && pcb.board_rev) {
+        const ff = project.flavors?.find(f => f.name === pcb.board_flavor);
+        if (ff && ff.revisionDetails) {
+            const revDetail = ff.revisionDetails.find(r => r.name === pcb.board_rev);
+            if (revDetail && revDetail.schematic) {
+                schematicFilename = revDetail.schematic;
+            }
+        }
+    }
+
+    const schematics = project ? (projectSchematics[project.id.toString()] || []) : [];
+    const schematic = schematics.find(s => s.filename === schematicFilename);
+
+    useEffect(() => {
+        if (project && !projectSchematics[project.id.toString()]) {
+            fetchSchematics(project.id);
+        }
+    }, [project, projectSchematics, fetchSchematics]);
 
     useEffect(() => {
         if (reworks.length === 0) fetchReworks();
@@ -137,6 +161,18 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                     title={!isSuperUser ? "Only super users can do that" : "Edit PCB"}
                     label={isMobile ? "Edit" : "Edit PCB"}
                 />
+
+                {schematic && (
+                    <ViewButton 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const fullUrl = schematic.path.startsWith('http') ? schematic.path : `${API_BASE.replace('/api', '')}/api${schematic.path}`;
+                            window.open(fullUrl, '_blank');
+                        }}
+                        label={isMobile ? "Schematic" : "View Schematic"}
+                        icon={FileText}
+                    />
+                )}
 
                 <QrButton 
                     onClick={(e) => { e.stopPropagation(); setQrModalBoard(pcb.board_number); }}
