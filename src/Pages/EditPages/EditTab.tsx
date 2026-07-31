@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
@@ -48,29 +48,17 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
             });
     }, [id]);
 
-    const isSuperUser = currentUserRole === 'Super User';
-    
-    // Check if user owns the personal tag
-    const isOwner = currentUser && type === 'personal' && (
-        ownerId === currentUser.id.toString()
-    );
-
-    const hasAccess = isSuperUser || (currentUserRole === 'User' && type === 'personal' && isOwner);
+    const hasAccess = currentUserRole === 'Super User';
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
 
-        const finalType = type;
-        const finalOwnerId = finalType === 'personal'
-            ? (isSuperUser ? (ownerId || null) : (currentUser ? currentUser.id : null))
-            : null;
-
         const success = await updateTag(id, { 
             name, 
             color, 
-            type: finalType, 
-            owner_id: finalOwnerId 
+            type: 'public', 
+            owner_id: null 
         });
         if (success) onSuccess();
         setSaving(false);
@@ -132,33 +120,6 @@ export function EditTab({ id, onBack, onSuccess }: EditTabProps) {
                     />
                 </div>
 
-                <div className="form-group">
-                    <label htmlFor="type">Tag Type</label>
-                    <select 
-                        id="type" 
-                        value={type} 
-                        onChange={(e) => setType(e.target.value as 'public' | 'personal')}
-                    >
-                        <option value="public">Public</option>
-                        <option value="personal">Private</option>
-                    </select>
-                </div>
-
-                {type === 'personal' && isSuperUser && (
-                    <div className="form-group">
-                        <label htmlFor="owner_id">Assigned Owner</label>
-                        <select 
-                            id="owner_id" 
-                            value={ownerId} 
-                            onChange={(e) => setOwnerId(e.target.value)}
-                        >
-                            <option value="">Unassigned</option>
-                            {owners.map(o => (
-                                <option key={o.id} value={o.id}>{o.name} (@{o.username})</option>
-                            ))}
-                        </select>
-                    </div>
-                )}
 
                 <div className="form-group">
                     <label>Choose Color</label>

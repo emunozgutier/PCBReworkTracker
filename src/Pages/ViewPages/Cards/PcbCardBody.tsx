@@ -11,6 +11,7 @@ import { formatTagName } from '../../../store/clientDataBase/useTagStore';
 import { EditButton, ViewButton, AddButton, QrButton, DeleteButton } from '../../../components/forms/ActionButtons';
 import { RemovePcb } from '../../RemovePage/RemovePcb';
 import { ReworkCardBody } from './ReworkCardBody';
+import { COLORS } from '../../../store/useStyles';
 interface PcbCardBodyProps {
     pcb: any;
 }
@@ -180,8 +181,29 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                                 fontWeight: expandedReworkId === rework.id ? 600 : 500
                                             }}
                                         >
-                                            <span style={{ fontSize: '0.85rem' }}>{rework.title || (rework.rework_number ? `Rework #${rework.rework_number}` : `Rework ${rework.id}`)}</span>
-                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+                                                <span style={{ 
+                                                    flexShrink: 0,
+                                                    padding: '2px 8px', 
+                                                    borderRadius: '12px', 
+                                                    fontSize: '0.7rem', 
+                                                    fontWeight: 600,
+                                                    background: rework.rework_type === 'Major' ? COLORS.redLight : rework.rework_type === 'Silicon Swap' ? COLORS.purpleMedium : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeMedium : COLORS.indigoLight,
+                                                    color: rework.rework_type === 'Major' ? COLORS.red : rework.rework_type === 'Silicon Swap' ? COLORS.purple : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orange : COLORS.indigo,
+                                                    border: `1px solid ${rework.rework_type === 'Major' ? COLORS.redBorder : rework.rework_type === 'Silicon Swap' ? COLORS.purpleBorder : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeBorder : COLORS.indigoBorder}`
+                                                }}>
+                                                    {rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? 'R swap' : (rework.rework_type || 'Minor')}
+                                                </span>
+                                                <span style={{ 
+                                                    fontSize: '0.85rem',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
+                                                }}>
+                                                    {rework.title || (rework.rework_number ? `Rework #${rework.rework_number}` : `Rework ${rework.id}`)}
+                                                </span>
+                                            </div>
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '12px', flexShrink: 0 }}>
                                                 {new Date(rework.timestamp).toLocaleDateString()}
                                             </span>
                                         </div>

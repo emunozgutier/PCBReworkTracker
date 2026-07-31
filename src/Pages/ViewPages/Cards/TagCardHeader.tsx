@@ -1,4 +1,4 @@
-﻿import { ChevronDown, ChevronUp, Edit2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Edit2 } from 'lucide-react';
 import { formatTagName } from '../../../store/clientDataBase/useTagStore';
 import { useAppState } from '../../../store/useAppState';
 
@@ -13,12 +13,7 @@ export function TagCardHeader({ tag, isExpanded, onToggle, onEdit }: TagCardHead
     const { currentUser, currentUserRole } = useAppState();
 
     const isSuperUser = currentUserRole === 'Super User';
-    const isOwner = currentUser && tag.type === 'personal' && (
-        tag.owner_id?.toString() === currentUser.id?.toString() ||
-        tag.owner_username === currentUser.username ||
-        tag.owner_name === currentUser.name
-    );
-    const canEdit = isSuperUser || (currentUserRole === 'User' && tag.type === 'personal' && isOwner);
+    const canEdit = isSuperUser;
 
     return (
         <div 
@@ -46,9 +41,7 @@ export function TagCardHeader({ tag, isExpanded, onToggle, onEdit }: TagCardHead
                     }} 
                 />
                 <span className="board-num" style={{ fontSize: '1rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                    {tag.type === 'public' 
-                        ? formatTagName(tag) 
-                        : (tag.owner_username || tag.owner_name ? formatTagName(tag) : `Unassigned/${formatTagName(tag)}`)}
+                    {formatTagName(tag)}
                 </span>
             </div>
             
