@@ -161,17 +161,23 @@ function serializeWrites(req: Request, res: Response, next: NextFunction) {
     }
     creq._serialized = true;
 
+    console.log(`[Queue Entry] ${req.method} ${req.originalUrl}`);
+
     let resolved = false;
     let releaseFn = () => {};
 
     const cleanup = () => {
         if (!resolved) {
             resolved = true;
+            console.log(`[Queue Cleanup] Resolving promise for ${req.method} ${req.originalUrl}`);
             releaseFn();
         }
     };
 
-    const timeoutId = setTimeout(cleanup, 10000); // 10s safety fallback
+    const timeoutId = setTimeout(() => {
+        console.log(`[Queue Timeout] 10s fallback triggered for ${req.method} ${req.originalUrl}`);
+        cleanup();
+    }, 10000); // 10s safety fallback
 
     res.on('finish', () => {
         clearTimeout(timeoutId);
@@ -190,9 +196,13 @@ function serializeWrites(req: Request, res: Response, next: NextFunction) {
     });
 
     const previousFinished = writeQueue;
-    writeQueue = writeQueue.then(() => currentFinished);
+    writeQueue = writeQueue.then(() => {
+        console.log(`[Queue Chain] Resolving queue for ${req.method} ${req.originalUrl}`);
+        return currentFinished;
+    });
 
     previousFinished.then(() => {
+        console.log(`[Queue Execute] Calling next() for ${req.method} ${req.originalUrl}`);
         if (req.destroyed || res.writableEnded || resolved) {
             cleanup();
             return;
