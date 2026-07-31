@@ -12,9 +12,34 @@ import { EditButton, ViewButton, AddButton, QrButton, DeleteButton } from '../..
 import { RemovePcb } from '../../RemovePage/RemovePcb';
 import { ReworkCardBody } from './ReworkCardBody';
 import { COLORS } from '../../../store/useStyles';
+import { InfoPill } from '../../../components/InfoPill';
 interface PcbCardBodyProps {
     pcb: any;
 }
+
+const getReworkTypeText = (type?: string) => {
+    if (type === 'Resistor Option Swap' || type === 'Resistor Swap' || type === 'R swap') {
+        return 'R Swap '.padEnd(7, ' ');
+    }
+    if (type === 'Silicon Swap') {
+        return 'Si Swap'.padEnd(7, ' ');
+    }
+    const val = type || 'Minor';
+    return val.padEnd(7, ' ');
+};
+
+const getReworkTypeTooltip = (type?: string) => {
+    if (type === 'Major') {
+        return 'some part is broken';
+    }
+    if (type === 'Silicon Swap') {
+        return 'Silicon Swap';
+    }
+    if (type === 'Resistor Option Swap' || type === 'Resistor Swap' || type === 'R swap') {
+        return 'a resistor option';
+    }
+    return 'it is working';
+};
 
 export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const { reworks, fetchReworks, setSelectedBoards } = useReworkStore();
@@ -182,18 +207,14 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                             }}
                                         >
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
-                                                <span style={{ 
-                                                    flexShrink: 0,
-                                                    padding: '2px 8px', 
-                                                    borderRadius: '12px', 
-                                                    fontSize: '0.7rem', 
-                                                    fontWeight: 600,
-                                                    background: rework.rework_type === 'Major' ? COLORS.redLight : rework.rework_type === 'Silicon Swap' ? COLORS.purpleMedium : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeMedium : COLORS.indigoLight,
-                                                    color: rework.rework_type === 'Major' ? COLORS.red : rework.rework_type === 'Silicon Swap' ? COLORS.purple : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orange : COLORS.indigo,
-                                                    border: `1px solid ${rework.rework_type === 'Major' ? COLORS.redBorder : rework.rework_type === 'Silicon Swap' ? COLORS.purpleBorder : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeBorder : COLORS.indigoBorder}`
-                                                }}>
-                                                    {rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? 'R swap' : (rework.rework_type || 'Minor')}
-                                                </span>
+                                                 <InfoPill 
+                                                     text={getReworkTypeText(rework.rework_type)}
+                                                     color={rework.rework_type === 'Major' ? COLORS.red : rework.rework_type === 'Silicon Swap' ? COLORS.purple : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orange : COLORS.indigo}
+                                                     bg={rework.rework_type === 'Major' ? COLORS.redLight : rework.rework_type === 'Silicon Swap' ? COLORS.purpleMedium : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeMedium : COLORS.indigoLight}
+                                                     border={`1px solid ${rework.rework_type === 'Major' ? COLORS.redBorder : rework.rework_type === 'Silicon Swap' ? COLORS.purpleBorder : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeBorder : COLORS.indigoBorder}`}
+                                                     min_width={7}
+                                                     title={getReworkTypeTooltip(rework.rework_type)}
+                                                 />
                                                 <span style={{ 
                                                     fontSize: '0.85rem',
                                                     whiteSpace: 'nowrap',

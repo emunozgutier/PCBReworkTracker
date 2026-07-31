@@ -93,9 +93,9 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
 
 
                         <InfoPill 
-                            text={`@${rework.owner_username || rework.owner_name || rework.owner || 'System'}`} 
+                            text={`@${rework.owner_username || rework.owner_name || rework.owner || 'System'}`.padEnd(7, ' ')} 
                             color="var(--text)"
-                            min_width={8}
+                            min_width={7}
                         />
 
                         {imagePaths.length > 0 && (
