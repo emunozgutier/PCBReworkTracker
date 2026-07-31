@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, Save } from 'lucide-react';
 
 import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
@@ -88,7 +88,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
     }
     const [pcbs, setPcbs] = useState<any[]>([]);
     const [projects, setProjects] = useState<any[]>([]);
-    const [selectedPcb, setSelectedPcb] = useState('');
+    const [selectedPcb, setSelectedPcb] = useState(selectedId ? selectedId.toString() : '');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [ownerId, setOwnerId] = useState('-1');
@@ -301,7 +301,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                                     {activePcb ? (
                                         <BoardName name={activePcb.board_number} isHex={selectedProjData?.number_format === 'hex'} />
                                     ) : (
-                                        'Unknown'
+                                        pcbs.length === 0 ? 'Loading...' : 'Unknown'
                                     )}
                                 </div>
                             </div>
@@ -381,7 +381,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                                         {pcbs.map(p => {
                                             const details = getPcbDetails(p.id.toString());
                                             return (
-                                                <option key={p.id} value={p.id}>
+                                                <option key={p.id} value={p.id.toString()}>
                                                     {details.baseName}
                                                 </option>
                                             );
