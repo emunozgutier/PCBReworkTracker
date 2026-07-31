@@ -18,14 +18,14 @@ export function CheckSumCard() {
                 <ShieldCheck size={18} color="var(--accent)" />
                 <span>CRC Checksum Calculator & Settings</span>
             </div>
-            
+
             <p className="settings-description">
                 Enter a base board name (e.g., PROJECT-NUMBER) to calculate its unique CRC checksum, and select your preferred display mode below.
             </p>
-            
+
             <div className="calculator-input-container">
-                <input 
-                    type="text" 
+                <input
+                    type="text"
                     value={calcInput}
                     onChange={e => setCalcInput(e.target.value)}
                     placeholder="e.g. MAP-0001"
@@ -74,7 +74,6 @@ export function CheckSumCard() {
                     </div>
 
                     <div className="choice-example-badge">
-                        <span className="example-tag">NATO:</span>
                         <span className="example-code">
                             {previewBase}<span>{previewNato}</span>
                         </span>

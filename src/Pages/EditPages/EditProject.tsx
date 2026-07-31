@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Save, Trash2, HelpCircle, FileText } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, HelpCircle } from 'lucide-react';
 import { FormTabs } from '../../components/forms/FormTabs';
 import { MultipleInputs } from '../../components/forms/MultipleInputs';
 import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
@@ -40,19 +40,14 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
     const [projectKey, setProjectKey] = useState('');
     const [numberFormat, setNumberFormat] = useState<'hex' | 'decimal'>('decimal');
     const [flavors, setFlavors] = useState<{name: string, revisions: string, boms?: string}[]>([]);
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [activeTab, setActiveTab] = useState(0);
     const [loading, setLoading] = useState(true);
     const [isRemoveOpen, setIsRemoveOpen] = useState(false);
     
-    const { projects, updateProject, deleteProject, loading: saving, projectSchematics, fetchSchematics, deleteSchematic } = useProjectStore();
+    const { projects, updateProject, deleteProject, loading: saving } = useProjectStore();
     const { pcbs, fetchPcbs } = usePcbStore();
 
-    useEffect(() => {
-        if (id) {
-            fetchSchematics(id);
-        }
-    }, [id, fetchSchematics]);
+
 
     useEffect(() => {
         if (pcbs.length === 0) fetchPcbs();
@@ -146,9 +141,8 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
         const success = await updateProject(id, { 
             name, description: '', revisions, project_key: projectKey, 
             flavors: payloadPcbFlavors, silicon_corners: siliconCorners, number_format: numberFormat 
-        }, selectedFiles);
+        }, []);
         if (success) {
-            setSelectedFiles([]);
             onSuccess();
         }
     };
@@ -323,142 +317,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                         )}
                     </FormTabs>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '10px' }}>
-                    <div className="form-group">
-                        <label>Existing Schematic PDFs</label>
-                        {projectSchematics[id.toString()] && projectSchematics[id.toString()].length > 0 ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '160px', overflowY: 'auto' }}>
-                                {projectSchematics[id.toString()].map((item: any) => (
-                                    <div 
-                                        key={item.id} 
-                                        style={{ 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            justifyContent: 'space-between', 
-                                            padding: '8px 12px', 
-                                            background: 'rgba(0, 0, 0, 0.2)', 
-                                            border: '1px solid var(--border)', 
-                                            borderRadius: '6px',
-                                            fontSize: '0.85rem'
-                                        }}
-                                    >
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
-                                            <FileText size={16} color="#ef4444" style={{ flexShrink: 0 }} />
-                                            <span style={{ color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={item.filename}>
-                                                {item.filename}
-                                            </span>
-                                        </div>
-                                        <button 
-                                            type="button" 
-                                            onClick={async () => {
-                                                if (confirm(`Are you sure you want to delete the schematic "${item.filename}"?`)) {
-                                                    await deleteSchematic(id, item.id);
-                                                }
-                                            }}
-                                            style={{ 
-                                                background: 'transparent', 
-                                                border: 'none', 
-                                                color: '#ef4444', 
-                                                cursor: 'pointer',
-                                                padding: '4px',
-                                                display: 'flex',
-                                                alignItems: 'center'
-                                            }}
-                                            title="Delete Schematic"
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p style={{ margin: '0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>No schematic PDFs attached.</p>
-                        )}
-                    </div>
 
-                    <div className="form-group">
-                        <label>Upload New Schematic PDFs</label>
-                        <input 
-                            type="file" 
-                            multiple 
-                            accept=".pdf" 
-                            onChange={(e) => {
-                                if (e.target.files) {
-                                    setSelectedFiles(Array.from(e.target.files));
-                                }
-                            }}
-                            style={{ display: 'none' }}
-                            id="new-schematics-upload"
-                        />
-                        <label 
-                            htmlFor="new-schematics-upload"
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px',
-                                padding: '12px 16px',
-                                background: 'rgba(255, 255, 255, 0.02)',
-                                border: '1px dashed var(--border)',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                color: 'var(--text-muted)',
-                                transition: 'all 0.2s',
-                                fontWeight: 500
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                                e.currentTarget.style.borderColor = 'var(--accent)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
-                                e.currentTarget.style.borderColor = 'var(--border)';
-                            }}
-                        >
-                            <FileText size={18} />
-                            <span>Select PDF Schematics</span>
-                        </label>
-
-                        {selectedFiles.length > 0 && (
-                            <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                {selectedFiles.map((file, idx) => (
-                                    <div 
-                                        key={idx} 
-                                        style={{ 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            justifyContent: 'space-between', 
-                                            padding: '8px 12px', 
-                                            background: 'rgba(255, 255, 255, 0.01)', 
-                                            border: '1px solid var(--border)', 
-                                            borderRadius: '6px',
-                                            fontSize: '0.85rem'
-                                        }}
-                                    >
-                                        <span style={{ color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, paddingRight: '8px' }}>
-                                            {file.name}
-                                        </span>
-                                        <button 
-                                            type="button" 
-                                            onClick={() => setSelectedFiles(selectedFiles.filter((_, i) => i !== idx))}
-                                            style={{ 
-                                                background: 'transparent', 
-                                                border: 'none', 
-                                                color: '#ef4444', 
-                                                cursor: 'pointer',
-                                                padding: '2px',
-                                                fontSize: '0.8rem',
-                                                fontWeight: 600
-                                            }}
-                                        >
-                                            Remove
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
                 <button type="submit" className="submit-button" disabled={saving}>
                     <Save size={18} />
                     <span>{saving ? 'Saving...' : 'Update Project'}</span>
