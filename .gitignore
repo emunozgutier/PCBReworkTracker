@@ -28,4 +28,5 @@ dist-ssr
 
 # Uploaded files
 pictures/
-
+src/store/serverDataBase/pictures/
+src/store/serverDataBase/schematics/

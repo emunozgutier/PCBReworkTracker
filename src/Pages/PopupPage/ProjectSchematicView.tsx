@@ -15,7 +15,7 @@ interface ProjectSchematicViewProps {
 export function ProjectSchematicView({ isOpen, onClose, schematic }: ProjectSchematicViewProps) {
     if (!isOpen || !schematic) return null;
 
-    const fullUrl = schematic.path.startsWith('http') ? schematic.path : `${API_BASE.replace('/api', '')}${schematic.path}`;
+    const fullUrl = schematic.path.startsWith('http') ? schematic.path : `${API_BASE.replace('/api', '')}/api${schematic.path}`;
 
     const titleElement = (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingRight: '40px' }}>

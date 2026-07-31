@@ -89,7 +89,7 @@ export function ProjectSchematicList({ isOpen, onClose, project }: ProjectSchema
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '300px', overflowY: 'auto', paddingRight: '4px' }}>
                             {list.map((item: any) => {
-                                const fullUrl = item.path.startsWith('http') ? item.path : `${API_BASE.replace('/api', '')}${item.path}`;
+                                const fullUrl = item.path.startsWith('http') ? item.path : `${API_BASE.replace('/api', '')}/api${item.path}`;
                                 return (
                                     <div 
                                         key={item.id} 
