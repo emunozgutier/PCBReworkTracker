@@ -51,52 +51,38 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
             onClick={onToggle}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', gap: '12px', minWidth: 0, width: '100%' }}
         >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0, flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, width: '100%' }}>
-                    <span className="board-num" style={{ flexShrink: 0, margin: 0, whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                        {showFullTitle ? (
-                            <>
-                                <BoardName name={resolvedBoardName} />
-                                <span style={{ color: 'var(--text-muted)' }}>-</span>
-                                <InfoPill text={reworkSuffix} color={COLORS.purple} min_width={4} />
-                            </>
-                        ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+                <span className="board-num" style={{ flexShrink: 0, margin: 0, whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    {showFullTitle ? (
+                        <>
+                            <BoardName name={resolvedBoardName} />
+                            <span style={{ color: 'var(--text-muted)' }}>-</span>
                             <InfoPill text={reworkSuffix} color={COLORS.purple} min_width={4} />
-                        )}
-                    </span>
-                    <InfoPill 
-                        text={getReworkTypeText(rework.rework_type)}
-                        color={rework.rework_type === 'Major' ? COLORS.red : rework.rework_type === 'Silicon Swap' ? COLORS.purple : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orange : COLORS.indigo}
-                        bg={rework.rework_type === 'Major' ? COLORS.redLight : rework.rework_type === 'Silicon Swap' ? COLORS.purpleMedium : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeMedium : COLORS.indigoLight}
-                        border={`1px solid ${rework.rework_type === 'Major' ? COLORS.redBorder : rework.rework_type === 'Silicon Swap' ? COLORS.purpleBorder : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeBorder : COLORS.indigoBorder}`}
-                        min_width={7}
-                        title={getReworkTypeTooltip(rework.rework_type)}
-                    />
-                    {rework.title && !isMobile && (
-                        <span style={{ 
-                            flexShrink: 1, 
-                            minWidth: 0,
-                            whiteSpace: 'nowrap', 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis',
-                            color: 'var(--text-muted)'
-                        }}>
-                            {rework.title}
-                        </span>
+                        </>
+                    ) : (
+                        <InfoPill text={reworkSuffix} color={COLORS.purple} min_width={4} />
                     )}
-                </div>
-                {rework.title && isMobile && (
-                    <div style={{ 
-                        color: 'var(--text-muted)', 
-                        fontSize: '0.85rem', 
+                </span>
+                <InfoPill 
+                    text={getReworkTypeText(rework.rework_type)}
+                    color={rework.rework_type === 'Major' ? COLORS.red : rework.rework_type === 'Silicon Swap' ? COLORS.purple : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orange : COLORS.indigo}
+                    bg={rework.rework_type === 'Major' ? COLORS.redLight : rework.rework_type === 'Silicon Swap' ? COLORS.purpleMedium : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeMedium : COLORS.indigoLight}
+                    border={`1px solid ${rework.rework_type === 'Major' ? COLORS.redBorder : rework.rework_type === 'Silicon Swap' ? COLORS.purpleBorder : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeBorder : COLORS.indigoBorder}`}
+                    min_width={7}
+                    title={getReworkTypeTooltip(rework.rework_type)}
+                />
+                {rework.title && (
+                    <span style={{ 
+                        flexShrink: 1, 
+                        minWidth: 0,
                         whiteSpace: 'nowrap', 
                         overflow: 'hidden', 
-                        textOverflow: 'ellipsis', 
-                        width: '100%',
-                        textAlign: 'left'
+                        textOverflow: 'ellipsis',
+                        color: 'var(--text-muted)',
+                        fontSize: isMobile ? '0.8rem' : '0.85rem'
                     }}>
                         {rework.title}
-                    </div>
+                    </span>
                 )}
             </div>
 

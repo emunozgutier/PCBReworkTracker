@@ -14,6 +14,7 @@ export interface Project {
     name: string;
     description: string;
     pcb_count: number;
+    schematic_count?: number;
     pcbs: string[];
     revisions: string[];
     project_key: string;

@@ -222,9 +222,17 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
             if (parts.length === 3 && parts[2]) {
                 const id = parseInt(parts[2]);
                 const p = internalProjects.find(x => x.id === id);
-                return createResponse(p || { error: 'Not found' }, p ? 200 : 404);
+                if (p) {
+                    const count = internalProjectSchematics.filter(s => s.project_id === p.id).length;
+                    return createResponse({ ...p, schematic_count: count });
+                }
+                return createResponse({ error: 'Not found' }, 404);
             }
-            return createResponse(internalProjects);
+            const projectsWithCount = internalProjects.map(p => {
+                const count = internalProjectSchematics.filter(s => s.project_id === p.id).length;
+                return { ...p, schematic_count: count };
+            });
+            return createResponse(projectsWithCount);
         }
         if (method === 'POST') {
             const newProject = { id: Date.now(), ...body, pcb_count: 0, pcbs: [] };

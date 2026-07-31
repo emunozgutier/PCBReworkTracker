@@ -452,8 +452,9 @@ function generateProjectKey(name: string, attempt = 1): Promise<string> {
 app.get('/api/projects', (_req: Request, res: Response) => {
     const query = `
         SELECT projects.*, 
-        COUNT(pcbs.id) as pcb_count,
-        GROUP_CONCAT(pcbs.board_number) as pcb_list
+        COUNT(DISTINCT pcbs.id) as pcb_count,
+        GROUP_CONCAT(DISTINCT pcbs.board_number) as pcb_list,
+        (SELECT COUNT(*) FROM project_schematics WHERE project_schematics.project_id = projects.id) as schematic_count
         FROM projects
         LEFT JOIN pcbs ON projects.id = pcbs.project_id
         GROUP BY projects.id
