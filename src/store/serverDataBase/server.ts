@@ -14,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = 5002;
+const port = process.env.PORT || 5002;
 
 // Configure Multer Storage
 const storage = multer.diskStorage({
@@ -180,10 +180,12 @@ function serializeWrites(req: Request, res: Response, next: NextFunction) {
     }, 10000); // 10s safety fallback
 
     res.on('finish', () => {
+        console.log(`[Queue Event] finish event for ${req.method} ${req.originalUrl}`);
         clearTimeout(timeoutId);
         cleanup();
     });
     res.on('close', () => {
+        console.log(`[Queue Event] close event for ${req.method} ${req.originalUrl}`);
         clearTimeout(timeoutId);
         cleanup();
     });
@@ -339,6 +341,12 @@ db.all("SELECT id FROM pcbs WHERE short_code IS NULL", [], (err: Error | null, p
     // Start Server
     app.listen(port, () => {
         console.log(`Server running at http://localhost:${port}`);
+        console.log("Registered routes:");
+        app._router.stack.forEach((r: any) => {
+            if (r.route) {
+                console.log(`Route: ${Object.keys(r.route.methods).join(',').toUpperCase()} ${r.route.path}`);
+            }
+        });
     });
 }).catch(err => {
     console.error("Database initialization failed:", err);
@@ -674,29 +682,39 @@ interface LoginAttempt {
 
 app.post('/api/otp/verify', (req: Request, res: Response) => {
     const { secret, token, username } = req.body;
+    console.log("[OTP DEBUG] /api/otp/verify entry. Body:", req.body);
 
     // If username is not provided, this is a stateless verify call (e.g. from AddUser setup)
     if (!username) {
+        console.log("[OTP DEBUG] Stateless verify call");
         if (!secret || !token) {
+            console.log("[OTP DEBUG] Error: Secret and token are required");
             return res.status(400).json({ error: "Secret and token are required." });
         }
         try {
             const isValid = verifyTotp(secret, token);
+            console.log("[OTP DEBUG] Stateless verify result:", isValid);
             return res.json({ valid: isValid });
         } catch (err: any) {
+            console.log("[OTP DEBUG] Stateless verify exception:", err.message);
             return res.status(400).json({ error: err.message });
         }
     }
 
     const cleanUsername = username.replace(/\s+/g, '').toLowerCase();
+    console.log("[OTP DEBUG] Statefull verify for user:", cleanUsername);
 
     db.get("SELECT id, login_attempts FROM owners WHERE username = ?", [cleanUsername], (err: Error | null, row: any) => {
         if (err) {
+            console.error("[OTP DEBUG] DB Select Error:", err);
             return res.status(500).json({ error: err.message });
         }
         if (!row) {
+            console.log("[OTP DEBUG] User not found");
             return res.status(404).json({ error: "User not found." });
         }
+
+        console.log("[OTP DEBUG] User row found:", row);
 
         let attempts: LoginAttempt[] = [];
         if (row.login_attempts) {
@@ -720,6 +738,7 @@ app.post('/api/otp/verify', (req: Request, res: Response) => {
                 const now = Date.now();
                 if (now < lockoutEndTime) {
                     const minutesLeft = Math.ceil((lockoutEndTime - now) / (60 * 1000));
+                    console.log("[OTP DEBUG] Account is locked out. minutesLeft:", minutesLeft);
                     return res.status(403).json({
                         error: `This account is temporarily locked due to multiple failed login attempts. Please try again in ${minutesLeft} minute${minutesLeft !== 1 ? 's' : ''}.`
                     });
@@ -731,11 +750,15 @@ app.post('/api/otp/verify', (req: Request, res: Response) => {
         let isValid = true;
         if (secret) {
             if (!token) {
+                console.log("[OTP DEBUG] Token is missing, isValid = false");
                 isValid = false;
             } else {
                 try {
+                    console.log("[OTP DEBUG] Calling verifyTotp with secret length:", secret.length, "token:", token);
                     isValid = verifyTotp(secret, token);
-                } catch (totpErr) {
+                    console.log("[OTP DEBUG] verifyTotp returned:", isValid);
+                } catch (totpErr: any) {
+                    console.error("[OTP DEBUG] verifyTotp exception:", totpErr);
                     isValid = false;
                 }
             }
@@ -752,10 +775,14 @@ app.post('/api/otp/verify', (req: Request, res: Response) => {
             attempts.shift();
         }
 
+        console.log("[OTP DEBUG] Updating login_attempts to DB. Row ID:", row.id, "attempts:", attempts);
         db.run("UPDATE owners SET login_attempts = ? WHERE id = ?", [JSON.stringify(attempts), row.id], (updateErr: Error | null) => {
             if (updateErr) {
+                console.error("[OTP DEBUG] DB UPDATE Error:", updateErr);
                 return res.status(500).json({ error: updateErr.message });
             }
+
+            console.log("[OTP DEBUG] DB UPDATE complete. isValid:", isValid);
 
             if (!isValid) {
                 // If it was failed, check if this triggers a new lockout
@@ -763,18 +790,21 @@ app.post('/api/otp/verify', (req: Request, res: Response) => {
                     const oldest = attempts[0].timestamp;
                     const latest = attempts[2].timestamp;
                     if (latest - oldest <= 15 * 60 * 1000) {
+                        console.log("[OTP DEBUG] Lockout triggered by 3rd failed attempt");
                         return res.status(403).json({
                             valid: false,
                             error: "Invalid verification code. This account has been locked for 30 minutes due to 3 failed login attempts."
                         });
                     }
                 }
+                console.log("[OTP DEBUG] Invalid verification code response");
                 return res.status(400).json({
                     valid: false,
                     error: "Invalid 6-digit verification code. Please check your authenticator."
                 });
             }
 
+            console.log("[OTP DEBUG] Valid verification response. Sending success!");
             return res.json({ valid: true });
         });
     });
