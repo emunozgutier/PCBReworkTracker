@@ -490,5 +490,17 @@
     border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
+@media (max-width: 600px) {
+    .permissions-table th, 
+    .permissions-table td {
+        padding: 8px 6px !important;
+        font-size: 0.75rem !important;
+    }
+    .resource-cell {
+        padding: 8px 4px !important;
+        font-size: 0.7rem !important;
+    }
+}
+
 
 

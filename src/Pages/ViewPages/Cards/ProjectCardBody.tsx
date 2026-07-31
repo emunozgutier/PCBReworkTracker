@@ -150,7 +150,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                     onClick={(e) => { e.stopPropagation(); editItem('projects_edit', project.id); }}
                     disabled={!isSuperUser}
                     title={!isSuperUser ? "This is only for super users" : "Edit project details"}
-                    label={isMobile ? "Edit" : "Edit Project"}
+                    label={isMobile ? "" : "Edit Project"}
                 />
                 {canViewSchematics && (
                     <button
@@ -163,7 +163,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '8px',
+                            gap: isMobile ? '0' : '8px',
                             background: 'rgba(239, 68, 68, 0.12)',
                             color: '#f87171',
                             border: '1px solid rgba(239, 68, 68, 0.4)',
@@ -178,7 +178,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                         title="View project schematic PDF files"
                     >
                         <FileText size={18} />
-                        <span>Schematics</span>
+                        {!isMobile && <span>Schematics</span>}
                     </button>
                 )}
                 <ViewButton 
@@ -189,7 +189,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                         setPage('pcbs');
                     }}
                     className="view-pcbs-btn"
-                    label={isMobile ? "View" : "View PCBs Info"}
+                    label={isMobile ? "" : "View PCBs Info"}
                 />
                 <DeleteButton 
                     onClick={(e) => {
@@ -198,7 +198,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                     }}
                     disabled={!isSuperUser}
                     title={!isSuperUser ? "This is only for super users" : "Delete project"}
-                    label={isMobile ? "Delete" : "Delete Project"}
+                    label={isMobile ? "" : "Delete Project"}
                 />
             </div>
 

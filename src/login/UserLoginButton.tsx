@@ -7,7 +7,7 @@ import { API_BASE, apiFetch } from '../store/serverDataBase/apiBridge';
 import './UserLoginButton.css';
 
 export function UserLoginButton() {
-    const { currentUser, currentUserRole, setCurrentUser } = useAppState();
+    const { currentUser, currentUserRole, setCurrentUser, isMobile } = useAppState();
     const { owners, fetchOwners } = useOwnerStore();
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -174,7 +174,7 @@ export function UserLoginButton() {
                 }}
                 title={`Logged in as ${displayLabel}`}
             >
-                <UserIcon size={18} style={{ color: roleBadgeColor }} />
+                {!isMobile && <UserIcon size={18} style={{ color: roleBadgeColor }} />}
                 <span>{displayLabel}</span>
                 {currentUserRole !== 'Guest' && <ChevronDown size={14} style={{ opacity: 0.6 }} />}
             </button>

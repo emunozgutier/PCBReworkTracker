@@ -1,7 +1,8 @@
 .user-login-container {
   position: absolute;
-  top: 16px;
+  top: 50%;
   right: 20px;
+  transform: translateY(-50%);
   z-index: 1000;
 }
 
@@ -114,5 +115,11 @@
 .dropdown-footer svg {
   flex-shrink: 0;
   color: var(--accent);
+}
+
+@media (max-width: 768px) {
+  .user-login-dropdown {
+    right: -10px;
+  }
 }
 

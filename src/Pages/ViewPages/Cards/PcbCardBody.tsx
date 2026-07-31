@@ -159,7 +159,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                     onClick={(e) => { e.stopPropagation(); editItem('pcbs_edit', pcb.id); }}
                     disabled={!isSuperUser}
                     title={!isSuperUser ? "Only super users can do that" : "Edit PCB"}
-                    label={isMobile ? "Edit" : "Edit PCB"}
+                    label={isMobile ? "" : "Edit PCB"}
                 />
 
                 {schematic && (
@@ -169,21 +169,21 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                             const fullUrl = schematic.path.startsWith('http') ? schematic.path : `${API_BASE.replace('/api', '')}/api${schematic.path}`;
                             window.open(fullUrl, '_blank');
                         }}
-                        label={isMobile ? "Schematic" : "View Schematic"}
+                        label={isMobile ? "" : "View Schematic"}
                         icon={FileText}
                     />
                 )}
 
                 <QrButton 
                     onClick={(e) => { e.stopPropagation(); setQrModalBoard(pcb.board_number); }}
-                    label={isMobile ? "QR" : "QR Code"}
+                    label={isMobile ? "" : "QR Code"}
                 />
                 
                 <DeleteButton 
                     onClick={(e) => { e.stopPropagation(); setIsRemovePcbOpen(true); }}
                     disabled={!isSuperUser}
                     title={!isSuperUser ? "Only super users can do that" : "Delete PCB"}
-                    label={isMobile ? "Delete" : "Delete PCB"}
+                    label={isMobile ? "" : "Delete PCB"}
                 />
             </div>
 
