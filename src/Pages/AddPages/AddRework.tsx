@@ -309,7 +309,9 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                                 <label htmlFor="rework_type">Rework Type</label>
                                 <select id="rework_type" value={reworkType} onChange={(e) => setReworkType(e.target.value)}>
                                     {allowedOptions.map(opt => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        <option key={opt.value} value={opt.value}>
+                                            {reworkType === opt.value ? opt.value : opt.label}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
@@ -369,7 +371,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                 ) : (
                     <>
                         <FormGroup title="PCB Board & Checksum">
-                            <div className="form-row">
+                            <div className="form-row" style={{ flexWrap: 'nowrap' }}>
                                 <div className="form-group flex-1">
                                     <label htmlFor="pcb">PCB Board *</label>
                                     <select 
@@ -418,7 +420,9 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                             <label htmlFor="rework_type">Rework Type</label>
                             <select id="rework_type" value={reworkType} onChange={(e) => setReworkType(e.target.value)}>
                                 {allowedOptions.map(opt => (
-                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    <option key={opt.value} value={opt.value}>
+                                        {reworkType === opt.value ? opt.value : opt.label}
+                                    </option>
                                 ))}
                             </select>
                         </div>
