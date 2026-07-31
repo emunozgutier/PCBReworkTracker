@@ -4,9 +4,9 @@ import { useAppState } from '../../../store/useAppState';
 import { useReworkStore } from '../../../store/clientDataBase/useReworkStore';
 import { usePcbStore } from '../../../store/clientDataBase/usePcbStore';
 import { EditButton, DeleteButton } from '../../../components/forms/ActionButtons';
-import { COLORS } from '../../../store/useStyles';
 import { RemoveRework } from '../../RemovePage/RemoveRework';
 import { useDeleteEditRequirements } from '../../../store/useDeleteEditRequirements';
+import { InfoPill } from '../../../components/InfoPill';
 
 interface ReworkCardBodyProps {
     rework: any;
@@ -75,136 +75,91 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
             </div>
 
             <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minWidth: 0, width: '100%' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: 0, width: '100%' }}>
                     
-                    <div className="rework-body-row">
-                        {/* Column 1: User/Type, Date & Photos (skinny content-width) */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center', flex: '0 0 auto', minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                                </svg>
-                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-                                    {new Date(rework.timestamp).toLocaleDateString()}
-                                </span>
-                            </div>
-                            <div style={{ 
-                                display: 'inline-flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'center',
-                                padding: '4px 12px', 
-                                background: rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.1)' 
-                                          : rework.rework_type === 'Silicon Swap' ? COLORS.purpleLight 
-                                : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeLight
-                                          : 'rgba(59, 130, 246, 0.1)', 
-                                color: rework.rework_type === 'Major' ? '#ef4444' 
-                                     : rework.rework_type === 'Silicon Swap' ? COLORS.purple 
-                                     : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orange
-                                     : '#3b82f6', 
-                                borderRadius: '16px', 
-                                fontSize: '0.75rem', 
-                                fontWeight: 700,
-                                border: `1px solid ${
-                                    rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.2)' 
-                                  : rework.rework_type === 'Silicon Swap' ? COLORS.purpleDark 
-                                  : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeDark
-                                  : 'rgba(59, 130, 246, 0.2)'
-                                }`,
-                                whiteSpace: 'nowrap',
-                                alignSelf: 'flex-start'
-                            }}>
-                                {rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? 'R swap' : (rework.rework_type || 'Minor')}
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '6px' }}>
-                                <span style={{ 
-                                    background: 'rgba(255, 255, 255, 0.1)',
-                                    color: 'var(--text)',
-                                    padding: '2px 8px',
-                                    borderRadius: '12px',
-                                    fontSize: '0.75rem',
-                                    fontWeight: 600,
-                                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    {/* Top line: Date, Type, Owner, Picture Count */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                                {new Date(rework.timestamp).toLocaleDateString()}
+                            </span>
+                        </div>
+
+
+                        <InfoPill 
+                            text={`@${rework.owner_username || rework.owner_name || rework.owner || 'System'}`} 
+                            color="var(--text)"
+                            min_width={8}
+                        />
+
+                        {imagePaths.length > 0 && (
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); setShowGallery(true); }}
+                                style={{
                                     display: 'inline-flex',
                                     alignItems: 'center',
-                                    whiteSpace: 'nowrap',
-                                    textOverflow: 'ellipsis',
-                                    overflow: 'hidden',
-                                    width: '100%',
-                                    boxSizing: 'border-box'
-                                }}>
-                                    @{rework.owner_username || rework.owner_name || rework.owner || 'System'}
+                                    justifyContent: 'center',
+                                    gap: '6px',
+                                    background: 'rgba(99, 102, 241, 0.08)',
+                                    border: '1px solid rgba(99, 102, 241, 0.25)',
+                                    color: '#818cf8',
+                                    padding: '4px 10px',
+                                    borderRadius: '12px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 700
+                                }}
+                                className="action-btn-hover"
+                                title="Click to view photos"
+                            >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                                <span style={{ whiteSpace: 'nowrap' }}>
+                                    {imagePaths.length} Photo{imagePaths.length !== 1 ? 's' : ''}
                                 </span>
-                            </div>
-                            {imagePaths.length > 0 && (
-                                <button 
-                                    onClick={(e) => { e.stopPropagation(); setShowGallery(true); }}
-                                    style={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '6px',
-                                        background: 'rgba(99, 102, 241, 0.08)',
-                                        border: '1px solid rgba(99, 102, 241, 0.25)',
-                                        color: '#818cf8',
-                                        padding: '4px 10px',
-                                        borderRadius: '12px',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s',
-                                        width: 'fit-content',
-                                        alignSelf: 'flex-start',
-                                        fontSize: '0.75rem',
-                                        fontWeight: 700,
-                                        marginTop: '4px'
-                                    }}
-                                    className="action-btn-hover"
-                                    title="Click to view photos"
-                                >
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                        <polyline points="21 15 16 10 5 21"></polyline>
-                                    </svg>
-                                    <span style={{ whiteSpace: 'nowrap' }}>
-                                        {imagePaths.length} Photo{imagePaths.length !== 1 ? 's' : ''}
-                                    </span>
-                                </button>
-                            )}
-                        </div>
+                            </button>
+                        )}
+                    </div>
 
-                        <div className="rework-body-divider mobile-hide"></div>
-
-                        {/* Column 2: Description */}
-                        <div className="rework-description-col" style={{ flex: '1 1 0%', minWidth: 0 }}>
-                            {rework.description && rework.description.trim() ? (
-                                <p 
-                                    style={{ 
-                                        margin: 0, 
-                                        fontSize: '0.85rem', 
-                                        color: 'var(--text)', 
-                                        display: '-webkit-box',
-                                        WebkitLineClamp: 3,
-                                        WebkitBoxOrient: 'vertical',
-                                        overflow: 'hidden',
-                                        whiteSpace: 'pre-wrap',
-                                        wordBreak: 'break-word',
-                                        cursor: 'pointer',
-                                        transition: 'color 0.2s',
-                                        maxWidth: '100%'
-                                    }}
-                                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent)'}
-                                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
-                                    onClick={(e) => { e.stopPropagation(); setShowDescriptionModal(true); }}
-                                    title="Click to view full description"
-                                >
-                                    {rework.description}
-                                </p>
-                            ) : (
-                                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>No Description</span>
-                            )}
-                        </div>
+                    {/* Description Below */}
+                    <div style={{ width: '100%', minWidth: 0, marginTop: '4px' }}>
+                        {rework.description && rework.description.trim() ? (
+                            <p 
+                                style={{ 
+                                    margin: 0, 
+                                    fontSize: '0.85rem', 
+                                    color: 'var(--text)', 
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 3,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden',
+                                    whiteSpace: 'pre-wrap',
+                                    wordBreak: 'break-word',
+                                    cursor: 'pointer',
+                                    transition: 'color 0.2s',
+                                    maxWidth: '100%',
+                                    textAlign: 'left'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent)'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text)'}
+                                onClick={(e) => { e.stopPropagation(); setShowDescriptionModal(true); }}
+                                title="Click to view full description"
+                            >
+                                {rework.description}
+                            </p>
+                        ) : (
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'left', display: 'block' }}>No Description</span>
+                        )}
                     </div>
                 </div>
             </div>

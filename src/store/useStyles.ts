@@ -40,5 +40,9 @@ export const FONTS = {
         md: '0.9rem',
         lg: '1rem',
         xl: '1.2rem',
-    }
+    },
+    families: {
+        mono: 'ui-monospace, Consolas, monospace'
+    },
+    monospace: 'ui-monospace, Consolas, monospace'
 };

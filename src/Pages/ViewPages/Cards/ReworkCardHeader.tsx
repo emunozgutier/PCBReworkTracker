@@ -1,9 +1,9 @@
-﻿import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useAppState } from '../../../store/useAppState';
 import { usePcbStore } from '../../../store/clientDataBase/usePcbStore';
 import { COLORS } from '../../../store/useStyles';
-
 import { BoardName } from '../../../components/BoardName';
+import { InfoPill } from '../../../components/InfoPill';
 
 interface ReworkCardHeaderProps {
     rework: any;
@@ -29,14 +29,15 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
         >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0, flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, width: '100%' }}>
-                    <span className="board-num" style={{ flexShrink: 0, margin: 0, whiteSpace: 'nowrap' }}>
+                    <span className="board-num" style={{ flexShrink: 0, margin: 0, whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                         {showFullTitle ? (
                             <>
                                 <BoardName name={resolvedBoardName} />
-                                <span style={{ color: COLORS.purple, fontWeight: 'bold' }}>-{reworkSuffix}</span>
+                                <span style={{ color: 'var(--text-muted)' }}>-</span>
+                                <InfoPill text={reworkSuffix} color={COLORS.purple} min_width={4} />
                             </>
                         ) : (
-                            <span style={{ color: COLORS.purple, fontWeight: 'bold' }}>{reworkSuffix}</span>
+                            <InfoPill text={reworkSuffix} color={COLORS.purple} min_width={4} />
                         )}
                     </span>
                     <span style={{ 
