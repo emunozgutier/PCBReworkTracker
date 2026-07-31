@@ -18,8 +18,13 @@ const port = process.env.PORT || 5002;
 
 // Configure Multer Storage
 const storage = multer.diskStorage({
-    destination: function (_req, _file, cb) {
-        const dir = path.join(__dirname, '../../../pictures');
+    destination: function (req, _file, cb) {
+        let dir = '';
+        if (req.originalUrl.includes('/schematics')) {
+            dir = path.join(__dirname, 'schematics');
+        } else {
+            dir = path.join(__dirname, 'pictures');
+        }
         if (!fs.existsSync(dir)){
             fs.mkdirSync(dir, { recursive: true });
         }
@@ -228,7 +233,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     serializeWrites(req, res, next);
 });
 
-app.use('/api/pictures', express.static(path.join(__dirname, '../../../pictures')));
+app.use('/api/pictures', express.static(path.join(__dirname, 'pictures')));
+app.use('/api/schematics', express.static(path.join(__dirname, 'schematics')));
 
 // Initialize Database
 initDb().then(() => {
@@ -903,8 +909,8 @@ app.post('/api/reworks', upload.any(), deduplicate, serializeWrites, (req: Reque
                 reqFiles.slice(0, 3).forEach((file, index) => {
                     const ext = path.extname(file.originalname) || '.jpg';
                     const newFileName = `${reworkName}-PIC-${index + 1}${ext}`;
-                    const oldPath = path.join(__dirname, '../../../pictures', file.filename);
-                    const newPath = path.join(__dirname, '../../../pictures', newFileName);
+                    const oldPath = path.join(__dirname, 'pictures', file.filename);
+                    const newPath = path.join(__dirname, 'pictures', newFileName);
                     
                     try {
                         if (fs.existsSync(oldPath)) {
@@ -1022,13 +1028,13 @@ app.post('/api/projects/:id/schematics', upload.any(), (req: Request, res: Respo
                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E4);
                 const newFileName = `${projectKey}-SCH-${uniqueSuffix}-${cleanOriginal}`;
                 
-                const oldPath = path.join(__dirname, '../../../pictures', file.filename);
-                const newPath = path.join(__dirname, '../../../pictures', newFileName);
+                const oldPath = path.join(__dirname, 'schematics', file.filename);
+                const newPath = path.join(__dirname, 'schematics', newFileName);
                 
                 try {
                     if (fs.existsSync(oldPath)) {
                         fs.renameSync(oldPath, newPath);
-                        const relativePath = `/pictures/${newFileName}`;
+                        const relativePath = `/schematics/${newFileName}`;
                         
                         db.run(
                             "INSERT INTO project_schematics (project_id, filename, path) VALUES (?, ?, ?)",
@@ -1070,7 +1076,7 @@ app.delete('/api/projects/:projectId/schematics/:schematicId', (req: Request, re
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: "Schematic not found" });
 
-        const filePath = path.join(__dirname, '../../../', row.path.replace(/^\//, ''));
+        const filePath = path.join(__dirname, row.path.replace(/^\//, ''));
         db.run("DELETE FROM project_schematics WHERE id = ?", [schematicId], function(this: any, deleteErr: Error | null) {
             if (deleteErr) return res.status(500).json({ error: deleteErr.message });
 
