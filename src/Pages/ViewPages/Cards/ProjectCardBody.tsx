@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { COLORS } from '../../../store/useStyles';
 import { EditButton, ViewButton, DeleteButton } from '../../../components/forms/ActionButtons';
 import { usePcbStore } from '../../../store/clientDataBase/usePcbStore';
@@ -7,6 +7,9 @@ import { useAppState } from '../../../store/useAppState';
 import { PcbCardHeader } from './PcbCardHeader';
 import { ProjectCardSummary } from './ProjectCardSummary';
 import { RemoveProject } from '../../RemovePage/RemoveProject';
+import { FileText } from 'lucide-react';
+import { ProjectSchematicList } from '../../PopupPage/ProjectSchematicList';
+import { usePermissionsStore } from '../../../store/clientDataBase/usePermissionsStore';
 
 interface ProjectCardBodyProps {
     project: {
@@ -28,6 +31,11 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     const isSuperUser = currentUserRole === 'Super User';
     
     const [isRemoveProjectOpen, setIsRemoveProjectOpen] = useState(false);
+    const [isSchematicsOpen, setIsSchematicsOpen] = useState(false);
+
+    const permissions = usePermissionsStore(state => state.permissions);
+    const roleKey = currentUserRole === 'Super User' ? 'superUser' : currentUserRole === 'User' ? 'user' : 'guest';
+    const canViewSchematics = !!permissions[`Schematics__View__${roleKey}`];
 
     const confirmRemoveProject = async () => {
         await deleteProject(project.id);
@@ -144,6 +152,35 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                     title={!isSuperUser ? "This is only for super users" : "Edit project details"}
                     label={isMobile ? "Edit" : "Edit Project"}
                 />
+                {canViewSchematics && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsSchematicsOpen(true);
+                        }}
+                        style={{
+                            flex: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            background: 'rgba(239, 68, 68, 0.12)',
+                            color: '#f87171',
+                            border: '1px solid rgba(239, 68, 68, 0.4)',
+                            padding: '10px 16px',
+                            borderRadius: '8px',
+                            fontSize: '0.9rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                        }}
+                        className="action-btn-hover action-btn-schematics"
+                        title="View project schematic PDF files"
+                    >
+                        <FileText size={18} />
+                        <span>Schematics</span>
+                    </button>
+                )}
                 <ViewButton 
                     onClick={(e) => {
                         e.stopPropagation();
@@ -169,6 +206,12 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                 isOpen={isRemoveProjectOpen}
                 onClose={() => setIsRemoveProjectOpen(false)}
                 onConfirm={confirmRemoveProject}
+                project={project}
+            />
+
+            <ProjectSchematicList
+                isOpen={isSchematicsOpen}
+                onClose={() => setIsSchematicsOpen(false)}
                 project={project}
             />
 

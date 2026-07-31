@@ -83,6 +83,16 @@ const initDb = async (): Promise<void> => {
         dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_key ON projects(project_key)`);
         dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_name ON projects(name COLLATE NOCASE)`);
 
+        // Project Schematics Table
+        dbInstance.run(`CREATE TABLE IF NOT EXISTS project_schematics (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL,
+            filename TEXT NOT NULL,
+            path TEXT NOT NULL,
+            uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+        )`);
+
         // PCB Flavors Table
         dbInstance.run(`CREATE TABLE IF NOT EXISTS pcb_flavors (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -1,5 +1,5 @@
-﻿import { useState } from 'react';
-import { ArrowLeft, Save, HelpCircle } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft, Save, HelpCircle, FileText } from 'lucide-react';
 import { FormTabs } from '../../components/forms/FormTabs';
 import { MultipleInputs } from '../../components/forms/MultipleInputs';
 import { useProjectStore } from '../../store/clientDataBase/useProjectStore';
@@ -55,6 +55,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [flavors, setFlavors] = useState<{name: string, revisions: string, boms?: string}[]>([
         { name: 'Validation', revisions: '1.0', boms: 'BOM1, BOM2' }
     ]);
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [activeTab, setActiveTab] = useState(0);
     const [isKeyManuallyEdited, setIsKeyManuallyEdited] = useState(false);
     const [autoKeyError, setAutoKeyError] = useState('');
@@ -108,7 +109,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
         const success = await addProject({ 
             name, description: '', revisions, project_key: projectKey, 
             flavors: payloadPcbFlavors, silicon_corners: siliconCorners, number_format: numberFormat 
-        });
+        }, selectedFiles);
         if (success) {
             onSuccess();
         }
@@ -265,6 +266,88 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                             </div>
                         )}
                     </FormTabs>
+                </div>
+                <div className="form-group">
+                    <label>Schematic PDF Files (Optional)</label>
+                    <input 
+                        type="file" 
+                        multiple 
+                        accept=".pdf" 
+                        onChange={(e) => {
+                            if (e.target.files) {
+                                setSelectedFiles(Array.from(e.target.files));
+                            }
+                        }}
+                        style={{ display: 'none' }}
+                        id="schematics-upload"
+                    />
+                    <label 
+                        htmlFor="schematics-upload"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            padding: '12px 16px',
+                            background: 'rgba(255, 255, 255, 0.02)',
+                            border: '1px dashed var(--border)',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            color: 'var(--text-muted)',
+                            transition: 'all 0.2s',
+                            fontWeight: 500
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                            e.currentTarget.style.borderColor = 'var(--accent)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
+                            e.currentTarget.style.borderColor = 'var(--border)';
+                        }}
+                    >
+                        <FileText size={18} />
+                        <span>Select PDF Schematics</span>
+                    </label>
+
+                    {selectedFiles.length > 0 && (
+                        <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {selectedFiles.map((file, idx) => (
+                                <div 
+                                    key={idx} 
+                                    style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'space-between', 
+                                        padding: '8px 12px', 
+                                        background: 'rgba(255, 255, 255, 0.01)', 
+                                        border: '1px solid var(--border)', 
+                                        borderRadius: '6px',
+                                        fontSize: '0.85rem'
+                                    }}
+                                >
+                                    <span style={{ color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, paddingRight: '8px' }}>
+                                        {file.name}
+                                    </span>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setSelectedFiles(selectedFiles.filter((_, i) => i !== idx))}
+                                        style={{ 
+                                            background: 'transparent', 
+                                            border: 'none', 
+                                            color: '#ef4444', 
+                                            cursor: 'pointer',
+                                            padding: '2px',
+                                            fontSize: '0.8rem',
+                                            fontWeight: 600
+                                        }}
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
                 {error && <div className="error-message" style={{ color: '#ef4444', marginBottom: '1rem', padding: '0.5rem', backgroundColor: '#fee2e2', borderRadius: '4px' }}>{error}</div>}
                 <button type="submit" className="submit-button" disabled={loading}>

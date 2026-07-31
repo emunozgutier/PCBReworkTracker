@@ -9,7 +9,7 @@ import type { ActionItem } from './RolePermissionSubTable';
 export function RolePermissionCard() {
     const { allowGuestMinorRework, setAllowGuestMinorRework } = useAppState();
     const { currentUserRole, isSuperUser } = useCurrentUser();
-    const [selectedSubTable, setSelectedSubTable] = useState<'Projects' | 'PCBs' | 'Reworks' | 'Users' | 'Tags'>('Projects');
+    const [selectedSubTable, setSelectedSubTable] = useState<'Projects' | 'PCBs' | 'Reworks' | 'Users' | 'Tags' | 'Schematics'>('Projects');
     const [showSavePopup, setShowSavePopup] = useState(false);
 
     const setPermissions = usePermissionsStore((state) => state.setPermissions);
@@ -100,6 +100,12 @@ export function RolePermissionCard() {
         { name: 'Delete' },
     ]);
 
+    const schematicActions = buildActions('Schematics', [
+        { name: 'View' },
+        { name: 'Add' },
+        { name: 'Delete' },
+    ]);
+
     // Compute diff comparison list between draft and initially committed snapshot
     const diffList: string[] = [];
     Object.keys(draftPermissions).forEach((key) => {
@@ -178,6 +184,7 @@ export function RolePermissionCard() {
                         <option value="Reworks">Reworks</option>
                         <option value="Users">Users</option>
                         <option value="Tags">Tags</option>
+                        <option value="Schematics">Schematics</option>
                     </select>
                 </div>
 
@@ -246,6 +253,15 @@ export function RolePermissionCard() {
                                 resourceName="Tags"
                                 rowSpan={4}
                                 actions={tagActions}
+                                currentUserRole={currentUserRole}
+                                isSuperUser={isSuperUser}
+                            />
+                        )}
+                        {selectedSubTable === 'Schematics' && (
+                            <RolePermissionSubTable
+                                resourceName="Schematics"
+                                rowSpan={3}
+                                actions={schematicActions}
                                 currentUserRole={currentUserRole}
                                 isSuperUser={isSuperUser}
                             />

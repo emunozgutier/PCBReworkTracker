@@ -8,6 +8,22 @@ export const API_BASE = `http://${window.location.hostname}:5002/api`;
 let internalProjects = [...demoData.demoProjects] as any[];
 let internalPcbs = [...demoData.demoPcbs] as any[];
 let internalOwners = [...demoData.demoOwners] as any[];
+let internalProjectSchematics = [
+    {
+        id: 1,
+        project_id: 1, // Ash (typically project ID 1 in demoData)
+        filename: "Ash_Board_V1_Schematic.pdf",
+        path: "/pictures/demo_schematic.pdf",
+        uploaded_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+    },
+    {
+        id: 2,
+        project_id: 1, // Ash
+        filename: "Ash_Board_V2_Datasheet.pdf",
+        path: "/pictures/demo_schematic.pdf",
+        uploaded_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+    }
+] as any[];
 const reworkCounts: Record<number, number> = {};
 let internalReworks = demoData.demoReworks.map((r: any) => {
 
@@ -150,8 +166,59 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
         }
     }
     if (localPath.startsWith('/projects')) {
+        const parts = localPath.split('/');
+        
+        // Check for /projects/:id/schematics/:schematicId (delete)
+        if (parts.length === 5 && parts[3] === 'schematics') {
+            const projectId = parseInt(parts[2]);
+            const schematicId = parseInt(parts[4]);
+            if (method === 'DELETE') {
+                internalProjectSchematics = internalProjectSchematics.filter(s => !(s.id === schematicId && s.project_id === projectId));
+                return createResponse({ message: 'Schematic deleted' });
+            }
+        }
+        
+        // Check for /projects/:id/schematics (get / post)
+        if (parts.length === 4 && parts[3] === 'schematics') {
+            const projectId = parseInt(parts[2]);
+            if (method === 'GET') {
+                const schematics = internalProjectSchematics.filter(s => s.project_id === projectId);
+                return createResponse(schematics);
+            }
+            if (method === 'POST') {
+                const created: any[] = [];
+                if (options?.body && options.body instanceof FormData) {
+                    for (const [key, value] of options.body.entries()) {
+                        const file = value as any;
+                        if (file && typeof file === 'object' && file.name) {
+                            const sch = {
+                                id: Date.now() + Math.floor(Math.random() * 1000) + created.length,
+                                project_id: projectId,
+                                filename: file.name,
+                                path: "/pictures/demo_schematic.pdf",
+                                uploaded_at: new Date().toISOString()
+                            };
+                            internalProjectSchematics.push(sch);
+                            created.push(sch);
+                        }
+                    }
+                }
+                if (created.length === 0) {
+                    const sch = {
+                        id: Date.now(),
+                        project_id: projectId,
+                        filename: "datasheet_revA.pdf",
+                        path: "/pictures/demo_schematic.pdf",
+                        uploaded_at: new Date().toISOString()
+                    };
+                    internalProjectSchematics.push(sch);
+                    created.push(sch);
+                }
+                return createResponse(created, 201);
+            }
+        }
+
         if (method === 'GET') {
-            const parts = localPath.split('/');
             if (parts.length === 3 && parts[2]) {
                 const id = parseInt(parts[2]);
                 const p = internalProjects.find(x => x.id === id);
@@ -165,12 +232,12 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
             return createResponse(newProject, 201);
         }
         if (method === 'PUT') {
-            const id = parseInt(localPath.split('/').pop() || '0');
+            const id = parseInt(parts.pop() || '0');
             internalProjects = internalProjects.map(p => p.id === id ? { ...p, ...body } : p);
             return createResponse({ message: 'Project updated' });
         }
         if (method === 'DELETE') {
-            const id = parseInt(localPath.split('/').pop() || '0');
+            const id = parseInt(parts.pop() || '0');
             internalProjects = internalProjects.filter(p => p.id !== id);
             return createResponse({ message: 'Project deleted' });
         }

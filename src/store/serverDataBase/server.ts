@@ -988,6 +988,106 @@ app.delete('/api/projects/:id', (req: Request, res: Response) => {
     });
 });
 
+// --- Project Schematics API ---
+app.get('/api/projects/:id/schematics', (req: Request, res: Response) => {
+    const projectId = req.params.id;
+    db.all("SELECT * FROM project_schematics WHERE project_id = ? ORDER BY uploaded_at DESC", [projectId], (err: Error | null, rows: any[]) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+app.post('/api/projects/:id/schematics', upload.any(), (req: Request, res: Response) => {
+    const projectId = req.params.id;
+    db.get("SELECT name, project_key FROM projects WHERE id = ?", [projectId], (err: Error | null, project: any) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!project) return res.status(404).json({ error: "Project not found" });
+
+        const reqFiles = req.files as Express.Multer.File[] | undefined;
+        if (!reqFiles || reqFiles.length === 0) {
+            return res.status(400).json({ error: "No files uploaded" });
+        }
+
+        const projectKey = project.project_key || 'PRJ';
+        let processedCount = 0;
+        const insertedSchematics: any[] = [];
+        let errorOccurred = false;
+
+        db.serialize(() => {
+            reqFiles.forEach((file) => {
+                if (errorOccurred) return;
+                
+                const originalName = file.originalname;
+                const cleanOriginal = originalName.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E4);
+                const newFileName = `${projectKey}-SCH-${uniqueSuffix}-${cleanOriginal}`;
+                
+                const oldPath = path.join(__dirname, '../../../pictures', file.filename);
+                const newPath = path.join(__dirname, '../../../pictures', newFileName);
+                
+                try {
+                    if (fs.existsSync(oldPath)) {
+                        fs.renameSync(oldPath, newPath);
+                        const relativePath = `/pictures/${newFileName}`;
+                        
+                        db.run(
+                            "INSERT INTO project_schematics (project_id, filename, path) VALUES (?, ?, ?)",
+                            [projectId, originalName, relativePath],
+                            function(this: any, insertErr: Error | null) {
+                                if (insertErr) {
+                                    errorOccurred = true;
+                                    return res.status(500).json({ error: insertErr.message });
+                                }
+                                insertedSchematics.push({
+                                    id: this.lastID,
+                                    project_id: parseInt(projectId),
+                                    filename: originalName,
+                                    path: relativePath,
+                                    uploaded_at: new Date().toISOString()
+                                });
+                                
+                                processedCount++;
+                                if (processedCount === reqFiles.length && !errorOccurred) {
+                                    res.status(201).json(insertedSchematics);
+                                }
+                            }
+                        );
+                    } else {
+                        throw new Error("Uploaded file not found on disk");
+                    }
+                } catch (renameErr: any) {
+                    errorOccurred = true;
+                    return res.status(500).json({ error: renameErr.message });
+                }
+            });
+        });
+    });
+});
+
+app.delete('/api/projects/:projectId/schematics/:schematicId', (req: Request, res: Response) => {
+    const { projectId, schematicId } = req.params;
+    db.get("SELECT * FROM project_schematics WHERE id = ? AND project_id = ?", [schematicId, projectId], (err: Error | null, row: any) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ error: "Schematic not found" });
+
+        const filePath = path.join(__dirname, '../../../', row.path.replace(/^\//, ''));
+        db.run("DELETE FROM project_schematics WHERE id = ?", [schematicId], function(this: any, deleteErr: Error | null) {
+            if (deleteErr) return res.status(500).json({ error: deleteErr.message });
+
+            // Attempt to delete file from disk
+            try {
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            } catch (unlinkErr) {
+                console.error("Failed to delete physical schematic file:", unlinkErr);
+            }
+
+            res.json({ message: "Schematic deleted successfully" });
+        });
+    });
+});
+
 // --- PCBs API Expansions ---
 app.get('/api/pcbs/:id', (req: Request, res: Response) => {
     db.get("SELECT pcbs.*, projects.project_key, projects.number_format FROM pcbs LEFT JOIN projects ON pcbs.project_id = projects.id WHERE pcbs.id = ?", [req.params.id], (err: Error | null, row: any) => {
