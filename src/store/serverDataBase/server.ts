@@ -180,12 +180,10 @@ function serializeWrites(req: Request, res: Response, next: NextFunction) {
     }, 10000); // 10s safety fallback
 
     res.on('finish', () => {
-        console.log(`[Queue Event] finish event for ${req.method} ${req.originalUrl}`);
         clearTimeout(timeoutId);
         cleanup();
     });
     res.on('close', () => {
-        console.log(`[Queue Event] close event for ${req.method} ${req.originalUrl}`);
         clearTimeout(timeoutId);
         cleanup();
     });
@@ -204,8 +202,7 @@ function serializeWrites(req: Request, res: Response, next: NextFunction) {
     });
 
     previousFinished.then(() => {
-        console.log(`[Queue Execute] Calling next() for ${req.method} ${req.originalUrl}`);
-        if (req.destroyed || res.writableEnded || resolved) {
+        if ((req.socket && req.socket.destroyed) || res.writableEnded || resolved) {
             cleanup();
             return;
         }
@@ -341,12 +338,6 @@ db.all("SELECT id FROM pcbs WHERE short_code IS NULL", [], (err: Error | null, p
     // Start Server
     app.listen(port, () => {
         console.log(`Server running at http://localhost:${port}`);
-        console.log("Registered routes:");
-        app._router.stack.forEach((r: any) => {
-            if (r.route) {
-                console.log(`Route: ${Object.keys(r.route.methods).join(',').toUpperCase()} ${r.route.path}`);
-            }
-        });
     });
 }).catch(err => {
     console.error("Database initialization failed:", err);
