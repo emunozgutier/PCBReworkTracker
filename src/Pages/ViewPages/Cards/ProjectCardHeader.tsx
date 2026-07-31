@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { InfoPill } from '../../../components/InfoPill';
 
 interface ProjectCardHeaderProps {
     project: {
@@ -23,34 +24,8 @@ export function ProjectCardHeader({ project, isExpanded, onToggle }: ProjectCard
             <div style={{ display: 'flex', flex: 1, flexWrap: 'wrap', alignItems: 'center', gap: '12px', minWidth: 0 }}>
                 <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap' }}>{project.project_key} - {project.name}</span>
 
-                <div style={{ display: 'flex', alignItems: 'center', fontSize: '0.85rem', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.06)', 
-                        border: '1px solid rgba(255, 255, 255, 0.12)', 
-                        padding: '4px 12px', 
-                        borderRadius: '16px',
-                        color: 'var(--text-muted)',
-                        whiteSpace: 'nowrap'
-                    }}>
-                        {project.revisions?.length || 0} Revs
-                    </span>
-                    <span style={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.06)', 
-                        border: '1px solid rgba(255, 255, 255, 0.12)', 
-                        padding: '4px 12px', 
-                        borderRadius: '16px', 
-                        display: 'flex', 
-                        flexWrap: 'wrap',
-                        gap: '6px',
-                        alignItems: 'center',
-                        color: 'var(--text-muted)'
-                    }}>
-                        <span style={{ fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap' }}>PCBs</span>
-                        <span style={{ opacity: 0.3 }}>|</span>
-                        <span style={{ whiteSpace: 'nowrap' }}>{project.flavors?.length || 0} Flavors</span>
-                        <span style={{ opacity: 0.3 }}>|</span>
-                        <span style={{ whiteSpace: 'nowrap' }}>{project.pcb_count} Count</span>
-                    </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <InfoPill text={`${project.pcb_count} PCBs`} color="var(--text-muted)" />
                 </div>
             </div>
 
