@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useAppState } from '../../../store/useAppState';
+
 import { usePcbStore } from '../../../store/clientDataBase/usePcbStore';
 import { COLORS } from '../../../store/useStyles';
 import { BoardName } from '../../../components/BoardName';
@@ -37,7 +37,6 @@ const getReworkTypeTooltip = (type?: string) => {
 };
 
 export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle = false }: ReworkCardHeaderProps) {
-    const { isMobile } = useAppState();
     const { pcbs } = usePcbStore();
 
     const parentPcb = pcbs.find(p => p.id === rework.pcb_id);
@@ -51,7 +50,7 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
             onClick={onToggle}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', gap: '12px', minWidth: 0, width: '100%' }}
         >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1, flexWrap: 'wrap' }}>
                 <span className="board-num" style={{ flexShrink: 0, margin: 0, whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     {showFullTitle ? (
                         <>
@@ -72,17 +71,12 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
                     title={getReworkTypeTooltip(rework.rework_type)}
                 />
                 {rework.title && (
-                    <span style={{ 
-                        flexShrink: 1, 
-                        minWidth: 0,
-                        whiteSpace: 'nowrap', 
-                        overflow: 'hidden', 
-                        textOverflow: 'ellipsis',
-                        color: 'var(--text-muted)',
-                        fontSize: isMobile ? '0.8rem' : '0.85rem'
-                    }}>
-                        {rework.title}
-                    </span>
+                    <InfoPill 
+                        text={rework.title}
+                        bg="transparent"
+                        border="none"
+                        color="var(--text-muted)"
+                    />
                 )}
             </div>
 

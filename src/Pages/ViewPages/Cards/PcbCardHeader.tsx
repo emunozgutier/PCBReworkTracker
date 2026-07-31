@@ -29,12 +29,12 @@ export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions }: PcbCar
             <div style={{ display: 'flex', flex: 1, flexWrap: 'wrap', alignItems: 'center', gap: '12px', minWidth: 0 }}>
                 <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap' }}><BoardName name={pcb.board_number} isHex={pcb.number_format === 'hex'} /></span>
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px' }}>
-                    {/* Silicon Info Pill (Si Rev + Corner) */}
-                    {siInfo && (
-                        <InfoPill text={siInfo} color={COLORS.purple} />
-                    )}
+                {/* Silicon Info Pill (Si Rev + Corner) - directly inline with board number */}
+                {siInfo && (
+                    <InfoPill text={siInfo} color={COLORS.purple} />
+                )}
 
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px' }}>
                     {/* PCB Info Pill (Flavor + Rev + BOM) */}
                     <InfoPill text={pcbPillText} color="var(--text-muted)" />
 
