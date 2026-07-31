@@ -1,6 +1,8 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { BoardName } from '../../../components/BoardName';
 import { useAppState } from '../../../store/useAppState';
+import { COLORS } from '../../../store/useStyles';
+import { InfoPill } from '../../../components/InfoPill';
 
 interface PcbCardHeaderProps {
     pcb: any;
@@ -11,6 +13,13 @@ interface PcbCardHeaderProps {
 
 export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions }: PcbCardHeaderProps) {
     const { isMobile } = useAppState();
+
+    const flavor = (pcb.board_flavor || '').replace('No part yet', 'No part');
+    const revText = pcb.board_rev ? `Rev ${pcb.board_rev}` : '';
+    const pcbPillText = [flavor, revText, pcb.bom].filter(Boolean).join(' ') || 'No PCB Info';
+
+    const siInfo = [pcb.silicon_rev, pcb.silicon_corner].filter(Boolean).join(' ');
+
     return (
         <div 
             className="card-header-main" 
@@ -20,14 +29,21 @@ export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions }: PcbCar
             <div style={{ display: 'flex', flex: 1, flexWrap: 'wrap', alignItems: 'center', gap: '12px', minWidth: 0 }}>
                 <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap' }}><BoardName name={pcb.board_number} isHex={pcb.number_format === 'hex'} /></span>
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', fontSize: '0.85rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.03)', padding: '4px 10px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                    <span style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{(pcb.product || 'No Rev').replace('No part yet', 'No part')}</span>
-                    {pcb.bom && <><span style={{ opacity: 0.5 }}>•</span><span style={{ whiteSpace: 'nowrap' }}>{pcb.bom}</span></>}
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px' }}>
+                    {/* Silicon Info Pill (Si Rev + Corner) */}
+                    {siInfo && (
+                        <InfoPill text={siInfo} color={COLORS.purple} />
+                    )}
+
+                    {/* PCB Info Pill (Flavor + Rev + BOM) */}
+                    <InfoPill text={pcbPillText} color="var(--text-muted)" />
+
+                    {/* Owner Info Pill */}
                     {!isMobile && (
-                        <>
-                            <span style={{ opacity: 0.5 }}>•</span>
-                            <span style={{ whiteSpace: 'nowrap' }}>{pcb.owner_username ? `@${pcb.owner_username}` : (pcb.owner || 'Unassigned')}</span>
-                        </>
+                        <InfoPill 
+                            text={pcb.owner_username ? `@${pcb.owner_username}` : (pcb.owner || 'Unassigned')} 
+                            color="var(--text-muted)" 
+                        />
                     )}
                 </div>
             </div>
