@@ -20,8 +20,8 @@ const port = process.env.PORT || 5002;
 const storage = multer.diskStorage({
     destination: function (req, _file, cb) {
         let dir = '';
-        if (req.originalUrl.includes('/schematics')) {
-            dir = path.join(__dirname, 'schematics');
+        if (req.originalUrl.includes('/docs')) {
+            dir = path.join(__dirname, 'docs');
         } else {
             dir = path.join(__dirname, 'pictures');
         }
@@ -233,8 +233,21 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     serializeWrites(req, res, next);
 });
 
+// Migrate legacy physical schematics folder to docs on startup
+const oldSchematicsDir = path.join(__dirname, 'schematics');
+const newDocsDir = path.join(__dirname, 'docs');
+if (fs.existsSync(oldSchematicsDir)) {
+    if (!fs.existsSync(newDocsDir)) {
+        try {
+            fs.renameSync(oldSchematicsDir, newDocsDir);
+        } catch (e) {
+            console.error("Failed to rename schematics folder to docs:", e);
+        }
+    }
+}
+
 app.use('/api/pictures', express.static(path.join(__dirname, 'pictures')));
-app.use('/api/schematics', express.static(path.join(__dirname, 'schematics')));
+app.use('/api/docs', express.static(path.join(__dirname, 'docs')));
 
 // Initialize Database
 initDb().then(() => {
@@ -454,7 +467,7 @@ app.get('/api/projects', (_req: Request, res: Response) => {
         SELECT projects.*, 
         COUNT(DISTINCT pcbs.id) as pcb_count,
         GROUP_CONCAT(DISTINCT pcbs.board_number) as pcb_list,
-        (SELECT COUNT(*) FROM project_schematics WHERE project_schematics.project_id = projects.id) as schematic_count
+        (SELECT COUNT(*) FROM project_docs WHERE project_docs.project_id = projects.id) as doc_count
         FROM projects
         LEFT JOIN pcbs ON projects.id = pcbs.project_id
         GROUP BY projects.id
@@ -995,16 +1008,16 @@ app.delete('/api/projects/:id', (req: Request, res: Response) => {
     });
 });
 
-// --- Project Schematics API ---
-app.get('/api/projects/:id/schematics', (req: Request, res: Response) => {
+// --- Project Docs API ---
+app.get('/api/projects/:id/docs', (req: Request, res: Response) => {
     const projectId = req.params.id;
-    db.all("SELECT * FROM project_schematics WHERE project_id = ? ORDER BY uploaded_at DESC", [projectId], (err: Error | null, rows: any[]) => {
+    db.all("SELECT * FROM project_docs WHERE project_id = ? ORDER BY uploaded_at DESC", [projectId], (err: Error | null, rows: any[]) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
 
-app.post('/api/projects/:id/schematics', upload.any(), (req: Request, res: Response) => {
+app.post('/api/projects/:id/docs', upload.any(), (req: Request, res: Response) => {
     const projectId = req.params.id;
     db.get("SELECT name, project_key FROM projects WHERE id = ?", [projectId], (err: Error | null, project: any) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -1017,7 +1030,7 @@ app.post('/api/projects/:id/schematics', upload.any(), (req: Request, res: Respo
 
         const projectKey = project.project_key || 'PRJ';
         let processedCount = 0;
-        const insertedSchematics: any[] = [];
+        const insertedDocs: any[] = [];
         let errorOccurred = false;
 
         db.serialize(() => {
@@ -1027,25 +1040,25 @@ app.post('/api/projects/:id/schematics', upload.any(), (req: Request, res: Respo
                 const originalName = file.originalname;
                 const cleanOriginal = originalName.replace(/[^a-zA-Z0-9.\-_]/g, '_');
                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E4);
-                const newFileName = `${projectKey}-SCH-${uniqueSuffix}-${cleanOriginal}`;
+                const newFileName = `${projectKey}-DOC-${uniqueSuffix}-${cleanOriginal}`;
                 
-                const oldPath = path.join(__dirname, 'schematics', file.filename);
-                const newPath = path.join(__dirname, 'schematics', newFileName);
+                const oldPath = path.join(__dirname, 'docs', file.filename);
+                const newPath = path.join(__dirname, 'docs', newFileName);
                 
                 try {
                     if (fs.existsSync(oldPath)) {
                         fs.renameSync(oldPath, newPath);
-                        const relativePath = `/schematics/${newFileName}`;
+                        const relativePath = `/docs/${newFileName}`;
                         
                         db.run(
-                            "INSERT INTO project_schematics (project_id, filename, path) VALUES (?, ?, ?)",
+                            "INSERT INTO project_docs (project_id, filename, path) VALUES (?, ?, ?)",
                             [projectId, originalName, relativePath],
                             function(this: any, insertErr: Error | null) {
                                 if (insertErr) {
                                     errorOccurred = true;
                                     return res.status(500).json({ error: insertErr.message });
                                 }
-                                insertedSchematics.push({
+                                insertedDocs.push({
                                     id: this.lastID,
                                     project_id: parseInt(projectId as string),
                                     filename: originalName,
@@ -1055,7 +1068,7 @@ app.post('/api/projects/:id/schematics', upload.any(), (req: Request, res: Respo
                                 
                                 processedCount++;
                                 if (processedCount === reqFiles.length && !errorOccurred) {
-                                    res.status(201).json(insertedSchematics);
+                                    res.status(201).json(insertedDocs);
                                 }
                             }
                         );
@@ -1071,14 +1084,14 @@ app.post('/api/projects/:id/schematics', upload.any(), (req: Request, res: Respo
     });
 });
 
-app.delete('/api/projects/:projectId/schematics/:schematicId', (req: Request, res: Response) => {
-    const { projectId, schematicId } = req.params;
-    db.get("SELECT * FROM project_schematics WHERE id = ? AND project_id = ?", [schematicId, projectId], (err: Error | null, row: any) => {
+app.delete('/api/projects/:projectId/docs/:docId', (req: Request, res: Response) => {
+    const { projectId, docId } = req.params;
+    db.get("SELECT * FROM project_docs WHERE id = ? AND project_id = ?", [docId, projectId], (err: Error | null, row: any) => {
         if (err) return res.status(500).json({ error: err.message });
-        if (!row) return res.status(404).json({ error: "Schematic not found" });
+        if (!row) return res.status(404).json({ error: "Document not found" });
 
         const filePath = path.join(__dirname, row.path.replace(/^\//, ''));
-        db.run("DELETE FROM project_schematics WHERE id = ?", [schematicId], function(this: any, deleteErr: Error | null) {
+        db.run("DELETE FROM project_docs WHERE id = ?", [docId], function(this: any, deleteErr: Error | null) {
             if (deleteErr) return res.status(500).json({ error: deleteErr.message });
 
             // Attempt to delete file from disk
@@ -1087,10 +1100,10 @@ app.delete('/api/projects/:projectId/schematics/:schematicId', (req: Request, re
                     fs.unlinkSync(filePath);
                 }
             } catch (unlinkErr) {
-                console.error("Failed to delete physical schematic file:", unlinkErr);
+                console.error("Failed to delete physical document file:", unlinkErr);
             }
 
-            res.json({ message: "Schematic deleted successfully" });
+            res.json({ message: "Document deleted successfully" });
         });
     });
 });

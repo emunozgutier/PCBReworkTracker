@@ -83,8 +83,8 @@ const initDb = async (): Promise<void> => {
         dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_key ON projects(project_key)`);
         dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_name ON projects(name COLLATE NOCASE)`);
 
-        // Project Schematics Table
-        dbInstance.run(`CREATE TABLE IF NOT EXISTS project_schematics (
+        // Project Docs Table
+        dbInstance.run(`CREATE TABLE IF NOT EXISTS project_docs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             project_id INTEGER NOT NULL,
             filename TEXT NOT NULL,
@@ -92,6 +92,17 @@ const initDb = async (): Promise<void> => {
             uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
         )`);
+
+        // Migrate legacy project_schematics to project_docs if exists
+        dbInstance.get("SELECT name FROM sqlite_master WHERE type='table' AND name='project_schematics'", (_err, row) => {
+            if (row) {
+                dbInstance.run("INSERT INTO project_docs (id, project_id, filename, path, uploaded_at) SELECT id, project_id, filename, path, uploaded_at FROM project_schematics", (insertErr) => {
+                    if (!insertErr) {
+                        dbInstance.run("DROP TABLE project_schematics");
+                    }
+                });
+            }
+        });
 
         // PCB Flavors Table
         dbInstance.run(`CREATE TABLE IF NOT EXISTS pcb_flavors (

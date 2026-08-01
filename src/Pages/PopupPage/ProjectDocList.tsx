@@ -3,11 +3,11 @@ import { Popup } from '../../components/Popup';
 import { useProjectStore } from '../../store/clientDataBase/useProjectStore';
 import { FileText, Eye, Download, Loader2, Upload, Trash2 } from 'lucide-react';
 import { API_BASE } from '../../store/serverDataBase/apiBridge';
-import { ProjectSchematicView } from './ProjectSchematicView';
+import { ProjectDocView } from './ProjectDocView';
 import { useAppState } from '../../store/useAppState';
 import { usePermissionsStore } from '../../store/clientDataBase/usePermissionsStore';
 
-interface ProjectSchematicListProps {
+interface ProjectDocListProps {
     isOpen: boolean;
     onClose: () => void;
     project: {
@@ -16,49 +16,49 @@ interface ProjectSchematicListProps {
     };
 }
 
-export function ProjectSchematicList({ isOpen, onClose, project }: ProjectSchematicListProps) {
-    const { projectSchematics, fetchSchematics, uploadSchematics, deleteSchematic } = useProjectStore();
+export function ProjectDocList({ isOpen, onClose, project }: ProjectDocListProps) {
+    const { projectDocs, fetchDocs, uploadDocs, deleteDoc } = useProjectStore();
     const { currentUserRole } = useAppState();
     const permissions = usePermissionsStore(state => state.permissions);
     const roleKey = currentUserRole === 'Super User' ? 'superUser' : currentUserRole === 'User' ? 'user' : 'guest';
     
-    const canAddSchematics = !!permissions[`Schematics__Add__${roleKey}`];
-    const canDeleteSchematics = !!permissions[`Schematics__Delete__${roleKey}`];
+    const canAddDocs = !!permissions[`Docs__Add__${roleKey}`];
+    const canDeleteDocs = !!permissions[`Docs__Delete__${roleKey}`];
     
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [viewingSchematic, setViewingSchematic] = useState<any>(null);
+    const [viewingDoc, setViewingDoc] = useState<any>(null);
 
     useEffect(() => {
         if (isOpen && project?.id) {
             setLoading(true);
-            fetchSchematics(project.id).finally(() => {
+            fetchDocs(project.id).finally(() => {
                 setLoading(false);
             });
         }
-    }, [isOpen, project?.id, fetchSchematics]);
+    }, [isOpen, project?.id, fetchDocs]);
 
     if (!isOpen || !project) return null;
 
-    const list = projectSchematics[project.id.toString()] || [];
+    const list = projectDocs[project.id.toString()] || [];
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             setUploading(true);
             const filesArray = Array.from(e.target.files);
-            const success = await uploadSchematics(project.id, filesArray);
+            const success = await uploadDocs(project.id, filesArray);
             setUploading(false);
             if (!success) {
-                alert("Failed to upload schematic PDF files.");
+                alert("Failed to upload document PDF files.");
             }
         }
     };
 
-    const handleDelete = async (schematicId: number, filename: string) => {
-        if (confirm(`Are you sure you want to delete the schematic "${filename}"?`)) {
-            const success = await deleteSchematic(project.id, schematicId);
+    const handleDelete = async (docId: number, filename: string) => {
+        if (confirm(`Are you sure you want to delete the document "${filename}"?`)) {
+            const success = await deleteDoc(project.id, docId);
             if (!success) {
-                alert("Failed to delete schematic.");
+                alert("Failed to delete document.");
             }
         }
     };
@@ -67,7 +67,7 @@ export function ProjectSchematicList({ isOpen, onClose, project }: ProjectSchema
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <FileText size={22} color="var(--accent)" />
             <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)' }}>
-                {project.name} Schematics
+                {project.name} Docs
             </h2>
         </div>
     );
@@ -79,12 +79,12 @@ export function ProjectSchematicList({ isOpen, onClose, project }: ProjectSchema
                     {loading ? (
                         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--text-muted)' }}>
                             <Loader2 className="animate-spin" size={20} />
-                            <span>Loading Schematics...</span>
+                            <span>Loading Docs...</span>
                         </div>
                     ) : list.length === 0 ? (
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 0', color: 'var(--text-muted)' }}>
                             <FileText size={36} strokeWidth={1.5} style={{ marginBottom: '8px', opacity: 0.5 }} />
-                            <p style={{ margin: 0, fontSize: '0.95rem' }}>No schematic PDF files attached to this project.</p>
+                            <p style={{ margin: 0, fontSize: '0.95rem' }}>No document PDF files attached to this project.</p>
                         </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '300px', overflowY: 'auto', paddingRight: '4px' }}>
@@ -146,7 +146,7 @@ export function ProjectSchematicList({ isOpen, onClose, project }: ProjectSchema
 
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <button
-                                                onClick={() => setViewingSchematic(item)}
+                                                onClick={() => setViewingDoc(item)}
                                                 style={{
                                                     display: 'flex',
                                                     alignItems: 'center',
@@ -201,7 +201,7 @@ export function ProjectSchematicList({ isOpen, onClose, project }: ProjectSchema
                                             >
                                                 <Download size={14} />
                                             </a>
-                                            {canDeleteSchematics && (
+                                            {canDeleteDocs && (
                                                 <button
                                                     onClick={() => handleDelete(item.id, item.filename)}
                                                     style={{
@@ -223,7 +223,7 @@ export function ProjectSchematicList({ isOpen, onClose, project }: ProjectSchema
                                                     onMouseLeave={(e) => {
                                                         e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
                                                     }}
-                                                    title="Delete Schematic"
+                                                    title="Delete Doc"
                                                 >
                                                     <Trash2 size={14} />
                                                 </button>
@@ -235,7 +235,7 @@ export function ProjectSchematicList({ isOpen, onClose, project }: ProjectSchema
                         </div>
                     )}
 
-                    {canAddSchematics && (
+                    {canAddDocs && (
                         <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
                             <input 
                                 type="file" 
@@ -243,11 +243,11 @@ export function ProjectSchematicList({ isOpen, onClose, project }: ProjectSchema
                                 accept=".pdf" 
                                 onChange={handleFileChange}
                                 style={{ display: 'none' }}
-                                id="list-schematics-upload"
+                                id="list-docs-upload"
                                 disabled={uploading}
                             />
                             <label 
-                                htmlFor="list-schematics-upload"
+                                htmlFor="list-docs-upload"
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
@@ -284,7 +284,7 @@ export function ProjectSchematicList({ isOpen, onClose, project }: ProjectSchema
                                 ) : (
                                     <>
                                         <Upload size={16} />
-                                        <span>Upload Schematic PDFs</span>
+                                        <span>Upload Doc PDFs</span>
                                     </>
                                 )}
                             </label>
@@ -293,10 +293,10 @@ export function ProjectSchematicList({ isOpen, onClose, project }: ProjectSchema
                 </div>
             </Popup>
 
-            <ProjectSchematicView
-                isOpen={viewingSchematic !== null}
-                onClose={() => setViewingSchematic(null)}
-                schematic={viewingSchematic}
+            <ProjectDocView
+                isOpen={viewingDoc !== null}
+                onClose={() => setViewingDoc(null)}
+                doc={viewingDoc}
             />
         </>
     );

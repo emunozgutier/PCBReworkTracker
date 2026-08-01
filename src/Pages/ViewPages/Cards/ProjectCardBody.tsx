@@ -8,7 +8,7 @@ import { PcbCardHeader } from './PcbCardHeader';
 import { ProjectCardSummary } from './ProjectCardSummary';
 import { RemoveProject } from '../../RemovePage/RemoveProject';
 import { FileText } from 'lucide-react';
-import { ProjectSchematicList } from '../../PopupPage/ProjectSchematicList';
+import { ProjectDocList } from '../../PopupPage/ProjectDocList';
 import { usePermissionsStore } from '../../../store/clientDataBase/usePermissionsStore';
 
 interface ProjectCardBodyProps {
@@ -31,11 +31,11 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     const isSuperUser = currentUserRole === 'Super User';
     
     const [isRemoveProjectOpen, setIsRemoveProjectOpen] = useState(false);
-    const [isSchematicsOpen, setIsSchematicsOpen] = useState(false);
+    const [isDocsOpen, setIsDocsOpen] = useState(false);
 
     const permissions = usePermissionsStore(state => state.permissions);
     const roleKey = currentUserRole === 'Super User' ? 'superUser' : currentUserRole === 'User' ? 'user' : 'guest';
-    const canViewSchematics = !!permissions[`Schematics__View__${roleKey}`];
+    const canViewDocs = !!permissions[`Docs__View__${roleKey}`];
 
     const confirmRemoveProject = async () => {
         await deleteProject(project.id);
@@ -152,33 +152,33 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                     title={!isSuperUser ? "This is only for super users" : "Edit project details"}
                     label={isMobile ? "" : "Edit Project"}
                 />
-                {canViewSchematics && (
-                    <button
+                {canViewDocs && (
+                    <button 
+                        className="docs-btn" 
                         onClick={(e) => {
                             e.stopPropagation();
-                            setIsSchematicsOpen(true);
+                            setIsDocsOpen(true);
                         }}
                         style={{
-                            flex: 1,
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: isMobile ? '0' : '8px',
-                            background: 'rgba(239, 68, 68, 0.12)',
-                            color: '#f87171',
-                            border: '1px solid rgba(239, 68, 68, 0.4)',
-                            padding: '10px 16px',
+                            gap: '6px',
+                            padding: '6px 12px',
+                            background: 'rgba(99, 102, 241, 0.1)',
+                            border: '1px solid rgba(99, 102, 241, 0.3)',
                             borderRadius: '8px',
-                            fontSize: '0.9rem',
-                            fontWeight: 600,
+                            color: 'var(--accent)',
                             cursor: 'pointer',
-                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            transition: 'all 0.2s',
+                            boxSizing: 'border-box',
+                            height: '36px',
                         }}
-                        className="action-btn-hover action-btn-schematics"
-                        title="View project schematic PDF files"
+                        title="Project Documents"
                     >
                         <FileText size={18} />
-                        {!isMobile && <span>Schematics</span>}
+                        {!isMobile && <span>Docs</span>}
                     </button>
                 )}
                 <ViewButton 
@@ -209,9 +209,9 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                 project={project}
             />
 
-            <ProjectSchematicList
-                isOpen={isSchematicsOpen}
-                onClose={() => setIsSchematicsOpen(false)}
+            <ProjectDocList
+                isOpen={isDocsOpen}
+                onClose={() => setIsDocsOpen(false)}
                 project={project}
             />
 

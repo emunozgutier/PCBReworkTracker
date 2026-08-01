@@ -47,7 +47,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const { tags, fetchTags } = useTagStore();
     const { fetchPcbs, deletePcb } = usePcbStore();
     const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile, currentUser, currentUserRole, allowGuestMinorRework } = useAppState();
-    const { projects, projectSchematics, fetchSchematics } = useProjectStore();
+    const { projects, projectDocs, fetchDocs } = useProjectStore();
 
     const isSuperUser = currentUserRole === 'Super User';
 
@@ -78,25 +78,25 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
 
     const project = projects.find(p => p.id === pcb.project_id);
 
-    let schematicFilename = '';
+    let docFilename = '';
     if (project && pcb.board_flavor && pcb.board_rev) {
         const ff = project.flavors?.find(f => f.name === pcb.board_flavor);
         if (ff && ff.revisionDetails) {
             const revDetail = ff.revisionDetails.find(r => r.name === pcb.board_rev);
-            if (revDetail && revDetail.schematic) {
-                schematicFilename = revDetail.schematic;
+            if (revDetail && revDetail.doc) {
+                docFilename = revDetail.doc;
             }
         }
     }
 
-    const schematics = project ? (projectSchematics[project.id.toString()] || []) : [];
-    const schematic = schematics.find(s => s.filename === schematicFilename);
+    const docs = project ? (projectDocs[project.id.toString()] || []) : [];
+    const doc = docs.find(s => s.filename === docFilename);
 
     useEffect(() => {
-        if (project && !projectSchematics[project.id.toString()]) {
-            fetchSchematics(project.id);
+        if (project && !projectDocs[project.id.toString()]) {
+            fetchDocs(project.id);
         }
-    }, [project, projectSchematics, fetchSchematics]);
+    }, [project, projectDocs, fetchDocs]);
 
     useEffect(() => {
         if (reworks.length === 0) fetchReworks();
@@ -162,14 +162,14 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                     label={isMobile ? "" : "Edit PCB"}
                 />
 
-                {schematic && (
+                {doc && (
                     <ViewButton 
                         onClick={(e) => {
                             e.stopPropagation();
-                            const fullUrl = schematic.path.startsWith('http') ? schematic.path : `${API_BASE.replace('/api', '')}/api${schematic.path}`;
+                            const fullUrl = doc.path.startsWith('http') ? doc.path : `${API_BASE.replace('/api', '')}/api${doc.path}`;
                             window.open(fullUrl, '_blank');
                         }}
-                        label={isMobile ? "" : "View Schematic"}
+                        label={isMobile ? "" : "View Doc"}
                         icon={FileText}
                     />
                 )}

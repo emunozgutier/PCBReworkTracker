@@ -6,7 +6,7 @@ import { useAppState } from '../useAppState';
 export interface PcbRevisionDetail {
     name: string;
     boms: string[];
-    schematic?: string | null;
+    doc?: string | null;
 }
 
 export interface PcbFlavor {
@@ -22,7 +22,7 @@ export interface Project {
     name: string;
     description: string;
     pcb_count: number;
-    schematic_count?: number;
+    doc_count?: number;
     pcbs: string[];
     revisions: string[];
     project_key: string;
@@ -33,13 +33,13 @@ export interface Project {
 
 interface ProjectState {
     projects: Project[];
-    projectSchematics: Record<string, any[]>;
+    projectDocs: Record<string, any[]>;
     loading: boolean;
     error: string | null;
     fetchProjects: () => Promise<void>;
-    fetchSchematics: (projectId: number | string) => Promise<void>;
-    uploadSchematics: (projectId: number | string, files: File[]) => Promise<boolean>;
-    deleteSchematic: (projectId: number | string, schematicId: number | string) => Promise<boolean>;
+    fetchDocs: (projectId: number | string) => Promise<void>;
+    uploadDocs: (projectId: number | string, files: File[]) => Promise<boolean>;
+    deleteDoc: (projectId: number | string, docId: number | string) => Promise<boolean>;
     addProject: (data: { name: string; description: string; revisions: string; project_key: string; flavors?: any[]; silicon_corners?: string; number_format?: string }, files?: File[]) => Promise<boolean>;
     updateProject: (id: number | string, data: { name: string; description: string; revisions: string; project_key: string; flavors?: any[]; silicon_corners?: string; number_format?: string }, files?: File[]) => Promise<boolean>;
     deleteProject: (id: number | string) => Promise<boolean>;
@@ -47,7 +47,7 @@ interface ProjectState {
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
     projects: [],
-    projectSchematics: {},
+    projectDocs: {},
     loading: false,
     error: null,
 
@@ -64,7 +64,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                     const isDetailed = rawRevs.length > 0 && typeof rawRevs[0] === 'object';
                     const revisionDetails = isDetailed 
                         ? rawRevs 
-                        : rawRevs.map((r: string) => ({ name: r, boms: f.boms || [], schematic: null }));
+                        : rawRevs.map((r: string) => ({ name: r, boms: f.boms || [], doc: null }));
                     const revisionNames = isDetailed 
                         ? rawRevs.map((r: any) => r.name) 
                         : rawRevs;
@@ -81,52 +81,52 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         }
     },
 
-    fetchSchematics: async (projectId) => {
+    fetchDocs: async (projectId) => {
         try {
-            const res = await apiFetch(`${API_BASE}/projects/${projectId}/schematics`);
-            if (!res.ok) throw new Error('Failed to fetch schematics');
+            const res = await apiFetch(`${API_BASE}/projects/${projectId}/docs`);
+            if (!res.ok) throw new Error('Failed to fetch docs');
             const data = await res.json();
             set(state => ({
-                projectSchematics: {
-                    ...state.projectSchematics,
+                projectDocs: {
+                    ...state.projectDocs,
                     [projectId.toString()]: data
                 }
             }));
         } catch (err: any) {
-            console.error("fetchSchematics error:", err);
+            console.error("fetchDocs error:", err);
         }
     },
 
-    uploadSchematics: async (projectId, files) => {
+    uploadDocs: async (projectId, files) => {
         if (files.length === 0) return true;
         try {
             const formData = new FormData();
             files.forEach((file) => {
-                formData.append('schematics', file);
+                formData.append('docs', file);
             });
-            const res = await apiFetch(`${API_BASE}/projects/${projectId}/schematics`, {
+            const res = await apiFetch(`${API_BASE}/projects/${projectId}/docs`, {
                 method: 'POST',
                 body: formData
             });
-            if (!res.ok) throw new Error('Failed to upload schematics');
-            await get().fetchSchematics(projectId);
+            if (!res.ok) throw new Error('Failed to upload docs');
+            await get().fetchDocs(projectId);
             return true;
         } catch (err: any) {
-            console.error("uploadSchematics error:", err);
+            console.error("uploadDocs error:", err);
             return false;
         }
     },
 
-    deleteSchematic: async (projectId, schematicId) => {
+    deleteDoc: async (projectId, docId) => {
         try {
-            const res = await apiFetch(`${API_BASE}/projects/${projectId}/schematics/${schematicId}`, {
+            const res = await apiFetch(`${API_BASE}/projects/${projectId}/docs/${docId}`, {
                 method: 'DELETE'
             });
-            if (!res.ok) throw new Error('Failed to delete schematic');
-            await get().fetchSchematics(projectId);
+            if (!res.ok) throw new Error('Failed to delete doc');
+            await get().fetchDocs(projectId);
             return true;
         } catch (err: any) {
-            console.error("deleteSchematic error:", err);
+            console.error("deleteDoc error:", err);
             return false;
         }
     },
@@ -148,7 +148,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
             const newProjectId = result.id;
             if (files && files.length > 0 && newProjectId) {
-                await get().uploadSchematics(newProjectId, files);
+                await get().uploadDocs(newProjectId, files);
             }
             
             // Re-fetch to get complete updated state with arrays correctly parsed
@@ -176,7 +176,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             }
 
             if (files && files.length > 0) {
-                await get().uploadSchematics(id, files);
+                await get().uploadDocs(id, files);
             }
 
             // Re-fetch to get complete updated state

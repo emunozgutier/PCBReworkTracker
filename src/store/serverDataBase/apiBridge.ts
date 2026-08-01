@@ -8,19 +8,19 @@ export const API_BASE = `http://${window.location.hostname}:5002/api`;
 let internalProjects = [...demoData.demoProjects] as any[];
 let internalPcbs = [...demoData.demoPcbs] as any[];
 let internalOwners = [...demoData.demoOwners] as any[];
-let internalProjectSchematics = [
+let internalProjectDocs = [
     {
         id: 1,
         project_id: 1, // Ash (typically project ID 1 in demoData)
-        filename: "Ash_Board_V1_Schematic.pdf",
-        path: "/schematics/demo_schematic.pdf",
+        filename: "Ash_Board_V1_Doc.pdf",
+        path: "/docs/demo_doc.pdf",
         uploaded_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
     },
     {
         id: 2,
         project_id: 1, // Ash
         filename: "Ash_Board_V2_Datasheet.pdf",
-        path: "/schematics/demo_schematic.pdf",
+        path: "/docs/demo_doc.pdf",
         uploaded_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
     }
 ] as any[];
@@ -168,22 +168,22 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
     if (localPath.startsWith('/projects')) {
         const parts = localPath.split('/');
         
-        // Check for /projects/:id/schematics/:schematicId (delete)
-        if (parts.length === 5 && parts[3] === 'schematics') {
+        // Check for /projects/:id/docs/:docId (delete)
+        if (parts.length === 5 && parts[3] === 'docs') {
             const projectId = parseInt(parts[2]);
-            const schematicId = parseInt(parts[4]);
+            const docId = parseInt(parts[4]);
             if (method === 'DELETE') {
-                internalProjectSchematics = internalProjectSchematics.filter(s => !(s.id === schematicId && s.project_id === projectId));
-                return createResponse({ message: 'Schematic deleted' });
+                internalProjectDocs = internalProjectDocs.filter(s => !(s.id === docId && s.project_id === projectId));
+                return createResponse({ message: 'Document deleted' });
             }
         }
         
-        // Check for /projects/:id/schematics (get / post)
-        if (parts.length === 4 && parts[3] === 'schematics') {
+        // Check for /projects/:id/docs (get / post)
+        if (parts.length === 4 && parts[3] === 'docs') {
             const projectId = parseInt(parts[2]);
             if (method === 'GET') {
-                const schematics = internalProjectSchematics.filter(s => s.project_id === projectId);
-                return createResponse(schematics);
+                const docs = internalProjectDocs.filter(s => s.project_id === projectId);
+                return createResponse(docs);
             }
             if (method === 'POST') {
                 const created: any[] = [];
@@ -195,10 +195,10 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
                                 id: Date.now() + Math.floor(Math.random() * 1000) + created.length,
                                 project_id: projectId,
                                 filename: file.name,
-                                path: "/schematics/demo_schematic.pdf",
+                                path: "/docs/demo_doc.pdf",
                                 uploaded_at: new Date().toISOString()
                             };
-                            internalProjectSchematics.push(sch);
+                            internalProjectDocs.push(sch);
                             created.push(sch);
                         }
                     }
@@ -208,10 +208,10 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
                         id: Date.now(),
                         project_id: projectId,
                         filename: "datasheet_revA.pdf",
-                        path: "/schematics/demo_schematic.pdf",
+                        path: "/docs/demo_doc.pdf",
                         uploaded_at: new Date().toISOString()
                     };
-                    internalProjectSchematics.push(sch);
+                    internalProjectDocs.push(sch);
                     created.push(sch);
                 }
                 return createResponse(created, 201);
@@ -223,14 +223,14 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
                 const id = parseInt(parts[2]);
                 const p = internalProjects.find(x => x.id === id);
                 if (p) {
-                    const count = internalProjectSchematics.filter(s => s.project_id === p.id).length;
-                    return createResponse({ ...p, schematic_count: count });
+                    const count = internalProjectDocs.filter(s => s.project_id === p.id).length;
+                    return createResponse({ ...p, doc_count: count });
                 }
                 return createResponse({ error: 'Not found' }, 404);
             }
             const projectsWithCount = internalProjects.map(p => {
-                const count = internalProjectSchematics.filter(s => s.project_id === p.id).length;
-                return { ...p, schematic_count: count };
+                const count = internalProjectDocs.filter(s => s.project_id === p.id).length;
+                return { ...p, doc_count: count };
             });
             return createResponse(projectsWithCount);
         }

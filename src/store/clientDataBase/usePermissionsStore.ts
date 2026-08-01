@@ -45,10 +45,10 @@ const initialPermissions: Record<string, boolean> = {
     'Tags__Edit__superUser': true, 'Tags__Edit__user': false, 'Tags__Edit__guest': false,
     'Tags__Delete__superUser': true, 'Tags__Delete__user': false, 'Tags__Delete__guest': false,
 
-    // Schematics
-    'Schematics__View__superUser': true, 'Schematics__View__user': true, 'Schematics__View__guest': true,
-    'Schematics__Add__superUser': true, 'Schematics__Add__user': false, 'Schematics__Add__guest': false,
-    'Schematics__Delete__superUser': true, 'Schematics__Delete__user': false, 'Schematics__Delete__guest': false,
+    // Docs
+    'Docs__View__superUser': true, 'Docs__View__user': true, 'Docs__View__guest': true,
+    'Docs__Add__superUser': true, 'Docs__Add__user': false, 'Docs__Add__guest': false,
+    'Docs__Delete__superUser': true, 'Docs__Delete__user': false, 'Docs__Delete__guest': false,
 };
 
 export const usePermissionsStore = create<PermissionsStore>((set) => ({

@@ -9,7 +9,7 @@ import type { ActionItem } from './RolePermissionSubTable';
 export function RolePermissionCard() {
     const { allowGuestMinorRework, setAllowGuestMinorRework } = useAppState();
     const { currentUserRole, isSuperUser } = useCurrentUser();
-    const [selectedSubTable, setSelectedSubTable] = useState<'Projects' | 'PCBs' | 'Reworks' | 'Users' | 'Tags' | 'Schematics'>('Projects');
+    const [selectedSubTable, setSelectedSubTable] = useState<'Projects' | 'PCBs' | 'Reworks' | 'Users' | 'Tags' | 'Docs'>('Projects');
     const [showSavePopup, setShowSavePopup] = useState(false);
 
     const permissions = usePermissionsStore((state) => state.permissions);
@@ -101,7 +101,7 @@ export function RolePermissionCard() {
         { name: 'Delete' },
     ]);
 
-    const schematicActions = buildActions('Schematics', [
+    const docActions = buildActions('Docs', [
         { name: 'View' },
         { name: 'Add' },
         { name: 'Delete' },
@@ -185,7 +185,7 @@ export function RolePermissionCard() {
                         <option value="Reworks">Reworks</option>
                         <option value="Users">Users</option>
                         <option value="Tags">Tags</option>
-                        <option value="Schematics">Schematics</option>
+                        <option value="Docs">Docs</option>
                     </select>
                 </div>
 
@@ -258,11 +258,11 @@ export function RolePermissionCard() {
                                 isSuperUser={isSuperUser}
                             />
                         )}
-                        {selectedSubTable === 'Schematics' && (
+                        {selectedSubTable === 'Docs' && (
                             <RolePermissionSubTable
-                                resourceName="Schematics"
+                                resourceName="Docs"
                                 rowSpan={3}
-                                actions={schematicActions}
+                                actions={docActions}
                                 currentUserRole={currentUserRole}
                                 isSuperUser={isSuperUser}
                             />

@@ -6,7 +6,7 @@ interface ProjectCardHeaderProps {
         id: number;
         name: string;
         pcb_count: number;
-        schematic_count?: number;
+        doc_count?: number;
         revisions: string[];
         flavors?: any[];
         project_key: string;
@@ -27,7 +27,7 @@ export function ProjectCardHeader({ project, isExpanded, onToggle }: ProjectCard
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <InfoPill text={`${project.pcb_count} PCBs`} color="var(--text-muted)" />
-                    <InfoPill text={`${project.schematic_count || 0} Schematics`} color="var(--text-muted)" />
+                    <InfoPill text={`${project.doc_count || 0} Docs`} color="var(--text-muted)" />
                 </div>
             </div>
 

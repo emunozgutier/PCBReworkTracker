@@ -51,7 +51,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     interface AddProjectRevision {
         name: string;
         boms: string;
-        schematic?: string | null;
+        doc?: string | null;
     }
     interface AddProjectFlavor {
         name: string;
@@ -63,7 +63,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const [projectKey, setProjectKey] = useState('');
     const [numberFormat, setNumberFormat] = useState<'hex' | 'decimal'>('decimal');
     const [flavors, setFlavors] = useState<AddProjectFlavor[]>([
-        { name: 'Validation', revisions: [{ name: '1.0', boms: 'BOM1, BOM2', schematic: null }] }
+        { name: 'Validation', revisions: [{ name: '1.0', boms: 'BOM1, BOM2', doc: null }] }
     ]);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [activeTab, setActiveTab] = useState(0);
@@ -119,7 +119,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                 revisions: f.revisions.map(r => ({
                     name: r.name.trim(),
                     boms: r.boms.split(',').map(b => b.trim()).filter(Boolean),
-                    schematic: r.schematic || null
+                    doc: r.doc || null
                 })),
                 boms: allBoms
             };
@@ -232,7 +232,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                         activeTab={activeTab}
                         onTabChange={setActiveTab}
                         onAddTab={() => {
-                            setFlavors([...flavors, { name: '', revisions: [{ name: '1.0', boms: '', schematic: null }] }]);
+                            setFlavors([...flavors, { name: '', revisions: [{ name: '1.0', boms: '', doc: null }] }]);
                             setActiveTab(flavors.length);
                             setActiveRevTab(0);
                         }}
@@ -277,7 +277,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                                 alert("Revision name already exists.");
                                                 return;
                                             }
-                                            const newRevs = [...flavors[activeTab].revisions, { name: trimmed, boms: '', schematic: null }];
+                                            const newRevs = [...flavors[activeTab].revisions, { name: trimmed, boms: '', doc: null }];
                                             const newFf = [...flavors];
                                             newFf[activeTab].revisions = newRevs;
                                             setFlavors(newFf);
@@ -322,18 +322,18 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block' }}>Schematic PDF</label>
+                                                    <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block' }}>Doc PDF</label>
                                                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                                         <select
-                                                            value={flavors[activeTab].revisions[activeRevTab].schematic || ''}
+                                                            value={flavors[activeTab].revisions[activeRevTab].doc || ''}
                                                             style={{ flex: 1, padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)' }}
                                                             onChange={e => {
                                                                 const newFf = [...flavors];
-                                                                newFf[activeTab].revisions[activeRevTab].schematic = e.target.value;
+                                                                newFf[activeTab].revisions[activeRevTab].doc = e.target.value;
                                                                 setFlavors(newFf);
                                                             }}
                                                         >
-                                                            <option value="">-- No Schematic --</option>
+                                                            <option value="">-- No Doc --</option>
                                                             {selectedFiles.map(f => (
                                                                 <option key={f.name} value={f.name}>{f.name}</option>
                                                             ))}
@@ -343,7 +343,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                                             type="file"
                                                             accept=".pdf"
                                                             style={{ display: 'none' }}
-                                                            id={`rev-schematic-file-${activeTab}-${activeRevTab}`}
+                                                            id={`rev-doc-file-${activeTab}-${activeRevTab}`}
                                                             onChange={(e) => {
                                                                 if (e.target.files && e.target.files[0]) {
                                                                     const file = e.target.files[0];
@@ -351,13 +351,13 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                                                         setSelectedFiles([...selectedFiles, file]);
                                                                     }
                                                                     const newFf = [...flavors];
-                                                                    newFf[activeTab].revisions[activeRevTab].schematic = file.name;
+                                                                    newFf[activeTab].revisions[activeRevTab].doc = file.name;
                                                                     setFlavors(newFf);
                                                                 }
                                                             }}
                                                         />
                                                         <label 
-                                                            htmlFor={`rev-schematic-file-${activeTab}-${activeRevTab}`}
+                                                            htmlFor={`rev-doc-file-${activeTab}-${activeRevTab}`}
                                                             className="action-btn-hover"
                                                             style={{
                                                                 padding: '8px 12px',

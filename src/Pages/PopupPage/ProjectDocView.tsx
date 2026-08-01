@@ -2,20 +2,20 @@ import { Popup } from '../../components/Popup';
 import { API_BASE } from '../../store/serverDataBase/apiBridge';
 import { ExternalLink, FileText } from 'lucide-react';
 
-interface ProjectSchematicViewProps {
+interface ProjectDocViewProps {
     isOpen: boolean;
     onClose: () => void;
-    schematic: {
+    doc: {
         id: number;
         filename: string;
         path: string;
     } | null;
 }
 
-export function ProjectSchematicView({ isOpen, onClose, schematic }: ProjectSchematicViewProps) {
-    if (!isOpen || !schematic) return null;
+export function ProjectDocView({ isOpen, onClose, doc }: ProjectDocViewProps) {
+    if (!isOpen || !doc) return null;
 
-    const fullUrl = schematic.path.startsWith('http') ? schematic.path : `${API_BASE.replace('/api', '')}/api${schematic.path}`;
+    const fullUrl = doc.path.startsWith('http') ? doc.path : `${API_BASE.replace('/api', '')}/api${doc.path}`;
 
     const titleElement = (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingRight: '40px' }}>
@@ -31,9 +31,9 @@ export function ProjectSchematicView({ isOpen, onClose, schematic }: ProjectSche
                         overflow: 'hidden',
                         textOverflow: 'ellipsis'
                     }}
-                    title={schematic.filename}
+                    title={doc.filename}
                 >
-                    {schematic.filename}
+                    {doc.filename}
                 </h3>
             </div>
             <a 
@@ -82,7 +82,7 @@ export function ProjectSchematicView({ isOpen, onClose, schematic }: ProjectSche
             >
                 <iframe 
                     src={`${fullUrl}#toolbar=1`}
-                    title={schematic.filename}
+                    title={doc.filename}
                     width="100%" 
                     height="100%" 
                     style={{ border: 'none' }}
