@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Edit2, ExternalLink, QrCode, Trash2 } from 'lucide-react';
+import { Plus, Edit2, ExternalLink, QrCode, Trash2, FileText } from 'lucide-react';
 
 interface ActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     label?: React.ReactNode;
@@ -15,6 +15,35 @@ const renderIcon = (icon: unknown) => {
     }
     return null;
 };
+
+export function DocsButton({ label = "Docs", icon = FileText, style, ...props }: ActionButtonProps) {
+    return (
+        <button 
+            style={{ 
+                flex: 1,
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                gap: '8px', 
+                background: 'rgba(99, 102, 241, 0.1)', 
+                color: 'var(--accent)', 
+                border: '1px solid rgba(99, 102, 241, 0.3)', 
+                padding: '10px 16px', 
+                borderRadius: '8px', 
+                fontSize: '0.9rem', 
+                fontWeight: 600, 
+                cursor: 'pointer',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                ...style 
+            }}
+            {...props}
+            className={`action-btn-hover action-btn-docs ${props.className || ''}`}
+        >
+            {renderIcon(icon)}
+            {label}
+        </button>
+    );
+}
 
 export function EditButton({ label = "Edit", icon = Edit2, style, ...props }: ActionButtonProps) {
     const isDisabled = props.disabled;
