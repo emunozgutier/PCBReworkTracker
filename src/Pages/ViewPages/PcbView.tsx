@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PcbCard } from './Cards/PcbCard';
 import { PcbFilter } from '../../components/Filter/PcbFilter';
 
@@ -7,6 +7,7 @@ import { usePcbStore } from '../../store/clientDataBase/usePcbStore';
 import { useOwnerStore } from '../../store/clientDataBase/useOwnerStore';
 import { useTagStore } from '../../store/clientDataBase/useTagStore';
 import { useAppState } from '../../store/useAppState';
+import { getMaxCrcLength } from '../../components/BoardName';
 
 interface PcbViewProps {
     title: string;
@@ -18,7 +19,7 @@ export function PcbView({ title }: PcbViewProps) {
     const { pcbs, loading: pcbsLoading, fetchPcbs, selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs, selectedTags, selectedOwners, selectedBoardNumbers, setSelectedBoardNumbers } = usePcbStore();
     const { fetchOwners } = useOwnerStore();
     const { fetchTags } = useTagStore();
-    const { expandedPcb, isolatedView, searchQuery, showFilters, setShowFilters } = useAppState();
+    const { expandedPcb, isolatedView, searchQuery, showFilters, setShowFilters, crcFormat } = useAppState();
 
     useEffect(() => {
         fetchPcbs();
@@ -90,6 +91,8 @@ export function PcbView({ title }: PcbViewProps) {
 
     if (loading && pcbs.length === 0) return <div className="loading">Loading {title}...</div>;
 
+    const maxCrcLength = getMaxCrcLength(items, crcFormat);
+
     return (
         <div className="card-list-container">
             {showFilters && <PcbFilter />}
@@ -99,7 +102,7 @@ export function PcbView({ title }: PcbViewProps) {
                     <div className="empty-state">No PCBs found.</div>
                 ) : (
                     items.map((item) => (
-                        <PcbCard key={item.id} pcb={item} />
+                        <PcbCard key={item.id} pcb={item} maxCrcLength={maxCrcLength} />
                     ))
                 )}
             </div>

@@ -9,6 +9,7 @@ import { ProjectCardSummary } from './ProjectCardSummary';
 import { RemoveProject } from '../../RemovePage/RemoveProject';
 import { ProjectDocList } from '../../PopupPage/ProjectDocList';
 import { usePermissionsStore } from '../../../store/clientDataBase/usePermissionsStore';
+import { getMaxCrcLength } from '../../../components/BoardName';
 
 interface ProjectCardBodyProps {
     project: {
@@ -26,7 +27,7 @@ interface ProjectCardBodyProps {
 export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     const { pcbs: allPcbs, setSelectedProjects, setSelectedBoardNumbers } = usePcbStore();
     const { deleteProject } = useProjectStore();
-    const { setActiveTab, editItem, setExpandedPcb, setIsolatedView, setPage, isMobile, currentUserRole } = useAppState();
+    const { crcFormat, setActiveTab, editItem, setExpandedPcb, setIsolatedView, setPage, isMobile, currentUserRole } = useAppState();
     const isSuperUser = currentUserRole === 'Super User';
     
     const [isRemoveProjectOpen, setIsRemoveProjectOpen] = useState(false);
@@ -49,6 +50,8 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
             }
             return b.id - a.id;
         });
+
+    const maxCrcLength = getMaxCrcLength(projectPcbs, crcFormat);
 
     const LongPressPcbCard = ({ pcb }: { pcb: any }) => {
         const [progress, setProgress] = useState(0);
@@ -134,7 +137,7 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                     }} 
                 />
                 <div style={{ position: 'relative', zIndex: 1, pointerEvents: 'none' }}>
-                    <PcbCardHeader pcb={pcb} isExpanded={false} onToggle={() => {}} hideActions={true} />
+                    <PcbCardHeader pcb={pcb} isExpanded={false} onToggle={() => {}} hideActions={true} maxCrcLength={maxCrcLength} />
                 </div>
             </div>
         );

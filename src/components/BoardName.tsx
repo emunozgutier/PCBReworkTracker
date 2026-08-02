@@ -1,10 +1,28 @@
 import { COLORS } from '../store/useStyles';
 import { useAppState } from '../store/useAppState';
+import { usePcbStore } from '../store/clientDataBase/usePcbStore';
 import { formatCrc } from './UrlManager/crc';
 import './BoardName.css';
 
-export function BoardName({ name, isHex, crcColor = COLORS.purple }: { name: string; isHex?: boolean; crcColor?: string }) {
+export function getMaxCrcLength(items: any[], crcFormat: 'letter' | 'nato'): number {
+    return items.reduce((max, item) => {
+        const bName = item.board_number || '';
+        if (bName.includes('-')) {
+            const parts = bName.split('-');
+            const lastPart = parts[parts.length - 1] || '';
+            if (lastPart.length > 1 && /^[a-zA-Z]$/.test(lastPart.slice(-1)) && /^\d$/.test(lastPart.slice(-2, -1))) {
+                const crcChar = lastPart.slice(-1);
+                const len = formatCrc(crcChar, crcFormat).length;
+                return Math.max(max, len);
+            }
+        }
+        return max;
+    }, crcFormat === 'nato' ? 8 : 1);
+}
+
+export function BoardName({ name, isHex, crcColor = COLORS.purple, maxCrcLength }: { name: string; isHex?: boolean; crcColor?: string; maxCrcLength?: number }) {
     const { crcFormat } = useAppState();
+    const { pcbs } = usePcbStore();
 
     if (!name) return null;
     
@@ -28,8 +46,15 @@ export function BoardName({ name, isHex, crcColor = COLORS.purple }: { name: str
         
         const paddedProject = project.padEnd(3, ' ');
         const paddedNumber = number.padEnd(3, ' ');
+        
+        // Find the maximum CRC text length
+        let targetCrcLen = maxCrcLength;
+        if (targetCrcLen === undefined) {
+            targetCrcLen = getMaxCrcLength(pcbs, crcFormat);
+        }
+
         const crcText = crc ? formatCrc(crc, crcFormat) : '';
-        const paddedCrc = crcText.padEnd(crcFormat === 'nato' ? 8 : 1, ' ');
+        const paddedCrc = crcText.padEnd(targetCrcLen, ' ');
         
         return (
             <span style={{ whiteSpace: 'pre' }}>

@@ -5,9 +5,10 @@ import { useAppState } from '../../../store/useAppState';
 
 interface PcbCardProps {
     pcb: any;
+    maxCrcLength?: number;
 }
 
-export function PcbCard({ pcb }: PcbCardProps) {
+export function PcbCard({ pcb, maxCrcLength }: PcbCardProps) {
     const { expandedPcb, setExpandedPcb } = useAppState();
     const isExpanded = expandedPcb === pcb.board_number;
     const cardRef = useRef<HTMLDivElement>(null);
@@ -34,6 +35,7 @@ export function PcbCard({ pcb }: PcbCardProps) {
                 pcb={pcb} 
                 isExpanded={isExpanded} 
                 onToggle={handleToggle} 
+                maxCrcLength={maxCrcLength}
             />
             {isExpanded && <PcbCardBody pcb={pcb} />}
         </div>

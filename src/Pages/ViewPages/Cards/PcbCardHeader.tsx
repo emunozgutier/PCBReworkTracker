@@ -9,9 +9,10 @@ interface PcbCardHeaderProps {
     isExpanded: boolean;
     onToggle: () => void;
     hideActions?: boolean;
+    maxCrcLength?: number;
 }
 
-export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions }: PcbCardHeaderProps) {
+export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions, maxCrcLength }: PcbCardHeaderProps) {
     const { isMobile } = useAppState();
 
     const flavor = (pcb.board_flavor || '').replace('No part yet', 'No part');
@@ -27,7 +28,7 @@ export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions }: PcbCar
             style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', padding: '12px 16px', gap: '12px' }}
         >
             <div style={{ display: 'flex', flex: 1, flexWrap: 'wrap', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap' }}><BoardName name={pcb.board_number} isHex={pcb.number_format === 'hex'} /></span>
+                <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap' }}><BoardName name={pcb.board_number} isHex={pcb.number_format === 'hex'} maxCrcLength={maxCrcLength} /></span>
 
                 {/* Silicon Info Pill (Si Rev + Corner) - directly inline with board number */}
                 {siInfo && (
