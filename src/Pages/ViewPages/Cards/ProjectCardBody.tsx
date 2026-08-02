@@ -1,13 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { COLORS } from '../../../store/useStyles';
-import { EditButton, ViewButton, DeleteButton } from '../../../components/forms/ActionButtons';
+import { EditButton, DocsButton, ViewButton, DeleteButton } from '../../../components/forms/ActionButtons';
 import { usePcbStore } from '../../../store/clientDataBase/usePcbStore';
 import { useProjectStore } from '../../../store/clientDataBase/useProjectStore';
 import { useAppState } from '../../../store/useAppState';
 import { PcbCardHeader } from './PcbCardHeader';
 import { ProjectCardSummary } from './ProjectCardSummary';
 import { RemoveProject } from '../../RemovePage/RemoveProject';
-import { FileText } from 'lucide-react';
 import { ProjectDocList } from '../../PopupPage/ProjectDocList';
 import { usePermissionsStore } from '../../../store/clientDataBase/usePermissionsStore';
 
@@ -153,33 +152,14 @@ export function ProjectCardBody({ project }: ProjectCardBodyProps) {
                     label={isMobile ? "" : "Edit Project"}
                 />
                 {canViewDocs && (
-                    <button 
-                        className="docs-btn" 
+                    <DocsButton 
                         onClick={(e) => {
                             e.stopPropagation();
                             setIsDocsOpen(true);
                         }}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            padding: '6px 12px',
-                            background: 'rgba(99, 102, 241, 0.1)',
-                            border: '1px solid rgba(99, 102, 241, 0.3)',
-                            borderRadius: '8px',
-                            color: 'var(--accent)',
-                            cursor: 'pointer',
-                            fontSize: '0.85rem',
-                            fontWeight: 600,
-                            transition: 'all 0.2s',
-                            boxSizing: 'border-box',
-                            height: '36px',
-                        }}
+                        label={isMobile ? "" : "Docs"}
                         title="Project Documents"
-                    >
-                        <FileText size={18} />
-                        {!isMobile && <span>Docs</span>}
-                    </button>
+                    />
                 )}
                 <ViewButton 
                     onClick={(e) => {
