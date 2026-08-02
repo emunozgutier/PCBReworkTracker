@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useAppState } from '../../../store/useAppState';
 import { useOwnerStore } from '../../../store/clientDataBase/useOwnerStore';
+import { InfoPill } from '../../../components/InfoPill';
 
 interface OwnerCardHeaderProps {
     owner: any;
@@ -25,9 +26,15 @@ export function OwnerCardHeader({ owner, isExpanded, onToggle }: OwnerCardHeader
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text)', margin: 0, fontFamily: 'monospace' }}>
-                        {owner.username ? owner.username : 'No username'}
-                    </span>
+                    <InfoPill
+                        text={owner.username ? owner.username : 'No username'}
+                        color="var(--text)"
+                        bg="transparent"
+                        border="none"
+                        min_width={8}
+                        center={false}
+                        style={{ fontSize: '1.2rem', fontWeight: 'bold', fontFamily: 'monospace' }}
+                    />
                     <span style={{
                         fontSize: '0.7rem',
                         fontWeight: 600,

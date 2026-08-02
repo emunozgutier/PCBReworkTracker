@@ -9,9 +9,10 @@ interface InfoPillProps {
     min_width?: number;
     title?: string;
     center?: boolean;
+    style?: React.CSSProperties;
 }
 
-export function InfoPill({ text, color = 'var(--text)', bg, border, min_width, title, center = false }: InfoPillProps) {
+export function InfoPill({ text, color = 'var(--text)', bg, border, min_width, title, center = false, style: customStyle }: InfoPillProps) {
     const style: React.CSSProperties = {
         fontFamily: FONTS.monospace,
         fontSize: '0.75rem',
@@ -26,6 +27,7 @@ export function InfoPill({ text, color = 'var(--text)', bg, border, min_width, t
         justifyContent: 'center',
         whiteSpace: 'pre',
         boxSizing: 'border-box',
+        ...customStyle
     };
 
     if (min_width) {
