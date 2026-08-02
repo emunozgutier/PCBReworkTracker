@@ -360,6 +360,84 @@ db.all("SELECT id FROM pcbs WHERE short_code IS NULL", [], (err: Error | null, p
     }
 });
 
+// Migration: Move flat documents and pictures to project key subfolders
+db.all("SELECT project_docs.*, projects.project_key FROM project_docs LEFT JOIN projects ON project_docs.project_id = projects.id", [], (errDocs: Error | null, docRows: any[]) => {
+    if (!errDocs && docRows) {
+        docRows.forEach(doc => {
+            const projectKey = doc.project_key || 'PRJ';
+            const isLegacyPath = doc.path && (doc.path.startsWith('/docs/') || doc.path.startsWith('/schematics/'));
+            const isAlreadyCategorized = doc.path && doc.path.startsWith(`/docs/${projectKey}/`);
+            if (isLegacyPath && !isAlreadyCategorized) {
+                const oldFilename = path.basename(doc.path);
+                const oldFilePath = path.join(__dirname, 'docs', oldFilename);
+                const newDir = path.join(__dirname, 'docs', projectKey);
+                
+                const regex = new RegExp(`^${projectKey}-(DOC|SCH)-(.*)$`, 'i');
+                const match = oldFilename.match(regex);
+                const cleanFilename = match ? match[2] : oldFilename;
+                const newFilePath = path.join(newDir, cleanFilename);
+                
+                try {
+                    if (!fs.existsSync(newDir)) {
+                        fs.mkdirSync(newDir, { recursive: true });
+                    }
+                    if (fs.existsSync(oldFilePath)) {
+                        fs.renameSync(oldFilePath, newFilePath);
+                    }
+                    const newRelativePath = `/docs/${projectKey}/${cleanFilename}`;
+                    db.run("UPDATE project_docs SET path = ? WHERE id = ?", [newRelativePath, doc.id]);
+                    console.log(`[Migration Docs] Moved and renamed ${oldFilename} to docs/${projectKey}/${cleanFilename}`);
+                } catch (e: any) {
+                    console.error(`[Migration Docs] Failed to move ${oldFilename}:`, e.message);
+                }
+            }
+        });
+    }
+});
+
+db.all("SELECT reworks.id, reworks.image_path, projects.project_key FROM reworks JOIN pcbs ON reworks.pcb_id = pcbs.id LEFT JOIN projects ON pcbs.project_id = projects.id WHERE reworks.image_path IS NOT NULL", [], (errReworks: Error | null, reworkRows: any[]) => {
+    if (!errReworks && reworkRows) {
+        reworkRows.forEach(rework => {
+            const projectKey = rework.project_key || 'PRJ';
+            let paths: string[] = [];
+            try {
+                paths = JSON.parse(rework.image_path || '[]');
+            } catch (e) {
+                if (rework.image_path) paths = [rework.image_path];
+            }
+            
+            let updated = false;
+            const newPaths = paths.map(picPath => {
+                if (picPath.startsWith('/pictures/') && !picPath.startsWith(`/pictures/${projectKey}/`)) {
+                    const filename = path.basename(picPath);
+                    const oldFilePath = path.join(__dirname, 'pictures', filename);
+                    const newDir = path.join(__dirname, 'pictures', projectKey);
+                    const newFilePath = path.join(newDir, filename);
+                    
+                    try {
+                        if (!fs.existsSync(newDir)) {
+                            fs.mkdirSync(newDir, { recursive: true });
+                        }
+                        if (fs.existsSync(oldFilePath)) {
+                            fs.renameSync(oldFilePath, newFilePath);
+                        }
+                        updated = true;
+                        return `/pictures/${projectKey}/${filename}`;
+                    } catch (e: any) {
+                        console.error(`[Migration Pictures] Failed to move ${filename}:`, e.message);
+                    }
+                }
+                return picPath;
+            });
+            
+            if (updated) {
+                db.run("UPDATE reworks SET image_path = ? WHERE id = ?", [JSON.stringify(newPaths), rework.id]);
+                console.log(`[Migration Pictures] Updated image paths for rework id ${rework.id}`);
+            }
+        });
+    }
+});
+
     // Start Server
     app.listen(port, () => {
         console.log(`Server running at http://localhost:${port}`);
@@ -1083,7 +1161,7 @@ app.post('/api/projects/:id/docs', upload.any(), (req: Request, res: Response) =
                 const originalName = file.originalname;
                 const cleanOriginal = originalName.replace(/[^a-zA-Z0-9.\-_]/g, '_');
                 const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E4);
-                const newFileName = `${projectKey}-DOC-${uniqueSuffix}-${cleanOriginal}`;
+                const newFileName = `${uniqueSuffix}-${cleanOriginal}`;
                 
                 const oldPath = path.join(__dirname, 'docs', file.filename);
                 const targetDir = path.join(__dirname, 'docs', projectKey);
