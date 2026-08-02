@@ -155,10 +155,23 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
             apiFetch(`${API_BASE}/projects`).then(res => res.json()),
             apiFetch(`${API_BASE}/owners`).then(res => res.json())
         ]).then(([projData, ownerData]) => {
-            setProjects(projData);
+            const normalizedProjects = projData.map((p: any) => ({
+                ...p,
+                flavors: (p.flavors || []).map((f: any) => {
+                    const rawRevs = f.revisions || [];
+                    const normalizedRevs = (Array.isArray(rawRevs) ? rawRevs : [rawRevs]).map((r: any) => {
+                        return typeof r === 'object' && r !== null ? r.name : String(r);
+                    });
+                    return {
+                        ...f,
+                        revisions: normalizedRevs
+                    };
+                })
+            }));
+            setProjects(normalizedProjects);
             setOwners(ownerData);
-            if (projData.length > 0) {
-                const firstProj = projData[0];
+            if (normalizedProjects.length > 0) {
+                const firstProj = normalizedProjects[0];
                 setSelectedProject(firstProj.id.toString());
                 if (firstProj.silicon_corners) {
                     const corners = firstProj.silicon_corners.split(',').map((s: string) => s.trim()).filter((s: string) => Boolean(s) && !isNA(s));
