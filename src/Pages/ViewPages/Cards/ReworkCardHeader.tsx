@@ -45,8 +45,8 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
     const reworkSuffix = `R${String(rework.rework_number || rework.id).padStart(3, '0')}`;
 
     return (
-        <div 
-            className="card-header-main" 
+        <div
+            className="card-header-main"
             onClick={onToggle}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', gap: '12px', minWidth: 0, width: '100%' }}
         >
@@ -55,14 +55,13 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
                     {showFullTitle ? (
                         <>
                             <BoardName name={resolvedBoardName} />
-                            <span style={{ color: 'var(--text-muted)' }}>-</span>
                             <InfoPill text={reworkSuffix} color={COLORS.purple} min_width={4} />
                         </>
                     ) : (
                         <InfoPill text={reworkSuffix} color={COLORS.purple} min_width={4} />
                     )}
                 </span>
-                <InfoPill 
+                <InfoPill
                     text={getReworkTypeText(rework.rework_type)}
                     color={rework.rework_type === 'Major' ? COLORS.red : rework.rework_type === 'Silicon Swap' ? COLORS.purple : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orange : COLORS.indigo}
                     bg={rework.rework_type === 'Major' ? COLORS.redLight : rework.rework_type === 'Silicon Swap' ? COLORS.purpleMedium : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeMedium : COLORS.indigoLight}
@@ -71,7 +70,7 @@ export function ReworkCardHeader({ rework, isExpanded, onToggle, showFullTitle =
                     title={getReworkTypeTooltip(rework.rework_type)}
                 />
                 {rework.title && (
-                    <InfoPill 
+                    <InfoPill
                         text={rework.title}
                         bg="transparent"
                         border="none"
