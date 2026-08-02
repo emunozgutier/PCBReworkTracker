@@ -215,8 +215,11 @@ function serializeWrites(req: Request, res: Response, next: NextFunction) {
     });
 }
 
-// Apply deduplication to all JSON write operations first
+// Apply deduplication to JSON write operations first
 app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') {
+        return next();
+    }
     const isMultipart = req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data');
     if (isMultipart || req.originalUrl.startsWith('/api/otp/')) {
         return next();
@@ -226,6 +229,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // Apply serialization to JSON write operations second
 app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') {
+        return next();
+    }
     const isMultipart = req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data');
     if (isMultipart) {
         return next();
@@ -473,18 +479,50 @@ app.get('/api/projects', (_req: Request, res: Response) => {
         GROUP BY projects.id
     `;
     db.all(query, [], (err: Error | null, rows: any[]) => {
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+            console.error("PROJECTS QUERY ERROR:", err.message);
+            return res.status(500).json({ error: err.message });
+        }
         
         db.all("SELECT * FROM pcb_flavors", [], (errFlavors: Error | null, flavors: any[]) => {
-            if (errFlavors) return res.status(500).json({ error: errFlavors.message });
+            if (errFlavors) {
+                console.error("FLAVORS QUERY ERROR:", errFlavors.message);
+                return res.status(500).json({ error: errFlavors.message });
+            }
             
             res.json(rows.map(row => {
-                const projectFlavors = flavors.filter(f => f.project_id === row.id).map(f => ({
-                    id: f.id,
-                    name: f.name,
-                    revisions: f.revisions ? JSON.parse(f.revisions) : [],
-                    boms: f.boms ? JSON.parse(f.boms) : []
-                }));
+                const projectFlavors = flavors.filter(f => f.project_id === row.id).map(f => {
+                    let parsedRevisions: any[] = [];
+                    if (f.revisions) {
+                        try {
+                            const p = (typeof f.revisions === 'string' && (f.revisions.startsWith('[') || f.revisions.startsWith('{')))
+                                ? JSON.parse(f.revisions)
+                                : f.revisions;
+                            parsedRevisions = Array.isArray(p) ? p : (typeof p === 'string' ? p.split(',').map((s: string) => s.trim()) : [p]);
+                        } catch (e) {
+                            parsedRevisions = String(f.revisions).split(',').map((s: string) => s.trim());
+                        }
+                    }
+
+                    let parsedBoms: any[] = [];
+                    if (f.boms) {
+                        try {
+                            const p = (typeof f.boms === 'string' && (f.boms.startsWith('[') || f.boms.startsWith('{')))
+                                ? JSON.parse(f.boms)
+                                : f.boms;
+                            parsedBoms = Array.isArray(p) ? p : (typeof p === 'string' ? p.split(',').map((s: string) => s.trim()) : [p]);
+                        } catch (e) {
+                            parsedBoms = String(f.boms).split(',').map((s: string) => s.trim());
+                        }
+                    }
+
+                    return {
+                        id: f.id,
+                        name: f.name,
+                        revisions: parsedRevisions,
+                        boms: parsedBoms
+                    };
+                });
                 
                 delete row.formfactors; // Remove old column if it was present
                 

@@ -60,11 +60,14 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             const normalizedData = data.map((p: any) => ({
                 ...p,
                 flavors: p.flavors?.map((f: any) => {
-                    const rawRevs = f.revisions || [];
+                    let rawRevs = f.revisions || [];
+                    if (!Array.isArray(rawRevs)) {
+                        rawRevs = typeof rawRevs === 'string' ? (rawRevs as string).split(',').map((s: string) => s.trim()) : [rawRevs];
+                    }
                     const isDetailed = rawRevs.length > 0 && typeof rawRevs[0] === 'object';
                     const revisionDetails = isDetailed 
-                        ? rawRevs 
-                        : rawRevs.map((r: string) => ({ name: r, boms: f.boms || [], doc: null }));
+                        ? rawRevs.map((r: any) => ({ name: r.name, boms: Array.isArray(r.boms) ? r.boms : (r.boms ? String(r.boms).split(',').map((b: string) => b.trim()) : []), doc: r.doc || r.schematic || null })) 
+                        : rawRevs.map((r: string) => ({ name: r, boms: Array.isArray(f.boms) ? f.boms : (f.boms ? String(f.boms).split(',').map((b: string) => b.trim()) : []), doc: null }));
                     const revisionNames = isDetailed 
                         ? rawRevs.map((r: any) => r.name) 
                         : rawRevs;

@@ -78,7 +78,8 @@ describe('Projects API - Silicon Version', () => {
         // Verify audit logs on project creation
         const getProjectsRes = await fetch(`${API_URL}/projects`);
         const projects = await getProjectsRes.json();
-        const project = projects.find(p => p.id === projectId);
+        console.log("PROJECTS API RES STATUS:", getProjectsRes.status, projects);
+        const project = projects.find((p: any) => p.id === projectId);
         expect(project.created_by).toBe('vitest_project_creator');
         expect(project.updated_by).toBe('vitest_project_creator');
     });

@@ -83,7 +83,7 @@ const initDb = async (): Promise<void> => {
         dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_key ON projects(project_key)`);
         dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_name ON projects(name COLLATE NOCASE)`);
 
-        // Project Docs Table
+        // Project Docs Table & Legacy Migration
         dbInstance.run(`CREATE TABLE IF NOT EXISTS project_docs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             project_id INTEGER NOT NULL,
@@ -93,13 +93,12 @@ const initDb = async (): Promise<void> => {
             FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
         )`);
 
-        // Migrate legacy project_schematics to project_docs if exists
         dbInstance.get("SELECT name FROM sqlite_master WHERE type='table' AND name='project_schematics'", (_err, row) => {
             if (row) {
-                dbInstance.run("INSERT INTO project_docs (id, project_id, filename, path, uploaded_at) SELECT id, project_id, filename, path, uploaded_at FROM project_schematics", (insertErr) => {
-                    if (!insertErr) {
-                        dbInstance.run("DROP TABLE project_schematics");
-                    }
+                dbInstance.serialize(() => {
+                    dbInstance.run("INSERT OR IGNORE INTO project_docs (id, project_id, filename, path, uploaded_at) SELECT id, project_id, filename, path, uploaded_at FROM project_schematics", () => {
+                        dbInstance.run("DROP TABLE IF EXISTS project_schematics");
+                    });
                 });
             }
         });
