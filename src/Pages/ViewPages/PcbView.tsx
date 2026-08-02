@@ -89,13 +89,14 @@ export function PcbView({ title }: PcbViewProps) {
         );
     }
 
+    const calculatedLen = getMaxCrcLength(items, crcFormat);
+    const [maxBoardNameLength, setMaxBoardNameLength] = useState(calculatedLen);
+
+    if (maxBoardNameLength !== calculatedLen) {
+        setMaxBoardNameLength(calculatedLen);
+    }
+
     if (loading && pcbs.length === 0) return <div className="loading">Loading {title}...</div>;
-
-    const [maxBoardNameLength, setMaxBoardNameLength] = useState(0);
-
-    useEffect(() => {
-        setMaxBoardNameLength(getMaxCrcLength(items, crcFormat));
-    }, [items, crcFormat]);
 
     return (
         <div className="card-list-container">
