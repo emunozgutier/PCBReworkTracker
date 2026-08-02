@@ -34,7 +34,7 @@ export const NATO_PHONETIC_MAP: Record<string, string> = {
     U: 'Uniform',
     V: 'Victor',
     W: 'Whiskey',
-    X: 'X-ray',
+    X: 'Xray',
     Y: 'Yankee',
     Z: 'Zulu',
 };

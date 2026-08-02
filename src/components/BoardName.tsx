@@ -9,30 +9,38 @@ export function BoardName({ name, isHex, crcColor = COLORS.purple }: { name: str
     if (!name) return null;
     
     // If it's a hex number, there is no CRC, so just return the raw string
-    if (isHex) return <span>{name}</span>;
+    if (isHex) return <span style={{ whiteSpace: 'pre' }}>{name}</span>;
     
-    // Check if it follows our strict format: e.g. MAP-0001K
-    if (name.length > 5 && name.includes('-')) {
-        const parts = name.split('-');
-        if (parts.length >= 2) {
-            const lastPart = parts[parts.length - 1];
-            // If the last part has an attached CRC letter, e.g. "0001K"
-            if (lastPart.length > 1 && /^[a-zA-Z]$/.test(lastPart.slice(-1))) {
-                const crc = lastPart.slice(-1);
-                const base = name.slice(0, -1);
-                
-                return (
-                    <span>
-                        {base}
-                        <span style={{ color: crcColor, fontWeight: 'bold' }}>
-                            {formatCrc(crc, crcFormat)}
-                        </span>
-                    </span>
-                );
-            }
+    if (name.includes('-')) {
+        const firstHyphenIndex = name.indexOf('-');
+        const project = name.substring(0, firstHyphenIndex);
+        const rest = name.substring(firstHyphenIndex + 1);
+        
+        let number = rest;
+        let crc = '';
+        
+        // Check if the rest ends with a CRC letter, e.g., "0001K"
+        // The last character is a letter, and the character before it is a digit.
+        if (rest.length > 1 && /^[a-zA-Z]$/.test(rest.slice(-1)) && /^\d$/.test(rest.slice(-2, -1))) {
+            crc = rest.slice(-1);
+            number = rest.slice(0, -1);
         }
+        
+        const paddedProject = project.padEnd(3, ' ');
+        const paddedNumber = number.padEnd(3, ' ');
+        const crcText = crc ? formatCrc(crc, crcFormat) : '';
+        const paddedCrc = crcText.padEnd(crcFormat === 'nato' ? 8 : 1, ' ');
+        
+        return (
+            <span style={{ whiteSpace: 'pre' }}>
+                {paddedProject}-{paddedNumber}
+                <span style={{ color: crcColor, fontWeight: 'bold' }}>
+                    {paddedCrc}
+                </span>
+            </span>
+        );
     }
     
-    // Fallback if it doesn't match the CRC format
-    return <span>{name}</span>;
+    // Fallback if it doesn't contain a hyphen
+    return <span style={{ whiteSpace: 'pre' }}>{name}</span>;
 }

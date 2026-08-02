@@ -41,8 +41,10 @@ export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions }: PcbCar
                     {/* Owner Info Pill */}
                     {!isMobile && (
                         <InfoPill 
-                            text={pcb.owner_username ? `@${pcb.owner_username}` : (pcb.owner || 'Unassigned')} 
+                            text={(pcb.owner_username ? `@${pcb.owner_username}` : (pcb.owner || 'Unassigned')).substring(0, 8)} 
                             color="var(--text-muted)" 
+                            min_width={8}
+                            center={true}
                         />
                     )}
                 </div>
