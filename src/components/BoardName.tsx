@@ -5,19 +5,20 @@ import { formatCrc } from './UrlManager/crc';
 import './BoardName.css';
 
 export function getMaxCrcLength(items: any[], crcFormat: 'letter' | 'nato'): number {
-    return items.reduce((max, item) => {
+    const lengths = items.map(item => {
         const bName = item.board_number || '';
         if (bName.includes('-')) {
             const parts = bName.split('-');
             const lastPart = parts[parts.length - 1] || '';
             if (lastPart.length > 1 && /^[a-zA-Z]$/.test(lastPart.slice(-1)) && /^\d$/.test(lastPart.slice(-2, -1))) {
                 const crcChar = lastPart.slice(-1);
-                const len = formatCrc(crcChar, crcFormat).length;
-                return Math.max(max, len);
+                return formatCrc(crcChar, crcFormat).length;
             }
         }
-        return max;
-    }, crcFormat === 'nato' ? 8 : 1);
+        return 0;
+    });
+    const maxVal = Math.max(...lengths, 0);
+    return maxVal > 0 ? maxVal : (crcFormat === 'nato' ? 8 : 1);
 }
 
 export function BoardName({ name, isHex, crcColor = COLORS.purple, maxCrcLength }: { name: string; isHex?: boolean; crcColor?: string; maxCrcLength?: number }) {
