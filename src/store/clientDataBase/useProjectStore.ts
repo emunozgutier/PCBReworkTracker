@@ -7,6 +7,8 @@ export interface PcbRevisionDetail {
     name: string;
     boms: string[];
     doc?: string | null;
+    schematic?: string | null;
+    board_file?: string | null;
 }
 
 export interface PcbFlavor {
@@ -66,8 +68,20 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                     }
                     const isDetailed = rawRevs.length > 0 && typeof rawRevs[0] === 'object';
                     const revisionDetails = isDetailed 
-                        ? rawRevs.map((r: any) => ({ name: r.name, boms: Array.isArray(r.boms) ? r.boms : (r.boms ? String(r.boms).split(',').map((b: string) => b.trim()) : []), doc: r.doc || r.schematic || null })) 
-                        : rawRevs.map((r: string) => ({ name: r, boms: Array.isArray(f.boms) ? f.boms : (f.boms ? String(f.boms).split(',').map((b: string) => b.trim()) : []), doc: null }));
+                        ? rawRevs.map((r: any) => ({ 
+                            name: r.name, 
+                            boms: Array.isArray(r.boms) ? r.boms : (r.boms ? String(r.boms).split(',').map((b: string) => b.trim()) : []), 
+                            doc: r.doc || r.schematic || null,
+                            schematic: r.schematic || r.doc || null,
+                            board_file: r.board_file || null
+                          })) 
+                        : rawRevs.map((r: string) => ({ 
+                            name: r, 
+                            boms: Array.isArray(f.boms) ? f.boms : (f.boms ? String(f.boms).split(',').map((b: string) => b.trim()) : []), 
+                            doc: null,
+                            schematic: null,
+                            board_file: null
+                          }));
                     const revisionNames = isDetailed 
                         ? rawRevs.map((r: any) => r.name) 
                         : rawRevs;

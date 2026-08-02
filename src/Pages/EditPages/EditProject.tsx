@@ -37,6 +37,8 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
         name: string;
         boms: string;
         doc?: string | null;
+        schematic?: string | null;
+        board_file?: string | null;
     }
     interface EditProjectFlavor {
         name: string;
@@ -116,15 +118,27 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
             if (existingProject.flavors && existingProject.flavors.length > 0) {
                 setFlavors(existingProject.flavors.map((f: any) => {
                     const revisionsMapped = f.revisionDetails 
-                        ? f.revisionDetails.map((r: any) => ({ name: r.name, boms: r.boms.join(', '), doc: r.doc || r.schematic || null }))
-                        : f.revisions.map((r: string) => ({ name: r, boms: f.boms ? f.boms.join(', ') : '', doc: null }));
+                        ? f.revisionDetails.map((r: any) => ({ 
+                            name: r.name, 
+                            boms: r.boms.join(', '), 
+                            doc: r.doc || r.schematic || null, 
+                            schematic: r.schematic || r.doc || null, 
+                            board_file: r.board_file || null 
+                          }))
+                        : f.revisions.map((r: string) => ({ 
+                            name: r, 
+                            boms: f.boms ? f.boms.join(', ') : '', 
+                            doc: null, 
+                            schematic: null, 
+                            board_file: null 
+                          }));
                     return {
                         name: f.name,
                         revisions: revisionsMapped
                     };
                 }));
             } else {
-                setFlavors([{ name: '', revisions: [{ name: 'A0', boms: '', doc: null }] }]);
+                setFlavors([{ name: '', revisions: [{ name: 'A0', boms: '', doc: null, schematic: null, board_file: null }] }]);
             }
             setLoading(false);
         }
@@ -140,7 +154,9 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                 revisions: f.revisions.map(r => ({
                     name: r.name.trim(),
                     boms: r.boms.split(',').map(b => b.trim()).filter(Boolean),
-                    doc: r.doc || null
+                    doc: r.schematic || r.doc || null,
+                    schematic: r.schematic || null,
+                    board_file: r.board_file || null
                 })),
                 boms: allBoms
             };
@@ -271,7 +287,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                         activeTab={activeTab}
                         onTabChange={setActiveTab}
                         onAddTab={() => {
-                            setFlavors([...flavors, { name: '', revisions: [{ name: '1.0', boms: '', doc: null }] }]);
+                            setFlavors([...flavors, { name: '', revisions: [{ name: '1.0', boms: '', doc: null, schematic: null, board_file: null }] }]);
                             setActiveTab(flavors.length);
                             setActiveRevTab(0);
                         }}
@@ -321,7 +337,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                                 alert("Revision name already exists.");
                                                 return;
                                             }
-                                            const newRevs = [...flavors[activeTab].revisions, { name: trimmed, boms: '', doc: null }];
+                                            const newRevs = [...flavors[activeTab].revisions, { name: trimmed, boms: '', doc: null, schematic: null, board_file: null }];
                                             const newFf = [...flavors];
                                             newFf[activeTab].revisions = newRevs;
                                             setFlavors(newFf);
@@ -371,18 +387,18 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block' }}>Doc PDF</label>
+                                                    <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block' }}>Schematic Doc</label>
                                                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                                         <select
-                                                            value={flavors[activeTab].revisions[activeRevTab].doc || ''}
+                                                            value={flavors[activeTab].revisions[activeRevTab].schematic || ''}
                                                             style={{ flex: 1, padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)' }}
                                                             onChange={e => {
                                                                 const newFf = [...flavors];
-                                                                newFf[activeTab].revisions[activeRevTab].doc = e.target.value;
+                                                                newFf[activeTab].revisions[activeRevTab].schematic = e.target.value;
                                                                 setFlavors(newFf);
                                                             }}
                                                         >
-                                                            <option value="">-- No Doc --</option>
+                                                            <option value="">-- No Schematic --</option>
                                                             {loadedDocs.map(s => (
                                                                 <option key={s.id} value={s.filename}>{s.filename}</option>
                                                             ))}
@@ -395,7 +411,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                                             type="file"
                                                             accept=".pdf"
                                                             style={{ display: 'none' }}
-                                                            id={`rev-doc-file-${activeTab}-${activeRevTab}`}
+                                                            id={`rev-schematic-file-${activeTab}-${activeRevTab}`}
                                                             onChange={(e) => {
                                                                 if (e.target.files && e.target.files[0]) {
                                                                     const file = e.target.files[0];
@@ -403,13 +419,82 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                                                         setSelectedFiles([...selectedFiles, file]);
                                                                     }
                                                                     const newFf = [...flavors];
-                                                                    newFf[activeTab].revisions[activeRevTab].doc = file.name;
+                                                                    newFf[activeTab].revisions[activeRevTab].schematic = file.name;
                                                                     setFlavors(newFf);
                                                                 }
                                                             }}
                                                         />
                                                         <label 
-                                                            htmlFor={`rev-doc-file-${activeTab}-${activeRevTab}`}
+                                                            htmlFor={`rev-schematic-file-${activeTab}-${activeRevTab}`}
+                                                            className="action-btn-hover"
+                                                            style={{
+                                                                padding: '8px 12px',
+                                                                background: 'rgba(255, 255, 255, 0.02)',
+                                                                border: '1px dashed var(--border)',
+                                                                borderRadius: '4px',
+                                                                cursor: 'pointer',
+                                                                fontSize: '0.85rem',
+                                                                fontWeight: 500,
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '4px',
+                                                                color: 'var(--text-muted)'
+                                                            }}
+                                                            onMouseEnter={(e) => {
+                                                                e.currentTarget.style.borderColor = 'var(--accent)';
+                                                                e.currentTarget.style.color = 'var(--text)';
+                                                            }}
+                                                            onMouseLeave={(e) => {
+                                                                e.currentTarget.style.borderColor = 'var(--border)';
+                                                                e.currentTarget.style.color = 'var(--text-muted)';
+                                                            }}
+                                                        >
+                                                            <Upload size={14} />
+                                                            Upload New
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block' }}>Board file Doc</label>
+                                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                        <select
+                                                            value={flavors[activeTab].revisions[activeRevTab].board_file || ''}
+                                                            style={{ flex: 1, padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)' }}
+                                                            onChange={e => {
+                                                                const newFf = [...flavors];
+                                                                newFf[activeTab].revisions[activeRevTab].board_file = e.target.value;
+                                                                setFlavors(newFf);
+                                                            }}
+                                                        >
+                                                            <option value="">-- No Board file --</option>
+                                                            {loadedDocs.map(s => (
+                                                                <option key={s.id} value={s.filename}>{s.filename}</option>
+                                                            ))}
+                                                            {selectedFiles.map(f => (
+                                                                <option key={f.name} value={f.name}>{f.name} (New Upload)</option>
+                                                            ))}
+                                                        </select>
+                                                        
+                                                        <input 
+                                                            type="file"
+                                                            accept=".pdf"
+                                                            style={{ display: 'none' }}
+                                                            id={`rev-boardfile-file-${activeTab}-${activeRevTab}`}
+                                                            onChange={(e) => {
+                                                                if (e.target.files && e.target.files[0]) {
+                                                                    const file = e.target.files[0];
+                                                                    if (!selectedFiles.some(f => f.name === file.name)) {
+                                                                        setSelectedFiles([...selectedFiles, file]);
+                                                                    }
+                                                                    const newFf = [...flavors];
+                                                                    newFf[activeTab].revisions[activeRevTab].board_file = file.name;
+                                                                    setFlavors(newFf);
+                                                                }
+                                                            }}
+                                                        />
+                                                        <label 
+                                                            htmlFor={`rev-boardfile-file-${activeTab}-${activeRevTab}`}
                                                             className="action-btn-hover"
                                                             style={{
                                                                 padding: '8px 12px',

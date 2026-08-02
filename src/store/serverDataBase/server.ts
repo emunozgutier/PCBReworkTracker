@@ -961,13 +961,18 @@ app.post('/api/reworks', upload.any(), deduplicate, serializeWrites, (req: Reque
                 reqFiles.slice(0, 3).forEach((file, index) => {
                     const ext = path.extname(file.originalname) || '.jpg';
                     const newFileName = `${reworkName}-PIC-${index + 1}${ext}`;
+                    const projectKey = row.project_key || 'PRJ';
                     const oldPath = path.join(__dirname, 'pictures', file.filename);
-                    const newPath = path.join(__dirname, 'pictures', newFileName);
+                    const targetDir = path.join(__dirname, 'pictures', projectKey);
+                    if (!fs.existsSync(targetDir)) {
+                        fs.mkdirSync(targetDir, { recursive: true });
+                    }
+                    const newPath = path.join(targetDir, newFileName);
                     
                     try {
                         if (fs.existsSync(oldPath)) {
                             fs.renameSync(oldPath, newPath);
-                            finalPaths.push(`/pictures/${newFileName}`);
+                            finalPaths.push(`/pictures/${projectKey}/${newFileName}`);
                         }
                     } catch (errRename) {
                         console.error('Failed to rename picture file:', errRename);
@@ -1081,12 +1086,16 @@ app.post('/api/projects/:id/docs', upload.any(), (req: Request, res: Response) =
                 const newFileName = `${projectKey}-DOC-${uniqueSuffix}-${cleanOriginal}`;
                 
                 const oldPath = path.join(__dirname, 'docs', file.filename);
-                const newPath = path.join(__dirname, 'docs', newFileName);
+                const targetDir = path.join(__dirname, 'docs', projectKey);
+                if (!fs.existsSync(targetDir)) {
+                    fs.mkdirSync(targetDir, { recursive: true });
+                }
+                const newPath = path.join(targetDir, newFileName);
                 
                 try {
                     if (fs.existsSync(oldPath)) {
                         fs.renameSync(oldPath, newPath);
-                        const relativePath = `/docs/${newFileName}`;
+                        const relativePath = `/docs/${projectKey}/${newFileName}`;
                         
                         db.run(
                             "INSERT INTO project_docs (project_id, filename, path) VALUES (?, ?, ?)",

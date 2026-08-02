@@ -8,8 +8,9 @@ import { FormTabs } from '../../../components/forms/FormTabs';
 import { RemoveTag } from '../../RemovePage/RemoveTag';
 import { Tag as TagIcon, X, FileText } from 'lucide-react';
 import { formatTagName } from '../../../store/clientDataBase/useTagStore';
-import { EditButton, ViewButton, AddButton, QrButton, DeleteButton } from '../../../components/forms/ActionButtons';
+import { EditButton, ViewButton, AddButton, QrButton, DeleteButton, DocsButton } from '../../../components/forms/ActionButtons';
 import { RemovePcb } from '../../RemovePage/RemovePcb';
+import { Popup } from '../../../components/Popup';
 import { ReworkCardBody } from './ReworkCardBody';
 import { COLORS } from '../../../store/useStyles';
 import { InfoPill } from '../../../components/InfoPill';
@@ -57,6 +58,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const [isAssigningTag, setIsAssigningTag] = useState(false);
     const [tagToRemove, setTagToRemove] = useState<any>(null);
     const [isRemovePcbOpen, setIsRemovePcbOpen] = useState(false);
+    const [isDocsPopupOpen, setIsDocsPopupOpen] = useState(false);
     const [activeTabIndex, setActiveTabIndex] = useState(0);
     const tabsList = ['Rework', 'Tags'];
     const mobileTabsList = ['Rework', 'Tags'];
@@ -78,19 +80,22 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
 
     const project = projects.find(p => p.id === pcb.project_id);
 
-    let docFilename = '';
+    let schematicFilename = '';
+    let boardFileFilename = '';
     if (project && pcb.board_flavor && pcb.board_rev) {
         const ff = project.flavors?.find(f => f.name === pcb.board_flavor);
         if (ff && ff.revisionDetails) {
             const revDetail = ff.revisionDetails.find(r => r.name === pcb.board_rev);
-            if (revDetail && revDetail.doc) {
-                docFilename = revDetail.doc;
+            if (revDetail) {
+                schematicFilename = revDetail.schematic || revDetail.doc || '';
+                boardFileFilename = revDetail.board_file || '';
             }
         }
     }
 
     const docs = project ? (projectDocs[project.id.toString()] || []) : [];
-    const doc = docs.find(s => s.filename === docFilename);
+    const schematicDoc = docs.find(s => s.filename === schematicFilename);
+    const boardFileDoc = docs.find(s => s.filename === boardFileFilename);
 
     useEffect(() => {
         if (project && !projectDocs[project.id.toString()]) {
@@ -162,17 +167,15 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                     label={isMobile ? "" : "Edit PCB"}
                 />
 
-                {doc && (
-                    <ViewButton 
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            const fullUrl = doc.path.startsWith('http') ? doc.path : `${API_BASE.replace('/api', '')}/api${doc.path}`;
-                            window.open(fullUrl, '_blank');
-                        }}
-                        label={isMobile ? "" : "View Doc"}
-                        icon={FileText}
-                    />
-                )}
+                    {(schematicDoc || boardFileDoc) && (
+                        <DocsButton 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsDocsPopupOpen(true);
+                            }}
+                            label={isMobile ? "" : "Docs"}
+                        />
+                    )}
 
                 <QrButton 
                     onClick={(e) => { e.stopPropagation(); setQrModalBoard(pcb.board_number); }}
@@ -386,6 +389,143 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                 onConfirm={confirmRemovePcb}
                 pcb={pcb}
             />
+
+            <Popup 
+                isOpen={isDocsPopupOpen} 
+                onClose={() => setIsDocsPopupOpen(false)} 
+                title={`${pcb.board_number} Docs`}
+                maxWidth="500px"
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
+                    {schematicDoc && (
+                        <div 
+                            style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'space-between', 
+                                padding: '12px 16px', 
+                                background: 'rgba(255, 255, 255, 0.02)', 
+                                border: '1px solid var(--border)', 
+                                borderRadius: '8px',
+                                gap: '12px'
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
+                                <div style={{ 
+                                    width: '40px', 
+                                    height: '40px', 
+                                    borderRadius: '8px', 
+                                    background: 'rgba(99, 102, 241, 0.1)', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    flexShrink: 0
+                                }}>
+                                    <FileText size={20} color="var(--accent)" />
+                                </div>
+                                <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)' }}>Schematic</span>
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={schematicDoc.filename}>
+                                        {schematicDoc.filename}
+                                    </span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    const fullUrl = schematicDoc.path.startsWith('http') ? schematicDoc.path : `${API_BASE.replace('/api', '')}/api${schematicDoc.path}`;
+                                    window.open(fullUrl, '_blank');
+                                }}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '8px 14px',
+                                    background: 'rgba(99, 102, 241, 0.1)',
+                                    border: '1px solid rgba(99, 102, 241, 0.3)',
+                                    borderRadius: '6px',
+                                    color: 'var(--accent)',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 600,
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(99, 102, 241, 0.2)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)';
+                                }}
+                            >
+                                <span>View</span>
+                            </button>
+                        </div>
+                    )}
+
+                    {boardFileDoc && (
+                        <div 
+                            style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'space-between', 
+                                padding: '12px 16px', 
+                                background: 'rgba(255, 255, 255, 0.02)', 
+                                border: '1px solid var(--border)', 
+                                borderRadius: '8px',
+                                gap: '12px'
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
+                                <div style={{ 
+                                    width: '40px', 
+                                    height: '40px', 
+                                    borderRadius: '8px', 
+                                    background: 'rgba(99, 102, 241, 0.1)', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    flexShrink: 0
+                                }}>
+                                    <FileText size={20} color="var(--accent)" />
+                                </div>
+                                <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)' }}>Board File</span>
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={boardFileDoc.filename}>
+                                        {boardFileDoc.filename}
+                                    </span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    const fullUrl = boardFileDoc.path.startsWith('http') ? boardFileDoc.path : `${API_BASE.replace('/api', '')}/api${boardFileDoc.path}`;
+                                    window.open(fullUrl, '_blank');
+                                }}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '8px 14px',
+                                    background: 'rgba(99, 102, 241, 0.1)',
+                                    border: '1px solid rgba(99, 102, 241, 0.3)',
+                                    borderRadius: '6px',
+                                    color: 'var(--accent)',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 600,
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(99, 102, 241, 0.2)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)';
+                                }}
+                            >
+                                <span>View</span>
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </Popup>
         </div>
     );
 }
