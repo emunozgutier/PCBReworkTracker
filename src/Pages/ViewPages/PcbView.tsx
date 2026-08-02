@@ -91,7 +91,11 @@ export function PcbView({ title }: PcbViewProps) {
 
     if (loading && pcbs.length === 0) return <div className="loading">Loading {title}...</div>;
 
-    const maxCrcLength = getMaxCrcLength(items, crcFormat);
+    const [maxBoardNameLength, setMaxBoardNameLength] = useState(0);
+
+    useEffect(() => {
+        setMaxBoardNameLength(getMaxCrcLength(items, crcFormat));
+    }, [items, crcFormat]);
 
     return (
         <div className="card-list-container">
@@ -102,7 +106,7 @@ export function PcbView({ title }: PcbViewProps) {
                     <div className="empty-state">No PCBs found.</div>
                 ) : (
                     items.map((item) => (
-                        <PcbCard key={item.id} pcb={item} maxCrcLength={maxCrcLength} />
+                        <PcbCard key={item.id} pcb={item} maxCrcLength={maxBoardNameLength} />
                     ))
                 )}
             </div>
