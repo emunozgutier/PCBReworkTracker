@@ -3,7 +3,7 @@ import { ArrowLeft, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useProjectStore } from './store/clientDataBase/useProjectStore';
 import { API_BASE } from './store/serverDataBase/apiBridge';
 import { BoardCanvas } from './BoardViewer/canvas';
-import { parseEagleXML, parseBinaryFallback } from './BoardViewer/parser';
+import { parseEagleXML, parseBinaryFallback, parseAllegro } from './BoardViewer/parser';
 import type { BoardData } from './BoardViewer/parser';
 import { BoardSearch } from './BoardViewer/search';
 import { BoardLayers } from './BoardViewer/layers';
@@ -18,9 +18,9 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
     const { projects, projectDocs, fetchProjects, fetchDocs } = useProjectStore();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [fileContent, setFileContent] = useState<string | null>(null);
+    const [fileContent, setFileContent] = useState<string | ArrayBuffer | null>(null);
     const [fileName, setFileName] = useState('');
-    const [formatType, setFormatType] = useState<'eagle' | 'binary' | null>(null);
+    const [formatType, setFormatType] = useState<'eagle' | 'allegro' | 'binary' | null>(null);
 
     const {
         visibleLayers,
@@ -84,13 +84,25 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
         fetch(fullUrl)
             .then(res => {
                 if (!res.ok) throw new Error(`HTTP error ${res.status}: Failed to retrieve board file`);
-                return res.text();
+                return res.arrayBuffer();
             })
-            .then(content => {
-                setFileContent(content);
-                // Check format
-                const isXml = content.trim().startsWith('<?xml') || content.trim().startsWith('<eagle');
-                setFormatType(isXml ? 'eagle' : 'binary');
+            .then(buffer => {
+                // Peek first 100 bytes to check if it's XML or binary
+                const uint8 = new Uint8Array(buffer.slice(0, 100));
+                let headerText = '';
+                for (let i = 0; i < uint8.length; i++) {
+                    headerText += String.fromCharCode(uint8[i]);
+                }
+                
+                const isXml = headerText.trim().startsWith('<?xml') || headerText.trim().startsWith('<eagle');
+                if (isXml) {
+                    const text = new TextDecoder().decode(buffer);
+                    setFileContent(text);
+                    setFormatType('eagle');
+                } else {
+                    setFileContent(buffer);
+                    setFormatType('allegro');
+                }
                 setLoading(false);
             })
             .catch(err => {
@@ -106,6 +118,7 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
 
         try {
             if (formatType === 'eagle') {
+                if (typeof fileContent !== 'string') return null;
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(fileContent, 'text/xml');
                 
@@ -116,13 +129,22 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
                 }
 
                 return parseEagleXML(xmlDoc);
+            } else if (formatType === 'allegro') {
+                if (!(fileContent instanceof ArrayBuffer)) return null;
+                return parseAllegro(fileContent);
             } else {
-                return parseBinaryFallback(fileContent);
+                const text = typeof fileContent === 'string' 
+                    ? fileContent 
+                    : new TextDecoder().decode(fileContent);
+                return parseBinaryFallback(text);
             }
         } catch (e: any) {
             console.error("Parsing error:", e);
-            // Fallback to simulated mode if Eagle XML parsing fails
-            return parseBinaryFallback(fileContent);
+            // Fallback to simulated mode if Allegro or Eagle parsing fails
+            const text = typeof fileContent === 'string' 
+                ? fileContent 
+                : new TextDecoder().decode(fileContent);
+            return parseBinaryFallback(text);
         }
     }, [fileContent, formatType]);
 

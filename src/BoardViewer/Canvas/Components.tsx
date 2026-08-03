@@ -118,6 +118,7 @@ export const drawElementSilkscreen = (
     elements.forEach(el => {
         if (el.mirror !== drawBottom) return;
 
+        // 1. Draw rotated & mirrored package outline silkscreen lines
         ctx.save();
         ctx.translate(el.x, -el.y);
         ctx.rotate((-el.angle * Math.PI) / 180);
@@ -125,7 +126,6 @@ export const drawElementSilkscreen = (
             ctx.scale(-1, 1);
         }
 
-        // Draw package outlines
         ctx.lineWidth = 0.15;
         el.silks.forEach(silk => {
             ctx.beginPath();
@@ -133,15 +133,15 @@ export const drawElementSilkscreen = (
             ctx.lineTo(silk.x2, -silk.y2);
             ctx.stroke();
         });
+        ctx.restore();
 
-        // Draw component text designator label (e.g. "U1")
-        ctx.scale(1, -1); // flip back Y so text is upright
+        // 2. Draw un-rotated, un-mirrored refdes label at the component center
+        ctx.save();
+        ctx.translate(el.x, -el.y);
         ctx.font = `${Math.max(1.2, 8 / scale)}px monospace`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        
         ctx.fillText(el.name, 0, 0);
-
         ctx.restore();
     });
 };

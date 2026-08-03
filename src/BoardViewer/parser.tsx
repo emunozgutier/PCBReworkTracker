@@ -1,3 +1,5 @@
+import { parseAllegroBRD } from './allegro/allegro-brd-parser';
+
 export interface BoardData {
     dimensions: Array<{ x1: number; y1: number; x2: number; y2: number }>;
     elements: Array<{
@@ -24,6 +26,226 @@ export interface BoardData {
         }>;
     }>;
     boundingBox: { minX: number; minY: number; maxX: number; maxY: number };
+}
+
+export function parseAllegro(buffer: ArrayBuffer): BoardData {
+    const rawData = parseAllegroBRD(buffer);
+    return adaptAllegroBoardData(rawData);
+}
+
+function adaptAllegroBoardData(ripperData: any): BoardData {
+    // 1. Map outline points to dimensions lines
+    const dimensions: Array<{ x1: number; y1: number; x2: number; y2: number }> = [];
+    let outline = ripperData.outline || [];
+    if (outline.length === 0) {
+        const bounds = ripperData.bounds || { minX: 0, minY: 0, maxX: 100, maxY: 100 };
+        outline = [
+            { x: bounds.minX, y: bounds.minY },
+            { x: bounds.maxX, y: bounds.minY },
+            { x: bounds.maxX, y: bounds.maxY },
+            { x: bounds.minX, y: bounds.maxY }
+        ];
+    }
+    
+    for (let i = 0; i < outline.length; i++) {
+        const p1 = outline[i];
+        const p2 = outline[(i + 1) % outline.length];
+        dimensions.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y });
+    }
+
+    // 2. Map parts to elements
+    const elements: BoardData['elements'] = (ripperData.parts || []).map((part: any) => {
+        const smds: any[] = [];
+        const pads: any[] = [];
+        const mirror = part.side === 'bottom';
+        const angleDeg = part.angleDeg || 0;
+        
+        part.pins.forEach((pin: any) => {
+            const side = pin.side || 'top';
+            const layer = side === 'top' ? 1 : 16;
+            
+            // Map absolute pin position to local un-rotated, un-mirrored component space
+            const dxAbs = pin.position.x - part.origin.x;
+            const dyAbs = pin.position.y - part.origin.y;
+            
+            const rad = (angleDeg) * Math.PI / 180;
+            const cos = Math.cos(rad);
+            const sin = Math.sin(rad);
+            
+            // Un-rotate
+            let dxLocal = dxAbs * cos + dyAbs * sin;
+            let dyLocal = -dxAbs * sin + dyAbs * cos;
+            
+            // Un-mirror
+            if (mirror) {
+                dxLocal = -dxLocal;
+            }
+            
+            // Check if pad is through-hole or SMD
+            // Through-hole pads have side='both'
+            const isThru = pin.side === 'both';
+            if (isThru) {
+                pads.push({
+                    name: pin.name || pin.number || '',
+                    x: dxLocal,
+                    y: dyLocal,
+                    drill: pin.radius ? (pin.radius * 0.8) : 0.6,
+                    diameter: pin.radius ? (pin.radius * 2) : 1.2
+                });
+            } else {
+                // Determine SMD dims
+                let dx = 1.0;
+                let dy = 1.0;
+                if (pin.padBounds) {
+                    dx = pin.padBounds.maxX - pin.padBounds.minX;
+                    dy = pin.padBounds.maxY - pin.padBounds.minY;
+                } else if (pin.radius) {
+                    dx = pin.radius * 2;
+                    dy = pin.radius * 2;
+                } else if (pin.padWidth && pin.padHeight) {
+                    dx = pin.padWidth;
+                    dy = pin.padHeight;
+                }
+                
+                // Map local pad rotation if it differs from component rotation
+                let rotStr: string | undefined = undefined;
+                if (pin.padAngleDeg !== undefined) {
+                    let localAngle = pin.padAngleDeg - angleDeg;
+                    if (mirror) localAngle = -localAngle;
+                    rotStr = `R${localAngle}`;
+                }
+                
+                smds.push({
+                    name: pin.name || pin.number || '',
+                    x: dxLocal,
+                    y: dyLocal,
+                    dx,
+                    dy,
+                    layer,
+                    rot: rotStr
+                });
+            }
+        });
+
+        return {
+            name: part.name || '',
+            value: part.meta?.value || '',
+            package: part.meta?.package || '',
+            x: part.origin.x,
+            y: part.origin.y,
+            rot: part.angleDeg ? `R${part.angleDeg}` : 'R0',
+            mirror,
+            angle: angleDeg,
+            smds,
+            pads,
+            silks: []
+        };
+    });
+
+    // Append global silkscreen paths under a dummy component
+    if (ripperData.silkscreen && ripperData.silkscreen.length > 0) {
+        const globalSilks: any[] = [];
+        ripperData.silkscreen.forEach((pathItem: any) => {
+            const layer = pathItem.side === 'bottom' ? 22 : 21;
+            for (let i = 0; i < pathItem.points.length - 1; i++) {
+                const p1 = pathItem.points[i];
+                const p2 = pathItem.points[i + 1];
+                globalSilks.push({
+                    x1: p1.x,
+                    y1: p1.y,
+                    x2: p2.x,
+                    y2: p2.y,
+                    width: 0.15,
+                    layer
+                });
+            }
+        });
+        
+        elements.push({
+            name: '___GLOBAL_SILK___',
+            value: '',
+            package: '',
+            x: 0,
+            y: 0,
+            rot: 'R0',
+            mirror: false,
+            angle: 0,
+            smds: [],
+            pads: [],
+            silks: globalSilks
+        });
+    }
+
+    // 3. Map traces/nets to signals
+    const signalsMap = new Map<string, { wires: any[], vias: any[], polygons: any[] }>();
+    
+    (ripperData.traces || []).forEach((trace: any) => {
+        const netName = trace.net || 'GND';
+        if (!signalsMap.has(netName)) {
+            signalsMap.set(netName, { wires: [], vias: [], polygons: [] });
+        }
+        const sigObj = signalsMap.get(netName)!;
+        sigObj.wires.push({
+            x1: trace.start.x,
+            y1: trace.start.y,
+            x2: trace.end.x,
+            y2: trace.end.y,
+            width: trace.width || 0.2,
+            layer: trace.layer === 16 ? 16 : 1
+        });
+    });
+
+    (ripperData.vias || []).forEach((via: any) => {
+        const netName = via.net || 'GND';
+        if (!signalsMap.has(netName)) {
+            signalsMap.set(netName, { wires: [], vias: [], polygons: [] });
+        }
+        const sigObj = signalsMap.get(netName)!;
+        sigObj.vias.push({
+            x: via.position.x,
+            y: via.position.y,
+            drill: via.diameter ? (via.diameter / 1.6) : 0.6,
+            diameter: via.diameter || 1.2
+        });
+    });
+
+    (ripperData.surfaces || []).forEach((surf: any) => {
+        const netName = surf.net || 'GND';
+        if (!signalsMap.has(netName)) {
+            signalsMap.set(netName, { wires: [], vias: [], polygons: [] });
+        }
+        const sigObj = signalsMap.get(netName)!;
+        
+        const vertices = (surf.polygon || []).map((p: any) => ({ x: p.x, y: p.y }));
+        sigObj.polygons.push({
+            vertices,
+            layer: surf.layer === 16 ? 16 : 1,
+            width: 0.2
+        });
+    });
+
+    const signals = Array.from(signalsMap.entries()).map(([name, val]) => ({
+        name,
+        wires: val.wires,
+        vias: val.vias,
+        polygons: val.polygons
+    }));
+
+    // 4. Bounding Box
+    const bounds = ripperData.bounds || { minX: 0, minY: 0, maxX: 100, maxY: 100 };
+    const boundingBox = {
+        minX: bounds.minX,
+        minY: bounds.minY,
+        maxX: bounds.maxX,
+        maxY: bounds.maxY
+    };
+
+    return {
+        dimensions,
+        elements,
+        signals,
+        boundingBox
+    };
 }
 
 // Parser implementation: Eagle XML files
