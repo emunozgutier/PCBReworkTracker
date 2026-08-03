@@ -601,3 +601,21 @@ select:not([multiple]):focus {
     margin-top: 4px;
   }
 }
+
+/* Layout overrides when Board Viewer is active */
+.app-container.board-viewer-active {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.app-container.board-viewer-active .app-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+

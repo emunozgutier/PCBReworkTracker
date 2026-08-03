@@ -62,7 +62,7 @@ export function BoardLayers({ boardData, visibleLayers, onToggleLayer, onToggleA
     const allVisible = layersList.every(l => visibleLayers.has(l.number));
     
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: '100%', minHeight: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                 <h4
                     style={{
@@ -94,7 +94,7 @@ export function BoardLayers({ boardData, visibleLayers, onToggleLayer, onToggleA
                 </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto', flex: 1, minHeight: 0, paddingRight: '4px' }}>
                 {layersList.map((layer) => {
                     const isVisible = visibleLayers.has(layer.number);
                     return (

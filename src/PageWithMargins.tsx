@@ -42,6 +42,18 @@ export function PageWithMargins() {
     fetchPriorities();
   }, [fetchPermissions, fetchPriorities]);
 
+  // Lock body overflow when BoardViewer is active to prevent window scrolling
+  useEffect(() => {
+    if (page === 'board_viewer') {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [page]);
+
   const handleSuccess = () => {
     // Refresh data and go back
     goBack();
@@ -94,7 +106,7 @@ export function PageWithMargins() {
   const appTitle = isDemoMode ? 'Demo Tracker' : 'Rework Tracker';
 
   return (
-    <div className={`app-container ${isMobile ? 'mobile-state' : ''}`} style={{ position: 'relative' }}>
+    <div className={`app-container ${isMobile ? 'mobile-state' : ''} ${page === 'board_viewer' ? 'board-viewer-active' : ''}`} style={{ position: 'relative' }}>
       <GithubLink />
       <UrlManager />
       

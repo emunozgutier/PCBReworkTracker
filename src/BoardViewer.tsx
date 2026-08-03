@@ -181,7 +181,7 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', width: '100%', gap: '16px', padding: '0 8px', boxSizing: 'border-box' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', gap: '16px', padding: '0 8px', boxSizing: 'border-box' }}>
             {/* Header bar */}
             <div
                 style={{
@@ -219,37 +219,6 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
                     >
                         <ArrowLeft size={16} />
                     </button>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text-h)', textAlign: 'left' }}>
-                            {fileName || 'Board Viewer'}
-                        </h2>
-                        {boardData && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                                {boardData.format === 'EAGLE' ? (
-                                    <>
-                                        <CheckCircle2 size={12} color="#10b981" />
-                                        <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600 }}>
-                                            Autodesk Eagle XML Board
-                                        </span>
-                                    </>
-                                ) : boardData.format === 'ALLEGRO_BRD' ? (
-                                    <>
-                                        <CheckCircle2 size={12} color="#10b981" />
-                                        <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600 }}>
-                                            Cadence Allegro Binary Board
-                                        </span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <AlertCircle size={12} color="var(--accent)" />
-                                        <span style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 600 }}>
-                                            Simulated Layout (Allegro/Binary Fallback)
-                                        </span>
-                                    </>
-                                )}
-                            </div>
-                        )}
-                    </div>
                 </div>
             </div>
 
@@ -299,14 +268,15 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
                             flexDirection: 'column',
                             gap: '16px',
                             flexShrink: 0,
-                            minHeight: 0
+                            minHeight: 0,
+                            height: '100%'
                         }}
                     >
                         {/* Search component */}
                         <div
                             style={{
                                 flex: 1,
-                                minHeight: '180px',
+                                minHeight: 0,
                                 background: 'rgba(255, 255, 255, 0.01)',
                                 border: '1px solid var(--border)',
                                 borderRadius: '12px',
@@ -333,7 +303,10 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
                                 border: '1px solid var(--border)',
                                 borderRadius: '12px',
                                 padding: '16px',
-                                flexShrink: 0
+                                flex: 1,
+                                minHeight: 0,
+                                display: 'flex',
+                                flexDirection: 'column'
                             }}
                         >
                             <BoardLayers
