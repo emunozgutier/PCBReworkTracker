@@ -16,8 +16,8 @@ export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions, maxCrcLe
     const { isMobile } = useAppState();
 
     const flavor = (pcb.board_flavor || '').replace('No part yet', 'No part');
-    const revText = pcb.board_rev ? `Rev ${pcb.board_rev}` : '';
-    const pcbPillText = [flavor, revText, pcb.bom].filter(Boolean).join(' ') || 'No PCB Info';
+    const revText = pcb.board_rev || '';
+    const pcbPillText = [flavor, revText].filter(Boolean).join(' ') || 'No PCB Info';
 
     const siInfo = [pcb.silicon_rev, pcb.silicon_corner].filter(Boolean).join(' ');
 
