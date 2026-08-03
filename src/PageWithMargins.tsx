@@ -29,6 +29,7 @@ import { GithubLink } from './components/GithubLink';
 
 import { UserLoginButton } from './login/UserLoginButton';
 
+import { BoardViewer } from './BoardViewer';
 import { useAppState } from './store/useAppState';
 
 export function PageWithMargins() {
@@ -82,6 +83,8 @@ export function PageWithMargins() {
         return <TopSettingPage />;
       case 'settings_test':
         return <SettingsTest onBack={goBack} />;
+      case 'board_viewer':
+        return <BoardViewer docId={selectedId!} onBack={goBack} />;
       default:
         return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} />;
     }

@@ -49,7 +49,7 @@ export function ProjectDocList({ isOpen, onClose, project }: ProjectDocListProps
             const success = await uploadDocs(project.id, filesArray);
             setUploading(false);
             if (!success) {
-                alert("Failed to upload document PDF files.");
+                alert("Failed to upload document files.");
             }
         }
     };
@@ -84,7 +84,7 @@ export function ProjectDocList({ isOpen, onClose, project }: ProjectDocListProps
                     ) : list.length === 0 ? (
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 0', color: 'var(--text-muted)' }}>
                             <FileText size={36} strokeWidth={1.5} style={{ marginBottom: '8px', opacity: 0.5 }} />
-                            <p style={{ margin: 0, fontSize: '0.95rem' }}>No document PDF files attached to this project.</p>
+                            <p style={{ margin: 0, fontSize: '0.95rem' }}>No document files attached to this project.</p>
                         </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '300px', overflowY: 'auto', paddingRight: '4px' }}>
@@ -240,7 +240,7 @@ export function ProjectDocList({ isOpen, onClose, project }: ProjectDocListProps
                             <input 
                                 type="file" 
                                 multiple 
-                                accept=".pdf" 
+                                accept=".pdf,.brd" 
                                 onChange={handleFileChange}
                                 style={{ display: 'none' }}
                                 id="list-docs-upload"
@@ -284,7 +284,7 @@ export function ProjectDocList({ isOpen, onClose, project }: ProjectDocListProps
                                 ) : (
                                     <>
                                         <Upload size={16} />
-                                        <span>Upload Doc PDFs</span>
+                                        <span>Upload Doc PDFs / BRDs</span>
                                     </>
                                 )}
                             </label>

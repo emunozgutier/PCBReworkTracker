@@ -496,8 +496,8 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                             </div>
                             <button
                                 onClick={() => {
-                                    const fullUrl = boardFileDoc.path.startsWith('http') ? boardFileDoc.path : `${API_BASE.replace('/api', '')}/api${boardFileDoc.path}`;
-                                    window.open(fullUrl, '_blank');
+                                    editItem('board_viewer', boardFileDoc.id);
+                                    setIsDocsPopupOpen(false);
                                 }}
                                 style={{
                                     display: 'flex',
