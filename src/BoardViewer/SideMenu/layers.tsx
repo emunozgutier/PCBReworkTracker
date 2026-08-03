@@ -1,6 +1,6 @@
 import { Eye, EyeOff } from 'lucide-react';
-import type { BoardData } from './parser';
-import { getCopperLayerNumber } from './parser';
+import type { BoardData } from '../parser';
+import { getCopperLayerNumber } from '../parser';
 
 export interface LayerDef {
     number: number;

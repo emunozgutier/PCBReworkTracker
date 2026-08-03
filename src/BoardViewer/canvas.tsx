@@ -10,7 +10,7 @@ import {
 } from './Canvas/Components';
 import { drawSignals } from './Canvas/trace';
 import { getCopperLayerNumber } from './parser';
-import { getLayerList } from './layers';
+import { getLayerList } from './SideMenu/layers';
 
 interface CanvasProps {
     boardData: BoardData | null;

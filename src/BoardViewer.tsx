@@ -1,12 +1,12 @@
 import { useEffect, useState, useMemo } from 'react';
-import { ArrowLeft, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { useProjectStore } from './store/clientDataBase/useProjectStore';
 import { API_BASE } from './store/serverDataBase/apiBridge';
 import { BoardCanvas } from './BoardViewer/canvas';
 import { parseEagleXML, parseBinaryFallback, parseAllegro } from './BoardViewer/parser';
 import type { BoardData } from './BoardViewer/parser';
-import { BoardSearch } from './BoardViewer/search';
-import { BoardLayers, getLayerList } from './BoardViewer/layers';
+import { SideMenu } from './BoardViewer/SideMenu';
+import { getLayerList } from './BoardViewer/SideMenu/layers';
 import { useBoardViewer } from './store/useBoardViewer';
 
 interface BoardViewerProps {
@@ -19,7 +19,7 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [fileContent, setFileContent] = useState<string | ArrayBuffer | null>(null);
-    const [fileName, setFileName] = useState('');
+
     const [formatType, setFormatType] = useState<'eagle' | 'allegro' | 'binary' | null>(null);
 
     const {
@@ -75,7 +75,7 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
             return;
         }
 
-        setFileName(boardDoc.filename);
+
         const fullUrl = boardDoc.path.startsWith('http') 
             ? boardDoc.path 
             : `${API_BASE.replace('/api', '')}/api${boardDoc.path}`;
@@ -182,45 +182,7 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', gap: '16px', padding: '0 8px', boxSizing: 'border-box' }}>
-            {/* Header bar */}
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    paddingBottom: '12px',
-                    borderBottom: '1px solid var(--border)'
-                }}
-            >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <button
-                        onClick={onBack}
-                        style={{
-                            background: 'rgba(255, 255, 255, 0.03)',
-                            border: '1px solid var(--border)',
-                            borderRadius: '6px',
-                            color: 'var(--text-h)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: '32px',
-                            height: '32px',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-                            e.currentTarget.style.color = 'var(--accent)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
-                            e.currentTarget.style.color = 'var(--text-h)';
-                        }}
-                    >
-                        <ArrowLeft size={16} />
-                    </button>
-                </div>
-            </div>
+
 
             {/* Main content grid */}
             {loading ? (
@@ -269,53 +231,26 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
                             gap: '16px',
                             flexShrink: 0,
                             minHeight: 0,
-                            height: '100%'
+                            height: '100%',
+                            background: 'rgba(255, 255, 255, 0.01)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '12px',
+                            padding: '16px',
+                            overflow: 'hidden'
                         }}
                     >
-                        {/* Search component */}
-                        <div
-                            style={{
-                                flex: 1,
-                                minHeight: 0,
-                                background: 'rgba(255, 255, 255, 0.01)',
-                                border: '1px solid var(--border)',
-                                borderRadius: '12px',
-                                padding: '16px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                overflow: 'hidden'
-                            }}
-                        >
-                            <BoardSearch
-                                searchQuery={searchQuery}
-                                onSearchChange={setSearchQuery}
-                                elements={elementsList}
-                                nets={netsList}
-                                onSelect={handleSelectSearchItem}
-                                selectedItem={selectedItem}
-                            />
-                        </div>
-
-                        {/* Layers toggler */}
-                        <div
-                            style={{
-                                background: 'rgba(255, 255, 255, 0.01)',
-                                border: '1px solid var(--border)',
-                                borderRadius: '12px',
-                                padding: '16px',
-                                flex: 1,
-                                minHeight: 0,
-                                display: 'flex',
-                                flexDirection: 'column'
-                            }}
-                        >
-                            <BoardLayers
-                                boardData={boardData}
-                                visibleLayers={visibleLayers}
-                                onToggleLayer={toggleLayer}
-                                onToggleAll={handleToggleAll}
-                            />
-                        </div>
+                        <SideMenu
+                            boardData={boardData}
+                            searchQuery={searchQuery}
+                            onSearchChange={setSearchQuery}
+                            elements={elementsList}
+                            nets={netsList}
+                            onSelect={handleSelectSearchItem}
+                            selectedItem={selectedItem}
+                            visibleLayers={visibleLayers}
+                            onToggleLayer={toggleLayer}
+                            onToggleAll={handleToggleAll}
+                        />
                     </div>
 
                     {/* Right side: Canvas area */}
