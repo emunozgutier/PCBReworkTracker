@@ -155,6 +155,8 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
         setVisibleLayers(new Set(allLayers));
     }, [boardData, setVisibleLayers]);
 
+    const [selectionSource, setSelectionSource] = useState<'search' | 'click' | null>(null);
+
     const handleToggleAll = (visible: boolean) => {
         if (visible) {
             const allLayers = getLayerList(boardData).map(l => l.number);
@@ -177,6 +179,7 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
 
     // Handle search panel selection
     const handleSelectSearchItem = (type: 'element' | 'net', name: string) => {
+        setSelectionSource('search');
         setSelectedItem((selectedItem?.type === type && selectedItem?.name === name) ? null : { type, name });
     };
 
@@ -257,7 +260,11 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
                     <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
                         <BoardCanvas
                             boardData={boardData}
-                            onSelectElement={(name) => setSelectedItem({ type: 'element', name })}
+                            onSelectElement={(name) => {
+                                setSelectionSource('click');
+                                setSelectedItem({ type: 'element', name });
+                            }}
+                            selectionSource={selectionSource}
                         />
                     </div>
                 </div>

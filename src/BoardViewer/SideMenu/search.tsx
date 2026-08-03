@@ -43,6 +43,15 @@ export function BoardSearch({
                     placeholder="Search component or net..."
                     value={searchQuery}
                     onChange={(e) => onSearchChange(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            if (filteredElements.length > 0) {
+                                onSelect('element', filteredElements[0].name);
+                            } else if (filteredNets.length > 0) {
+                                onSelect('net', filteredNets[0]);
+                            }
+                        }
+                    }}
                     style={{
                         width: '100%',
                         padding: '10px 36px 10px 32px',
