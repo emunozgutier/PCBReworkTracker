@@ -1,0 +1,376 @@
+export interface BoardData {
+    dimensions: Array<{ x1: number; y1: number; x2: number; y2: number }>;
+    elements: Array<{
+        name: string;
+        value: string;
+        package: string;
+        x: number;
+        y: number;
+        rot: string;
+        mirror: boolean;
+        angle: number;
+        smds: Array<{ name: string; x: number; y: number; dx: number; dy: number; layer: number; rot?: string }>;
+        pads: Array<{ name: string; x: number; y: number; drill: number; diameter: number }>;
+        silks: Array<{ x1: number; y1: number; x2: number; y2: number; width: number; layer: number }>;
+    }>;
+    signals: Array<{
+        name: string;
+        wires: Array<{ x1: number; y1: number; x2: number; y2: number; width: number; layer: number }>;
+        vias: Array<{ x: number; y: number; drill: number; diameter: number }>;
+        polygons?: Array<{
+            layer: number;
+            width: number;
+            vertices: Array<{ x: number; y: number }>;
+        }>;
+    }>;
+    boundingBox: { minX: number; minY: number; maxX: number; maxY: number };
+}
+
+// Parser implementation: Eagle XML files
+export function parseEagleXML(xmlDoc: Document): BoardData {
+    const dimensions: any[] = [];
+    const elements: any[] = [];
+    const signals: any[] = [];
+    
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    const updateBBox = (x: number, y: number) => {
+        if (isNaN(x) || isNaN(y)) return;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+    };
+
+    // 1. Build footprint packages dictionary
+    const packagesMap: Record<string, any> = {};
+    const libraries = xmlDoc.querySelectorAll('libraries > library');
+    libraries.forEach(lib => {
+        const libName = lib.getAttribute('name') || '';
+        const packages = lib.querySelectorAll('packages > package');
+        packages.forEach(pkg => {
+            const pkgName = pkg.getAttribute('name') || '';
+            const key = `${libName}::${pkgName}`;
+            
+            const smds = Array.from(pkg.querySelectorAll('smd')).map(s => ({
+                name: s.getAttribute('name') || '',
+                x: parseFloat(s.getAttribute('x') || '0'),
+                y: parseFloat(s.getAttribute('y') || '0'),
+                dx: parseFloat(s.getAttribute('dx') || '0'),
+                dy: parseFloat(s.getAttribute('dy') || '0'),
+                layer: parseInt(s.getAttribute('layer') || '1', 10),
+                rot: s.getAttribute('rot') || ''
+            }));
+            
+            const pads = Array.from(pkg.querySelectorAll('pad')).map(p => ({
+                name: p.getAttribute('name') || '',
+                x: parseFloat(p.getAttribute('x') || '0'),
+                y: parseFloat(p.getAttribute('y') || '0'),
+                drill: parseFloat(p.getAttribute('drill') || '0'),
+                diameter: parseFloat(p.getAttribute('diameter') || '0') || (parseFloat(p.getAttribute('drill') || '0') * 1.6)
+            }));
+            
+            const silks = Array.from(pkg.querySelectorAll('wire')).map(w => ({
+                x1: parseFloat(w.getAttribute('x1') || '0'),
+                y1: parseFloat(w.getAttribute('y1') || '0'),
+                x2: parseFloat(w.getAttribute('x2') || '0'),
+                y2: parseFloat(w.getAttribute('y2') || '0'),
+                width: parseFloat(w.getAttribute('width') || '0.15'),
+                layer: parseInt(w.getAttribute('layer') || '21', 10)
+            }));
+            
+            packagesMap[key] = { smds, pads, silks };
+            packagesMap[pkgName] = { smds, pads, silks };
+        });
+    });
+
+    // 2. Parse board outline/dimensions (Layer 20)
+    const outlineWires = xmlDoc.querySelectorAll('board > plain > wire[layer="20"]');
+    outlineWires.forEach(w => {
+        const x1 = parseFloat(w.getAttribute('x1') || '0');
+        const y1 = parseFloat(w.getAttribute('y1') || '0');
+        const x2 = parseFloat(w.getAttribute('x2') || '0');
+        const y2 = parseFloat(w.getAttribute('y2') || '0');
+        dimensions.push({ x1, y1, x2, y2 });
+        updateBBox(x1, y1);
+        updateBBox(x2, y2);
+    });
+
+    // 3. Parse components/elements
+    const elementsList = xmlDoc.querySelectorAll('board > elements > element');
+    elementsList.forEach(el => {
+        const name = el.getAttribute('name') || '';
+        const value = el.getAttribute('value') || '';
+        const pkg = el.getAttribute('package') || '';
+        const lib = el.getAttribute('library') || '';
+        const x = parseFloat(el.getAttribute('x') || '0');
+        const y = parseFloat(el.getAttribute('y') || '0');
+        const rot = el.getAttribute('rot') || 'R0';
+        
+        const mirror = rot.includes('M');
+        const angle = parseFloat(rot.replace(/^[a-zA-Z]/, '')) || 0;
+        
+        // Only expand the bounding box using component locations if there is no outline wire parsed
+        if (minX === Infinity) {
+            updateBBox(x, y);
+        }
+
+        const key = `${lib}::${pkg}`;
+        const pkgDetails = packagesMap[key] || packagesMap[pkg] || { smds: [], pads: [], silks: [] };
+
+        // Rotate and mirror component pads/SMDs/silks relative to the package origin
+        const smds = pkgDetails.smds.map((smd: any) => ({
+            ...smd,
+            x: mirror ? -smd.x : smd.x,
+            layer: mirror ? 16 : smd.layer
+        }));
+
+        const pads = pkgDetails.pads.map((pad: any) => ({
+            ...pad,
+            x: mirror ? -pad.x : pad.x
+        }));
+
+        const silks = pkgDetails.silks.map((silk: any) => ({
+            ...silk,
+            x1: mirror ? -silk.x1 : silk.x1,
+            x2: mirror ? -silk.x2 : silk.x2,
+            layer: mirror ? 22 : silk.layer // Bottom Silkscreen is layer 22
+        }));
+
+        elements.push({
+            name,
+            value,
+            package: pkg,
+            x,
+            y,
+            rot,
+            mirror,
+            angle,
+            smds,
+            pads,
+            silks
+        });
+    });
+
+    // 4. Parse signals/traces (vias, wires, and polygons)
+    const signalsList = xmlDoc.querySelectorAll('board > signals > signal');
+    signalsList.forEach(sig => {
+        const name = sig.getAttribute('name') || '';
+        const wires: any[] = [];
+        const vias: any[] = [];
+        const polygons: any[] = [];
+
+        sig.querySelectorAll('wire').forEach(w => {
+            const x1 = parseFloat(w.getAttribute('x1') || '0');
+            const y1 = parseFloat(w.getAttribute('y1') || '0');
+            const x2 = parseFloat(w.getAttribute('x2') || '0');
+            const y2 = parseFloat(w.getAttribute('y2') || '0');
+            const width = parseFloat(w.getAttribute('width') || '0.2');
+            const layer = parseInt(w.getAttribute('layer') || '1', 10);
+            
+            wires.push({ x1, y1, x2, y2, width, layer });
+            if (minX === Infinity) {
+                updateBBox(x1, y1);
+                updateBBox(x2, y2);
+            }
+        });
+
+        sig.querySelectorAll('via').forEach(v => {
+            const x = parseFloat(v.getAttribute('x') || '0');
+            const y = parseFloat(v.getAttribute('y') || '0');
+            const drill = parseFloat(v.getAttribute('drill') || '0.6');
+            const diameter = parseFloat(v.getAttribute('diameter') || '0') || (drill * 1.6);
+            
+            vias.push({ x, y, drill, diameter });
+            if (minX === Infinity) {
+                updateBBox(x, y);
+            }
+        });
+
+        sig.querySelectorAll('polygon').forEach(poly => {
+            const layer = parseInt(poly.getAttribute('layer') || '1', 10);
+            const width = parseFloat(poly.getAttribute('width') || '0.2');
+            const vertices: Array<{ x: number; y: number }> = [];
+            poly.querySelectorAll('vertex').forEach(v => {
+                vertices.push({
+                    x: parseFloat(v.getAttribute('x') || '0'),
+                    y: parseFloat(v.getAttribute('y') || '0')
+                });
+            });
+            if (vertices.length > 0) {
+                polygons.push({ layer, width, vertices });
+            }
+        });
+
+        signals.push({ name, wires, vias, polygons });
+    });
+
+    if (minX === Infinity) {
+        minX = 0; minY = 0; maxX = 100; maxY = 100;
+    }
+
+    return {
+        dimensions,
+        elements,
+        signals,
+        boundingBox: { minX, minY, maxX, maxY }
+    };
+}
+
+// Parser implementation: Binary fallback scanner
+export function parseBinaryFallback(binaryContent: string): BoardData {
+    // Limit scanning to first 50MB for performance safety on large files
+    const scanLimit = 50 * 1024 * 1024;
+    const contentToScan = binaryContent.length > scanLimit 
+        ? binaryContent.slice(0, scanLimit) 
+        : binaryContent;
+
+    // Scan for standard designator labels
+    const designatorRegex = /\b([URCDJQY]|TP|JP|CN|LED|F|FB|TP|MH|CONN)[0-9]{1,4}\b/g;
+    const foundDesignators = new Set<string>();
+    let match;
+    while ((match = designatorRegex.exec(contentToScan)) !== null) {
+        foundDesignators.add(match[0]);
+        if (foundDesignators.size >= 1500) break; // Cap matching count
+    }
+
+    // Scan for common net name strings
+    const netRegex = /\b(GND|VCC|VDD|3V3|5V|1V8|RESET|CLK|MISO|MOSI|SCK|CS|DDR_[A-Z0-9_]+|USB_[A-Z_]+)\b/g;
+    const foundNets = new Set<string>();
+    while ((match = netRegex.exec(contentToScan)) !== null) {
+        foundNets.add(match[0]);
+        if (foundNets.size >= 400) break; // Cap matching count
+    }
+
+    const designators = Array.from(foundDesignators).sort((a, b) => {
+        const aPrefix = a.replace(/[0-9]/g, '');
+        const bPrefix = b.replace(/[0-9]/g, '');
+        if (aPrefix !== bPrefix) return aPrefix.localeCompare(bPrefix);
+        return (parseInt(a.replace(/[^0-9]/g, ''), 10) || 0) - (parseInt(b.replace(/[^0-9]/g, ''), 10) || 0);
+    });
+    const nets = Array.from(foundNets).sort();
+    if (nets.indexOf('GND') === -1) nets.unshift('GND');
+    if (nets.indexOf('VCC') === -1) nets.push('VCC');
+
+    // Layout dimensions representing a typical board outline
+    const dimensions = [
+        { x1: 0, y1: 0, x2: 240, y2: 0 },
+        { x1: 240, y1: 0, x2: 240, y2: 130 },
+        { x1: 240, y1: 130, x2: 0, y2: 130 },
+        { x1: 0, y1: 130, x2: 0, y2: 0 }
+    ];
+
+    const elements: any[] = [];
+    const signals: any[] = [];
+
+    // Grid layout spacing logic
+    const cols = 10;
+    designators.forEach((name, idx) => {
+        const col = idx % cols;
+        const row = Math.floor(idx / cols);
+        const x = 20 + col * 22;
+        const y = 20 + row * 18;
+
+        let pkg = '0603';
+        let val = '';
+        let smds: any[] = [];
+        let pads: any[] = [];
+        let silks: any[] = [];
+
+        if (name.startsWith('U')) {
+            pkg = 'SO-8';
+            val = 'IC';
+            // 8 pads
+            for (let i = 0; i < 4; i++) {
+                smds.push({ name: `${i + 1}`, x: -2, y: 1.5 - i * 1, dx: 1.2, dy: 0.5, layer: 1 });
+                smds.push({ name: `${8 - i}`, x: 2, y: 1.5 - i * 1, dx: 1.2, dy: 0.5, layer: 1 });
+            }
+            silks = [
+                { x1: -1.5, y1: 2.2, x2: 1.5, y2: 2.2, layer: 21 },
+                { x1: 1.5, y1: 2.2, x2: 1.5, y2: -2.2, layer: 21 },
+                { x1: 1.5, y1: -2.2, x2: -1.5, y2: -2.2, layer: 21 },
+                { x1: -1.5, y1: -2.2, x2: -1.5, y2: 2.2, layer: 21 }
+            ];
+        } else if (name.startsWith('R') || name.startsWith('C') || name.startsWith('FB')) {
+            pkg = '0603';
+            val = name.startsWith('R') ? '10k' : '0.1uF';
+            smds = [
+                { name: '1', x: -0.85, y: 0, dx: 0.6, dy: 0.8, layer: 1 },
+                { name: '2', x: 0.85, y: 0, dx: 0.6, dy: 0.8, layer: 1 }
+            ];
+            silks = [
+                { x1: -1.2, y1: 0.6, x2: 1.2, y2: 0.6, layer: 21 },
+                { x1: 1.2, y1: 0.6, x2: 1.2, y2: -0.6, layer: 21 },
+                { x1: 1.2, y1: -0.6, x2: -1.2, y2: -0.6, layer: 21 },
+                { x1: -1.2, y1: -0.6, x2: -1.2, y2: 0.6, layer: 21 }
+            ];
+        } else if (name.startsWith('LED')) {
+            pkg = '0805_LED';
+            val = 'Red';
+            smds = [
+                { name: 'A', x: -1.0, y: 0, dx: 0.8, dy: 1.0, layer: 1 },
+                { name: 'C', x: 1.0, y: 0, dx: 0.8, dy: 1.0, layer: 1 }
+            ];
+            silks = [
+                { x1: -1.5, y1: 0.8, x2: 1.5, y2: 0.8, layer: 21 },
+                { x1: 1.5, y1: 0.8, x2: 1.5, y2: -0.8, layer: 21 },
+                { x1: 1.5, y1: -0.8, x2: -1.5, y2: -0.8, layer: 21 },
+                { x1: -1.5, y1: -0.8, x2: -1.5, y2: 0.8, layer: 21 }
+            ];
+        } else {
+            pkg = 'PTH_2MM';
+            val = 'Pad';
+            pads = [{ name: '1', x: 0, y: 0, drill: 0.9, diameter: 1.8 }];
+            silks = [
+                { x1: -1.2, y1: 1.2, x2: 1.2, y2: 1.2, layer: 21 },
+                { x1: 1.2, y1: 1.2, x2: 1.2, y2: -1.2, layer: 21 },
+                { x1: 1.2, y1: -1.2, x2: -1.2, y2: -1.2, layer: 21 },
+                { x1: -1.2, y1: -1.2, x2: -1.2, y2: 1.2, layer: 21 }
+            ];
+        }
+
+        elements.push({
+            name,
+            value: val,
+            package: pkg,
+            x,
+            y: y % 110, // wrap inside outline limits
+            rot: 'R0',
+            mirror: false,
+            angle: 0,
+            smds,
+            pads,
+            silks
+        });
+    });
+
+    // Add simulated traces between grid elements connecting to nets
+    nets.slice(0, 20).forEach((netName, nIdx) => {
+        const wires: any[] = [];
+        const connectionsCount = 3 + (nIdx % 4);
+        
+        for (let i = 0; i < connectionsCount; i++) {
+            const elIdx = (nIdx * 5 + i * 8) % elements.length;
+            const nextElIdx = (elIdx + 1) % elements.length;
+            const el = elements[elIdx];
+            const nextEl = elements[nextElIdx];
+            if (el && nextEl) {
+                wires.push({
+                    x1: el.x,
+                    y1: el.y,
+                    x2: nextEl.x,
+                    y2: nextEl.y,
+                    width: 0.3,
+                    layer: nIdx % 2 === 0 ? 1 : 16 // alternate layers
+                });
+            }
+        }
+        signals.push({ name: netName, wires, vias: [] });
+    });
+
+    return {
+        dimensions,
+        elements,
+        signals,
+        boundingBox: { minX: 0, minY: 0, maxX: 240, maxY: 130 }
+    };
+}

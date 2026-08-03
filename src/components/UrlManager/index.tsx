@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAppState } from '../../store/useAppState';
 import { usePcbStore } from '../../store/clientDataBase/usePcbStore';
 import { useReworkStore } from '../../store/clientDataBase/useReworkStore';
@@ -32,6 +32,7 @@ export function UrlManager() {
         expandedRework, 
         isolatedView,
         page,
+        selectedId,
         setActiveTab,
         setExpandedProject,
         setExpandedPcb,
@@ -57,6 +58,15 @@ export function UrlManager() {
             // OTP Reset page
             if (rawPath.startsWith('/reset-otp')) {
                 useAppState.getState().setPage('reset_otp');
+                return;
+            }
+
+            // Board Viewer page
+            if (rawPath.startsWith('/boardViewer/') || rawPath.startsWith('/board-viewer/')) {
+                const docId = rawPath.replace(/^\/(boardViewer|board-viewer)\//, '');
+                if (docId) {
+                    useAppState.getState().editItem('board_viewer', docId);
+                }
                 return;
             }
 
@@ -154,6 +164,17 @@ export function UrlManager() {
         let base = import.meta.env.BASE_URL || '/';
         if (base.endsWith('/')) base = base.slice(0, -1);
         
+        // Handle board_viewer page URL mapping
+        if (page === 'board_viewer' && selectedId) {
+            const search = window.location.search;
+            const targetUrl = `${base}/boardViewer/${selectedId}${search}`;
+            const currentPath = window.location.pathname + window.location.search;
+            if (currentPath !== targetUrl) {
+                window.history.pushState({}, '', targetUrl);
+            }
+            return;
+        }
+
         // Don't push state if we are inside a form view
         if (page === 'settings_test') {
             const search = window.location.search;
@@ -184,7 +205,7 @@ export function UrlManager() {
         if (currentPath !== targetUrl) {
             window.history.pushState({}, '', targetUrl);
         }
-    }, [activeTab, expandedProject, expandedPcb, expandedRework, isolatedView, page]);
+    }, [activeTab, expandedProject, expandedPcb, expandedRework, isolatedView, page, selectedId]);
 
     // 3. Strictly validate PCBs when data loads
     useEffect(() => {
