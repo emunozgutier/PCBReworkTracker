@@ -36,3 +36,4 @@ export default defineConfig(({ command }) => {
     }
   }
 })
+// force restart

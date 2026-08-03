@@ -25,9 +25,7 @@ import { ResetOtp } from './Pages/EditPages/ResetOtp';
 import { UrlManager } from './components/UrlManager';
 import { WrongUrl } from './Pages/WrongPage/WrongUrl';
 import { FixedUrl } from './Pages/WrongPage/FixedUrl';
-import { GithubLink } from './components/GithubLink';
-
-import { UserLoginButton } from './login/UserLoginButton';
+import { TitleBar } from './components/TitleBar';
 
 import { BoardViewer } from './BoardViewer';
 import { useAppState } from './store/useAppState';
@@ -102,39 +100,10 @@ export function PageWithMargins() {
     }
   };
 
-  const isDemoMode = typeof window !== 'undefined' && window.location.hostname.includes('github.io');
-  const appTitle = isDemoMode ? 'Demo Tracker' : 'Rework Tracker';
-
   return (
     <div className={`app-container ${isMobile ? 'mobile-state' : ''} ${page === 'board_viewer' ? 'board-viewer-active' : ''}`} style={{ position: 'relative' }}>
-      <GithubLink />
+      {page !== 'board_viewer' && <TitleBar />}
       <UrlManager />
-      
-      <header className="app-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', textAlign: 'center', position: 'relative' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <h1 style={{ margin: 0 }}>{appTitle}</h1>
-          {isDemoMode && (
-            <div 
-              className="demo-indicator"
-              title="Running in Demo Data Mode"
-              style={{
-                background: 'var(--accent)',
-                color: 'var(--bg-panel)',
-                border: '1px solid var(--accent)',
-                padding: '6px 14px',
-                borderRadius: '20px',
-                fontSize: '0.8rem',
-                fontWeight: 800,
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em'
-              }}
-            >
-              DEMO MODE
-            </div>
-          )}
-        </div>
-        <UserLoginButton />
-      </header>
       
       <TabBar />
       {['projects', 'pcbs', 'reworks', 'owners', 'tags', 'settings'].includes(page) && <TopButtons />}
