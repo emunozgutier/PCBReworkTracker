@@ -1,4 +1,6 @@
 import { Eye, EyeOff } from 'lucide-react';
+import type { BoardData } from './parser';
+import { getCopperLayerNumber } from './parser';
 
 export interface LayerDef {
     number: number;
@@ -7,23 +9,57 @@ export interface LayerDef {
     description: string;
 }
 
-export const LAYERS: LayerDef[] = [
-    { number: 20, name: 'Dimension (Outline)', color: '#10b981', description: 'Board outline and dimensions' },
-    { number: 1, name: 'Top Copper', color: '#ef4444', description: 'Traces and components on Top layer' },
-    { number: 16, name: 'Bottom Copper', color: '#3b82f6', description: 'Traces and components on Bottom layer' },
-    { number: 21, name: 'Silkscreen Top', color: '#f3f4f6', description: 'Top markings and component outlines' },
-    { number: 22, name: 'Silkscreen Bottom', color: '#a855f7', description: 'Bottom markings and component outlines' },
-    { number: 45, name: 'Pads & Vias', color: '#f59e0b', description: 'Through-hole pads and connection vias' },
-];
+export function getLayerList(boardData: BoardData | null): LayerDef[] {
+    const list: LayerDef[] = [
+        { number: 20, name: 'Dimension (Outline)', color: '#10b981', description: 'Board outline and dimensions' }
+    ];
+
+    // Copper layers
+    if (boardData && boardData.layerNames && boardData.layerNames.length > 0) {
+        const total = boardData.layerNames.length;
+        boardData.layerNames.forEach((name, idx) => {
+            const num = getCopperLayerNumber(idx, total);
+            let color = '#ef4444';
+            let desc = `Traces and components on ${name} layer`;
+            if (num === 1) {
+                color = '#ef4444'; // Red for TOP
+            } else if (num === 16) {
+                color = '#3b82f6'; // Blue for BOTTOM
+            } else {
+                // Inner layers get distinct colors
+                const innerColors = ['#10B981', '#F59E0B', '#EC4899', '#8B5CF6', '#06B6D4', '#EAB308'];
+                color = innerColors[(idx - 1) % innerColors.length];
+                desc = `Inner routing/plane layer: ${name}`;
+            }
+            list.push({
+                number: num,
+                name: name,
+                color: color,
+                description: desc
+            });
+        });
+    } else {
+        list.push({ number: 1, name: 'Top Copper', color: '#ef4444', description: 'Traces and components on Top layer' });
+        list.push({ number: 16, name: 'Bottom Copper', color: '#3b82f6', description: 'Traces and components on Bottom layer' });
+    }
+
+    list.push({ number: 21, name: 'Silkscreen Top', color: '#f3f4f6', description: 'Top markings and component outlines' });
+    list.push({ number: 22, name: 'Silkscreen Bottom', color: '#a855f7', description: 'Bottom markings and component outlines' });
+    list.push({ number: 45, name: 'Pads & Vias', color: '#f59e0b', description: 'Through-hole pads and connection vias' });
+
+    return list;
+}
 
 interface LayersProps {
+    boardData: BoardData | null;
     visibleLayers: Set<number>;
     onToggleLayer: (layerNumber: number) => void;
     onToggleAll: (visible: boolean) => void;
 }
 
-export function BoardLayers({ visibleLayers, onToggleLayer, onToggleAll }: LayersProps) {
-    const allVisible = LAYERS.every(l => visibleLayers.has(l.number));
+export function BoardLayers({ boardData, visibleLayers, onToggleLayer, onToggleAll }: LayersProps) {
+    const layersList = getLayerList(boardData);
+    const allVisible = layersList.every(l => visibleLayers.has(l.number));
     
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -59,7 +95,7 @@ export function BoardLayers({ visibleLayers, onToggleLayer, onToggleAll }: Layer
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {LAYERS.map((layer) => {
+                {layersList.map((layer) => {
                     const isVisible = visibleLayers.has(layer.number);
                     return (
                         <div

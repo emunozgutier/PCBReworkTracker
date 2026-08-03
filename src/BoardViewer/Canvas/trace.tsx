@@ -1,13 +1,25 @@
 import type { BoardData } from '../parser';
 
+function hexToRgba(hex: string, alpha: number): string {
+    // If it's already rgba or rgb, return as is
+    if (hex.startsWith('rgba') || hex.startsWith('rgb')) return hex;
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export const drawSignals = (
     ctx: CanvasRenderingContext2D,
     signals: BoardData['signals'],
     targetLayer: number,
-    selectedItem: { type: 'element' | 'net'; name: string } | null
+    selectedItem: { type: 'element' | 'net'; name: string } | null,
+    layerColor?: string
 ) => {
     const isTop = targetLayer === 1;
-    ctx.strokeStyle = isTop ? 'rgba(239, 68, 68, 0.65)' : 'rgba(59, 130, 246, 0.65)'; // Translucent Red/Blue
+    const baseColor = layerColor || (isTop ? '#ef4444' : '#3b82f6');
+    ctx.strokeStyle = hexToRgba(baseColor, 0.65);
+
     signals.forEach(sig => {
         // Check if this signal is currently highlighted
         const isHighlightedNet = selectedItem?.type === 'net' && selectedItem?.name === sig.name;
@@ -20,11 +32,10 @@ export const drawSignals = (
 
         // Draw copper planes/polygons for this layer/signal
         sig.polygons?.forEach(poly => {
-            const isPolyTop = poly.layer < 16;
-            if ((isTop && isPolyTop) || (!isTop && poly.layer === 16)) {
+            if (poly.layer === targetLayer) {
                 ctx.fillStyle = isHighlightedNet 
                     ? 'rgba(192, 132, 252, 0.25)' 
-                    : (isTop ? 'rgba(239, 68, 68, 0.12)' : 'rgba(59, 130, 246, 0.12)');
+                    : hexToRgba(baseColor, 0.12);
                 
                 ctx.beginPath();
                 poly.vertices.forEach((v, vIdx) => {
@@ -37,15 +48,14 @@ export const drawSignals = (
                 ctx.lineWidth = poly.width || 0.2;
                 ctx.strokeStyle = isHighlightedNet 
                     ? '#c084fc' 
-                    : (isTop ? 'rgba(239, 68, 68, 0.3)' : 'rgba(59, 130, 246, 0.3)');
+                    : hexToRgba(baseColor, 0.3);
                 ctx.stroke();
             }
         });
 
         // Draw tracks/wires for this layer/signal
         sig.wires.forEach(wire => {
-            const isWireTop = wire.layer < 16;
-            if ((isTop && isWireTop) || (!isTop && wire.layer === 16)) {
+            if (wire.layer === targetLayer) {
                 ctx.lineWidth = Math.max(wire.width, 0.15);
                 ctx.beginPath();
                 ctx.moveTo(wire.x1, -wire.y1);
@@ -59,3 +69,4 @@ export const drawSignals = (
         }
     });
 };
+// force reload

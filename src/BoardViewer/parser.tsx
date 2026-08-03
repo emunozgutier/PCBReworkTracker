@@ -26,6 +26,14 @@ export interface BoardData {
         }>;
     }>;
     boundingBox: { minX: number; minY: number; maxX: number; maxY: number };
+    format?: string;
+    layerNames?: string[];
+}
+
+export function getCopperLayerNumber(idx: number, totalLayers: number): number {
+    if (idx === 0) return 1; // TOP
+    if (idx === totalLayers - 1) return 16; // BOTTOM
+    return 2 + idx; // Inner layers: 2, 3, 4, ...
 }
 
 export function parseAllegro(buffer: ArrayBuffer): BoardData {
@@ -178,6 +186,7 @@ function adaptAllegroBoardData(ripperData: any): BoardData {
 
     // 3. Map traces/nets to signals
     const signalsMap = new Map<string, { wires: any[], vias: any[], polygons: any[] }>();
+    const totalLayers = (ripperData.layerNames || []).length || 2;
     
     (ripperData.traces || []).forEach((trace: any) => {
         const netName = trace.net || 'GND';
@@ -185,13 +194,14 @@ function adaptAllegroBoardData(ripperData: any): BoardData {
             signalsMap.set(netName, { wires: [], vias: [], polygons: [] });
         }
         const sigObj = signalsMap.get(netName)!;
+        const layerNum = getCopperLayerNumber(trace.layer, totalLayers);
         sigObj.wires.push({
             x1: trace.start.x,
             y1: trace.start.y,
             x2: trace.end.x,
             y2: trace.end.y,
             width: trace.width || 0.2,
-            layer: trace.layer === 16 ? 16 : 1
+            layer: layerNum
         });
     });
 
@@ -217,9 +227,10 @@ function adaptAllegroBoardData(ripperData: any): BoardData {
         const sigObj = signalsMap.get(netName)!;
         
         const vertices = (surf.polygon || []).map((p: any) => ({ x: p.x, y: p.y }));
+        const layerNum = getCopperLayerNumber(surf.layer, totalLayers);
         sigObj.polygons.push({
             vertices,
-            layer: surf.layer === 16 ? 16 : 1,
+            layer: layerNum,
             width: 0.2
         });
     });
@@ -244,7 +255,9 @@ function adaptAllegroBoardData(ripperData: any): BoardData {
         dimensions,
         elements,
         signals,
-        boundingBox
+        boundingBox,
+        format: 'ALLEGRO_BRD',
+        layerNames: ripperData.layerNames
     };
 }
 
@@ -434,7 +447,8 @@ export function parseEagleXML(xmlDoc: Document): BoardData {
         dimensions,
         elements,
         signals,
-        boundingBox: { minX, minY, maxX, maxY }
+        boundingBox: { minX, minY, maxX, maxY },
+        format: 'EAGLE'
     };
 }
 
@@ -593,6 +607,7 @@ export function parseBinaryFallback(binaryContent: string): BoardData {
         dimensions,
         elements,
         signals,
-        boundingBox: { minX: 0, minY: 0, maxX: 240, maxY: 130 }
+        boundingBox: { minX: 0, minY: 0, maxX: 240, maxY: 130 },
+        format: 'FALLBACK'
     };
 }

@@ -6,7 +6,7 @@ import { BoardCanvas } from './BoardViewer/canvas';
 import { parseEagleXML, parseBinaryFallback, parseAllegro } from './BoardViewer/parser';
 import type { BoardData } from './BoardViewer/parser';
 import { BoardSearch } from './BoardViewer/search';
-import { BoardLayers } from './BoardViewer/layers';
+import { BoardLayers, getLayerList } from './BoardViewer/layers';
 import { useBoardViewer } from './store/useBoardViewer';
 
 interface BoardViewerProps {
@@ -29,7 +29,7 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
         setSearchQuery,
         setSelectedItem,
         toggleLayer,
-        toggleAllLayers
+        setVisibleLayers
     } = useBoardViewer();
 
     // Fetch projects and their docs on mount to ensure we can identify the document
@@ -148,6 +148,22 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
         }
     }, [fileContent, formatType]);
 
+    // Set initial visible layers when board data is loaded
+    useEffect(() => {
+        if (!boardData) return;
+        const allLayers = getLayerList(boardData).map(l => l.number);
+        setVisibleLayers(new Set(allLayers));
+    }, [boardData, setVisibleLayers]);
+
+    const handleToggleAll = (visible: boolean) => {
+        if (visible) {
+            const allLayers = getLayerList(boardData).map(l => l.number);
+            setVisibleLayers(new Set(allLayers));
+        } else {
+            setVisibleLayers(new Set());
+        }
+    };
+
     // Lists of elements and nets for the search panel
     const elementsList = useMemo(() => {
         if (!boardData) return [];
@@ -207,13 +223,20 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
                         <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text-h)', textAlign: 'left' }}>
                             {fileName || 'Board Viewer'}
                         </h2>
-                        {formatType && (
+                        {boardData && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                                {formatType === 'eagle' ? (
+                                {boardData.format === 'EAGLE' ? (
                                     <>
                                         <CheckCircle2 size={12} color="#10b981" />
                                         <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600 }}>
                                             Autodesk Eagle XML Board
+                                        </span>
+                                    </>
+                                ) : boardData.format === 'ALLEGRO_BRD' ? (
+                                    <>
+                                        <CheckCircle2 size={12} color="#10b981" />
+                                        <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600 }}>
+                                            Cadence Allegro Binary Board
                                         </span>
                                     </>
                                 ) : (
@@ -314,9 +337,10 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
                             }}
                         >
                             <BoardLayers
+                                boardData={boardData}
                                 visibleLayers={visibleLayers}
                                 onToggleLayer={toggleLayer}
-                                onToggleAll={toggleAllLayers}
+                                onToggleAll={handleToggleAll}
                             />
                         </div>
                     </div>

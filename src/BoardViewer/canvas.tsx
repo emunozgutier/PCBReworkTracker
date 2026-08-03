@@ -9,6 +9,8 @@ import {
     drawSelectionHighlight
 } from './Canvas/Components';
 import { drawSignals } from './Canvas/trace';
+import { getCopperLayerNumber } from './parser';
+import { getLayerList } from './layers';
 
 interface CanvasProps {
     boardData: BoardData | null;
@@ -112,12 +114,26 @@ export function BoardCanvas({ boardData, onSelectElement }: CanvasProps) {
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
 
-        // 1. Draw copper traces (Bottom Copper Layer 16 first, then Top Copper Layer 1)
-        if (visibleLayers.has(16)) {
-            drawSignals(ctx, boardData.signals, 16, selectedItem);
-        }
-        if (visibleLayers.has(1)) {
-            drawSignals(ctx, boardData.signals, 1, selectedItem);
+        // 1. Draw copper traces
+        if (boardData.layerNames && boardData.layerNames.length > 0) {
+            const total = boardData.layerNames.length;
+            const layersList = getLayerList(boardData);
+            // Draw from bottom-most (index total-1) to top-most (index 0)
+            for (let idx = total - 1; idx >= 0; idx--) {
+                const num = getCopperLayerNumber(idx, total);
+                if (visibleLayers.has(num)) {
+                    const layerDef = layersList.find(l => l.number === num);
+                    drawSignals(ctx, boardData.signals, num, selectedItem, layerDef?.color);
+                }
+            }
+        } else {
+            // Fallback for standard 2-layer board
+            if (visibleLayers.has(16)) {
+                drawSignals(ctx, boardData.signals, 16, selectedItem);
+            }
+            if (visibleLayers.has(1)) {
+                drawSignals(ctx, boardData.signals, 1, selectedItem);
+            }
         }
 
         // 2. Draw Pads & Vias (Layer 45)
