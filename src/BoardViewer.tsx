@@ -7,6 +7,7 @@ import { parseEagleXML, parseBinaryFallback } from './BoardViewer/parser';
 import type { BoardData } from './BoardViewer/parser';
 import { BoardSearch } from './BoardViewer/search';
 import { BoardLayers } from './BoardViewer/layers';
+import { useBoardViewer } from './store/useBoardViewer';
 
 interface BoardViewerProps {
     docId: string | number;
@@ -21,10 +22,15 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
     const [fileName, setFileName] = useState('');
     const [formatType, setFormatType] = useState<'eagle' | 'binary' | null>(null);
 
-    // Board viewer states
-    const [visibleLayers, setVisibleLayers] = useState<Set<number>>(new Set([20, 1, 16, 21, 22, 45]));
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedItem, setSelectedItem] = useState<{ type: 'element' | 'net'; name: string } | null>(null);
+    const {
+        visibleLayers,
+        searchQuery,
+        selectedItem,
+        setSearchQuery,
+        setSelectedItem,
+        toggleLayer,
+        toggleAllLayers
+    } = useBoardViewer();
 
     // Fetch projects and their docs on mount to ensure we can identify the document
     useEffect(() => {
@@ -131,32 +137,10 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
         return boardData.signals.map(s => s.name);
     }, [boardData]);
 
-    // Toggles visibility of a specific layer
-    const handleToggleLayer = (layerNumber: number) => {
-        const next = new Set(visibleLayers);
-        if (next.has(layerNumber)) {
-            next.delete(layerNumber);
-        } else {
-            next.add(layerNumber);
-        }
-        setVisibleLayers(next);
-    };
-
-    // Toggles all layers
-    const handleToggleAllLayers = (visible: boolean) => {
-        if (visible) {
-            setVisibleLayers(new Set([20, 1, 16, 21, 22, 45]));
-        } else {
-            setVisibleLayers(new Set());
-        }
-    };
-
     // Handle search panel selection
     const handleSelectSearchItem = (type: 'element' | 'net', name: string) => {
-        setSelectedItem(prev => (prev?.type === type && prev?.name === name) ? null : { type, name });
+        setSelectedItem((selectedItem?.type === type && selectedItem?.name === name) ? null : { type, name });
     };
-
-;
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', width: '100%', gap: '16px', padding: '0 8px', boxSizing: 'border-box' }}>
@@ -309,8 +293,8 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
                         >
                             <BoardLayers
                                 visibleLayers={visibleLayers}
-                                onToggleLayer={handleToggleLayer}
-                                onToggleAll={handleToggleAllLayers}
+                                onToggleLayer={toggleLayer}
+                                onToggleAll={toggleAllLayers}
                             />
                         </div>
                     </div>
@@ -319,8 +303,6 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
                     <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
                         <BoardCanvas
                             boardData={boardData}
-                            visibleLayers={visibleLayers}
-                            selectedItem={selectedItem}
                             onSelectElement={(name) => setSelectedItem({ type: 'element', name })}
                         />
                     </div>
