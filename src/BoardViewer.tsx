@@ -156,7 +156,7 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
     };
 
     // Parser implementation: Eagle XML files
-    const parseEagleXML = (xmlDoc: Document): BoardData => {
+    function parseEagleXML(xmlDoc: Document): BoardData {
         const dimensions: any[] = [];
         const elements: any[] = [];
         const signals: any[] = [];
@@ -303,21 +303,28 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
         };
     };
 
-    // Parser implementation: Binary fallback scanner
-    const parseBinaryFallback = (binaryContent: string): BoardData => {
+    function parseBinaryFallback(binaryContent: string): BoardData {
+        // Limit scanning to first 2MB for performance safety on large files
+        const scanLimit = 2 * 1024 * 1024;
+        const contentToScan = binaryContent.length > scanLimit 
+            ? binaryContent.slice(0, scanLimit) 
+            : binaryContent;
+
         // Scan for standard designator labels
         const designatorRegex = /\b([URCDJQY]|TP|JP|CN|LED|F|FB|TP|MH|CONN)[0-9]{1,4}\b/g;
         const foundDesignators = new Set<string>();
         let match;
-        while ((match = designatorRegex.exec(binaryContent)) !== null) {
+        while ((match = designatorRegex.exec(contentToScan)) !== null) {
             foundDesignators.add(match[0]);
+            if (foundDesignators.size >= 400) break; // Cap matching count
         }
 
         // Scan for common net name strings
         const netRegex = /\b(GND|VCC|VDD|3V3|5V|1V8|RESET|CLK|MISO|MOSI|SCK|CS|DDR_[A-Z0-9_]+|USB_[A-Z_]+)\b/g;
         const foundNets = new Set<string>();
-        while ((match = netRegex.exec(binaryContent)) !== null) {
+        while ((match = netRegex.exec(contentToScan)) !== null) {
             foundNets.add(match[0]);
+            if (foundNets.size >= 100) break; // Cap matching count
         }
 
         const designators = Array.from(foundDesignators).sort((a, b) => {
