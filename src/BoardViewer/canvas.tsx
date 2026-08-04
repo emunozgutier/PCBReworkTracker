@@ -35,6 +35,19 @@ export function BoardCanvas({ boardData, onSelectElement, selectionSource }: Can
 
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+    const [isHighlighting, setIsHighlighting] = useState(false);
+
+    useEffect(() => {
+        if (selectedItem?.type === 'element' && selectionSource === 'search') {
+            setIsHighlighting(true);
+            const timer = setTimeout(() => {
+                setIsHighlighting(false);
+            }, 5000); // 5s matches the borderRainbow keyframe duration
+            return () => clearTimeout(timer);
+        } else {
+            setIsHighlighting(false);
+        }
+    }, [selectedItem, selectionSource]);
 
     // Handle container resizing to make canvas responsive
     useEffect(() => {
@@ -296,7 +309,12 @@ export function BoardCanvas({ boardData, onSelectElement, selectionSource }: Can
                 onMouseLeave={handleMouseUp}
                 onWheel={handleWheel}
                 onClick={handleCanvasClick}
-                style={{ display: 'block', cursor: isDragging ? 'grabbing' : 'grab' }}
+                style={{ 
+                    display: 'block', 
+                    cursor: isDragging ? 'grabbing' : 'grab',
+                    filter: isHighlighting ? 'grayscale(100%) contrast(110%) brightness(85%)' : 'grayscale(0%) contrast(100%) brightness(100%)',
+                    transition: 'filter 0.4s ease-in-out'
+                }}
             />
             {selectedItem?.type === 'element' && selectionSource === 'search' && boardData && (() => {
                 const el = boardData.elements.find(e => e.name === selectedItem.name);

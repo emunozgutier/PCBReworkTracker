@@ -39,7 +39,7 @@ export function HighlightBox({ x, y, width, height, angle, scale, componentName 
                     border: '3px solid #a855f7',
                     borderRadius: '8px',
                     pointerEvents: 'none',
-                    animation: 'borderRainbow 3s linear forwards',
+                    animation: 'borderRainbow 5s linear forwards',
                     boxSizing: 'border-box',
                     zIndex: 10,
                     transition: 'left 0.1s ease, top 0.1s ease'
