@@ -17,3 +17,17 @@ export const useDemoStore = create<DemoState>()(
         setDemoMode: (val) => set({ isDemoMode: val }),
     })
 );
+
+export function getDocumentUrl(pathStr: string, filename: string): string {
+    const isDemoMode = useDemoStore.getState().isDemoMode;
+    if (isDemoMode) {
+        const basePath = import.meta.env.BASE_URL || '/';
+        // Resolve path to the copied files in the public/docs directory of production bundle
+        return `${window.location.origin}${basePath}docs/${filename}`;
+    }
+    const apiPort = 5002;
+    const API_BASE = typeof window !== 'undefined' ? `http://${window.location.hostname}:${apiPort}/api` : '';
+    return pathStr.startsWith('http') 
+        ? pathStr 
+        : `${API_BASE.replace('/api', '')}/api${pathStr}`;
+}
