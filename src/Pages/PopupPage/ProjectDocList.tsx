@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Popup } from '../../components/Popup';
 import { useProjectStore } from '../../store/clientDataBase/useProjectStore';
 import { FileText, Eye, Download, Loader2, Upload, Trash2 } from 'lucide-react';
-import { ProjectDocView } from './ProjectDocView';
 import { useAppState } from '../../store/useAppState';
 import { usePermissionsStore } from '../../store/clientDataBase/usePermissionsStore';
 import { getDocumentUrl } from '../../store/useDemoStore';
@@ -18,7 +17,7 @@ interface ProjectDocListProps {
 
 export function ProjectDocList({ isOpen, onClose, project }: ProjectDocListProps) {
     const { projectDocs, fetchDocs, uploadDocs, deleteDoc } = useProjectStore();
-    const { currentUserRole } = useAppState();
+    const { currentUserRole, editItem } = useAppState();
     const permissions = usePermissionsStore(state => state.permissions);
     const roleKey = currentUserRole === 'Super User' ? 'superUser' : currentUserRole === 'User' ? 'user' : 'guest';
     
@@ -27,7 +26,6 @@ export function ProjectDocList({ isOpen, onClose, project }: ProjectDocListProps
     
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [viewingDoc, setViewingDoc] = useState<any>(null);
 
     useEffect(() => {
         if (isOpen && project?.id) {
@@ -146,7 +144,10 @@ export function ProjectDocList({ isOpen, onClose, project }: ProjectDocListProps
 
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <button
-                                                onClick={() => setViewingDoc(item)}
+                                                onClick={() => {
+                                                    editItem('doc_viewer', item.id);
+                                                    onClose();
+                                                }}
                                                 style={{
                                                     display: 'flex',
                                                     alignItems: 'center',
@@ -292,12 +293,6 @@ export function ProjectDocList({ isOpen, onClose, project }: ProjectDocListProps
                     )}
                 </div>
             </Popup>
-
-            <ProjectDocView
-                isOpen={viewingDoc !== null}
-                onClose={() => setViewingDoc(null)}
-                doc={viewingDoc}
-            />
         </>
     );
 }

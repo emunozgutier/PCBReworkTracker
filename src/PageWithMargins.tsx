@@ -28,6 +28,7 @@ import { FixedUrl } from './Pages/WrongPage/FixedUrl';
 import { TitleBar } from './components/TitleBar';
 
 import { BoardViewer } from './BoardViewer';
+import { DocViewer } from './DocViewer';
 import { useAppState } from './store/useAppState';
 
 export function PageWithMargins() {
@@ -40,9 +41,9 @@ export function PageWithMargins() {
     fetchPriorities();
   }, [fetchPermissions, fetchPriorities]);
 
-  // Lock body overflow when BoardViewer is active to prevent window scrolling
+  // Lock body overflow when BoardViewer or DocViewer is active to prevent window scrolling
   useEffect(() => {
-    if (page === 'board_viewer') {
+    if (page === 'board_viewer' || page === 'doc_viewer') {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -95,17 +96,21 @@ export function PageWithMargins() {
         return <SettingsTest onBack={goBack} />;
       case 'board_viewer':
         return <BoardViewer docId={selectedId!} onBack={goBack} />;
+      case 'doc_viewer':
+        return <DocViewer docId={selectedId!} onBack={goBack} />;
       default:
         return <ProjectView title="Projects" onAdd={() => addItem('projects_add')} />;
     }
   };
 
+  const isViewerActive = page === 'board_viewer' || page === 'doc_viewer';
+
   return (
-    <div className={`app-container ${isMobile ? 'mobile-state' : ''} ${page === 'board_viewer' ? 'board-viewer-active' : ''}`} style={{ position: 'relative' }}>
-      {page !== 'board_viewer' && <TitleBar />}
+    <div className={`app-container ${isMobile ? 'mobile-state' : ''} ${isViewerActive ? 'board-viewer-active' : ''}`} style={{ position: 'relative' }}>
+      {!isViewerActive && <TitleBar />}
       <UrlManager />
       
-      {page !== 'board_viewer' && <TabBar />}
+      {!isViewerActive && <TabBar />}
       {['projects', 'pcbs', 'reworks', 'owners', 'tags', 'settings'].includes(page) && <TopButtons />}
       
       <main className="app-main">
