@@ -15,6 +15,7 @@ import { ReworkCardBody } from './ReworkCardBody';
 import { COLORS } from '../../../store/useStyles';
 import { InfoPill } from '../../../components/InfoPill';
 import { useProjectStore } from '../../../store/clientDataBase/useProjectStore';
+import { getDocumentUrl } from '../../../store/useDemoStore';
 interface PcbCardBodyProps {
     pcb: any;
 }
@@ -432,7 +433,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                             </div>
                             <button
                                 onClick={() => {
-                                    const fullUrl = schematicDoc.path.startsWith('http') ? schematicDoc.path : `${API_BASE.replace('/api', '')}/api${schematicDoc.path}`;
+                                    const fullUrl = getDocumentUrl(schematicDoc.path, schematicDoc.filename);
                                     window.open(fullUrl, '_blank');
                                 }}
                                 style={{

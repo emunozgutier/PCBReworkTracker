@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { API_BASE } from '../../store/serverDataBase/apiBridge';
 import { TopBar } from '../../BoardViewer/TopBar';
+import { getDocumentUrl } from '../../store/useDemoStore';
 
 interface ProjectDocViewProps {
     isOpen: boolean;
@@ -35,7 +35,7 @@ export function ProjectDocView({ isOpen, onClose, doc }: ProjectDocViewProps) {
 
     if (!isOpen || !doc) return null;
 
-    const fullUrl = doc.path.startsWith('http') ? doc.path : `${API_BASE.replace('/api', '')}/api${doc.path}`;
+    const fullUrl = getDocumentUrl(doc.path, doc.filename);
 
     return createPortal(
         <div 

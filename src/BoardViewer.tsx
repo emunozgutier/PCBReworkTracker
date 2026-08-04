@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useProjectStore } from './store/clientDataBase/useProjectStore';
-import { API_BASE } from './store/serverDataBase/apiBridge';
 import { BoardCanvas } from './BoardViewer/canvas';
 import { parseEagleXML, parseBinaryFallback, parseAllegro } from './BoardViewer/parser';
 import type { BoardData } from './BoardViewer/parser';
@@ -10,6 +9,7 @@ import { getLayerList } from './BoardViewer/SideMenu/layers';
 import { useBoardViewer } from './store/useBoardViewer';
 import { useAppState } from './store/useAppState';
 import { TopBar } from './BoardViewer/TopBar';
+import { getDocumentUrl } from './store/useDemoStore';
 
 interface BoardViewerProps {
     docId: string | number;
@@ -80,9 +80,7 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
         }
 
 
-        const fullUrl = boardDoc.path.startsWith('http') 
-            ? boardDoc.path 
-            : `${API_BASE.replace('/api', '')}/api${boardDoc.path}`;
+        const fullUrl = getDocumentUrl(boardDoc.path, boardDoc.filename);
 
         setLoading(true);
         fetch(fullUrl)

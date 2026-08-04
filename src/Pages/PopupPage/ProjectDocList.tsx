@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { Popup } from '../../components/Popup';
 import { useProjectStore } from '../../store/clientDataBase/useProjectStore';
 import { FileText, Eye, Download, Loader2, Upload, Trash2 } from 'lucide-react';
-import { API_BASE } from '../../store/serverDataBase/apiBridge';
 import { ProjectDocView } from './ProjectDocView';
 import { useAppState } from '../../store/useAppState';
 import { usePermissionsStore } from '../../store/clientDataBase/usePermissionsStore';
+import { getDocumentUrl } from '../../store/useDemoStore';
 
 interface ProjectDocListProps {
     isOpen: boolean;
@@ -89,7 +89,7 @@ export function ProjectDocList({ isOpen, onClose, project }: ProjectDocListProps
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '300px', overflowY: 'auto', paddingRight: '4px' }}>
                             {list.map((item: any) => {
-                                const fullUrl = item.path.startsWith('http') ? item.path : `${API_BASE.replace('/api', '')}/api${item.path}`;
+                                const fullUrl = getDocumentUrl(item.path, item.filename);
                                 return (
                                     <div 
                                         key={item.id} 
