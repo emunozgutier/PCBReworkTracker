@@ -8,22 +8,24 @@ export const API_BASE = `http://${window.location.hostname}:5002/api`;
 let internalProjects = [...demoData.demoProjects] as any[];
 let internalPcbs = [...demoData.demoPcbs] as any[];
 let internalOwners = [...demoData.demoOwners] as any[];
-let internalProjectDocs = [
-    {
-        id: 1,
-        project_id: 1, // Ash (typically project ID 1 in demoData)
-        filename: "Ash_Board_V1_Doc.pdf",
-        path: "/docs/demo_doc.pdf",
+let internalProjectDocs = [] as any[];
+let docIdCounter = 1;
+internalProjects.forEach((p: any) => {
+    internalProjectDocs.push({
+        id: docIdCounter++,
+        project_id: p.id,
+        filename: "BBB-SCH.pdf",
+        path: "/docs/BBB-SCH.pdf",
         uploaded_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-    },
-    {
-        id: 2,
-        project_id: 1, // Ash
-        filename: "Ash_Board_V2_Datasheet.pdf",
-        path: "/docs/demo_doc.pdf",
+    });
+    internalProjectDocs.push({
+        id: docIdCounter++,
+        project_id: p.id,
+        filename: "BBB.brd",
+        path: "/docs/BBB.brd",
         uploaded_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-    }
-] as any[];
+    });
+});
 const reworkCounts: Record<number, number> = {};
 let internalReworks = demoData.demoReworks.map((r: any) => {
 

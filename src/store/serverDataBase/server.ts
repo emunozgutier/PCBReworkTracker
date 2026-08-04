@@ -257,6 +257,69 @@ app.use('/api/docs', express.static(path.join(__dirname, 'docs')));
 
 // Initialize Database
 initDb().then(() => {
+    // Ensure all demo projects in the database have BBB-SCH.pdf and BBB.brd documents
+    db.all("SELECT id FROM projects", [], (errProj: Error | null, projects: any[]) => {
+        if (!errProj && projects) {
+            projects.forEach((p) => {
+                const projectId = p.id;
+                // Check and insert BBB-SCH.pdf
+                db.get("SELECT id FROM project_docs WHERE project_id = ? AND filename = ?", [projectId, "BBB-SCH.pdf"], (errDoc1: Error | null, rowDoc1: any) => {
+                    if (!errDoc1 && !rowDoc1) {
+                        db.run("INSERT INTO project_docs (project_id, filename, path) VALUES (?, ?, ?)", [projectId, "BBB-SCH.pdf", "/docs/BBB-SCH.pdf"]);
+                    }
+                });
+                // Check and insert BBB.brd
+                db.get("SELECT id FROM project_docs WHERE project_id = ? AND filename = ?", [projectId, "BBB.brd"], (errDoc2: Error | null, rowDoc2: any) => {
+                    if (!errDoc2 && !rowDoc2) {
+                        db.run("INSERT INTO project_docs (project_id, filename, path) VALUES (?, ?, ?)", [projectId, "BBB.brd", "/docs/BBB.brd"]);
+                    }
+                });
+            });
+        }
+    });
+
+    // Ensure all flavors revisions in pcb_flavors have schematic and board_file set to BBB-SCH.pdf and BBB.brd if not set
+    db.all("SELECT id, name, revisions FROM pcb_flavors", [], (errFlavs: Error | null, flavors: any[]) => {
+        if (!errFlavs && flavors) {
+            flavors.forEach((f) => {
+                let rawRevisions: any = [];
+                try {
+                    rawRevisions = typeof f.revisions === 'string' ? JSON.parse(f.revisions) : f.revisions;
+                } catch(e) {}
+                
+                if (Array.isArray(rawRevisions)) {
+                    let changed = false;
+                    const updatedRevisions = rawRevisions.map((rev: any) => {
+                        if (typeof rev === 'string') {
+                            changed = true;
+                            return {
+                                name: rev,
+                                boms: [],
+                                doc: "BBB-SCH.pdf",
+                                schematic: "BBB-SCH.pdf",
+                                board_file: "BBB.brd"
+                            };
+                        } else if (typeof rev === 'object' && rev !== null) {
+                            if (!rev.doc || !rev.schematic || !rev.board_file) {
+                                changed = true;
+                                return {
+                                    ...rev,
+                                    doc: rev.doc || rev.schematic || "BBB-SCH.pdf",
+                                    schematic: rev.schematic || rev.doc || "BBB-SCH.pdf",
+                                    board_file: rev.board_file || "BBB.brd"
+                                };
+                            }
+                        }
+                        return rev;
+                    });
+                    
+                    if (changed) {
+                        db.run("UPDATE pcb_flavors SET revisions = ? WHERE id = ?", [JSON.stringify(updatedRevisions), f.id]);
+                    }
+                }
+            });
+        }
+    });
 
 // Migration: Split product_name_and_rev into board_flavor, board_rev, silicon_rev, silicon_corner
 db.all("SELECT id, product_name_and_rev, project_id FROM pcbs WHERE product_name_and_rev IS NOT NULL AND board_flavor IS NULL", [], (err: Error | null, pcbs: any[]) => {

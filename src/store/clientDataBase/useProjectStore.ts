@@ -71,16 +71,16 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                         ? rawRevs.map((r: any) => ({ 
                             name: r.name, 
                             boms: Array.isArray(r.boms) ? r.boms : (r.boms ? String(r.boms).split(',').map((b: string) => b.trim()) : []), 
-                            doc: r.doc || r.schematic || null,
-                            schematic: r.schematic || r.doc || null,
-                            board_file: r.board_file || null
+                            doc: r.doc || r.schematic || "BBB-SCH.pdf",
+                            schematic: r.schematic || r.doc || "BBB-SCH.pdf",
+                            board_file: r.board_file || "BBB.brd"
                           })) 
                         : rawRevs.map((r: string) => ({ 
                             name: r, 
                             boms: Array.isArray(f.boms) ? f.boms : (f.boms ? String(f.boms).split(',').map((b: string) => b.trim()) : []), 
-                            doc: null,
-                            schematic: null,
-                            board_file: null
+                            doc: "BBB-SCH.pdf",
+                            schematic: "BBB-SCH.pdf",
+                            board_file: "BBB.brd"
                           }));
                     const revisionNames = isDetailed 
                         ? rawRevs.map((r: any) => r.name) 
