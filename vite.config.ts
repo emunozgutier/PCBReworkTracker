@@ -27,7 +27,8 @@ export default defineConfig(({ command }) => {
     base: command === 'build' ? '/Rework-Tracker/' : '/',
     define: {
       __LOCAL_IPS__: JSON.stringify(getLocalIps()),
-      __PORT__: 5001
+      __PORT__: 5001,
+      __BUILD_DATE__: JSON.stringify(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }))
     },
     server: {
       host: '0.0.0.0', // Listen on all network interfaces
