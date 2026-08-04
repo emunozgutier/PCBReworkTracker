@@ -1,6 +1,7 @@
-import { Popup } from '../../components/Popup';
+import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { API_BASE } from '../../store/serverDataBase/apiBridge';
-import { ExternalLink, FileText } from 'lucide-react';
+import { TopBar } from '../../BoardViewer/TopBar';
 
 interface ProjectDocViewProps {
     isOpen: boolean;
@@ -13,68 +14,58 @@ interface ProjectDocViewProps {
 }
 
 export function ProjectDocView({ isOpen, onClose, doc }: ProjectDocViewProps) {
+    // Listen for Escape key and manage body overflow scroll lock
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        if (isOpen) {
+            window.addEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'hidden';
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = '';
+        };
+    }, [isOpen, onClose]);
+
     if (!isOpen || !doc) return null;
 
     const fullUrl = doc.path.startsWith('http') ? doc.path : `${API_BASE.replace('/api', '')}/api${doc.path}`;
 
-    const titleElement = (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingRight: '40px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                <FileText size={20} color="#ef4444" />
-                <h3 
-                    style={{ 
-                        margin: 0, 
-                        fontSize: '1.15rem', 
-                        fontWeight: 600, 
-                        color: 'var(--text)',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis'
-                    }}
-                    title={doc.filename}
-                >
-                    {doc.filename}
-                </h3>
-            </div>
-            <a 
-                href={fullUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    color: 'var(--accent)',
-                    fontSize: '0.85rem',
-                    textDecoration: 'none',
-                    fontWeight: 600,
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    background: 'rgba(99, 102, 241, 0.1)',
-                    transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.2)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)'; }}
-            >
-                <span>Open in Tab</span>
-                <ExternalLink size={12} />
-            </a>
-        </div>
-    );
-
-    return (
-        <Popup 
-            isOpen={isOpen} 
-            onClose={onClose} 
-            title={titleElement} 
-            maxWidth="1000px"
+    return createPortal(
+        <div 
+            style={{
+                position: 'fixed',
+                inset: 0,
+                background: '#0b0f19', // Dark background matching theme
+                display: 'flex',
+                flexDirection: 'column',
+                zIndex: 9999,
+                padding: '12px',
+                boxSizing: 'border-box',
+                gap: '12px'
+            }}
+            onClick={(e) => e.stopPropagation()}
         >
+            {/* Reuse the TopBar component */}
+            <TopBar
+                filename={doc.filename}
+                onClose={onClose}
+                showSearchToggle={false}
+                fileType="pdf"
+            />
+
+            {/* Document display area */}
             <div 
                 style={{ 
+                    flex: 1,
                     width: '100%', 
-                    height: 'calc(80vh - 100px)', 
-                    marginTop: '8px', 
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     overflow: 'hidden',
                     border: '1px solid var(--border)',
                     background: '#0f172a'
@@ -88,6 +79,7 @@ export function ProjectDocView({ isOpen, onClose, doc }: ProjectDocViewProps) {
                     style={{ border: 'none' }}
                 />
             </div>
-        </Popup>
+        </div>,
+        document.body
     );
 }

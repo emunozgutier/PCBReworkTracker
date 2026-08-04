@@ -11,25 +11,6 @@ export function TitleBar() {
       <header className="app-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center', alignItems: 'center', padding: '16px 20px', textAlign: 'center', position: 'relative' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <h1 style={{ margin: 0 }}>{appTitle}</h1>
-          {isDemoMode && (
-            <div 
-              className="demo-indicator"
-              title="Running in Demo Data Mode"
-              style={{
-                background: 'var(--accent)',
-                color: 'var(--bg-panel)',
-                border: '1px solid var(--accent)',
-                padding: '6px 14px',
-                borderRadius: '20px',
-                fontSize: '0.8rem',
-                fontWeight: 800,
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em'
-              }}
-            >
-              DEMO MODE
-            </div>
-          )}
         </div>
         <UserLoginButton />
       </header>

@@ -8,6 +8,8 @@ import type { BoardData } from './BoardViewer/parser';
 import { SideMenu } from './BoardViewer/SideMenu';
 import { getLayerList } from './BoardViewer/SideMenu/layers';
 import { useBoardViewer } from './store/useBoardViewer';
+import { useAppState } from './store/useAppState';
+import { TopBar } from './BoardViewer/TopBar';
 
 interface BoardViewerProps {
     docId: string | number;
@@ -16,9 +18,11 @@ interface BoardViewerProps {
 
 export function BoardViewer({ docId, onBack }: BoardViewerProps) {
     const { projects, projectDocs, fetchProjects, fetchDocs } = useProjectStore();
+    const { isMobile } = useAppState();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [fileContent, setFileContent] = useState<string | ArrayBuffer | null>(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const [formatType, setFormatType] = useState<'eagle' | 'allegro' | 'binary' | null>(null);
 
@@ -184,8 +188,14 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', gap: '16px', padding: '0 8px', boxSizing: 'border-box' }}>
-
+        <div className="board-viewer-container">
+            {/* TopBar with document filename and close/search triggers */}
+            <TopBar
+                filename={boardDoc?.filename}
+                onClose={onBack}
+                isSidebarOpen={isSidebarOpen}
+                onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
 
             {/* Main content grid */}
             {loading ? (
@@ -216,39 +226,39 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
                     </button>
                 </div>
             ) : (
-                <div
-                    style={{
-                        flex: 1,
-                        display: 'flex',
-                        gap: '16px',
-                        minHeight: 0,
-                        flexDirection: window.innerWidth <= 768 ? 'column' : 'row'
-                    }}
-                >
+                <div className="board-viewer-body">
+                    {/* Backdrop overlay for closing the sidebar drawer on mobile tap */}
+                    {isMobile && isSidebarOpen && (
+                        <div
+                            onClick={() => setIsSidebarOpen(false)}
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                backdropFilter: 'blur(3px)',
+                                zIndex: 9,
+                                borderRadius: '12px'
+                            }}
+                        />
+                    )}
+
                     {/* Left sidebar: Search & Layers */}
-                    <div
-                        style={{
-                            width: window.innerWidth <= 768 ? '100%' : '300px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '16px',
-                            flexShrink: 0,
-                            minHeight: 0,
-                            height: '100%',
-                            background: 'rgba(255, 255, 255, 0.01)',
-                            border: '1px solid var(--border)',
-                            borderRadius: '12px',
-                            padding: '16px',
-                            overflow: 'hidden'
-                        }}
-                    >
+                    <div className={`board-viewer-sidebar-wrapper ${isSidebarOpen ? 'open' : ''}`}>
                         <SideMenu
                             boardData={boardData}
                             searchQuery={searchQuery}
                             onSearchChange={setSearchQuery}
                             elements={elementsList}
                             nets={netsList}
-                            onSelect={handleSelectSearchItem}
+                            onSelect={(type, name) => {
+                                handleSelectSearchItem(type, name);
+                                if (isMobile) {
+                                    setIsSidebarOpen(false);
+                                }
+                            }}
                             selectedItem={selectedItem}
                             visibleLayers={visibleLayers}
                             onToggleLayer={toggleLayer}
@@ -257,7 +267,7 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
                     </div>
 
                     {/* Right side: Canvas area */}
-                    <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
+                    <div className="board-viewer-canvas-container">
                         <BoardCanvas
                             boardData={boardData}
                             onSelectElement={(name) => {

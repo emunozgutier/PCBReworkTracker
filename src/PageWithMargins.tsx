@@ -105,7 +105,7 @@ export function PageWithMargins() {
       {page !== 'board_viewer' && <TitleBar />}
       <UrlManager />
       
-      <TabBar />
+      {page !== 'board_viewer' && <TabBar />}
       {['projects', 'pcbs', 'reworks', 'owners', 'tags', 'settings'].includes(page) && <TopButtons />}
       
       <main className="app-main">
