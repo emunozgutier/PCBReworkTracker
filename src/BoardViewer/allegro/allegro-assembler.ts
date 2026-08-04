@@ -315,6 +315,8 @@ function extractComponents(
       // layers / carries a drill (same criterion as extractPads' side='both').
       const partType: 'smd' | 'throughhole' = hasThru ? 'throughhole' : 'smd';
 
+      const angleDeg = (inst.rotation || 0) / 1000;
+
       parts.push({
         name: refdes,
         side,
@@ -322,6 +324,7 @@ function extractComponents(
         origin,
         pins,
         bounds,
+        angleDeg,
         ...(footprintName ? { meta: { package: footprintName } } : {}),
       });
 
@@ -538,6 +541,8 @@ function extractComponentsV15(
     }
     void bounds;
 
+    const angleDeg = (inst.rotation || 0) / 1000;
+
     parts.push({
       name: refdes,
       side: inst.layer === 1 ? 'bottom' : 'top',
@@ -545,6 +550,7 @@ function extractComponentsV15(
       origin: { x: ox, y: oy },
       pins,
       bounds: finalBounds,
+      angleDeg,
       meta: { package: fpName },
     });
   }
