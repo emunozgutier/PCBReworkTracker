@@ -52,6 +52,11 @@ npm run test
 ## 📦 Project Structure
 - `src/` (Frontend React logic, Styles, and UI Pages)
 - `src/store/` (Zustand state files linking React to the Backend)
-- `server.js` (Express backend serving the REST API endpoints)
-- `db.js` (Database schema configuration and migration logic)
+- `src/store/serverDataBase/server.ts` (Express backend serving the REST API endpoints)
+- `src/store/serverDataBase/db.ts` (Database schema configuration and migration logic)
 - `tests/` (Vitest integration files)
+
+## 📝 Attribution
+
+The PCB parser in this application was adapted from the GitHub repository **board ripper** (which appears to have sourced its parsing logic from **KiCad**).
+
