@@ -1,4 +1,5 @@
-import { Search, X, Cpu } from 'lucide-react';
+import { useState } from 'react';
+import { Search, X, Cpu, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface SearchProps {
     searchQuery: string;
@@ -15,22 +16,61 @@ export function BoardSearch({
     onSelect,
     selectedItem
 }: SearchProps) {
+    const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
     const cleanQuery = searchQuery.trim().toLowerCase();
 
-    // Filter elements based on query
+    // Sort components naturally (alphabetical and numerical order: C1, C2, C10)
+    const sortedElements = [...elements].sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })
+    );
+
+    // Filter components based on query
     const filteredElements = cleanQuery
-        ? elements.filter(
+        ? sortedElements.filter(
               (el) =>
                   el.name.toLowerCase().includes(cleanQuery) ||
                   (el.value && el.value.toLowerCase().includes(cleanQuery)) ||
                   (el.package && el.package.toLowerCase().includes(cleanQuery))
           )
-        : elements.slice(0, 15); // Show first 15 by default
+        : sortedElements;
 
     const hasResults = filteredElements.length > 0;
 
+    // Group elements by component prefix letter (e.g. C, R, U, TP)
+    const groups: Record<string, typeof elements> = {};
+    filteredElements.forEach((el) => {
+        const prefix = el.name.match(/^[a-zA-Z]+/)?.[0]?.toUpperCase() || 'OTHER';
+        if (!groups[prefix]) {
+            groups[prefix] = [];
+        }
+        groups[prefix].push(el);
+    });
+
+    // Sorted prefixes list
+    const sortedPrefixes = Object.keys(groups).sort();
+
+    const toggleGroup = (prefix: string) => {
+        setCollapsedGroups((prev) => ({
+            ...prev,
+            [prefix]: !prev[prefix]
+        }));
+    };
+
+    const expandAll = () => {
+        setCollapsedGroups({});
+    };
+
+    const collapseAll = () => {
+        const allCollapsed: Record<string, boolean> = {};
+        sortedPrefixes.forEach((prefix) => {
+            allCollapsed[prefix] = true;
+        });
+        setCollapsedGroups(allCollapsed);
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '12px' }}>
+            {/* Search Input Box */}
             <div style={{ position: 'relative' }}>
                 <input
                     type="text"
@@ -99,17 +139,59 @@ export function BoardSearch({
                 )}
             </div>
 
+            {/* Expand / Collapse All Utilities */}
+            {hasResults && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', padding: '0 4px', alignItems: 'center' }}>
+                    <button
+                        onClick={expandAll}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--accent)',
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            padding: '2px 4px',
+                            transition: 'opacity 0.2s'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
+                        onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                    >
+                        Expand All
+                    </button>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>|</span>
+                    <button
+                        onClick={collapseAll}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--text-muted)',
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            padding: '2px 4px',
+                            transition: 'opacity 0.2s'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
+                        onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+                    >
+                        Collapse All
+                    </button>
+                </div>
+            )}
+
+            {/* Scrollable List Container */}
             <div
                 style={{
                     flex: 1,
                     overflowY: 'auto',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '16px',
+                    gap: '12px',
                     paddingRight: '4px'
                 }}
             >
-                {/* Components / Elements list */}
+                {/* Heading */}
                 <div>
                     <h4
                         style={{
@@ -123,47 +205,101 @@ export function BoardSearch({
                     >
                         Components {cleanQuery ? `(${filteredElements.length} of ${elements.length})` : `(${elements.length})`}
                     </h4>
-                    {filteredElements.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            {filteredElements.map((el) => {
-                                const isSelected =
-                                    selectedItem?.type === 'element' && selectedItem?.name === el.name;
+
+                    {/* Grouped Accordions */}
+                    {hasResults ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {sortedPrefixes.map((prefix) => {
+                                const isCollapsed = collapsedGroups[prefix] === true;
                                 return (
-                                    <div
-                                        key={el.name}
-                                        onClick={() => onSelect('element', el.name)}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            padding: '8px 10px',
-                                            borderRadius: '6px',
-                                            cursor: 'pointer',
-                                            background: isSelected
-                                                ? 'var(--accent-bg)'
-                                                : 'rgba(255, 255, 255, 0.01)',
-                                            border: isSelected
-                                                ? '1px solid var(--accent)'
-                                                : '1px solid transparent',
-                                            transition: 'all 0.15s ease'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (!isSelected) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (!isSelected) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.01)';
-                                        }}
-                                    >
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                                            <Cpu size={14} color={isSelected ? 'var(--accent)' : 'var(--text-muted)'} style={{ flexShrink: 0 }} />
-                                            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-h)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                {el.name}
+                                    <div key={prefix} style={{ display: 'flex', flexDirection: 'column' }}>
+                                        {/* Accordion Group Header */}
+                                        <div
+                                            onClick={() => toggleGroup(prefix)}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                padding: '8px 12px',
+                                                background: 'rgba(255, 255, 255, 0.02)',
+                                                border: '1px solid var(--border)',
+                                                borderRadius: '6px',
+                                                cursor: 'pointer',
+                                                userSelect: 'none',
+                                                transition: 'all 0.2s ease',
+                                                marginBottom: '4px'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                                e.currentTarget.style.borderColor = 'var(--accent)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
+                                                e.currentTarget.style.borderColor = 'var(--border)';
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                {isCollapsed ? (
+                                                    <ChevronRight size={14} color="var(--text-muted)" />
+                                                ) : (
+                                                    <ChevronDown size={14} color="var(--accent)" />
+                                                )}
+                                                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-h)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                    {prefix} Components
+                                                </span>
+                                            </div>
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'rgba(255, 255, 255, 0.04)', padding: '2px 6px', borderRadius: '10px' }}>
+                                                {groups[prefix].length}
                                             </span>
                                         </div>
-                                        {el.value && (
-                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', maxWidth: '100px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                {el.value}
-                                            </span>
+
+                                        {/* Accordion Group Body / Components List */}
+                                        {!isCollapsed && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '8px', marginBottom: '4px' }}>
+                                                {groups[prefix].map((el) => {
+                                                    const isSelected =
+                                                        selectedItem?.type === 'element' && selectedItem?.name === el.name;
+                                                    return (
+                                                        <div
+                                                            key={el.name}
+                                                            onClick={() => onSelect('element', el.name)}
+                                                            style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'space-between',
+                                                                padding: '6px 10px',
+                                                                borderRadius: '6px',
+                                                                cursor: 'pointer',
+                                                                background: isSelected
+                                                                    ? 'var(--accent-bg)'
+                                                                    : 'transparent',
+                                                                border: isSelected
+                                                                    ? '1px solid var(--accent)'
+                                                                    : '1px solid transparent',
+                                                                transition: 'all 0.15s ease'
+                                                            }}
+                                                            onMouseEnter={(e) => {
+                                                                if (!isSelected) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                                                            }}
+                                                            onMouseLeave={(e) => {
+                                                                if (!isSelected) e.currentTarget.style.background = 'transparent';
+                                                            }}
+                                                        >
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                                                                <Cpu size={12} color={isSelected ? 'var(--accent)' : 'var(--text-muted)'} style={{ flexShrink: 0 }} />
+                                                                <span style={{ fontSize: '0.8rem', fontWeight: isSelected ? 600 : 500, color: 'var(--text-h)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                    {el.name}
+                                                                </span>
+                                                            </div>
+                                                            {el.value && (
+                                                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', maxWidth: '120px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                    {el.value}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
                                         )}
                                     </div>
                                 );
