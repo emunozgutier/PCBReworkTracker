@@ -9,7 +9,7 @@ import {
     drawSelectionHighlight
 } from './Canvas/Components';
 import { drawSignals } from './Canvas/trace';
-import { getCopperLayerNumber } from './parser';
+import { getCopperLayerNumber, getComponentCenterAndBounds } from './parser';
 import { getLayerList } from './SideMenu/layers';
 import { HighlightBox } from './HighlightBox';
 
@@ -90,8 +90,9 @@ export function BoardCanvas({ boardData, onSelectElement, selectionSource }: Can
         const el = boardData.elements.find(e => e.name === selectedItem.name);
         if (!el) return;
 
-        const targetPanX = canvasSize.width / 2 - el.x * scale;
-        const targetPanY = canvasSize.height / 2 - (-el.y) * scale;
+        const { centerX, centerY } = getComponentCenterAndBounds(el);
+        const targetPanX = canvasSize.width / 2 - centerX * scale;
+        const targetPanY = canvasSize.height / 2 - (-centerY) * scale;
         
         setPan({ x: targetPanX, y: targetPanY });
     }, [selectedItem, boardData, canvasSize.width, canvasSize.height, scale, setPan]);
@@ -319,60 +320,16 @@ export function BoardCanvas({ boardData, onSelectElement, selectionSource }: Can
             {selectedItem?.type === 'element' && selectionSource === 'search' && boardData && (() => {
                 const el = boardData.elements.find(e => e.name === selectedItem.name);
                 if (!el) return null;
-                const x = pan.x + el.x * scale;
-                const y = pan.y - el.y * scale;
-
-                // Calculate local bounding box of the component (before rotation)
-                let minX = Infinity, maxX = -Infinity;
-                let minY = Infinity, maxY = -Infinity;
-
-                // 1. Process pads
-                el.pads.forEach(pad => {
-                    const r = pad.diameter / 2;
-                    minX = Math.min(minX, pad.x - r);
-                    maxX = Math.max(maxX, pad.x + r);
-                    minY = Math.min(minY, pad.y - r);
-                    maxY = Math.max(maxY, pad.y + r);
-                });
-
-                // 2. Process SMDs
-                el.smds.forEach(smd => {
-                    const rx = smd.dx / 2;
-                    const ry = smd.dy / 2;
-                    minX = Math.min(minX, smd.x - rx);
-                    maxX = Math.max(maxX, smd.x + rx);
-                    minY = Math.min(minY, smd.y - ry);
-                    maxY = Math.max(maxY, smd.y + ry);
-                });
-
-                // 3. Process silkscreen lines
-                el.silks.forEach(silk => {
-                    minX = Math.min(minX, silk.x1, silk.x2);
-                    maxX = Math.max(maxX, silk.x1, silk.x2);
-                    minY = Math.min(minY, silk.y1, silk.y2);
-                    maxY = Math.max(maxY, silk.y1, silk.y2);
-                });
-
-                // Fallback if no elements define bounds
-                let w = 0;
-                let h = 0;
-                if (minX === Infinity || maxX === -Infinity) {
-                    w = 2.0; // fallback default width in mm/board units
-                    h = 2.0;
-                } else {
-                    // Add a minor margin around the component (e.g., 0.8 board units or 15% minimum)
-                    const padX = Math.max(0.6, (maxX - minX) * 0.15);
-                    const padY = Math.max(0.6, (maxY - minY) * 0.15);
-                    w = (maxX - minX) + padX * 2;
-                    h = (maxY - minY) + padY * 2;
-                }
+                const { centerX, centerY, width, height } = getComponentCenterAndBounds(el);
+                const x = pan.x + centerX * scale;
+                const y = pan.y - centerY * scale;
 
                 return (
                     <HighlightBox
                         x={x}
                         y={y}
-                        width={w}
-                        height={h}
+                        width={width}
+                        height={height}
                         angle={el.angle}
                         scale={scale}
                         componentName={selectedItem.name}

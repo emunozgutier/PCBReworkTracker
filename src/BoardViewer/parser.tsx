@@ -611,3 +611,79 @@ export function parseBinaryFallback(binaryContent: string): BoardData {
         format: 'FALLBACK'
     };
 }
+
+export function getComponentCenterAndBounds(el: BoardData['elements'][number]) {
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+
+    // 1. Process pads
+    if (el.pads) {
+        el.pads.forEach((pad) => {
+            const r = pad.diameter / 2;
+            minX = Math.min(minX, pad.x - r);
+            maxX = Math.max(maxX, pad.x + r);
+            minY = Math.min(minY, pad.y - r);
+            maxY = Math.max(maxY, pad.y + r);
+        });
+    }
+
+    // 2. Process SMDs
+    if (el.smds) {
+        el.smds.forEach((smd) => {
+            const rx = smd.dx / 2;
+            const ry = smd.dy / 2;
+            minX = Math.min(minX, smd.x - rx);
+            maxX = Math.max(maxX, smd.x + rx);
+            minY = Math.min(minY, smd.y - ry);
+            maxY = Math.max(maxY, smd.y + ry);
+        });
+    }
+
+    // 3. Process silkscreen lines
+    if (el.silks) {
+        el.silks.forEach((silk) => {
+            minX = Math.min(minX, silk.x1, silk.x2);
+            maxX = Math.max(maxX, silk.x1, silk.x2);
+            minY = Math.min(minY, silk.y1, silk.y2);
+            maxY = Math.max(maxY, silk.y1, silk.y2);
+        });
+    }
+
+    // Fallback if no elements define bounds
+    let w = 0;
+    let h = 0;
+    let lx_center = 0;
+    let ly_center = 0;
+
+    if (minX === Infinity || maxX === -Infinity) {
+        w = 2.0; // fallback default width in mm/board units
+        h = 2.0;
+        lx_center = 0;
+        ly_center = 0;
+    } else {
+        // Add a minor margin around the component (e.g., 0.8 board units or 15% minimum)
+        const padX = Math.max(0.6, (maxX - minX) * 0.15);
+        const padY = Math.max(0.6, (maxY - minY) * 0.15);
+        w = (maxX - minX) + padX * 2;
+        h = (maxY - minY) + padY * 2;
+        lx_center = (minX + maxX) / 2;
+        ly_center = (minY + maxY) / 2;
+    }
+
+    // Map local center to rotated & mirrored relative coordinates
+    const mx = el.mirror ? -lx_center : lx_center;
+    const my = ly_center;
+
+    const rad = (el.angle * Math.PI) / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+
+    // Re-rotate local center vector to get absolute delta relative to component origin
+    const dxAbs = mx * cos - my * sin;
+    const dyAbs = mx * sin + my * cos;
+
+    const centerX = el.x + dxAbs;
+    const centerY = el.y + dyAbs;
+
+    return { centerX, centerY, width: w, height: h };
+}

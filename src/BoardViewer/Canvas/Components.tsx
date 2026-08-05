@@ -1,4 +1,5 @@
 import type { BoardData } from '../parser';
+import { getComponentCenterAndBounds } from '../parser';
 
 export const drawGrid = (ctx: CanvasRenderingContext2D, w: number, h: number, pan: { x: number; y: number }, scale: number) => {
     ctx.save();
@@ -157,6 +158,10 @@ export const drawSelectionHighlight = (
     const el = boardData.elements.find(e => e.name === selected.name);
     if (!el) return;
 
+    const { centerX, centerY } = getComponentCenterAndBounds(el);
+    const drawX = centerX;
+    const drawY = -centerY;
+
     ctx.save();
     ctx.strokeStyle = '#c084fc'; // Purple highlight
     ctx.shadowColor = '#c084fc';
@@ -165,33 +170,33 @@ export const drawSelectionHighlight = (
     
     // Draw a glowing crosshair / bounding circle
     ctx.beginPath();
-    ctx.arc(el.x, -el.y, 8 / scale + 1.5, 0, Math.PI * 2);
+    ctx.arc(drawX, drawY, 8 / scale + 1.5, 0, Math.PI * 2);
     ctx.stroke();
 
     // Draw outer brackets
     const bracketSize = 12 / scale;
     ctx.beginPath();
-    ctx.moveTo(el.x - bracketSize, -el.y - bracketSize / 2);
-    ctx.lineTo(el.x - bracketSize, -el.y - bracketSize);
-    ctx.lineTo(el.x - bracketSize / 2, -el.y - bracketSize);
+    ctx.moveTo(drawX - bracketSize, drawY - bracketSize / 2);
+    ctx.lineTo(drawX - bracketSize, drawY - bracketSize);
+    ctx.lineTo(drawX - bracketSize / 2, drawY - bracketSize);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(el.x + bracketSize, -el.y - bracketSize / 2);
-    ctx.lineTo(el.x + bracketSize, -el.y - bracketSize);
-    ctx.lineTo(el.x + bracketSize / 2, -el.y - bracketSize);
+    ctx.moveTo(drawX + bracketSize, drawY - bracketSize / 2);
+    ctx.lineTo(drawX + bracketSize, drawY - bracketSize);
+    ctx.lineTo(drawX + bracketSize / 2, drawY - bracketSize);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(el.x - bracketSize, -el.y + bracketSize / 2);
-    ctx.lineTo(el.x - bracketSize, -el.y + bracketSize);
-    ctx.lineTo(el.x - bracketSize / 2, -el.y + bracketSize);
+    ctx.moveTo(drawX - bracketSize, drawY + bracketSize / 2);
+    ctx.lineTo(drawX - bracketSize, drawY + bracketSize);
+    ctx.lineTo(drawX - bracketSize / 2, drawY + bracketSize);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(el.x + bracketSize, -el.y + bracketSize / 2);
-    ctx.lineTo(el.x + bracketSize, -el.y + bracketSize);
-    ctx.lineTo(el.x + bracketSize / 2, -el.y + bracketSize);
+    ctx.moveTo(drawX + bracketSize, drawY + bracketSize / 2);
+    ctx.lineTo(drawX + bracketSize, drawY + bracketSize);
+    ctx.lineTo(drawX + bracketSize / 2, drawY + bracketSize);
     ctx.stroke();
 
     ctx.restore();
