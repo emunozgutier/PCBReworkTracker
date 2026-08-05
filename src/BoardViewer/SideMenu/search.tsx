@@ -1,10 +1,9 @@
-import { Search, X, Cpu, GitCommit } from 'lucide-react';
+import { Search, X, Cpu } from 'lucide-react';
 
 interface SearchProps {
     searchQuery: string;
     onSearchChange: (query: string) => void;
     elements: Array<{ name: string; value?: string; package?: string }>;
-    nets: string[];
     onSelect: (type: 'element' | 'net', name: string) => void;
     selectedItem: { type: 'element' | 'net'; name: string } | null;
 }
@@ -13,13 +12,12 @@ export function BoardSearch({
     searchQuery,
     onSearchChange,
     elements,
-    nets,
     onSelect,
     selectedItem
 }: SearchProps) {
     const cleanQuery = searchQuery.trim().toLowerCase();
 
-    // Filter elements and nets based on query
+    // Filter elements based on query
     const filteredElements = cleanQuery
         ? elements.filter(
               (el) =>
@@ -29,26 +27,20 @@ export function BoardSearch({
           )
         : elements.slice(0, 15); // Show first 15 by default
 
-    const filteredNets = cleanQuery
-        ? nets.filter((net) => net.toLowerCase().includes(cleanQuery))
-        : nets.slice(0, 15); // Show first 15 by default
-
-    const hasResults = filteredElements.length > 0 || filteredNets.length > 0;
+    const hasResults = filteredElements.length > 0;
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '12px' }}>
             <div style={{ position: 'relative' }}>
                 <input
                     type="text"
-                    placeholder="Search component or net..."
+                    placeholder="Search component..."
                     value={searchQuery}
                     onChange={(e) => onSearchChange(e.target.value)}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                             if (filteredElements.length > 0) {
                                 onSelect('element', filteredElements[0].name);
-                            } else if (filteredNets.length > 0) {
-                                onSelect('net', filteredNets[0]);
                             }
                         }
                     }}
@@ -129,7 +121,7 @@ export function BoardSearch({
                             color: 'var(--accent)'
                         }}
                     >
-                        Components {cleanQuery ? `(${filteredElements.length})` : ''}
+                        Components {cleanQuery ? `(${filteredElements.length} of ${elements.length})` : `(${elements.length})`}
                     </h4>
                     {filteredElements.length > 0 ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -180,66 +172,6 @@ export function BoardSearch({
                     ) : (
                         <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                             No matching components.
-                        </p>
-                    )}
-                </div>
-
-                {/* Nets list */}
-                <div>
-                    <h4
-                        style={{
-                            margin: '0 0 8px 0',
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            color: '#818cf8'
-                        }}
-                    >
-                        Nets / Signals {cleanQuery ? `(${filteredNets.length})` : ''}
-                    </h4>
-                    {filteredNets.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            {filteredNets.map((net) => {
-                                const isSelected =
-                                    selectedItem?.type === 'net' && selectedItem?.name === net;
-                                return (
-                                    <div
-                                        key={net}
-                                        onClick={() => onSelect('net', net)}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '8px',
-                                            padding: '8px 10px',
-                                            borderRadius: '6px',
-                                            cursor: 'pointer',
-                                            background: isSelected
-                                                ? 'rgba(129, 140, 248, 0.15)'
-                                                : 'rgba(255, 255, 255, 0.01)',
-                                            border: isSelected
-                                                ? '1px solid #818cf8'
-                                                : '1px solid transparent',
-                                            transition: 'all 0.15s ease'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (!isSelected) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (!isSelected) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.01)';
-                                        }}
-                                    >
-                                        <GitCommit size={14} color={isSelected ? '#818cf8' : 'var(--text-muted)'} style={{ flexShrink: 0 }} />
-                                        <span style={{ fontSize: '0.85rem', fontWeight: 550, color: 'var(--text-h)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                            {net}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                            No matching nets.
                         </p>
                     )}
                 </div>

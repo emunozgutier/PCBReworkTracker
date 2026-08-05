@@ -141,7 +141,6 @@ export function SideMenu({
                         searchQuery={searchQuery}
                         onSearchChange={onSearchChange}
                         elements={elements}
-                        nets={nets}
                         onSelect={onSelect}
                         selectedItem={selectedItem}
                     />
