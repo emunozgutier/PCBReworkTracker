@@ -15,7 +15,7 @@ import { parseHeader } from './allegro-header';
 import { parseBlock } from './allegro-blocks';
 import type { FileHeader, AllegroBlock, LinkedList } from './allegro-types';
 import { FmtVer } from './allegro-types';
-import { log } from '../../store/log-store';
+import { log } from '../../../store/log-store';
 
 const dbg = log.parser;
 

@@ -27,7 +27,7 @@ import { WrongUrl } from './Pages/WrongPage/WrongUrl';
 import { FixedUrl } from './Pages/WrongPage/FixedUrl';
 import { TitleBar } from './components/TitleBar';
 
-import { BoardViewer } from './BoardViewer';
+import { BoardViewer } from './Pages/BoardViewer';
 import { DocViewer } from './DocViewer';
 import { useAppState } from './store/useAppState';
 

@@ -1,15 +1,15 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { useProjectStore } from './store/clientDataBase/useProjectStore';
+import { useProjectStore } from '../store/clientDataBase/useProjectStore';
 import { BoardCanvas } from './BoardViewer/canvas';
 import { parseEagleXML, parseBinaryFallback, parseAllegro } from './BoardViewer/parser';
 import type { BoardData } from './BoardViewer/parser';
 import { SideMenu } from './BoardViewer/SideMenu';
 import { getLayerList } from './BoardViewer/SideMenu/layers';
-import { useBoardViewer } from './store/useBoardViewer';
-import { useAppState } from './store/useAppState';
+import { useBoardViewer } from '../store/useBoardViewer';
+import { useAppState } from '../store/useAppState';
 import { TopBar } from './BoardViewer/TopBar';
-import { getDocumentUrl } from './store/useDemoStore';
+import { getDocumentUrl } from '../store/useDemoStore';
 
 interface BoardViewerProps {
     docId: string | number;
@@ -173,12 +173,6 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
         if (!boardData) return [];
         return boardData.elements.map(e => ({ name: e.name, value: e.value, package: e.package }));
     }, [boardData]);
-
-    const netsList = useMemo(() => {
-        if (!boardData) return [];
-        return boardData.signals.map(s => s.name);
-    }, [boardData]);
-
     // Handle search panel selection
     const handleSelectSearchItem = (type: 'element' | 'net', name: string) => {
         setSelectionSource('search');
@@ -250,7 +244,6 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
                             searchQuery={searchQuery}
                             onSearchChange={setSearchQuery}
                             elements={elementsList}
-                            nets={netsList}
                             onSelect={(type, name) => {
                                 handleSelectSearchItem(type, name);
                                 if (isMobile) {

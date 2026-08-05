@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import type { BoardData } from './parser';
-import { useBoardViewer } from '../store/useBoardViewer';
+import { useBoardViewer } from '../../store/useBoardViewer';
 import {
     drawGrid,
     drawVias,

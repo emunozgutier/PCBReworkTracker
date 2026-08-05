@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useProjectStore } from './store/clientDataBase/useProjectStore';
-import { TopBar } from './BoardViewer/TopBar';
+import { TopBar } from './Pages/BoardViewer/TopBar';
 import { getDocumentUrl } from './store/useDemoStore';
 import { Loader2 } from 'lucide-react';
 

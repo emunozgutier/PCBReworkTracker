@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { TopBar } from '../../BoardViewer/TopBar';
+import { TopBar } from '../BoardViewer/TopBar';
 import { getDocumentUrl } from '../../store/useDemoStore';
 
 interface ProjectDocViewProps {

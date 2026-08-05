@@ -36,7 +36,7 @@ import type {
   Blk0x32PlacedPad,
   Blk0x33Via,
 } from './allegro-types';
-import { log } from '../../store/log-store';
+import { log } from '../../../store/log-store';
 
 const dbg = log.parser;
 

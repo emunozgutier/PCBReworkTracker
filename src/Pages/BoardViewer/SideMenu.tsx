@@ -9,7 +9,6 @@ interface SideMenuProps {
     searchQuery: string;
     onSearchChange: (query: string) => void;
     elements: Array<{ name: string; value?: string; package?: string }>;
-    nets: string[];
     onSelect: (type: 'element' | 'net', name: string) => void;
     selectedItem: { type: 'element' | 'net'; name: string } | null;
     visibleLayers: Set<number>;
@@ -22,7 +21,6 @@ export function SideMenu({
     searchQuery,
     onSearchChange,
     elements,
-    nets,
     onSelect,
     selectedItem,
     visibleLayers,

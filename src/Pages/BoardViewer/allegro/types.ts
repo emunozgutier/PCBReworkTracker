@@ -1,4 +1,4 @@
-import { log } from '../../store/log-store';
+import { log } from '../../../store/log-store';
 
 export interface Point {
   x: number;
