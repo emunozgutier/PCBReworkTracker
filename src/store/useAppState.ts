@@ -4,6 +4,7 @@ import { usePcbStore } from './clientDataBase/usePcbStore';
 import { useReworkStore } from './clientDataBase/useReworkStore';
 import { useTagStore } from './clientDataBase/useTagStore';
 import { apiFetch, API_BASE } from './serverDataBase/apiBridge';
+import { getSessionCookie, clearSessionCookie } from '../authentication/clientAuth';
 
 type Page = 
     | 'projects' | 'projects_add' | 'projects_edit'
@@ -64,31 +65,9 @@ interface NavigationState {
     resetSettings: () => void;
 }
 
-// Load initial session from localStorage if valid
+// Initial default auth values
 let initialUser = null;
 let initialRole: 'Super User' | 'User' | 'Guest' = 'Guest';
-
-if (typeof window !== 'undefined') {
-    try {
-        const storedUser = localStorage.getItem('rework_user');
-        const storedRole = localStorage.getItem('rework_role');
-        const storedExpires = localStorage.getItem('rework_session_expires');
-
-        if (storedUser && storedRole && storedExpires) {
-            const expires = parseInt(storedExpires, 10);
-            if (Date.now() < expires) {
-                initialUser = JSON.parse(storedUser);
-                initialRole = storedRole as 'Super User' | 'User' | 'Guest';
-            } else {
-                localStorage.removeItem('rework_user');
-                localStorage.removeItem('rework_role');
-                localStorage.removeItem('rework_session_expires');
-            }
-        }
-    } catch (e) {
-        console.error('Failed to load session from localStorage', e);
-    }
-}
 
 function getInitialCrcFormat(): 'letter' | 'nato' {
     if (typeof window !== 'undefined') {
@@ -194,19 +173,8 @@ export const useAppState = create<NavigationState>()(
                     set({ crcFormat: 'letter' });
                 }
                 if (typeof window !== 'undefined') {
-                    try {
-                        if (currentUserRole === 'Guest') {
-                            localStorage.removeItem('rework_user');
-                            localStorage.removeItem('rework_role');
-                            localStorage.removeItem('rework_session_expires');
-                        } else {
-                            localStorage.setItem('rework_user', JSON.stringify(currentUser));
-                            localStorage.setItem('rework_role', currentUserRole);
-                            const expires = Date.now() + 7 * 24 * 60 * 60 * 1000; // 1 week
-                            localStorage.setItem('rework_session_expires', expires.toString());
-                        }
-                    } catch (e) {
-                        console.error('Failed to save session to localStorage', e);
+                    if (currentUserRole === 'Guest') {
+                        clearSessionCookie();
                     }
                 }
             },
@@ -282,8 +250,18 @@ export const useAppState = create<NavigationState>()(
             name: 'pcb-rework-tracker-global-settings',
             partialize: (state) => ({
                 crcFormat: state.crcFormat,
-                allowGuestMinorRework: state.allowGuestMinorRework
+                allowGuestMinorRework: state.allowGuestMinorRework,
+                currentUser: state.currentUser,
+                currentUserRole: state.currentUserRole
             }),
+            onRehydrateStorage: () => (state) => {
+                if (state) {
+                    const hasSessionCookie = getSessionCookie();
+                    if (!hasSessionCookie && state.currentUserRole !== 'Guest') {
+                        state.setCurrentUser(null, 'Guest');
+                    }
+                }
+            },
             storage: createJSONStorage(() => {
                 if (typeof window !== 'undefined' && window.localStorage) {
                     return window.localStorage;

@@ -9,6 +9,15 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { db, initDb } from './db';
 import { apiLoggerMiddleware } from './logger';
+import {
+    authenticateToken,
+    generateToken,
+    isSuperUser,
+    canUpdatePcb,
+    canUpdateRework,
+    canAddPcb,
+    canAddRework
+} from './serverAuth';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,7 +47,11 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: (origin, callback) => callback(null, true),
+    credentials: true
+}));
+app.use(authenticateToken as any);
 app.use(express.json());
 app.use(morgan('dev', {
     skip: (req) => req.method === 'GET'
@@ -681,6 +694,9 @@ app.get('/api/projects', (_req: Request, res: Response) => {
 });
 
 app.post('/api/projects', async (req: Request, res: Response) => {
+    if (!isSuperUser(req as any)) {
+        return res.status(403).json({ error: "Only Super Users can create projects." });
+    }
     const { name, description, revisions, project_key, flavors, silicon_corners, number_format } = req.body;
     const cleanName = sanitizeProjectName(name);
     
@@ -769,6 +785,9 @@ app.get('/api/pcbs', (_req: Request, res: Response) => {
 });
 
 app.post('/api/pcbs', async (req: Request, res: Response) => {
+    if (!canAddPcb(req as any)) {
+        return res.status(403).json({ error: "Guest users cannot add PCBs." });
+    }
     const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id } = req.body;
     let numPart = board_number;
     if (board_number && board_number.includes('-')) {
@@ -855,6 +874,19 @@ function generateSecret(): string {
     }
     return secret;
 }
+
+function getUserRole(ownerId: number): Promise<'Super User' | 'User'> {
+    return new Promise((resolve) => {
+        db.all("SELECT id FROM owners ORDER BY id ASC", [], (err, rows: any[]) => {
+            if (err || !rows || rows.length === 0) return resolve('User');
+            const isOnlyUser = rows.length === 1;
+            const minId = rows[0].id;
+            const isFirstUser = ownerId === minId;
+            resolve((isOnlyUser || isFirstUser) ? 'Super User' : 'User');
+        });
+    });
+}
+
 
 app.get('/api/otp/setup', (req: Request, res: Response) => {
     const { username, host } = req.query;
@@ -996,8 +1028,44 @@ app.post('/api/otp/verify', (req: Request, res: Response) => {
                 });
             }
 
-            console.log("[OTP DEBUG] Valid verification response. Sending success!");
-            return res.json({ valid: true });
+            db.get("SELECT id, name, username FROM owners WHERE id = ?", [row.id], async (errOwner: Error | null, ownerRow: any) => {
+                if (errOwner || !ownerRow) {
+                    console.error("[OTP DEBUG] Failed to load owner details for token generation:", errOwner);
+                    return res.status(500).json({ error: "Failed to load user details." });
+                }
+
+                try {
+                    const role = await getUserRole(ownerRow.id);
+                    const token = generateToken({
+                        id: ownerRow.id,
+                        username: ownerRow.username,
+                        name: ownerRow.name,
+                        role: role
+                    });
+
+                    res.cookie('session_token', token, {
+                        maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
+                        httpOnly: true,
+                        sameSite: 'lax',
+                        path: '/'
+                    });
+
+                    console.log("[OTP DEBUG] Valid verification response. Sending success with token!");
+                    return res.json({
+                        valid: true,
+                        token,
+                        user: {
+                            id: ownerRow.id,
+                            username: ownerRow.username,
+                            name: ownerRow.name,
+                            role: role
+                        }
+                    });
+                } catch (tokenErr: any) {
+                    console.error("[OTP DEBUG] Token generation error:", tokenErr);
+                    return res.status(500).json({ error: tokenErr.message });
+                }
+            });
         });
     });
 });
@@ -1047,6 +1115,9 @@ app.get('/api/tags', (_req: Request, res: Response) => {
 });
 
 app.post('/api/tags', (req: Request, res: Response) => {
+    if (!isSuperUser(req as any)) {
+        return res.status(403).json({ error: "Only Super Users can create tags." });
+    }
     const { name, color, owner_id, type } = req.body;
     const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
     db.run("INSERT INTO tags (name, color, owner_id, type) VALUES (?, ?, ?, ?)", [name, color, finalOwnerId, type || 'public'], function(this: any, err: Error | null) {
@@ -1073,8 +1144,17 @@ app.get('/api/reworks', (_req: Request, res: Response) => {
 app.post('/api/reworks', upload.any(), deduplicate, serializeWrites, (req: Request, res: Response) => {
     const { pcb_id, title, description, owner_id, rework_type, new_product, new_silicon_rev, new_silicon_corner } = req.body;
     
-    // 1. Get the PCB board_number
-    db.get("SELECT pcbs.*, projects.project_key, projects.number_format FROM pcbs LEFT JOIN projects ON pcbs.project_id = projects.id WHERE pcbs.id = ?", [pcb_id], (err: Error | null, row: any) => {
+    db.get("SELECT value FROM global_settings WHERE key = 'allowGuestMinorRework'", [], (errSettings, rowSettings: any) => {
+        const allowGuest = !rowSettings || rowSettings.value === 'true';
+        db.get("SELECT value FROM global_settings WHERE key = ?", [`priority_${rework_type || 'Minor'}`], (errPri, rowPri: any) => {
+            const priority = rowPri ? rowPri.value : 'Low';
+            const isHigh = priority === 'High';
+            if (!canAddRework(req as any, isHigh, allowGuest)) {
+                return res.status(403).json({ error: "You are not authorized to add this rework log (guests can only add low priority logs when allowed)." });
+            }
+
+            // 1. Get the PCB board_number
+            db.get("SELECT pcbs.*, projects.project_key, projects.number_format FROM pcbs LEFT JOIN projects ON pcbs.project_id = projects.id WHERE pcbs.id = ?", [pcb_id], (err: Error | null, row: any) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: "PCB not found" });
         
@@ -1145,10 +1225,15 @@ app.post('/api/reworks', upload.any(), deduplicate, serializeWrites, (req: Reque
             });
         });
     });
+        });
+    });
 });
 
 // --- Projects API Expansions ---
 app.put('/api/projects/:id', (req: Request, res: Response) => {
+    if (!isSuperUser(req as any)) {
+        return res.status(403).json({ error: "Only Super Users can update projects." });
+    }
     const { name, description, revisions, project_key, flavors, silicon_corners, number_format } = req.body;
     const cleanName = sanitizeProjectName(name);
 
@@ -1188,6 +1273,9 @@ app.put('/api/projects/:id', (req: Request, res: Response) => {
 });
 
 app.delete('/api/projects/:id', (req: Request, res: Response) => {
+    if (!isSuperUser(req as any)) {
+        return res.status(403).json({ error: "Only Super Users can delete projects." });
+    }
     db.run("DELETE FROM projects WHERE id = ?", [req.params.id], function(this: any, err: Error | null) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ deleted: this.changes });
@@ -1204,6 +1292,9 @@ app.get('/api/projects/:id/docs', (req: Request, res: Response) => {
 });
 
 app.post('/api/projects/:id/docs', upload.any(), (req: Request, res: Response) => {
+    if (!isSuperUser(req as any)) {
+        return res.status(403).json({ error: "Only Super Users can add project documents." });
+    }
     const projectId = req.params.id;
     db.get("SELECT name, project_key FROM projects WHERE id = ?", [projectId], (err: Error | null, project: any) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -1275,6 +1366,9 @@ app.post('/api/projects/:id/docs', upload.any(), (req: Request, res: Response) =
 });
 
 app.delete('/api/projects/:projectId/docs/:docId', (req: Request, res: Response) => {
+    if (!isSuperUser(req as any)) {
+        return res.status(403).json({ error: "Only Super Users can delete project documents." });
+    }
     const { projectId, docId } = req.params;
     db.get("SELECT * FROM project_docs WHERE id = ? AND project_id = ?", [docId, projectId], (err: Error | null, row: any) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -1353,7 +1447,11 @@ app.delete('/api/pcbs/:id/tags/:tag_id', (req: Request, res: Response) => {
     });
 });
 
-app.put('/api/pcbs/:id', (req: Request, res: Response) => {
+app.put('/api/pcbs/:id', async (req: Request, res: Response) => {
+    const authorized = await canUpdatePcb(req as any, parseInt(req.params.id));
+    if (!authorized) {
+        return res.status(403).json({ error: "You are not authorized to update this PCB because you do not own it." });
+    }
     const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id } = req.body;
     let numPart = board_number;
     if (board_number && board_number.includes('-')) {
@@ -1375,6 +1473,9 @@ app.put('/api/pcbs/:id', (req: Request, res: Response) => {
 });
 
 app.delete('/api/pcbs/:id', (req: Request, res: Response) => {
+    if (!isSuperUser(req as any)) {
+        return res.status(403).json({ error: "Only Super Users can delete PCBs." });
+    }
     const pcbId = parseInt(req.params.id as string, 10);
     const checkQuery = `
         SELECT 
@@ -1453,8 +1554,8 @@ app.delete('/api/owners/:id', (req: Request, res: Response) => {
 
 // --- OTP Reset Management (Super User Audit Logged) ---
 app.post('/api/owners/:id/reset-otp', (req: Request, res: Response) => {
-    const userRole = req.headers['x-user-role'];
-    if (userRole !== 'Super User') {
+    const user = (req as any).user;
+    if (!user || user.role !== 'Super User') {
         return res.status(403).json({ error: 'Only Super Users can initiate an OTP reset.' });
     }
 
@@ -1567,6 +1668,9 @@ app.get('/api/tags/:id/pcbs', (req: Request, res: Response) => {
 });
 
 app.put('/api/tags/:id', (req: Request, res: Response) => {
+    if (!isSuperUser(req as any)) {
+        return res.status(403).json({ error: "Only Super Users can update tags." });
+    }
     const { name, color, owner_id, type } = req.body;
     const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
     db.run("UPDATE tags SET name = ?, color = ?, owner_id = ?, type = ? WHERE id = ?", [name, color, finalOwnerId, type || 'public', req.params.id], function(this: any, err: Error | null) {
@@ -1576,6 +1680,9 @@ app.put('/api/tags/:id', (req: Request, res: Response) => {
 });
 
 app.delete('/api/tags/:id', (req: Request, res: Response) => {
+    if (!isSuperUser(req as any)) {
+        return res.status(403).json({ error: "Only Super Users can delete tags." });
+    }
     db.run("DELETE FROM tags WHERE id = ?", [req.params.id], function(this: any, err: Error | null) {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ deleted: this.changes });
@@ -1590,8 +1697,12 @@ app.get('/api/reworks/:id', (req: Request, res: Response) => {
     });
 });
 
-app.put('/api/reworks/:id', (req: Request, res: Response) => {
+app.put('/api/reworks/:id', async (req: Request, res: Response) => {
     const reworkId = parseInt(req.params.id as string, 10);
+    const authorized = await canUpdateRework(req as any, reworkId);
+    if (!authorized) {
+        return res.status(403).json({ error: "You are not authorized to update this rework log because you do not own it." });
+    }
     const { pcb_id, title, description, owner_id, rework_type, new_product } = req.body;
     const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
 
@@ -1622,8 +1733,12 @@ app.put('/api/reworks/:id', (req: Request, res: Response) => {
     });
 });
 
-app.delete('/api/reworks/:id', (req: Request, res: Response) => {
+app.delete('/api/reworks/:id', async (req: Request, res: Response) => {
     const reworkId = parseInt(req.params.id as string, 10);
+    const authorized = await canUpdateRework(req as any, reworkId);
+    if (!authorized) {
+        return res.status(403).json({ error: "You are not authorized to delete this rework log because you do not own it." });
+    }
     
     db.get("SELECT * FROM reworks WHERE id = ?", [reworkId], (err: Error | null, rework: any) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -1739,8 +1854,8 @@ app.get('/api/settings', (_req: Request, res: Response) => {
 });
 
 app.post('/api/settings', (req: Request, res: Response) => {
-    const userRole = req.headers['x-user-role'];
-    if (userRole !== 'Super User') {
+    const user = (req as any).user;
+    if (!user || user.role !== 'Super User') {
         return res.status(403).json({ error: 'Only Super Users can modify settings.' });
     }
 

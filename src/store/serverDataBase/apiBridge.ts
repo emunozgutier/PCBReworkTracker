@@ -1,5 +1,6 @@
 import { useDemoStore } from '../useDemoStore';
 import { useAppState } from '../useAppState';
+import { getSessionCookie } from '../../authentication/clientAuth';
 import demoData from './demoData.json';
 
 export const API_BASE = `http://${window.location.hostname}:5002/api`;
@@ -63,6 +64,12 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
         headers.set('X-User-Username', username);
         headers.set('X-User-Name', name);
         headers.set('X-User-Role', currentUserRole);
+
+        const token = getSessionCookie();
+        if (token) {
+            headers.set('Authorization', `Bearer ${token}`);
+            headers.set('X-Session-Token', token);
+        }
         
         return fetch(fullUrl, {
             ...options,

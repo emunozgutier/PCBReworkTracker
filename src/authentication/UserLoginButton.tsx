@@ -4,6 +4,7 @@ import { useAppState } from '../store/useAppState';
 import { useOwnerStore } from '../store/clientDataBase/useOwnerStore';
 import { Popup } from '../components/Popup';
 import { API_BASE, apiFetch } from '../store/serverDataBase/apiBridge';
+import { setSessionCookie } from './clientAuth';
 import './UserLoginButton.css';
 
 export function UserLoginButton() {
@@ -134,6 +135,10 @@ export function UserLoginButton() {
                 
                 if (!data.valid) {
                     throw new Error('Invalid 6-digit verification code. Please check your authenticator.');
+                }
+
+                if (data.token) {
+                    setSessionCookie(data.token, 7);
                 }
             } catch (err: any) {
                 setLoginError(err.message || 'Error verifying OTP code.');

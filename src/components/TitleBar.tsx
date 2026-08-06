@@ -1,5 +1,5 @@
 import { GithubLink } from './GithubLink';
-import { UserLoginButton } from '../login/UserLoginButton';
+import { UserLoginButton } from '../authentication/UserLoginButton';
 
 export function TitleBar() {
   const isDemoMode = typeof window !== 'undefined' && window.location.hostname.includes('github.io');
