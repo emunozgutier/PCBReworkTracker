@@ -12,9 +12,9 @@ describe('Rework POST /api/reworks Multipart Uploads', () => {
         formData.append('description', 'Vitest automated rework test');
         formData.append('status', 'Completed');
         
-        // Create a dummy image blob
-        const blob1 = new Blob(['dummy content 1'], { type: 'image/jpeg' });
-        const blob2 = new Blob(['dummy content 2'], { type: 'image/jpeg' });
+        // Create a dummy image blob with valid JPEG magic bytes
+        const blob1 = new Blob([new Uint8Array([0xFF, 0xD8, 0xFF]), 'dummy content 1'], { type: 'image/jpeg' });
+        const blob2 = new Blob([new Uint8Array([0xFF, 0xD8, 0xFF]), 'dummy content 2'], { type: 'image/jpeg' });
         
         formData.append('images', blob1, 'test1.jpg');
         formData.append('images', blob2, 'test2.jpg');

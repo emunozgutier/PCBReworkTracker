@@ -18,6 +18,12 @@ import {
     canAddPcb,
     canAddRework
 } from './serverAuth';
+import {
+    inputSanityCheckMiddleware,
+    fileSanityCheckMiddleware,
+    lockFileExecution,
+    lockDirectoryFiles
+} from './inputSanityChecker';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,6 +67,7 @@ app.use((_req, res, next) => {
     next();
 });
 app.use(apiLoggerMiddleware);
+app.use(inputSanityCheckMiddleware);
 
 // --- Request Deduplication & Serialization Middlewares ---
 interface CustomRequest extends Request {
@@ -462,6 +469,7 @@ db.all("SELECT project_docs.*, projects.project_key FROM project_docs LEFT JOIN 
                     if (fs.existsSync(oldFilePath)) {
                         fs.renameSync(oldFilePath, newFilePath);
                     }
+                    lockFileExecution(newFilePath);
                     const newRelativePath = `/docs/${projectKey}/${cleanFilename}`;
                     db.run("UPDATE project_docs SET path = ? WHERE id = ?", [newRelativePath, doc.id]);
                     console.log(`[Migration Docs] Moved and renamed ${oldFilename} to docs/${projectKey}/${cleanFilename}`);
@@ -499,6 +507,7 @@ db.all("SELECT reworks.id, reworks.image_path, projects.project_key FROM reworks
                         if (fs.existsSync(oldFilePath)) {
                             fs.renameSync(oldFilePath, newFilePath);
                         }
+                        lockFileExecution(newFilePath);
                         updated = true;
                         return `/pictures/${projectKey}/${filename}`;
                     } catch (e: any) {
@@ -515,6 +524,10 @@ db.all("SELECT reworks.id, reworks.image_path, projects.project_key FROM reworks
         });
     }
 });
+
+    // Lock all files in docs and pictures to prevent execution
+    lockDirectoryFiles(path.join(__dirname, 'docs'));
+    lockDirectoryFiles(path.join(__dirname, 'pictures'));
 
     // Start Server
     app.listen(port, () => {
@@ -1141,7 +1154,7 @@ app.get('/api/reworks', (_req: Request, res: Response) => {
     });
 });
 
-app.post('/api/reworks', upload.any(), deduplicate, serializeWrites, (req: Request, res: Response) => {
+app.post('/api/reworks', upload.any(), fileSanityCheckMiddleware, deduplicate, serializeWrites, (req: Request, res: Response) => {
     const { pcb_id, title, description, owner_id, rework_type, new_product, new_silicon_rev, new_silicon_corner } = req.body;
     
     db.get("SELECT value FROM global_settings WHERE key = 'allowGuestMinorRework'", [], (errSettings, rowSettings: any) => {
@@ -1195,6 +1208,7 @@ app.post('/api/reworks', upload.any(), deduplicate, serializeWrites, (req: Reque
                     try {
                         if (fs.existsSync(oldPath)) {
                             fs.renameSync(oldPath, newPath);
+                            lockFileExecution(newPath);
                             finalPaths.push(`/pictures/${projectKey}/${newFileName}`);
                         }
                     } catch (errRename) {
@@ -1291,7 +1305,7 @@ app.get('/api/projects/:id/docs', (req: Request, res: Response) => {
     });
 });
 
-app.post('/api/projects/:id/docs', upload.any(), (req: Request, res: Response) => {
+app.post('/api/projects/:id/docs', upload.any(), fileSanityCheckMiddleware, (req: Request, res: Response) => {
     if (!isSuperUser(req as any)) {
         return res.status(403).json({ error: "Only Super Users can add project documents." });
     }
@@ -1329,6 +1343,7 @@ app.post('/api/projects/:id/docs', upload.any(), (req: Request, res: Response) =
                 try {
                     if (fs.existsSync(oldPath)) {
                         fs.renameSync(oldPath, newPath);
+                        lockFileExecution(newPath);
                         const relativePath = `/docs/${projectKey}/${newFileName}`;
                         
                         db.run(
