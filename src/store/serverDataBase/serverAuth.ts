@@ -47,7 +47,7 @@ export function verifyToken(token: string): any | null {
 /**
  * Express middleware to authenticate token from Cookie or Headers
  */
-export function authenticateToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export function authenticateToken(req: AuthenticatedRequest, _res: Response, next: NextFunction) {
     let token: string | null = null;
 
     // 1. Try to read from Authorization header
@@ -111,7 +111,7 @@ export function authenticateToken(req: AuthenticatedRequest, res: Response, next
         };
 
         if (req.user.username && req.user.username !== 'guest' && req.user.username !== 'admin') {
-            db.get("SELECT id FROM owners WHERE username = ?", [req.user.username.replace(/\s+/g, '').toLowerCase()], (err, row: any) => {
+            db.get("SELECT id FROM owners WHERE username = ?", [req.user.username.replace(/\s+/g, '').toLowerCase()], (err: Error | null, row: any) => {
                 if (!err && row) {
                     req.user!.id = row.id;
                 }
@@ -149,7 +149,7 @@ export function canUpdatePcb(req: AuthenticatedRequest, pcbId: number): Promise<
         if (req.user.role === 'Super User') return resolve(true);
 
         // Check if the user is the owner of the PCB
-        db.get("SELECT owner_id FROM pcbs WHERE id = ?", [pcbId], (err, row: any) => {
+        db.get("SELECT owner_id FROM pcbs WHERE id = ?", [pcbId], (err: Error | null, row: any) => {
             if (err || !row) return resolve(false);
             // Compare owners. Since req.user.id can be number or string (from SQLite), compare as strings
             resolve(String(row.owner_id) === String(req.user?.id));
@@ -166,7 +166,7 @@ export function canUpdateRework(req: AuthenticatedRequest, reworkId: number): Pr
         if (req.user.role === 'Super User') return resolve(true);
 
         // Check if the user is the owner of the Rework
-        db.get("SELECT owner_id FROM reworks WHERE id = ?", [reworkId], (err, row: any) => {
+        db.get("SELECT owner_id FROM reworks WHERE id = ?", [reworkId], (err: Error | null, row: any) => {
             if (err || !row) return resolve(false);
             resolve(String(row.owner_id) === String(req.user?.id));
         });

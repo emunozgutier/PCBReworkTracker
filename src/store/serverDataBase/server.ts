@@ -54,7 +54,7 @@ const upload = multer({ storage: storage });
 
 // Middleware
 app.use(cors({
-    origin: (origin, callback) => callback(null, true),
+    origin: (_origin, callback) => callback(null, true),
     credentials: true
 }));
 app.use(authenticateToken as any);
@@ -890,7 +890,7 @@ function generateSecret(): string {
 
 function getUserRole(ownerId: number): Promise<'Super User' | 'User'> {
     return new Promise((resolve) => {
-        db.all("SELECT id FROM owners ORDER BY id ASC", [], (err, rows: any[]) => {
+        db.all("SELECT id FROM owners ORDER BY id ASC", [], (err: Error | null, rows: any[]) => {
             if (err || !rows || rows.length === 0) return resolve('User');
             const isOnlyUser = rows.length === 1;
             const minId = rows[0].id;
@@ -1157,9 +1157,9 @@ app.get('/api/reworks', (_req: Request, res: Response) => {
 app.post('/api/reworks', upload.any(), fileSanityCheckMiddleware, deduplicate, serializeWrites, (req: Request, res: Response) => {
     const { pcb_id, title, description, owner_id, rework_type, new_product, new_silicon_rev, new_silicon_corner } = req.body;
     
-    db.get("SELECT value FROM global_settings WHERE key = 'allowGuestMinorRework'", [], (errSettings, rowSettings: any) => {
+    db.get("SELECT value FROM global_settings WHERE key = 'allowGuestMinorRework'", [], (_errSettings: Error | null, rowSettings: any) => {
         const allowGuest = !rowSettings || rowSettings.value === 'true';
-        db.get("SELECT value FROM global_settings WHERE key = ?", [`priority_${rework_type || 'Minor'}`], (errPri, rowPri: any) => {
+        db.get("SELECT value FROM global_settings WHERE key = ?", [`priority_${rework_type || 'Minor'}`], (_errPri: Error | null, rowPri: any) => {
             const priority = rowPri ? rowPri.value : 'Low';
             const isHigh = priority === 'High';
             if (!canAddRework(req as any, isHigh, allowGuest)) {
@@ -1463,7 +1463,7 @@ app.delete('/api/pcbs/:id/tags/:tag_id', (req: Request, res: Response) => {
 });
 
 app.put('/api/pcbs/:id', async (req: Request, res: Response) => {
-    const authorized = await canUpdatePcb(req as any, parseInt(req.params.id));
+    const authorized = await canUpdatePcb(req as any, parseInt(req.params.id as string));
     if (!authorized) {
         return res.status(403).json({ error: "You are not authorized to update this PCB because you do not own it." });
     }
