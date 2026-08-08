@@ -1,7 +1,7 @@
 import { useDemoStore } from '../useDemoStore';
 import { useAppState } from '../useAppState';
 import { getSessionCookie } from '../../authentication/clientAuth';
-import demoData from './demoData.json';
+import demoData from './data/demoData.json';
 
 export const API_BASE = `http://${window.location.hostname}:5002/api`;
 

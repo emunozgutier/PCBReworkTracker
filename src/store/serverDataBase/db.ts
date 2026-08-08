@@ -6,7 +6,7 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbPath = path.resolve(__dirname, 'pcb_tracker.db');
+const dbPath = path.resolve(__dirname, 'data', 'pcb_tracker.db');
 
 let dbInstance: sqlite3.Database = new sqlite3.Database(dbPath);
 dbInstance.configure("busyTimeout", 10000);
@@ -252,7 +252,7 @@ const initDb = async (): Promise<void> => {
                 dbInstance.get("SELECT COUNT(*) as count FROM projects", (_errCount, rowCount: any) => {
                     if (rowCount && rowCount.count === 0) {
                         console.log("Database projects table is empty. Checking for data.sql recovery...");
-                        const sqlPath = path.resolve(__dirname, 'data.sql');
+                        const sqlPath = path.resolve(__dirname, 'data', 'data.sql');
                         if (fs.existsSync(sqlPath)) {
                             console.log("Recovering database from data.sql...");
                             try {
