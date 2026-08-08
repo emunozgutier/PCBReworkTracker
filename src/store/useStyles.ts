@@ -1,18 +1,14 @@
 export const COLORS = {
     // Purple Variants (Silicon Swap / Hex Checksums / Accents)
     purple: '#a855f7',
-    purpleLight: 'rgba(168, 85, 247, 0.1)',
     purpleMedium: 'rgba(168, 85, 247, 0.15)',
-    purpleDark: 'rgba(168, 85, 247, 0.2)',
     purpleBorder: 'rgba(168, 85, 247, 0.4)',
     indigoFill: 'rgba(99, 102, 241, 0.3)',
     purpleAccent: '#8b5cf6',
     
     // Orange Variants (Resistor Swaps / Options)
     orange: '#f97316',
-    orangeLight: 'rgba(249, 115, 22, 0.1)',
     orangeMedium: 'rgba(249, 115, 22, 0.15)',
-    orangeDark: 'rgba(249, 115, 22, 0.2)',
     orangeBorder: 'rgba(249, 115, 22, 0.4)',
     
     // Amber Variants (Silicon Corners)
