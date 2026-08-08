@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const API_URL = 'http://localhost:5002/api';
-const dbPath = path.resolve(__dirname, '../src/store/serverDataBase/pcb_tracker.db');
+const dbPath = path.resolve(__dirname, '../src/store/serverDataBase/data/pcb_tracker.db');
 
 function getDbConnection() {
     const conn = new sqlite3.Database(dbPath);
