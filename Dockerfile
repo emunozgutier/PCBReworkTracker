@@ -36,5 +36,5 @@ EXPOSE 5002
 
 # Run the static frontend with 'serve' and the Express API server concurrently
 # Using 'serve' instead of 'vite preview' avoids gzip corruption issues through Docker port mapping
-CMD ["npx", "concurrently", "npx tsx src/store/serverDataBase/server.ts", "npx serve dist --listen 5001"]
+CMD ["npx", "concurrently", "npx tsx src/store/serverDataBase/server.ts", "npx serve dist --listen 5001 --single"]
 
