@@ -31,5 +31,7 @@ RUN npm run build -- --base=/
 EXPOSE 5001
 EXPOSE 5002
 
-# Run Vite in preview mode and the Express API server concurrently
-CMD ["npx", "concurrently", "npx tsx src/store/serverDataBase/server.ts", "npx vite preview --host 0.0.0.0 --port 5001"]
+# Run the static frontend with 'serve' and the Express API server concurrently
+# Using 'serve' instead of 'vite preview' avoids gzip corruption issues through Docker port mapping
+CMD ["npx", "concurrently", "npx tsx src/store/serverDataBase/server.ts", "npx serve dist --listen 5001"]
+
