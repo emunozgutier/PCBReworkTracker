@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import { db } from './db';
+import { db } from '../store/serverDataBase/db';
 
 const SECRET = 'pcb-rework-tracker-secure-secret-key-12345';
 

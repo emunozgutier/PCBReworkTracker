@@ -17,7 +17,7 @@ import {
     canUpdateRework,
     canAddPcb,
     canAddRework
-} from './serverAuth';
+} from '../../authentication/serverAuth';
 import {
     inputSanityCheckMiddleware,
     fileSanityCheckMiddleware,
