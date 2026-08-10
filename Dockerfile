@@ -14,11 +14,12 @@ WORKDIR /usr/src/app
 # Copy package configuration files
 COPY package*.json ./
 
+# Force native modules (sqlite3) to always compile from source
+# This avoids prebuilt binary GLIBC version mismatches
+ENV npm_config_build_from_source=true
+
 # Install dependencies (including devDependencies for building the frontend)
 RUN npm ci
-
-# Rebuild sqlite3 from source to match the container's GLIBC version
-RUN npm rebuild sqlite3 --build-from-source
 
 # Copy the rest of the application files
 COPY . .
