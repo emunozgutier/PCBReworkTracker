@@ -24,7 +24,8 @@ export default defineConfig(({ command }) => {
       babel({ presets: [reactCompilerPreset()] })
     ],
     // Automatically use repository name only in production builds (GitHub Pages)
-    base: command === 'build' ? '/Rework-Tracker/' : '/',
+    // BASE_PATH env var lets Docker override the base (default: /Rework-Tracker/ for GitHub Pages)
+    base: process.env.BASE_PATH ?? (command === 'build' ? '/Rework-Tracker/' : '/'),
     define: {
       __LOCAL_IPS__: JSON.stringify(getLocalIps()),
       __PORT__: 5001,

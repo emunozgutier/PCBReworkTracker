@@ -24,8 +24,11 @@ RUN npm ci
 # Copy the rest of the application files
 COPY . .
 
-# Build the React frontend (use / as base since Docker doesn't need the GitHub Pages sub-path)
-RUN npm run build -- --base=/
+# Set base path to / for Docker (GitHub Pages uses /Rework-Tracker/)
+ENV BASE_PATH=/
+
+# Build the React frontend
+RUN npm run build
 
 # Expose Vite preview port and Express backend port
 EXPOSE 5001
