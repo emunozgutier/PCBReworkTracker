@@ -17,6 +17,9 @@ COPY package*.json ./
 # Install dependencies (including devDependencies for building the frontend)
 RUN npm ci
 
+# Rebuild sqlite3 from source to match the container's GLIBC version
+RUN npm rebuild sqlite3 --build-from-source
+
 # Copy the rest of the application files
 COPY . .
 
