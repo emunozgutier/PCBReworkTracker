@@ -23,85 +23,7 @@ Built with a **React + TypeScript + Vite** frontend against an **Express.js + SQ
 
 ---
 
-## 🐳 Running with Podman (Recommended)
-
-No need to clone the repository — Podman downloads and builds everything directly from GitHub.
-
-### Prerequisites
-
-- [Podman](https://podman.io/docs/installation) installed on your machine.
-
-### First-time setup
-
-**1. Initialize and start the Podman Linux VM** *(one-time only)*
-```bash
-podman machine init
-podman machine start
-```
-
-**2. Build the image from GitHub**
-```bash
-podman build https://github.com/emunozgutier/Rework-Tracker.git -t rework-tracker
-```
-
-**3. Run the container**
-```powershell
-# Windows (PowerShell)
-mkdir "C:\podman\rework-tracker"
-podman run -d `
-  --name rework-tracker-app `
-  -p 5001:5001 `
-  -p 5002:5002 `
-  -v "C:\podman\rework-tracker:/usr/src/app/src/store/serverDataBase/data:Z" `
-  --restart unless-stopped `
-  rework-tracker
-```
-```bash
-# macOS / Linux
-podman run -d \
-  --name rework-tracker-app \
-  -p 5001:5001 \
-  -p 5002:5002 \
-  -v "$HOME/rework-tracker-data:/usr/src/app/src/store/serverDataBase/data:Z" \
-  --restart unless-stopped \
-  rework-tracker
-```
-
-The database file will be saved to `C:\podman\rework-tracker\` (Windows) or `~/rework-tracker-data/` (macOS/Linux).
-
-Open **http://localhost:5001** in your browser.
-
-### Updating to the latest version
-
-```bash
-podman stop rework-tracker-app
-podman rm rework-tracker-app
-podman build --no-cache https://github.com/emunozgutier/Rework-Tracker.git -t rework-tracker
-
-# Then re-run using the same `podman run` command from Step 3 above
-```
-
-### Useful Podman commands
-
-```bash
-# Check if the container is running
-podman ps
-
-# View live logs
-podman logs -f rework-tracker-app
-
-# Stop the container
-podman stop rework-tracker-app
-
-# Start it again (without rebuilding)
-podman start rework-tracker-app
-```
-
----
-
-## 🛠️ Local Development
-
-For active development, run the frontend and backend together:
+## 🛠️ Getting Started
 
 **1. Clone the repository**
 ```bash
@@ -114,7 +36,7 @@ cd Rework-Tracker
 npm install
 ```
 
-**3. Start the dev servers**
+**3. Start the app**
 ```bash
 npm run dev
 ```
@@ -145,10 +67,8 @@ src/store/                    # Zustand state files linking React to the backend
 src/store/serverDataBase/
   ├── server.ts               # Express backend serving the REST API endpoints
   ├── db.ts                   # Database schema configuration and migration logic
-  └── data/                   # SQLite database file (persisted on host via volume mount)
+  └── data/                   # SQLite database file
 tests/                        # Vitest integration test files
-Dockerfile                    # Container build file
-docker-compose.yml            # Container orchestration config
 ```
 
 ---
