@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   rework-tracker:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.github
     container_name: rework-tracker-app
     ports:
       - "5001:5001"
