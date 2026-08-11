@@ -2,7 +2,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Click%20Here-success?style=for-the-badge)](https://emunozgutier.github.io/Rework-Tracker/)
 
-A full-stack tracking application designed to simplify the management of projects, Printed Circuit Boards (PCBs), and hardware rework histories. 
+A full-stack tracking application designed to simplify the management of projects, Printed Circuit Boards (PCBs), and hardware rework histories.
 
 Built with a **React + TypeScript + Vite** frontend against an **Express.js + SQLite** backend, designed entirely around a sleek, modern, dark-purple interface.
 
@@ -21,42 +21,131 @@ Built with a **React + TypeScript + Vite** frontend against an **Express.js + SQ
 - **Database:** SQLite (`pcb_tracker.db`) running with enforced `PRAGMA foreign_keys = ON` and `COLLATE NOCASE` index scoping.
 - **Testing:** Vitest & JSDOM (`start-server-and-test`)
 
-## 🛠️ Getting Started
+---
 
-First, install the necessary dependencies if you haven't already:
+## 🐳 Running with Podman (Recommended)
+
+This is the recommended way to run the app in production. The container pulls the latest code directly from GitHub — no local clone required.
+
+### Prerequisites
+
+- [Podman](https://podman.io/docs/installation) installed on your machine.
+
+### First-time setup
+
+**1. Initialize and start the Podman Linux VM** *(one-time only)*
+```bash
+podman machine init
+podman machine start
+```
+
+**2. Build the image** *(pulls latest code from GitHub)*
+```bash
+podman build -f Dockerfile.github -t rework-tracker .
+```
+
+**3. Run the container**
+```powershell
+# Windows (PowerShell)
+podman run -d `
+  --name rework-tracker-app `
+  -p 5001:5001 `
+  -p 5002:5002 `
+  -v "${PWD}/src/store/serverDataBase/data:/usr/src/app/src/store/serverDataBase/data:Z" `
+  --restart unless-stopped `
+  rework-tracker
+```
+```bash
+# macOS / Linux
+podman run -d \
+  --name rework-tracker-app \
+  -p 5001:5001 \
+  -p 5002:5002 \
+  -v "$(pwd)/src/store/serverDataBase/data:/usr/src/app/src/store/serverDataBase/data:Z" \
+  --restart unless-stopped \
+  rework-tracker
+```
+
+Open **http://localhost:5001** in your browser.
+
+### Updating to the latest version
+
+Push your changes to GitHub first, then rebuild:
+```bash
+podman stop rework-tracker-app
+podman rm rework-tracker-app
+podman build --no-cache -f Dockerfile.github -t rework-tracker .
+
+# Then re-run using the same `podman run` command from Step 3 above
+```
+
+### Useful Podman commands
+
+```bash
+# Check if the container is running
+podman ps
+
+# View live logs
+podman logs -f rework-tracker-app
+
+# Stop the container
+podman stop rework-tracker-app
+
+# Start it again (without rebuilding)
+podman start rework-tracker-app
+```
+
+---
+
+## 🛠️ Local Development
+
+For active development, run the frontend and backend together:
+
+**1. Install dependencies**
 ```bash
 npm install
 ```
 
-### Running the App (Development)
-
-We've configured the project with the `concurrently` package, making it incredibly simple to run both your frontend UI and your backend database server together!
-
+**2. Start the dev servers**
 ```bash
 npm run dev
 ```
-*This command opens two streams in one terminal:*
-1. Starts the **Express backend server** on `http://localhost:5002`
-2. Starts the **Vite frontend server** on `http://localhost:5173` (Open this in your browser)
+
+*This starts two servers concurrently:*
+1. **Express backend** → `http://localhost:5002`
+2. **Vite frontend** → `http://localhost:5001` *(open this in your browser)*
+
+---
 
 ## 🧪 Integration Testing
 
 The application features a fully automated integration test suite that proves the database constraints (duplication prevention, foreign-key blocks, cascading teardowns) work flawlessly.
 
-To run the tests:
 ```bash
 npm run test
 ```
-*This smart command uses `start-server-and-test` to automatically spin up a temporary ghost backend, wait for it to be ready, run all Vitest integration suites against the temporary database connections, and safely shut down the instance afterward!*
+
+*Uses `start-server-and-test` to automatically spin up a temporary ghost backend, run all Vitest integration suites against a temporary database, and safely shut everything down afterward.*
+
+---
 
 ## 📦 Project Structure
-- `src/` (Frontend React logic, Styles, and UI Pages)
-- `src/store/` (Zustand state files linking React to the Backend)
-- `src/store/serverDataBase/server.ts` (Express backend serving the REST API endpoints)
-- `src/store/serverDataBase/db.ts` (Database schema configuration and migration logic)
-- `tests/` (Vitest integration files)
+
+```
+src/                          # Frontend React logic, styles, and UI pages
+src/store/                    # Zustand state files linking React to the backend
+src/store/serverDataBase/
+  ├── server.ts               # Express backend serving the REST API endpoints
+  ├── db.ts                   # Database schema configuration and migration logic
+  └── data/                   # SQLite database file (persisted on host via volume mount)
+tests/                        # Vitest integration test files
+Dockerfile                    # Builds from local source (dev use)
+Dockerfile.github             # Builds by cloning latest code from GitHub (production use)
+docker-compose.yml            # Container orchestration config
+```
+
+---
 
 ## 📝 Attribution
 
 The PCB parser in this application was adapted from the GitHub repository **board ripper** (which appears to have sourced its parsing logic from **KiCad**).
-
