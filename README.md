@@ -47,6 +47,7 @@ podman build https://github.com/emunozgutier/Rework-Tracker.git -t rework-tracke
 **3. Run the container**
 ```powershell
 # Windows (PowerShell)
+mkdir "C:\podman\rework-tracker"
 podman run -d `
   --name rework-tracker-app `
   -p 5001:5001 `
