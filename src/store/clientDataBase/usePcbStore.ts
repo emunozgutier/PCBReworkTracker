@@ -14,6 +14,7 @@ export interface Pcb {
     owner_username?: string;
     product: string;
     board_flavor?: string;
+    board_flavor_id?: number | null;
     board_rev?: string;
     silicon_rev?: string;
     silicon_corner?: string;

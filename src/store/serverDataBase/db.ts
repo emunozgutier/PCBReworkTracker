@@ -214,6 +214,26 @@ const initDb = async (): Promise<void> => {
         dbInstance.run(`ALTER TABLE pcbs ADD COLUMN silicon_rev TEXT`, () => {});
         dbInstance.run(`ALTER TABLE pcbs ADD COLUMN silicon_corner TEXT`, () => {});
         dbInstance.run(`ALTER TABLE pcbs ADD COLUMN short_code TEXT`, () => {});
+        // Migration: Add board_flavor_id FK column to pcbs if it doesn't exist, then backfill
+        dbInstance.run(`ALTER TABLE pcbs ADD COLUMN board_flavor_id INTEGER REFERENCES pcb_flavors(id)`, () => {
+            // Backfill: for each pcb row that has a board_flavor string but no board_flavor_id yet,
+            // find the matching pcb_flavors row (same project) and set the FK.
+            dbInstance.run(`
+                UPDATE pcbs
+                SET board_flavor_id = (
+                    SELECT pf.id FROM pcb_flavors pf
+                    WHERE pf.project_id = pcbs.project_id
+                      AND pf.name = pcbs.board_flavor
+                    LIMIT 1
+                )
+                WHERE board_flavor IS NOT NULL
+                  AND board_flavor != ''
+                  AND board_flavor_id IS NULL
+            `, (err: Error | null) => {
+                if (err) console.error("Migration board_flavor_id backfill error:", err.message);
+                else console.log("Migration board_flavor_id: backfill complete.");
+            });
+        });
         
         // Migration: Add email column to owners if it doesn't exist
         dbInstance.run(`ALTER TABLE owners ADD COLUMN email TEXT`, () => {});

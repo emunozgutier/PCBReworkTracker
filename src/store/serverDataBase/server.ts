@@ -779,11 +779,14 @@ app.post('/api/projects', async (req: Request, res: Response) => {
 // PCBs API
 app.get('/api/pcbs', (_req: Request, res: Response) => {
     const query = `
-        SELECT pcbs.*, projects.name as project_name, projects.project_key, projects.number_format as number_format, owners.name as owner_name, owners.username as owner_username,
+        SELECT pcbs.*, projects.name as project_name, projects.project_key, projects.number_format as number_format,
+               owners.name as owner_name, owners.username as owner_username,
+               pf.name as flavor_name_fk,
                (SELECT GROUP_CONCAT(tag_id) FROM pcb_tags WHERE pcb_id = pcbs.id) as tag_ids
-        FROM pcbs 
+        FROM pcbs
         LEFT JOIN projects ON pcbs.project_id = projects.id
         LEFT JOIN owners ON pcbs.owner_id = owners.id
+        LEFT JOIN pcb_flavors pf ON pcbs.board_flavor_id = pf.id
     `;
     db.all(query, [], (err: Error | null, rows: any[]) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -803,6 +806,9 @@ app.get('/api/pcbs', (_req: Request, res: Response) => {
                 fullBoardName = `${row.project_key}-${formattedNum}${generatedCrc}`;
             }
 
+            // Resolve flavor name: prefer the FK-joined name, fall back to stored text string
+            const resolvedFlavor = row.flavor_name_fk || row.board_flavor || '';
+
             return {
                 id: row.id,
                 board_number: fullBoardName,
@@ -812,8 +818,9 @@ app.get('/api/pcbs', (_req: Request, res: Response) => {
                 number_format: row.number_format || 'decimal',
                 owner: row.owner_name || 'Unassigned',
                 owner_username: row.owner_username || undefined,
-                product: [row.board_flavor, row.board_rev, row.silicon_rev, row.silicon_corner].filter(Boolean).join(' ') || '',
-                board_flavor: row.board_flavor || '',
+                product: [resolvedFlavor, row.board_rev, row.silicon_rev, row.silicon_corner].filter(Boolean).join(' ') || '',
+                board_flavor: resolvedFlavor,
+                board_flavor_id: row.board_flavor_id || null,
                 board_rev: row.board_rev || '',
                 silicon_rev: row.silicon_rev || '',
                 silicon_corner: row.silicon_corner || '',
@@ -845,10 +852,19 @@ app.post('/api/pcbs', async (req: Request, res: Response) => {
     try {
         const short_code = await generateShortCode();
         const creator = req.headers['x-user-username'] || 'guest';
-        const query = "INSERT INTO pcbs (board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, created_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)";
-        db.run(query, [numPart, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, creator, creator], function(this: any, err: Error | null) {
-            if (err) return res.status(500).json({ error: err.message });
-            res.status(201).json({ id: this.lastID, board_number, short_code });
+        // Resolve flavor name to FK id
+        const resolveFlavorId = (cb: (id: number | null) => void) => {
+            if (!board_flavor || !project_id) return cb(null);
+            db.get("SELECT id FROM pcb_flavors WHERE project_id = ? AND name = ? LIMIT 1", [project_id, board_flavor], (e: Error | null, row: any) => {
+                cb(row ? row.id : null);
+            });
+        };
+        resolveFlavorId((board_flavor_id) => {
+            const query = "INSERT INTO pcbs (board_number, status, board_flavor, board_flavor_id, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, created_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)";
+            db.run(query, [numPart, status, board_flavor, board_flavor_id, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, creator, creator], function(this: any, err: Error | null) {
+                if (err) return res.status(500).json({ error: err.message });
+                res.status(201).json({ id: this.lastID, board_number, short_code });
+            });
         });
     } catch (err: any) {
         res.status(500).json({ error: err.message });
@@ -1299,14 +1315,49 @@ app.put('/api/projects/:id', (req: Request, res: Response) => {
                 return res.status(500).json({ error: errUpdate.message });
             }
             
-            db.run("DELETE FROM pcb_flavors WHERE project_id = ?", [req.params.id], () => {
-                if (flavors && flavors.length > 0) {
-                    flavors.forEach((f: any) => {
-                        db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [req.params.id, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])], (errFlavor: Error | null) => {
-                            if (errFlavor) console.error("Error inserting flavor (PUT):", errFlavor.message, f);
-                        });
+            // Before replacing flavors, detect renames by comparing old vs new names by position.
+            // Propagate any rename to existing PCBs so board_flavor stays in sync.
+            db.all("SELECT name FROM pcb_flavors WHERE project_id = ? ORDER BY rowid ASC", [req.params.id], (errOld: Error | null, oldFlavors: any[]) => {
+                const newFlavors: any[] = (flavors && flavors.length > 0) ? flavors : [];
+
+                // Build list of renames: { oldName, newName }
+                const renames: { oldName: string; newName: string }[] = [];
+                if (!errOld && oldFlavors) {
+                    oldFlavors.forEach((oldF, idx) => {
+                        const newF = newFlavors[idx];
+                        if (newF && oldF.name && newF.name && oldF.name !== newF.name) {
+                            renames.push({ oldName: oldF.name, newName: newF.name });
+                        }
                     });
                 }
+
+                // Apply renames to pcbs in this project
+                const applyRenames = (done: () => void) => {
+                    if (renames.length === 0) return done();
+                    let pending = renames.length;
+                    renames.forEach(({ oldName, newName }) => {
+                        db.run(
+                            "UPDATE pcbs SET board_flavor = ? WHERE board_flavor = ? AND project_id = ?",
+                            [newName, oldName, req.params.id],
+                            (errRename: Error | null) => {
+                                if (errRename) console.error("Error renaming board_flavor on pcbs:", errRename.message);
+                                if (--pending === 0) done();
+                            }
+                        );
+                    });
+                };
+
+                applyRenames(() => {
+                    db.run("DELETE FROM pcb_flavors WHERE project_id = ?", [req.params.id], () => {
+                        if (newFlavors.length > 0) {
+                            newFlavors.forEach((f: any) => {
+                                db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [req.params.id, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])], (errFlavor: Error | null) => {
+                                    if (errFlavor) console.error("Error inserting flavor (PUT):", errFlavor.message, f);
+                                });
+                            });
+                        }
+                    });
+                });
             });
 
             const changes = this.changes;
@@ -1439,7 +1490,15 @@ app.delete('/api/projects/:projectId/docs/:docId', (req: Request, res: Response)
 
 // --- PCBs API Expansions ---
 app.get('/api/pcbs/:id', (req: Request, res: Response) => {
-    db.get("SELECT pcbs.*, projects.project_key, projects.number_format FROM pcbs LEFT JOIN projects ON pcbs.project_id = projects.id WHERE pcbs.id = ?", [req.params.id], (err: Error | null, row: any) => {
+    const singleQuery = `
+        SELECT pcbs.*, projects.project_key, projects.number_format,
+               pf.name as flavor_name_fk
+        FROM pcbs
+        LEFT JOIN projects ON pcbs.project_id = projects.id
+        LEFT JOIN pcb_flavors pf ON pcbs.board_flavor_id = pf.id
+        WHERE pcbs.id = ?
+    `;
+    db.get(singleQuery, [req.params.id], (err: Error | null, row: any) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: "PCB not found" });
 
@@ -1456,6 +1515,8 @@ app.get('/api/pcbs/:id', (req: Request, res: Response) => {
             }
             row.board_number = `${row.project_key}-${formattedNum}${generatedCrc}`;
         }
+        // Resolve flavor name from FK, fall back to stored text
+        row.board_flavor = row.flavor_name_fk || row.board_flavor || '';
         res.json(row);
     });
 });
@@ -1510,10 +1571,19 @@ app.put('/api/pcbs/:id', async (req: Request, res: Response) => {
         if (!isNaN(val)) numPart = val.toString();
     }
     const editor = req.headers['x-user-username'] || 'guest';
-    const query = "UPDATE pcbs SET board_number = ?, status = ?, board_flavor = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ?, bom = ?, project_id = ?, owner_id = ?, updated_by = ? WHERE id = ?";
-    db.run(query, [numPart, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, editor, req.params.id], function(this: any, err: Error | null) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ updated: this.changes });
+    // Resolve flavor name to FK id
+    const resolveFlavorId = (cb: (id: number | null) => void) => {
+        if (!board_flavor || !project_id) return cb(null);
+        db.get("SELECT id FROM pcb_flavors WHERE project_id = ? AND name = ? LIMIT 1", [project_id, board_flavor], (e: Error | null, row: any) => {
+            cb(row ? row.id : null);
+        });
+    };
+    resolveFlavorId((board_flavor_id) => {
+        const query = "UPDATE pcbs SET board_number = ?, status = ?, board_flavor = ?, board_flavor_id = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ?, bom = ?, project_id = ?, owner_id = ?, updated_by = ? WHERE id = ?";
+        db.run(query, [numPart, status, board_flavor, board_flavor_id, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, editor, req.params.id], function(this: any, err: Error | null) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ updated: this.changes });
+        });
     });
 });
 
