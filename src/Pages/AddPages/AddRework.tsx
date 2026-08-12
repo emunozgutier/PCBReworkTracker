@@ -154,8 +154,10 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
     }, [selectedId, fetchOwners]);
 
     useEffect(() => {
-        if (currentUser && currentUserRole === 'User') {
+        if (currentUser) {
             setOwnerId(currentUser.id.toString());
+        } else {
+            setOwnerId('-1');
         }
     }, [currentUser, currentUserRole]);
 
@@ -503,7 +505,7 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                         id="owner" 
                         value={ownerId} 
                         onChange={(e) => setOwnerId(e.target.value)}
-                        disabled={currentUserRole === 'User'}
+                        disabled={true}
                     >
                         <option value="-1">-- Unassigned --</option>
                         {owners.map(o => <option key={o.id} value={o.id.toString()}>@{o.username}</option>)}

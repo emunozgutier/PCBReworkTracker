@@ -295,7 +295,7 @@ export function EditRework({ id, onBack, onSuccess }: EditReworkProps) {
                         id="owner" 
                         value={ownerId} 
                         onChange={(e) => setOwnerId(e.target.value)}
-                        disabled={currentUserRole === 'User'}
+                        disabled={true}
                     >
                         <option value="-1">-- Unassigned --</option>
                         {owners.map(o => <option key={o.id} value={o.id.toString()}>@{o.username}</option>)}
