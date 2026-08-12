@@ -280,22 +280,51 @@ app.use('/api/docs', express.static(path.join(__dirname, 'docs')));
 // Initialize Database
 initDb().then(() => {
     // Ensure all demo projects in the database have BBB-SCH.pdf and BBB.brd documents
-    db.all("SELECT id FROM projects", [], (errProj: Error | null, projects: any[]) => {
+    db.all("SELECT id, project_key FROM projects", [], (errProj: Error | null, projects: any[]) => {
         if (!errProj && projects) {
             projects.forEach((p) => {
                 const projectId = p.id;
+                const projectKey = p.project_key || 'PRJ';
+                const targetDir = path.join(__dirname, 'docs', projectKey);
+                if (!fs.existsSync(targetDir)) {
+                    fs.mkdirSync(targetDir, { recursive: true });
+                }
+
+                // Copy default documents from public/docs if they are missing locally
+                const publicDocsDir = path.join(__dirname, '..', '..', '..', 'public', 'docs');
+                const copyIfMissing = (filename: string) => {
+                    const destPath = path.join(targetDir, filename);
+                    if (!fs.existsSync(destPath)) {
+                        const srcPath = path.join(publicDocsDir, filename);
+                        if (fs.existsSync(srcPath)) {
+                            try {
+                                fs.copyFileSync(srcPath, destPath);
+                                lockFileExecution(destPath);
+                                console.log(`[Startup Docs] Copied default ${filename} to ${destPath}`);
+                            } catch (e: any) {
+                                console.error(`[Startup Docs] Failed to copy ${filename}:`, e.message);
+                            }
+                        }
+                    }
+                };
+
                 // Check and insert BBB-SCH.pdf
                 db.get("SELECT id FROM project_docs WHERE project_id = ? AND filename = ?", [projectId, "BBB-SCH.pdf"], (errDoc1: Error | null, rowDoc1: any) => {
                     if (!errDoc1 && !rowDoc1) {
-                        db.run("INSERT INTO project_docs (project_id, filename, path) VALUES (?, ?, ?)", [projectId, "BBB-SCH.pdf", "/docs/BBB-SCH.pdf"]);
+                        const newRelativePath = `/docs/${projectKey}/BBB-SCH.pdf`;
+                        db.run("INSERT INTO project_docs (project_id, filename, path) VALUES (?, ?, ?)", [projectId, "BBB-SCH.pdf", newRelativePath]);
                     }
                 });
+                copyIfMissing("BBB-SCH.pdf");
+
                 // Check and insert BBB.brd
                 db.get("SELECT id FROM project_docs WHERE project_id = ? AND filename = ?", [projectId, "BBB.brd"], (errDoc2: Error | null, rowDoc2: any) => {
                     if (!errDoc2 && !rowDoc2) {
-                        db.run("INSERT INTO project_docs (project_id, filename, path) VALUES (?, ?, ?)", [projectId, "BBB.brd", "/docs/BBB.brd"]);
+                        const newRelativePath = `/docs/${projectKey}/BBB.brd`;
+                        db.run("INSERT INTO project_docs (project_id, filename, path) VALUES (?, ?, ?)", [projectId, "BBB.brd", newRelativePath]);
                     }
                 });
+                copyIfMissing("BBB.brd");
             });
         }
     });
