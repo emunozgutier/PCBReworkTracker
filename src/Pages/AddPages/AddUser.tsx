@@ -3,6 +3,8 @@ import { ArrowLeft, Save, ShieldCheck, RefreshCw } from 'lucide-react';
 import QRCode from 'qrcode';
 import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
 import { useOwnerStore } from '../../store/clientDataBase/useOwnerStore';
+import { useAppState } from '../../store/useAppState';
+import { setSessionCookie } from '../../authentication/clientAuth';
 
 interface AddUserProps {
     onBack: () => void;
@@ -13,7 +15,8 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
-    const { addOwner, loading: storeLoading, error: storeError } = useOwnerStore();
+    const { addOwner, owners, loading: storeLoading, error: storeError } = useOwnerStore();
+    const { setCurrentUser } = useAppState();
 
     const [otpStep, setOtpStep] = useState<'form' | 'otp'>('form');
     const [secret, setSecret] = useState('');
@@ -66,9 +69,23 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
                 setVerifying(false);
                 return;
             }
+
+            // Persist the JWT session cookie returned by the OTP verify endpoint
+            if (data.token) {
+                setSessionCookie(data.token, 7);
+            }
             
             const success = await addOwner({ name, username, email, otp_secret: secret });
             if (success) {
+                // Auto-sign-in: find the new owner in the refreshed list and set them as current user
+                const allOwners = useOwnerStore.getState().owners;
+                const newOwner = allOwners.find(o => o.username === username.trim());
+                if (newOwner) {
+                    const minId = allOwners.length > 0 ? Math.min(...allOwners.map(o => o.id)) : -1;
+                    const isFirstUser = newOwner.id === minId;
+                    const role = (allOwners.length === 1 || isFirstUser) ? 'Super User' : 'User';
+                    setCurrentUser(newOwner, role);
+                }
                 onSuccess();
             }
         } catch (err: any) {
