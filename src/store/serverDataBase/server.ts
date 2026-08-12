@@ -905,9 +905,10 @@ app.get('/api/otp/setup', (req: Request, res: Response) => {
     const { username, host } = req.query;
     if (!username) return res.status(400).json({ error: "Username is required." });
     const secret = generateSecret();
-    const cleanHost = host ? (host as string).replace(/^https?:\/\//i, '') : 'PCBReworkTracker';
-    const issuer = `ReworkTracker (${cleanHost})`;
-    const label = `${issuer}:${username}`;
+    const cleanHost = host ? (host as string).replace(/^https?:\/\//i, '') : '';
+    const issuer = 'ReworkTracker';
+    const accountName = cleanHost ? `${username} (${cleanHost})` : (username as string);
+    const label = `${issuer}:${accountName}`;
     const otpauthUrl = `otpauth://totp/${encodeURIComponent(label)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
     res.json({ secret, otpauthUrl });
 });
