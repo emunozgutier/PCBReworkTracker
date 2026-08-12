@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { ArrowLeft, Save, ShieldCheck, RefreshCw } from 'lucide-react';
 import QRCode from 'qrcode';
 import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
@@ -156,6 +156,7 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
                         <label htmlFor="otp-token" style={{ textAlign: 'center', display: 'block', width: '100%', marginBottom: '8px' }}>Verification Code</label>
                         <input 
                             id="otp-token"
+                            name="otp-token"
                             type="text" 
                             value={token} 
                             onChange={(e) => setToken(e.target.value.replace(/\D/g, ''))} 
@@ -164,6 +165,7 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
                             pattern="[0-9]{6}"
                             required 
                             autoFocus
+                            autoComplete="off"
                             style={{ textAlign: 'center', fontSize: '1.25rem', letterSpacing: '2px', fontWeight: 'bold' }}
                         />
                     </div>
