@@ -268,30 +268,30 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', child
                 </div>
             </div>
 
-            {/* Checkbox list — only in Manual mode */}
-            {isManual && (
-                <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '2px',
-                    maxHeight: '160px',
-                    overflowY: 'auto',
-                    padding: '6px 6px',
-                }}>
-                    {allItems.map(({ optionValue, label }) => {
-                        const isChecked = value.includes(optionValue);
-                        return (
-                            <FilterCheckItemRow
-                                key={optionValue}
-                                optionValue={optionValue}
-                                label={label}
-                                isChecked={isChecked}
-                                onToggle={() => handleToggle(optionValue)}
-                            />
-                        );
-                    })}
-                </div>
-            )}
+            {/* Item list — always shown; checkbox only in Manual mode */}
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '2px',
+                maxHeight: '160px',
+                overflowY: 'auto',
+                padding: '6px 6px',
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+            }}>
+                {allItems.map(({ optionValue, label }) => {
+                    const isChecked = isManual ? value.includes(optionValue) : true;
+                    return (
+                        <FilterCheckItemRow
+                            key={optionValue}
+                            optionValue={optionValue}
+                            label={label}
+                            isChecked={isChecked}
+                            showCheckbox={isManual}
+                            onToggle={isManual ? () => handleToggle(optionValue) : undefined}
+                        />
+                    );
+                })}
+            </div>
         </div>
     );
 }
@@ -301,34 +301,36 @@ interface FilterCheckItemRowProps {
     optionValue: string;
     label: React.ReactNode;
     isChecked: boolean;
-    onToggle: () => void;
+    showCheckbox?: boolean;
+    onToggle?: () => void;
 }
 
-function FilterCheckItemRow({ label, isChecked, onToggle }: FilterCheckItemRowProps) {
+function FilterCheckItemRow({ label, isChecked, showCheckbox = true, onToggle }: FilterCheckItemRowProps) {
     const [hovered, setHovered] = React.useState(false);
+    const interactive = showCheckbox && !!onToggle;
 
     return (
         <div
-            onClick={onToggle}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
+            onClick={interactive ? onToggle : undefined}
+            onMouseEnter={interactive ? () => setHovered(true) : undefined}
+            onMouseLeave={interactive ? () => setHovered(false) : undefined}
             style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
                 padding: '5px 8px',
                 borderRadius: '5px',
-                cursor: 'pointer',
+                cursor: interactive ? 'pointer' : 'default',
                 userSelect: 'none',
-                background: hovered
+                background: interactive && hovered
                     ? 'rgba(255,255,255,0.04)'
-                    : isChecked
+                    : interactive && isChecked
                     ? 'rgba(99,102,241,0.06)'
                     : 'transparent',
                 transition: 'background 0.15s ease',
             }}
         >
-            {/* Custom checkbox */}
+            {/* Checkbox — always reserves space; invisible in All mode */}
             <div
                 style={{
                     width: '15px',
@@ -341,6 +343,7 @@ function FilterCheckItemRow({ label, isChecked, onToggle }: FilterCheckItemRowPr
                     justifyContent: 'center',
                     flexShrink: 0,
                     transition: 'background-color 0.15s ease, border-color 0.15s ease',
+                    visibility: showCheckbox ? 'visible' : 'hidden',
                 }}
             >
                 {isChecked && (
@@ -363,12 +366,14 @@ function FilterCheckItemRow({ label, isChecked, onToggle }: FilterCheckItemRowPr
             <span
                 style={{
                     fontSize: '0.82rem',
-                    color: isChecked ? 'var(--text-h)' : 'var(--text-muted)',
+                    color: showCheckbox
+                        ? (isChecked ? 'var(--text-h)' : 'var(--text-muted)')
+                        : 'var(--text)',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     transition: 'color 0.15s ease',
-                    fontWeight: isChecked ? 500 : 400,
+                    fontWeight: showCheckbox ? (isChecked ? 500 : 400) : 400,
                 }}
             >
                 {label}
