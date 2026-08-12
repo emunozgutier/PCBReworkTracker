@@ -268,37 +268,11 @@ const initDb = async (): Promise<void> => {
                                         if (execErr) {
                                             console.error("Error executing data.sql:", execErr);
                                         } else {
-                                            console.log("data.sql loaded successfully. Running recovery queries...");
+                                            console.log("data.sql loaded successfully.");
                                         }
                                         
-                                        dbInstance.serialize(() => {
-                                            dbInstance.run(`
-                                                INSERT OR IGNORE INTO projects (id, name, description, revisions, project_key, silicon_corners, number_format, created_at)
-                                                SELECT id, c1, c2, c3, c4, c5, c6, c7 FROM lost_and_found WHERE rootpgno = 2
-                                            `, (errProj) => {
-                                                if (errProj) console.error("Error recovering projects:", errProj.message);
-                                                else console.log("Projects recovered successfully!");
-                                            });
-
-                                            dbInstance.run(`
-                                                INSERT OR IGNORE INTO owners (id, name, username, email)
-                                                SELECT id, c1, c2, c3 FROM lost_and_found WHERE rootpgno = 8
-                                            `, (errOwn) => {
-                                                if (errOwn) console.error("Error recovering owners:", errOwn.message);
-                                                else console.log("Owners recovered successfully!");
-                                            });
-
-                                            dbInstance.run(`
-                                                INSERT OR IGNORE INTO pcb_flavors (id, project_id, name, revisions, boms)
-                                                SELECT id, c1, c2, c3, c4 FROM lost_and_found WHERE rootpgno = 7
-                                            `, (errFlav) => {
-                                                if (errFlav) console.error("Error recovering pcb_flavors:", errFlav.message);
-                                                else console.log("PCB Flavors recovered successfully!");
-                                                
-                                                dbInstance.run('PRAGMA foreign_keys = ON', () => {
-                                                    resolve();
-                                                });
-                                            });
+                                        dbInstance.run('PRAGMA foreign_keys = ON', () => {
+                                            resolve();
                                         });
                                     });
                                 });
