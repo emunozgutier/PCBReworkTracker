@@ -153,58 +153,226 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', child
         );
     }
 
+    // ── Desktop: All / Manual mode ────────────────────────────────────────────
+    const [mode, setMode] = React.useState<'all' | 'manual'>(value.length === 0 ? 'all' : 'manual');
+
+    const allItems: { optionValue: string; label: React.ReactNode }[] = [];
+    React.Children.forEach(children, (child: any) => {
+        if (!child) return;
+        allItems.push({ optionValue: child.props.value, label: child.props.children });
+    });
+
+    const handleModeAll = () => {
+        setMode('all');
+        onChange([]);
+    };
+
+    const handleModeManual = () => {
+        setMode('manual');
+        // If switching to manual with nothing selected, pre-select everything
+        if (value.length === 0) {
+            onChange(allItems.map(i => i.optionValue));
+        }
+    };
+
+    const handleToggle = (optionValue: string) => {
+        const isCurrentlySelected = value.includes(optionValue);
+        if (isCurrentlySelected) {
+            const newVal = value.filter(v => v !== optionValue);
+            onChange(newVal);
+        } else {
+            onChange([...value, optionValue]);
+        }
+    };
+
+    const isManual = mode === 'manual';
+
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: width, minWidth: '110px', flexShrink: 0 }}>
-            <span style={{ 
-                fontSize: '0.85rem', 
-                fontWeight: 600, 
-                color: 'var(--text-muted)',
-                whiteSpace: 'normal',
-                wordBreak: 'break-word',
-                minHeight: '2.4em',
-                lineHeight: 1.2
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: width,
+            minWidth: '120px',
+            flexShrink: 0,
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '8px',
+            background: 'rgba(255,255,255,0.015)',
+            overflow: 'hidden',
+        }}>
+            {/* Header: title on top, All / Manual buttons below */}
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                padding: '8px 10px',
+                borderBottom: isManual ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                gap: '6px',
             }}>
-                {title}
+                <span style={{
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    color: 'var(--text-muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    width: '100%',
+                }}>
+                    {title}
+                </span>
+
+                {/* Pill toggle: All | Manual */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: 'rgba(0,0,0,0.25)',
+                    borderRadius: '20px',
+                    padding: '2px',
+                    gap: '2px',
+                }}>
+                    <button
+                        onClick={handleModeAll}
+                        style={{
+                            background: !isManual ? 'var(--accent)' : 'transparent',
+                            border: 'none',
+                            borderRadius: '16px',
+                            color: !isManual ? '#fff' : 'var(--text-muted)',
+                            fontSize: '0.68rem',
+                            fontWeight: 600,
+                            padding: '3px 9px',
+                            cursor: 'pointer',
+                            transition: 'background 0.18s ease, color 0.18s ease',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        All
+                    </button>
+                    <button
+                        onClick={handleModeManual}
+                        style={{
+                            background: isManual ? 'var(--accent)' : 'transparent',
+                            border: 'none',
+                            borderRadius: '16px',
+                            color: isManual ? '#fff' : 'var(--text-muted)',
+                            fontSize: '0.68rem',
+                            fontWeight: 600,
+                            padding: '3px 9px',
+                            cursor: 'pointer',
+                            transition: 'background 0.18s ease, color 0.18s ease',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        Manual
+                    </button>
+                </div>
+            </div>
+
+            {/* Checkbox list — only in Manual mode */}
+            {isManual && (
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '2px',
+                    maxHeight: '160px',
+                    overflowY: 'auto',
+                    padding: '6px 6px',
+                }}>
+                    {allItems.map(({ optionValue, label }) => {
+                        const isChecked = value.includes(optionValue);
+                        return (
+                            <FilterCheckItemRow
+                                key={optionValue}
+                                optionValue={optionValue}
+                                label={label}
+                                isChecked={isChecked}
+                                onToggle={() => handleToggle(optionValue)}
+                            />
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ── Internal rendered row ─────────────────────────────────────────────────────
+interface FilterCheckItemRowProps {
+    optionValue: string;
+    label: React.ReactNode;
+    isChecked: boolean;
+    onToggle: () => void;
+}
+
+function FilterCheckItemRow({ label, isChecked, onToggle }: FilterCheckItemRowProps) {
+    const [hovered, setHovered] = React.useState(false);
+
+    return (
+        <div
+            onClick={onToggle}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '5px 8px',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                userSelect: 'none',
+                background: hovered
+                    ? 'rgba(255,255,255,0.04)'
+                    : isChecked
+                    ? 'rgba(99,102,241,0.06)'
+                    : 'transparent',
+                transition: 'background 0.15s ease',
+            }}
+        >
+            {/* Custom checkbox */}
+            <div
+                style={{
+                    width: '15px',
+                    height: '15px',
+                    borderRadius: '3px',
+                    border: `1.5px solid ${isChecked ? 'var(--accent)' : 'rgba(255,255,255,0.25)'}`,
+                    backgroundColor: isChecked ? 'var(--accent)' : 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    transition: 'background-color 0.15s ease, border-color 0.15s ease',
+                }}
+            >
+                {isChecked && (
+                    <svg
+                        width="9"
+                        height="9"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#fff"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    >
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                )}
+            </div>
+
+            {/* Label */}
+            <span
+                style={{
+                    fontSize: '0.82rem',
+                    color: isChecked ? 'var(--text-h)' : 'var(--text-muted)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    transition: 'color 0.15s ease',
+                    fontWeight: isChecked ? 500 : 400,
+                }}
+            >
+                {label}
             </span>
-            <select 
-                multiple 
-                value={value}
-                onChange={(e) => {
-                    const selected = Array.from(e.target.selectedOptions, option => option.value);
-                    onChange(selected);
-                }}
-                style={{ 
-                    width: '100%', 
-                    height: '140px', 
-                    padding: '6px', 
-                    borderRadius: '4px', 
-                    backgroundColor: 'var(--bg-panel)', 
-                    border: '1px solid var(--border-color)', 
-                    color: 'var(--text)', 
-                    outline: 'none',
-                    fontFamily: 'inherit',
-                    fontSize: '0.9rem'
-                }}
-            >
-                {children}
-            </select>
-            <button 
-                onClick={() => onChange([])}
-                style={{ 
-                    background: 'none', 
-                    border: 'none', 
-                    color: 'var(--accent)', 
-                    fontSize: '0.75rem', 
-                    cursor: value && value.length > 0 ? 'pointer' : 'default',
-                    padding: '2px 0 0 0',
-                    alignSelf: 'flex-start',
-                    fontWeight: 500,
-                    visibility: value && value.length > 0 ? 'visible' : 'hidden'
-                }}
-                disabled={!value || value.length === 0}
-            >
-                Clear
-            </button>
         </div>
     );
 }
