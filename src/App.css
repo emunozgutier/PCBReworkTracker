@@ -801,5 +801,28 @@ select:not([multiple]):focus {
   display: inline;
 }
 
+/* Search filter scrollbar — matches group border style */
+.search-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.4) rgba(255, 255, 255, 0.05);
+}
 
+.search-scroll::-webkit-scrollbar {
+  width: 6px;
+}
 
+.search-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+
+.search-scroll::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.4);
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+
+.search-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}

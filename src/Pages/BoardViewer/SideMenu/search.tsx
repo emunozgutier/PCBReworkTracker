@@ -182,6 +182,7 @@ export function BoardSearch({
 
             {/* Scrollable List Container */}
             <div
+                className="search-scroll"
                 style={{
                     flex: 1,
                     overflowY: 'auto',
