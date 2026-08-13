@@ -15,7 +15,7 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
-    const { addOwner, owners, loading: storeLoading, error: storeError } = useOwnerStore();
+    const { addOwner, loading: storeLoading, error: storeError } = useOwnerStore();
     const { setCurrentUser } = useAppState();
 
     const [otpStep, setOtpStep] = useState<'form' | 'otp'>('form');

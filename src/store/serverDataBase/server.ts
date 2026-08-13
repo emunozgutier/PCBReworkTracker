@@ -612,7 +612,7 @@ app.post('/api/pcbs', async (req: Request, res: Response) => {
         // Resolve flavor name to FK id
         const resolveFlavorId = (cb: (id: number | null) => void) => {
             if (!board_flavor || !project_id) return cb(null);
-            db.get("SELECT id FROM pcb_flavors WHERE project_id = ? AND name = ? LIMIT 1", [project_id, board_flavor], (e: Error | null, row: any) => {
+            db.get("SELECT id FROM pcb_flavors WHERE project_id = ? AND name = ? LIMIT 1", [project_id, board_flavor], (_e: Error | null, row: any) => {
                 cb(row ? row.id : null);
             });
         };
@@ -1331,7 +1331,7 @@ app.put('/api/pcbs/:id', async (req: Request, res: Response) => {
     // Resolve flavor name to FK id
     const resolveFlavorId = (cb: (id: number | null) => void) => {
         if (!board_flavor || !project_id) return cb(null);
-        db.get("SELECT id FROM pcb_flavors WHERE project_id = ? AND name = ? LIMIT 1", [project_id, board_flavor], (e: Error | null, row: any) => {
+        db.get("SELECT id FROM pcb_flavors WHERE project_id = ? AND name = ? LIMIT 1", [project_id, board_flavor], (_e: Error | null, row: any) => {
             cb(row ? row.id : null);
         });
     };

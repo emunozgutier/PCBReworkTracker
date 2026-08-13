@@ -19,7 +19,7 @@ export function PcbView({ title }: PcbViewProps) {
     const { pcbs, loading: pcbsLoading, fetchPcbs, selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs, selectedTags, selectedOwners, selectedBoardNumbers, selectedBoms } = usePcbStore();
     const { fetchOwners } = useOwnerStore();
     const { fetchTags } = useTagStore();
-    const { expandedPcb, isolatedView, searchQuery, showFilters, setShowFilters, crcFormat } = useAppState();
+    const { isolatedView, searchQuery, showFilters, setShowFilters, crcFormat } = useAppState();
 
     useEffect(() => {
         fetchPcbs();
