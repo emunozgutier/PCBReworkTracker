@@ -3,6 +3,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { COLORS } from '../../store/useStyles';
 import { useTagStore } from '../../store/clientDataBase/useTagStore';
 import { useAppState } from '../../store/useAppState';
+import { usePermissionsStore } from '../../store/clientDataBase/usePermissionsStore';
 
 interface AddTabProps {
     onBack: () => void;
@@ -31,8 +32,14 @@ export function AddTab({ onBack, onSuccess }: AddTabProps) {
 
     const colors = [COLORS.indigo, COLORS.red, COLORS.emerald, COLORS.amber, COLORS.blue, COLORS.pink, COLORS.purpleAccent];
 
-    // Access check: Guests cannot add tags
-    if (currentUserRole !== 'Super User' && currentUserRole !== 'User') {
+    const { permissions } = usePermissionsStore();
+
+    const canAddTag =
+        currentUserRole === 'Super User' ||
+        (currentUserRole === 'User' && permissions['Tags__Add__user'] === true);
+
+    // Access check
+    if (!canAddTag) {
         return (
             <div className="add-page-container">
                 <header className="add-page-header">

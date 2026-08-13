@@ -1,6 +1,7 @@
-﻿import { Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useAppState } from '../store/useAppState';
 import { usePcbStore } from '../store/clientDataBase/usePcbStore';
+import { usePermissionsStore } from '../store/clientDataBase/usePermissionsStore';
 import './TopButtons.css';
 
 export function TopButtons() {
@@ -23,13 +24,21 @@ export function TopButtons() {
 
     const hasFilters = activeTab === 'pcbs';
 
+    const { permissions } = usePermissionsStore();
+
     // Check permissions for Add button
     let canAdd = false;
     if (currentUserRole === 'Super User') {
         canAdd = true;
     } else if (currentUserRole === 'User') {
-        // Users can add PCBs, reworks, tags, and owners, but NOT projects
-        canAdd = activeTab !== 'projects';
+        // Users can add PCBs and reworks, but tag/project creation is controlled by permissions
+        if (activeTab === 'projects') {
+            canAdd = false;
+        } else if (activeTab === 'tags') {
+            canAdd = permissions['Tags__Add__user'] === true;
+        } else {
+            canAdd = true;
+        }
     } else {
         // Guests can only add owners (users) to register
         canAdd = activeTab === 'owners';
