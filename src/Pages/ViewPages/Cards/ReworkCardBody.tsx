@@ -6,6 +6,7 @@ import { usePcbStore } from '../../../store/clientDataBase/usePcbStore';
 import { EditButton, DeleteButton } from '../../../components/forms/ActionButtons';
 import { RemoveRework } from '../../RemovePage/RemoveRework';
 import { useDeleteEditRequirements } from '../../../store/useDeleteEditRequirements';
+import { InfoPill } from '../../../components/InfoPill';
 
 interface ReworkCardBodyProps {
     rework: any;
@@ -76,12 +77,12 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
             <div
                 style={{
                     background: 'rgba(255, 255, 255, 0.03)',
-                    padding: '10px 16px',
+                    padding: '8px 12px',
                     borderRadius: '8px',
                     border: '1px solid var(--border)',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px',
+                    gap: '6px',
                     cursor: 'pointer',
                     transition: 'background 0.2s',
                     minWidth: 0,
@@ -92,21 +93,16 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'; }}
                 title="Click to view full details"
             >
-                {/* Date */}
-                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                    {new Date(rework.timestamp).toLocaleDateString()}
-                </span>
+                {/* Date pill */}
+                <InfoPill text={new Date(rework.timestamp).toLocaleDateString()} color="var(--text-muted)" />
 
-                <span style={{ color: 'var(--border)', flexShrink: 0 }}>·</span>
+                {/* User pill */}
+                <InfoPill
+                    text={`@${rework.owner_username || rework.owner_name || rework.owner || rework.created_by || 'Unknown'}`}
+                    color="var(--text-muted)"
+                />
 
-                {/* User */}
-                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                    @{rework.owner_username || rework.owner_name || rework.owner || rework.created_by || 'Unknown'}
-                </span>
-
-                <span style={{ color: 'var(--border)', flexShrink: 0 }}>·</span>
-
-                {/* Description — single line, truncated */}
+                {/* Description — single line, truncated, flex fills remaining space */}
                 <span style={{
                     fontSize: '0.82rem',
                     color: rework.description?.trim() ? 'var(--text)' : 'var(--text-muted)',
@@ -186,15 +182,11 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                         <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', color: 'var(--text)', fontWeight: 700, paddingRight: '32px' }}>
                             {rework.title || 'Rework Details'}
                         </h3>
-                        <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{new Date(rework.timestamp).toLocaleDateString()}</span>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>·</span>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>@{rework.owner_username || rework.owner_name || rework.owner || rework.created_by || 'Unknown'}</span>
+                        <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+                            <InfoPill text={new Date(rework.timestamp).toLocaleDateString()} color="var(--text-muted)" />
+                            <InfoPill text={`@${rework.owner_username || rework.owner_name || rework.owner || rework.created_by || 'Unknown'}`} color="var(--text-muted)" />
                             {rework.rework_type && (
-                                <>
-                                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>·</span>
-                                    <span style={{ fontSize: '0.78rem', color: 'var(--accent)' }}>{rework.rework_type}</span>
-                                </>
+                                <InfoPill text={rework.rework_type} color="var(--accent)" />
                             )}
                         </div>
 
