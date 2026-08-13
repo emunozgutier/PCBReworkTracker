@@ -1,6 +1,5 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { BoardName } from '../../../components/BoardName';
-import { useAppState } from '../../../store/useAppState';
 import { COLORS } from '../../../store/useStyles';
 import { InfoPill } from '../../../components/InfoPill';
 
@@ -13,7 +12,6 @@ interface PcbCardHeaderProps {
 }
 
 export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions, maxCrcLength }: PcbCardHeaderProps) {
-    const { isMobile } = useAppState();
 
     const flavor = (pcb.board_flavor || '').replace('No part yet', 'No part');
     const revText = pcb.board_rev || '';
@@ -35,20 +33,7 @@ export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions, maxCrcLe
                     <InfoPill text={siInfo} color={COLORS.purple} />
                 )}
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px' }}>
-                    {/* PCB Info Pill (Flavor + Rev + BOM) */}
-                    <InfoPill text={pcbPillText} color="var(--text-muted)" />
-
-                    {/* Owner Info Pill */}
-                    {!isMobile && (
-                        <InfoPill 
-                            text={(pcb.owner_username ? `@${pcb.owner_username}` : (pcb.owner || 'Unassigned')).substring(0, 8)} 
-                            color="var(--text-muted)" 
-                            min_width={8}
-                            center={true}
-                        />
-                    )}
-                </div>
+                <InfoPill text={pcbPillText} color="var(--text-muted)" />
             </div>
 
             {!hideActions && (

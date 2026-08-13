@@ -16,7 +16,7 @@ interface PcbViewProps {
 
 export function PcbView({ title }: PcbViewProps) {
     const { projects, loading: projectsLoading, fetchProjects } = useProjectStore();
-    const { pcbs, loading: pcbsLoading, fetchPcbs, selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs, selectedTags, selectedOwners, selectedBoardNumbers, setSelectedBoardNumbers } = usePcbStore();
+    const { pcbs, loading: pcbsLoading, fetchPcbs, selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs, selectedTags, selectedOwners, selectedBoardNumbers } = usePcbStore();
     const { fetchOwners } = useOwnerStore();
     const { fetchTags } = useTagStore();
     const { expandedPcb, isolatedView, searchQuery, showFilters, setShowFilters, crcFormat } = useAppState();
@@ -30,17 +30,6 @@ export function PcbView({ title }: PcbViewProps) {
 
     const activePcbFilterCount = selectedProjects.length + selectedRevisions.length + selectedFlavors.length + selectedCorners.length + selectedPcbRevs.length + selectedTags.length + selectedOwners.length + selectedBoardNumbers.length;
     
-    const [hasAutoFiltered, setHasAutoFiltered] = useState(false);
-
-    useEffect(() => {
-        if (expandedPcb && !expandedPcb.startsWith('SHORT:') && isolatedView && !hasAutoFiltered) {
-            if (selectedBoardNumbers.length === 0) {
-                setSelectedBoardNumbers([expandedPcb]);
-            }
-            setHasAutoFiltered(true);
-        }
-    }, [expandedPcb, isolatedView, hasAutoFiltered, selectedBoardNumbers, setSelectedBoardNumbers]);
-
     useEffect(() => {
         if (activePcbFilterCount > 0 && !isolatedView) {
             setShowFilters(true);
