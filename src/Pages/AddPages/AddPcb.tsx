@@ -250,9 +250,12 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
             finalBoardWithCrc = `${finalBoardName}${crc}`;
         }
         
-        // Final duplicate check before submit
-        if (pcbs.some(p => p.board_number.toUpperCase() === finalBoardWithCrc.toUpperCase())) {
-            alert('This board number is already assigned in this project.');
+        // Client-side duplicate check (guard against stale pcbs list)
+        const clientDuplicate = pcbs.some(
+            p => p.board_number.trim().toUpperCase() === finalBoardWithCrc.trim().toUpperCase()
+        );
+        if (clientDuplicate) {
+            alert(`Board "${finalBoardWithCrc}" already exists. Please use a different number.`);
             return;
         }
         
@@ -269,6 +272,10 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         });
         if (success) {
             onSuccess();
+        } else {
+            // Server rejected the request (e.g. duplicate detected server-side)
+            const storeError = usePcbStore.getState().error;
+            alert(storeError || `Board "${finalBoardWithCrc}" could not be saved. It may already exist.`);
         }
     };
 
