@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { PcbCardHeader } from './PcbCardHeader';
 import { PcbCardBody } from './PcbCardBody';
 import { useAppState } from '../../../store/useAppState';
-import './Cards.css';
+import './PcbCard.css';
 
 interface PcbCardProps {
     pcb: any;
