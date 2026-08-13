@@ -55,40 +55,6 @@ export function UserLoginButton() {
         roleBadgeColor = 'var(--accent)'; // indigo
     }
 
-    const handleUserChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const val = e.target.value;
-        if (val === 'guest') {
-            setCurrentUser(null, 'Guest');
-        } else if (val === 'admin') {
-            setCurrentUser(null, 'Super User');
-        } else {
-            const foundOwner = owners.find(o => o.username === val);
-            if (foundOwner) {
-                const isOnlyUser = owners.length === 1;
-                const minId = owners.length > 0 ? Math.min(...owners.map(o => o.id)) : -1;
-                const isFirstUser = foundOwner.id === minId;
-                const role = (isOnlyUser || isFirstUser) ? 'Super User' : 'User';
-                setCurrentUser(foundOwner, role);
-            }
-        }
-    };
-
-    const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const val = e.target.value as 'Super User' | 'User' | 'Guest';
-        setCurrentUser(currentUser, val);
-    };
-
-    // Calculate current dropdown selected user value
-    let selectUserVal = 'guest';
-    if (currentUserRole === 'Super User' && !currentUser) {
-        selectUserVal = 'admin';
-    } else if (currentUser) {
-        selectUserVal = currentUser.username;
-    }
-
-    const isGuestSelected = selectUserVal === 'guest';
-    const isAdminSelected = selectUserVal === 'admin';
-
     // Find if the currently selected user in modal has OTP
     const selectedOwner = owners.find(o => o.username === selectedUsername);
     const hasOtpSecret = selectedOwner && !!selectedOwner.otp_secret;
@@ -188,47 +154,11 @@ export function UserLoginButton() {
                 <div className="user-login-dropdown">
                     <div className="dropdown-header">
                         <KeyRound size={16} color="var(--accent)" />
-                        <span>Session Controller</span>
+                        <span>{currentUser?.name || displayLabel}</span>
                     </div>
 
-                    {/* Selector 1: Active User */}
-                    <div className="dropdown-field">
-                        <label htmlFor="auth-user-select">Active User</label>
-                        <select 
-                            id="auth-user-select"
-                            value={selectUserVal} 
-                            onChange={handleUserChange}
-                        >
-                            <option value="guest">Guest (Anonymous)</option>
-                            <option value="admin">Super User (Administrator)</option>
-                            <option disabled>──────────</option>
-                            {owners.map(owner => (
-                                <option key={owner.id} value={owner.username}>
-                                    {owner.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Selector 2: Active Role */}
-                    <div className="dropdown-field">
-                        <label htmlFor="auth-role-select">Active Role</label>
-                        <select
-                            id="auth-role-select"
-                            value={currentUserRole}
-                            onChange={handleRoleChange}
-                            disabled={isGuestSelected || isAdminSelected}
-                        >
-                            {isGuestSelected && <option value="Guest">Guest</option>}
-                            {isAdminSelected && <option value="Super User">Super User</option>}
-                            {!isGuestSelected && !isAdminSelected && (
-                                <>
-                                    <option value="User">User</option>
-                                    <option value="Super User">Super User</option>
-                                    <option value="Guest">Guest</option>
-                                </>
-                            )}
-                        </select>
+                    <div style={{ padding: '4px 0 8px 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                        Role: <strong style={{ color: 'var(--text)' }}>{currentUserRole}</strong>
                     </div>
 
                     {/* Logout Button */}
@@ -246,7 +176,7 @@ export function UserLoginButton() {
                             color: '#ef4444',
                             fontWeight: 600,
                             cursor: 'pointer',
-                            marginTop: '12px',
+                            marginTop: '4px',
                             marginBottom: '4px',
                             display: 'flex',
                             alignItems: 'center',

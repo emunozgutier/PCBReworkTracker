@@ -93,7 +93,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
 
 
                         <InfoPill 
-                            text={`@${rework.owner_username || rework.owner_name || rework.owner || 'System'}`.padEnd(7, ' ')} 
+                            text={`@${rework.owner_username || rework.owner_name || rework.owner || rework.created_by || 'Unknown'}`.padEnd(7, ' ')} 
                             color="var(--text)"
                             min_width={7}
                         />

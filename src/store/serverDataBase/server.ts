@@ -1023,7 +1023,7 @@ app.post('/api/reworks', upload.any(), fileSanityCheckMiddleware, deduplicate, s
             const image_path = finalPaths.length > 0 ? JSON.stringify(finalPaths) : null;
             
             // 3. Insert new rework
-            const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' ? parseInt(owner_id) : null;
+            const finalOwnerId = owner_id && owner_id !== '-1' && owner_id !== 'null' && owner_id !== 'guest' ? parseInt(owner_id) : null;
             const creator = req.headers['x-user-username'] || 'guest';
             const insertQuery = "INSERT INTO reworks (pcb_id, rework_number, title, description, owner_id, image_path, rework_type, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             db.run(insertQuery, [pcb_id, sequence, title || null, description, finalOwnerId, image_path, rework_type || 'Minor', creator, creator], function(this: any, errInsert: Error | null) {

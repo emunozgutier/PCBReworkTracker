@@ -409,9 +409,11 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                 }}
                                 required
                             >
-                                {availablePcbFlavors.map((ff: any) => (
-                                    <option key={ff.name} value={ff.name}>{ff.name}</option>
-                                ))}
+                                {availablePcbFlavors
+                                    .filter((ff: any, idx: number, arr: any[]) => arr.findIndex((f: any) => f.name === ff.name) === idx)
+                                    .map((ff: any) => (
+                                        <option key={ff.name} value={ff.name}>{ff.name}</option>
+                                    ))}
                             </select>
                         </div>
                         <div className="form-group flex-1">
