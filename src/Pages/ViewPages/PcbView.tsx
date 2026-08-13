@@ -16,7 +16,7 @@ interface PcbViewProps {
 
 export function PcbView({ title }: PcbViewProps) {
     const { projects, loading: projectsLoading, fetchProjects } = useProjectStore();
-    const { pcbs, loading: pcbsLoading, fetchPcbs, selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs, selectedTags, selectedOwners, selectedBoardNumbers } = usePcbStore();
+    const { pcbs, loading: pcbsLoading, fetchPcbs, selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs, selectedTags, selectedOwners, selectedBoardNumbers, selectedBoms } = usePcbStore();
     const { fetchOwners } = useOwnerStore();
     const { fetchTags } = useTagStore();
     const { expandedPcb, isolatedView, searchQuery, showFilters, setShowFilters, crcFormat } = useAppState();
@@ -69,6 +69,9 @@ export function PcbView({ title }: PcbViewProps) {
     }
     if (selectedBoardNumbers && selectedBoardNumbers.length > 0) {
         items = items.filter(pcb => selectedBoardNumbers.includes(pcb.board_number));
+    }
+    if (selectedBoms && selectedBoms.length > 0) {
+        items = items.filter(pcb => selectedBoms.includes(pcb.bom || ''));
     }
     if (searchQuery) {
         const sq = searchQuery.toLowerCase();
