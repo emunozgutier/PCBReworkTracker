@@ -163,12 +163,17 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', child
     });
 
     const handleToggle = (optionValue: string) => {
-        const isCurrentlySelected = value.includes(optionValue);
-        if (isCurrentlySelected) {
-            const newVal = value.filter(v => v !== optionValue);
-            onChange(newVal);
+        if (value.length === 0) {
+            // "All selected" — unchecking one means exclude just that item
+            onChange(allItems.map(i => i.optionValue).filter(v => v !== optionValue));
         } else {
-            onChange([...value, optionValue]);
+            const isCurrentlySelected = value.includes(optionValue);
+            if (isCurrentlySelected) {
+                const newVal = value.filter(v => v !== optionValue);
+                onChange(newVal);
+            } else {
+                onChange([...value, optionValue]);
+            }
         }
     };
 
@@ -312,8 +317,10 @@ function FilterCheckItemRow({ label, isChecked, showCheckbox = true, onToggle }:
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    transition: 'color 0.15s ease',
+                    transition: 'color 0.15s ease, text-decoration-color 0.15s ease',
                     fontWeight: showCheckbox ? (isChecked ? 500 : 400) : 400,
+                    textDecoration: !isChecked ? 'line-through' : 'none',
+                    textDecorationColor: 'var(--text-muted)',
                 }}
             >
                 {label}
