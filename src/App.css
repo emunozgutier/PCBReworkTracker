@@ -64,8 +64,6 @@ body {
 
 @media (max-width: 768px) {
   .app-container { padding: 12px; }
-  .item-card { padding: 12px; width: 100%; max-width: 100%; box-sizing: border-box; overflow: hidden; }
-  .card-header-main { padding: 10px 12px !important; }
 }
 
 /* Responsive Font System using Zustand State */
@@ -118,54 +116,7 @@ body {
 .stat-card.emerald .stat-value { color: #10b981; }
 .stat-card.rose .stat-value { color: #f43f5e; }
 
-/* Card List Styling */
-.card-list-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
 
-
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-  gap: 16px;
-  width: 100%;
-  max-width: 100%;
-}
-
-.cards-grid.single-column {
-  grid-template-columns: 1fr;
-}
-
-.item-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 20px;
-  scroll-margin-top: 140px;
-}
-
-.card-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-}
-
-
-.status-pill {
-  font-size: 0.75rem;
-  padding: 4px 10px;
-  border-radius: 100px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.status-pill.in-progress { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-
-.card-details p { margin: 4px 0; font-size: 0.9rem; color: var(--text-muted); }
-.card-details strong { color: var(--text); }
 
 .network-qr-container {
   position: fixed;
@@ -394,115 +345,7 @@ select:not([multiple]):focus {
   transition: transform 0.2s ease;
 }
 
-.pcb-count-tag {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(129, 140, 248, 0.15);
-  color: #a5b4fc;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-left: auto;
-}
 
-.card-header-main {
-  cursor: pointer;
-  position: relative;
-}
-
-.expand-indicator {
-  position: absolute;
-  top: 50%;
-  right: -10px;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  opacity: 0.5;
-  transition: opacity 0.2s ease;
-}
-
-.project-card:hover .expand-indicator {
-  opacity: 1;
-}
-
-.card-expanded-content {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-  animation: slideDown 0.3s ease-out;
-}
-
-.card-expanded-content h4 {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
-
-.pcb-mini-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.pcb-pill {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: 500;
-}
-
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.delete-icon-button {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s ease;
-  margin-left: auto;
-}
-
-.delete-icon-button:hover {
-  background: rgba(244, 63, 94, 0.1);
-}
-
-.edit-button {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  padding: 6px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.edit-button:hover {
-  background: var(--accent);
-  color: white;
-  border-color: var(--accent);
-}
-
-.card-actions {
-  display: flex;
-  gap: 8px;
-  margin-left: auto;
-}
 
 /* GitHub Corner Animations */
 .github-corner:hover .octo-arm {
@@ -564,43 +407,7 @@ select:not([multiple]):focus {
   border-color: rgba(99, 102, 241, 0.8) !important;
 }
 
-/* Rework Body Responsive */
-.rework-body-row {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  min-width: 0;
-  width: 100%;
-}
 
-.rework-body-divider {
-  width: 1px;
-  background: var(--border);
-  align-self: stretch;
-  opacity: 0.6;
-}
-
-.rework-description-col {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-  flex: 1;
-}
-
-@media (max-width: 768px) {
-  .rework-body-row {
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-  .rework-body-divider.mobile-hide {
-    display: none;
-  }
-  .rework-description-col {
-    flex-basis: 100%;
-    margin-top: 4px;
-  }
-}
 
 /* Layout overrides when Board Viewer is active */
 .app-container.board-viewer-active {

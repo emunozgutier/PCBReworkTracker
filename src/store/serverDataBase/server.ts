@@ -279,18 +279,16 @@ app.use('/api/docs', express.static(path.join(__dirname, 'docs')));
 
 // Initialize Database
 initDb().then(() => {
-    // Ensure all demo projects in the database have BBB-SCH.pdf and BBB.brd documents
+    // Ensure docs directories exist for all projects and copy default files if missing
     db.all("SELECT id, project_key FROM projects", [], (errProj: Error | null, projects: any[]) => {
         if (!errProj && projects) {
             projects.forEach((p) => {
-                const projectId = p.id;
                 const projectKey = p.project_key || 'PRJ';
                 const targetDir = path.join(__dirname, 'docs', projectKey);
                 if (!fs.existsSync(targetDir)) {
                     fs.mkdirSync(targetDir, { recursive: true });
                 }
 
-                // Copy default documents from public/docs if they are missing locally
                 const publicDocsDir = path.join(__dirname, '..', '..', '..', 'public', 'docs');
                 const copyIfMissing = (filename: string) => {
                     const destPath = path.join(targetDir, filename);
@@ -307,252 +305,11 @@ initDb().then(() => {
                         }
                     }
                 };
-
-                // Check and insert BBB-SCH.pdf
-                db.get("SELECT id FROM project_docs WHERE project_id = ? AND filename = ?", [projectId, "BBB-SCH.pdf"], (errDoc1: Error | null, rowDoc1: any) => {
-                    if (!errDoc1 && !rowDoc1) {
-                        const newRelativePath = `/docs/${projectKey}/BBB-SCH.pdf`;
-                        db.run("INSERT INTO project_docs (project_id, filename, path) VALUES (?, ?, ?)", [projectId, "BBB-SCH.pdf", newRelativePath]);
-                    }
-                });
                 copyIfMissing("BBB-SCH.pdf");
-
-                // Check and insert BBB.brd
-                db.get("SELECT id FROM project_docs WHERE project_id = ? AND filename = ?", [projectId, "BBB.brd"], (errDoc2: Error | null, rowDoc2: any) => {
-                    if (!errDoc2 && !rowDoc2) {
-                        const newRelativePath = `/docs/${projectKey}/BBB.brd`;
-                        db.run("INSERT INTO project_docs (project_id, filename, path) VALUES (?, ?, ?)", [projectId, "BBB.brd", newRelativePath]);
-                    }
-                });
                 copyIfMissing("BBB.brd");
             });
         }
     });
-
-    // Ensure all flavors revisions in pcb_flavors have schematic and board_file set to BBB-SCH.pdf and BBB.brd if not set
-    db.all("SELECT id, name, revisions FROM pcb_flavors", [], (errFlavs: Error | null, flavors: any[]) => {
-        if (!errFlavs && flavors) {
-            flavors.forEach((f) => {
-                let rawRevisions: any = [];
-                try {
-                    rawRevisions = typeof f.revisions === 'string' ? JSON.parse(f.revisions) : f.revisions;
-                } catch(e) {}
-                
-                if (Array.isArray(rawRevisions)) {
-                    let changed = false;
-                    const updatedRevisions = rawRevisions.map((rev: any) => {
-                        if (typeof rev === 'string') {
-                            changed = true;
-                            return {
-                                name: rev,
-                                boms: [],
-                                doc: "BBB-SCH.pdf",
-                                schematic: "BBB-SCH.pdf",
-                                board_file: "BBB.brd"
-                            };
-                        } else if (typeof rev === 'object' && rev !== null) {
-                            if (!rev.doc || !rev.schematic || !rev.board_file) {
-                                changed = true;
-                                return {
-                                    ...rev,
-                                    doc: rev.doc || rev.schematic || "BBB-SCH.pdf",
-                                    schematic: rev.schematic || rev.doc || "BBB-SCH.pdf",
-                                    board_file: rev.board_file || "BBB.brd"
-                                };
-                            }
-                        }
-                        return rev;
-                    });
-                    
-                    if (changed) {
-                        db.run("UPDATE pcb_flavors SET revisions = ? WHERE id = ?", [JSON.stringify(updatedRevisions), f.id]);
-                    }
-                }
-            });
-        }
-    });
-
-// Migration: Split product_name_and_rev into board_flavor, board_rev, silicon_rev, silicon_corner
-db.all("SELECT id, product_name_and_rev, project_id FROM pcbs WHERE product_name_and_rev IS NOT NULL AND board_flavor IS NULL", [], (err: Error | null, pcbs: any[]) => {
-    if (!err && pcbs && pcbs.length > 0) {
-        db.all("SELECT id, formfactors, silicon_corners FROM projects", [], (errProj: Error | null, projects: any[]) => {
-            if (errProj || !projects) return;
-            pcbs.forEach(pcb => {
-                const project = projects.find(p => p.id === pcb.project_id);
-                let rawProduct = pcb.product_name_and_rev || '';
-                let foundFormfactor = '';
-                let foundSilicon = '';
-
-                if (project) {
-                    if (project.silicon_corners) {
-                        let parsedCorners: string[] = [];
-                        try { parsedCorners = typeof project.silicon_corners === 'string' ? project.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean) : []; } catch(e){}
-                        for (const corner of parsedCorners) {
-                            if (rawProduct.endsWith(` ${corner}`) || rawProduct === corner) {
-                                foundSilicon = corner;
-                                rawProduct = rawProduct.slice(0, rawProduct.length - corner.length).trim();
-                                break;
-                            }
-                        }
-                    }
-
-                    if (project.formfactors) {
-                        let parsedFF: any[] = [];
-                        try { parsedFF = JSON.parse(project.formfactors); } catch(e){}
-                        for (const ff of parsedFF) {
-                            if (rawProduct.startsWith(ff.name)) {
-                                foundFormfactor = ff.name;
-                                rawProduct = rawProduct.slice(ff.name.length).trim();
-                                break;
-                            }
-                        }
-                    }
-                }
-                
-                // What's left is board_rev and silicon_rev
-                let boardRev = '';
-                let siliconRev = '';
-                const remainingParts = rawProduct.split(' ').filter(Boolean);
-                if (remainingParts.length > 0) {
-                    boardRev = remainingParts[0];
-                    if (remainingParts.length > 1) {
-                        siliconRev = remainingParts.slice(1).join(' ');
-                    }
-                }
-
-                db.run("UPDATE pcbs SET board_flavor = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ? WHERE id = ?", [foundFormfactor, boardRev, siliconRev, foundSilicon, pcb.id], (_errRun: Error | null) => {
-                    // Check if this was the last item to migrate
-                    if (pcbs.indexOf(pcb) === pcbs.length - 1) {
-                        // After all updates, safely drop the old column
-                        db.run("ALTER TABLE pcbs DROP COLUMN product_name_and_rev", () => {
-                            // Ignore error if column already dropped
-                        });
-                    }
-                });
-            });
-        });
-    } else {
-        // Drop column immediately if migration isn't needed but it exists
-        db.run("ALTER TABLE pcbs DROP COLUMN product_name_and_rev", () => {});
-    }
-});
-
-// Migration: Extract formfactors from projects into pcb_flavors
-db.all("SELECT id, formfactors FROM projects", [], (err: Error | null, projects: any[]) => {
-    if (!err && projects && projects.length > 0) {
-        projects.forEach(project => {
-            if (project.formfactors) {
-                let parsedFF: any[] = [];
-                try { parsedFF = JSON.parse(project.formfactors); } catch(e){}
-                parsedFF.forEach(ff => {
-                    db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [
-                        project.id, 
-                        ff.name, 
-                        JSON.stringify(ff.revisions || []), 
-                        JSON.stringify(ff.boms || [])
-                    ], (errRun: Error | null) => {
-                        if (errRun) console.error("Migration error inserting flavor:", errRun.message);
-                    });
-                });
-            }
-        });
-        
-        // After migration, drop the column
-        db.run("ALTER TABLE projects DROP COLUMN formfactors", () => {});
-    }
-});
-
-// Migration: add short codes to existing PCBs
-db.all("SELECT id FROM pcbs WHERE short_code IS NULL", [], (err: Error | null, pcbs: any[]) => {
-    if (!err && pcbs && pcbs.length > 0) {
-        pcbs.forEach(async pcb => {
-            try {
-                const code = await generateShortCode();
-                db.run("UPDATE pcbs SET short_code = ? WHERE id = ?", [code, pcb.id]);
-            } catch(e) {}
-        });
-    }
-});
-
-// Migration: Move flat documents and pictures to project key subfolders
-db.all("SELECT project_docs.*, projects.project_key FROM project_docs LEFT JOIN projects ON project_docs.project_id = projects.id", [], (errDocs: Error | null, docRows: any[]) => {
-    if (!errDocs && docRows) {
-        docRows.forEach(doc => {
-            const projectKey = doc.project_key || 'PRJ';
-            const isLegacyPath = doc.path && (doc.path.startsWith('/docs/') || doc.path.startsWith('/schematics/'));
-            const isAlreadyCategorized = doc.path && doc.path.startsWith(`/docs/${projectKey}/`);
-            if (isLegacyPath && !isAlreadyCategorized) {
-                const oldFilename = path.basename(doc.path);
-                const oldFilePath = path.join(__dirname, 'docs', oldFilename);
-                const newDir = path.join(__dirname, 'docs', projectKey);
-                
-                const regex = new RegExp(`^${projectKey}-(DOC|SCH)-(.*)$`, 'i');
-                const match = oldFilename.match(regex);
-                const cleanFilename = match ? match[2] : oldFilename;
-                const newFilePath = path.join(newDir, cleanFilename);
-                
-                try {
-                    if (!fs.existsSync(newDir)) {
-                        fs.mkdirSync(newDir, { recursive: true });
-                    }
-                    if (fs.existsSync(oldFilePath)) {
-                        fs.renameSync(oldFilePath, newFilePath);
-                    }
-                    lockFileExecution(newFilePath);
-                    const newRelativePath = `/docs/${projectKey}/${cleanFilename}`;
-                    db.run("UPDATE project_docs SET path = ? WHERE id = ?", [newRelativePath, doc.id]);
-                    console.log(`[Migration Docs] Moved and renamed ${oldFilename} to docs/${projectKey}/${cleanFilename}`);
-                } catch (e: any) {
-                    console.error(`[Migration Docs] Failed to move ${oldFilename}:`, e.message);
-                }
-            }
-        });
-    }
-});
-
-db.all("SELECT reworks.id, reworks.image_path, projects.project_key FROM reworks JOIN pcbs ON reworks.pcb_id = pcbs.id LEFT JOIN projects ON pcbs.project_id = projects.id WHERE reworks.image_path IS NOT NULL", [], (errReworks: Error | null, reworkRows: any[]) => {
-    if (!errReworks && reworkRows) {
-        reworkRows.forEach(rework => {
-            const projectKey = rework.project_key || 'PRJ';
-            let paths: string[] = [];
-            try {
-                paths = JSON.parse(rework.image_path || '[]');
-            } catch (e) {
-                if (rework.image_path) paths = [rework.image_path];
-            }
-            
-            let updated = false;
-            const newPaths = paths.map(picPath => {
-                if (picPath.startsWith('/pictures/') && !picPath.startsWith(`/pictures/${projectKey}/`)) {
-                    const filename = path.basename(picPath);
-                    const oldFilePath = path.join(__dirname, 'pictures', filename);
-                    const newDir = path.join(__dirname, 'pictures', projectKey);
-                    const newFilePath = path.join(newDir, filename);
-                    
-                    try {
-                        if (!fs.existsSync(newDir)) {
-                            fs.mkdirSync(newDir, { recursive: true });
-                        }
-                        if (fs.existsSync(oldFilePath)) {
-                            fs.renameSync(oldFilePath, newFilePath);
-                        }
-                        lockFileExecution(newFilePath);
-                        updated = true;
-                        return `/pictures/${projectKey}/${filename}`;
-                    } catch (e: any) {
-                        console.error(`[Migration Pictures] Failed to move ${filename}:`, e.message);
-                    }
-                }
-                return picPath;
-            });
-            
-            if (updated) {
-                db.run("UPDATE reworks SET image_path = ? WHERE id = ?", [JSON.stringify(newPaths), rework.id]);
-                console.log(`[Migration Pictures] Updated image paths for rework id ${rework.id}`);
-            }
-        });
-    }
-});
 
     // Lock all files in docs and pictures to prevent execution
     lockDirectoryFiles(path.join(__dirname, 'docs'));

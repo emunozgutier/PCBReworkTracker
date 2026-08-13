@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { PcbCardHeader } from './PcbCardHeader';
 import { PcbCardBody } from './PcbCardBody';
 import { useAppState } from '../../../store/useAppState';
+import './Cards.css';
 
 interface PcbCardProps {
     pcb: any;
@@ -17,7 +18,7 @@ export function PcbCard({ pcb, maxCrcLength }: PcbCardProps) {
         if (isExpanded && cardRef.current) {
             setTimeout(() => {
                 cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
+            }, 350);
         }
     }, [isExpanded]);
 
@@ -37,7 +38,12 @@ export function PcbCard({ pcb, maxCrcLength }: PcbCardProps) {
                 onToggle={handleToggle} 
                 maxCrcLength={maxCrcLength}
             />
-            {isExpanded && <PcbCardBody pcb={pcb} />}
+            {/* Animated expand/collapse wrapper using grid-template-rows trick */}
+            <div className={`pcb-card-body-wrapper ${isExpanded ? 'pcb-card-body-wrapper--open' : ''}`}>
+                <div className="pcb-card-body-inner">
+                    <PcbCardBody pcb={pcb} />
+                </div>
+            </div>
         </div>
     );
 }
