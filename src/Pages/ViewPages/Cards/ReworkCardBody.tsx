@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { PictureCard } from './PictureCard';
 import { useAppState } from '../../../store/useAppState';
 import { useReworkStore } from '../../../store/clientDataBase/useReworkStore';
@@ -149,7 +150,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                 )}
             </div>
 
-            {showDescriptionModal && (
+            {showDescriptionModal && createPortal(
                 <div style={{
                     position: 'fixed', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.75)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '24px'
@@ -200,14 +201,16 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                             )}
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
-            {showGallery && imagePaths.length > 0 && (
+            {showGallery && imagePaths.length > 0 && createPortal(
                 <PictureCard 
                     images={imagePaths} 
                     title={`${rework.board_number || rework.pcb_board_number || 'UNKNOWN'}-R${String(rework.rework_number || rework.id).padStart(3, '0')}`} 
                     onClose={() => setShowGallery(false)} 
-                />
+                />,
+                document.body
             )}
             <RemoveRework
                 isOpen={isRemoveOpen}
