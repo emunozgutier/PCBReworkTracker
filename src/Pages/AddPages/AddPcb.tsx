@@ -78,8 +78,9 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     const { addPcb, pcbs, fetchPcbs, loading } = usePcbStore();
 
     useEffect(() => {
-        if (pcbs.length === 0) fetchPcbs();
-    }, [fetchPcbs, pcbs.length]);
+        // Always fetch fresh so the duplicate check is up-to-date
+        fetchPcbs();
+    }, [fetchPcbs]);
 
     useEffect(() => {
         if (currentUser && currentUserRole === 'User') {
@@ -465,9 +466,9 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                     </div>
                 </FormGroup>
 
-                <button type="submit" className="submit-button" disabled={loading}>
+                <button type="submit" className="submit-button" disabled={loading || isDuplicate}>
                     <Save size={18} />
-                    <span>{loading ? 'Saving...' : 'Save PCB Board'}</span>
+                    <span>{loading ? 'Saving...' : isDuplicate ? 'Duplicate Board Name' : 'Save PCB Board'}</span>
                 </button>
             </form>
         </div>

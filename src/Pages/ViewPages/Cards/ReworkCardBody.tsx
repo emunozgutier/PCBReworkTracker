@@ -113,6 +113,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
+                    textAlign: 'left',
                 }}>
                     {rework.description?.trim() || 'No description'}
                 </span>
