@@ -153,27 +153,14 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', child
         );
     }
 
-    // ── Desktop: All / Manual mode ────────────────────────────────────────────
-    const [mode, setMode] = React.useState<'all' | 'manual'>(value.length === 0 ? 'all' : 'manual');
+    // ── Desktop ───────────────────────────────────────────────────────────────
+    const [isHovered, setIsHovered] = React.useState(false);
 
     const allItems: { optionValue: string; label: React.ReactNode }[] = [];
     React.Children.forEach(children, (child: any) => {
         if (!child) return;
         allItems.push({ optionValue: child.props.value, label: child.props.children });
     });
-
-    const handleModeAll = () => {
-        setMode('all');
-        onChange([]);
-    };
-
-    const handleModeManual = () => {
-        setMode('manual');
-        // If switching to manual with nothing selected, pre-select everything
-        if (value.length === 0) {
-            onChange(allItems.map(i => i.optionValue));
-        }
-    };
 
     const handleToggle = (optionValue: string) => {
         const isCurrentlySelected = value.includes(optionValue);
@@ -185,28 +172,27 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', child
         }
     };
 
-    const isManual = mode === 'manual';
-
     return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            width: width,
-            minWidth: '120px',
-            flexShrink: 0,
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '8px',
-            background: 'rgba(255,255,255,0.015)',
-            overflow: 'hidden',
-        }}>
-            {/* Header: title on top, All / Manual buttons below */}
-            <div style={{
+        <div
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            style={{
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'flex-start',
+                width: width,
+                minWidth: '120px',
+                flexShrink: 0,
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '8px',
+                background: 'rgba(255,255,255,0.015)',
+                overflow: 'hidden',
+            }}>
+            {/* Header: title */}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
                 padding: '8px 10px',
-                borderBottom: isManual ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                gap: '6px',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
             }}>
                 <span style={{
                     fontSize: '0.78rem',
@@ -221,54 +207,9 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', child
                 }}>
                     {title}
                 </span>
-
-                {/* Pill toggle: All | Manual */}
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    background: 'rgba(0,0,0,0.25)',
-                    borderRadius: '20px',
-                    padding: '2px',
-                    gap: '2px',
-                }}>
-                    <button
-                        onClick={handleModeAll}
-                        style={{
-                            background: !isManual ? 'var(--accent)' : 'transparent',
-                            border: 'none',
-                            borderRadius: '16px',
-                            color: !isManual ? '#fff' : 'var(--text-muted)',
-                            fontSize: '0.68rem',
-                            fontWeight: 600,
-                            padding: '3px 9px',
-                            cursor: 'pointer',
-                            transition: 'background 0.18s ease, color 0.18s ease',
-                            whiteSpace: 'nowrap',
-                        }}
-                    >
-                        All
-                    </button>
-                    <button
-                        onClick={handleModeManual}
-                        style={{
-                            background: isManual ? 'var(--accent)' : 'transparent',
-                            border: 'none',
-                            borderRadius: '16px',
-                            color: isManual ? '#fff' : 'var(--text-muted)',
-                            fontSize: '0.68rem',
-                            fontWeight: 600,
-                            padding: '3px 9px',
-                            cursor: 'pointer',
-                            transition: 'background 0.18s ease, color 0.18s ease',
-                            whiteSpace: 'nowrap',
-                        }}
-                    >
-                        Manual
-                    </button>
-                </div>
             </div>
 
-            {/* Item list — always shown; checkbox only in Manual mode */}
+            {/* Item list — checkboxes visible only on hover */}
             <div style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -276,18 +217,17 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', child
                 maxHeight: '160px',
                 overflowY: 'auto',
                 padding: '6px 6px',
-                borderTop: '1px solid rgba(255,255,255,0.06)',
             }}>
                 {allItems.map(({ optionValue, label }) => {
-                    const isChecked = isManual ? value.includes(optionValue) : true;
+                    const isChecked = value.length === 0 || value.includes(optionValue);
                     return (
                         <FilterCheckItemRow
                             key={optionValue}
                             optionValue={optionValue}
                             label={label}
                             isChecked={isChecked}
-                            showCheckbox={isManual}
-                            onToggle={isManual ? () => handleToggle(optionValue) : undefined}
+                            showCheckbox={isHovered}
+                            onToggle={() => handleToggle(optionValue)}
                         />
                     );
                 })}
