@@ -61,7 +61,8 @@ export function PcbView({ title }: PcbViewProps) {
         items = items.filter(pcb => selectedPcbRevs.includes(pcb.board_rev || ''));
     }
     if (selectedTags.length > 0) {
-        items = items.filter(pcb => selectedTags.some(tagId => pcb.tag_ids?.includes(parseInt(tagId))));
+        // selectedTags = excluded tag IDs → hide boards that have any excluded tag
+        items = items.filter(pcb => !selectedTags.some(tagId => pcb.tag_ids?.includes(parseInt(tagId))));
     }
     if (selectedOwners.length > 0) {
         items = items.filter(pcb => selectedOwners.includes(pcb.owner));

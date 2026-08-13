@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useAppState } from '../../store/useAppState';
 import { usePcbStore } from '../../store/clientDataBase/usePcbStore';
 import { useProjectStore } from '../../store/clientDataBase/useProjectStore';
@@ -101,7 +101,8 @@ export function PcbFilter() {
             if (!pcb.board_rev || !selectedPcbRevs.includes(pcb.board_rev)) return false;
         }
         if (ignoreField !== 'tag' && selectedTags.length > 0) {
-            if (!pcb.tag_ids || !selectedTags.some((tagId: string) => pcb.tag_ids?.includes(parseInt(tagId)))) return false;
+            // selectedTags = excluded tag IDs → hide boards that have any excluded tag
+            if (pcb.tag_ids && pcb.tag_ids.some((id: number) => selectedTags.includes(id.toString()))) return false;
         }
         if (ignoreField !== 'owner' && selectedOwners.length > 0) {
             if (!selectedOwners.includes(pcb.owner)) return false;
@@ -262,22 +263,28 @@ export function PcbFilter() {
                 >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         <PcbFilterElement 
-                            title="Tags" 
+                            title="Tags"
+                            exclusion
                             value={(() => {
-                                const activePublicIds = selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'public');
-                                if (activePublicIds.length === 0) return [];
-                                const sampleTag = tags.find(t => t.id.toString() === activePublicIds[0]);
-                                if (!sampleTag) return [];
-                                const name = formatTagName(sampleTag);
-                                const groupIds = tags.filter(t => t.type === 'public' && formatTagName(t) === name).map(t => t.id.toString());
-                                return [groupIds.join(',')];
+                                // value = groups that are currently EXCLUDED (unchecked)
+                                const publicTags = tags.filter(t => t.type === 'public');
+                                const grouped = new Map<string, string[]>();
+                                publicTags.forEach(t => {
+                                    const name = formatTagName(t);
+                                    if (!grouped.has(name)) grouped.set(name, []);
+                                    grouped.get(name)!.push(t.id.toString());
+                                });
+                                const excluded: string[] = [];
+                                grouped.forEach((ids) => {
+                                    if (ids.some(id => selectedTags.includes(id))) {
+                                        excluded.push(ids.join(','));
+                                    }
+                                });
+                                return excluded;
                             })()} 
-                            onChange={(newPublic) => {
-                                if (newPublic.length > 0) {
-                                    setSelectedTags(newPublic[newPublic.length - 1].split(','));
-                                } else {
-                                    setSelectedTags([]);
-                                }
+                            onChange={(newExcluded) => {
+                                // Flatten excluded group strings back to individual tag IDs
+                                setSelectedTags(newExcluded.flatMap(v => v.split(',')));
                             }}
                         >
                             {(() => {
@@ -434,22 +441,27 @@ export function PcbFilter() {
             {/* Tags & Owner Group */}
             <PcbFilterGroup title="Organization" color="#0ea5e9">
                 <PcbFilterElement 
-                    title="Tags" 
+                    title="Tags"
+                    exclusion
                     value={(() => {
-                        const activePublicIds = selectedTags.filter(id => tags.find(t => t.id.toString() === id)?.type === 'public');
-                        if (activePublicIds.length === 0) return [];
-                        const sampleTag = tags.find(t => t.id.toString() === activePublicIds[0]);
-                        if (!sampleTag) return [];
-                        const name = formatTagName(sampleTag);
-                        const groupIds = tags.filter(t => t.type === 'public' && formatTagName(t) === name).map(t => t.id.toString());
-                        return [groupIds.join(',')];
+                        // value = groups that are currently EXCLUDED (unchecked)
+                        const publicTags = tags.filter(t => t.type === 'public');
+                        const grouped = new Map<string, string[]>();
+                        publicTags.forEach(t => {
+                            const name = formatTagName(t);
+                            if (!grouped.has(name)) grouped.set(name, []);
+                            grouped.get(name)!.push(t.id.toString());
+                        });
+                        const excluded: string[] = [];
+                        grouped.forEach((ids) => {
+                            if (ids.some(id => selectedTags.includes(id))) {
+                                excluded.push(ids.join(','));
+                            }
+                        });
+                        return excluded;
                     })()} 
-                    onChange={(newPublic) => {
-                        if (newPublic.length > 0) {
-                            setSelectedTags(newPublic[newPublic.length - 1].split(','));
-                        } else {
-                            setSelectedTags([]);
-                        }
+                    onChange={(newExcluded) => {
+                        setSelectedTags(newExcluded.flatMap(v => v.split(',')));
                     }}
                 >
                     {(() => {

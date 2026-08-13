@@ -7,10 +7,17 @@ interface PcbFilterElementProps {
     value: string[];
     onChange: (selected: string[]) => void;
     width?: string;
+    /**
+     * exclusion mode — value[] holds the EXCLUDED items.
+     * checked  = NOT in value → board is shown
+     * unchecked = IN value   → board is hidden
+     * value=[] → nothing excluded → all boards visible
+     */
+    exclusion?: boolean;
     children: React.ReactNode;
 }
 
-export function PcbFilterElement({ title, value, onChange, width = 'auto', children }: PcbFilterElementProps) {
+export function PcbFilterElement({ title, value, onChange, width = 'auto', exclusion = false, children }: PcbFilterElementProps) {
     const isMobile = useAppState(state => state.isMobile);
     const [isElementExpanded, setIsElementExpanded] = React.useState(false);
 
@@ -76,13 +83,17 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', child
                         {React.Children.map(children, (child: any) => {
                             if (!child) return null;
                             const optionValue = child.props.value;
-                            const isSelected = value.includes(optionValue);
+                            const isInValue = value.includes(optionValue);
+                            // In exclusion mode: being IN value means EXCLUDED (unchecked).
+                            // In normal mode: being IN value means SELECTED (checked).
+                            const isChecked = exclusion ? !isInValue : isInValue;
                             return (
                                 <div 
                                     onClick={(e) => {
                                         e.preventDefault();
+                                        // Toggle the item in/out of the value list
                                         let newVal = [...value];
-                                        if (isSelected) {
+                                        if (isInValue) {
                                             newVal = newVal.filter(v => v !== optionValue);
                                         } else {
                                             newVal.push(optionValue);
@@ -94,8 +105,8 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', child
                                         borderRadius: '4px',
                                         fontSize: '0.85rem',
                                         cursor: 'pointer',
-                                        backgroundColor: isSelected ? 'rgba(99, 102, 241, 0.08)' : 'transparent',
-                                        color: isSelected ? 'var(--accent)' : 'var(--text)',
+                                        backgroundColor: isChecked ? 'rgba(99, 102, 241, 0.08)' : 'transparent',
+                                        color: isChecked ? 'var(--accent)' : 'var(--text)',
                                         userSelect: 'none',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -113,15 +124,15 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', child
                                     <div style={{
                                         width: '16px',
                                         height: '16px',
-                                        border: `1.5px solid ${isSelected ? 'var(--accent)' : 'var(--text-muted)'}`,
+                                        border: `1.5px solid ${isChecked ? 'var(--accent)' : 'var(--text-muted)'}`,
                                         borderRadius: '3px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        backgroundColor: isSelected ? 'var(--accent)' : 'transparent',
+                                        backgroundColor: isChecked ? 'var(--accent)' : 'transparent',
                                         flexShrink: 0
                                     }}>
-                                        {isSelected && (
+                                        {isChecked && (
                                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                                                 <polyline points="20 6 9 17 4 12"></polyline>
                                             </svg>
@@ -144,7 +155,7 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', child
                                     fontWeight: 600
                                 }}
                             >
-                                Clear All
+                                {exclusion ? 'Show All' : 'Clear All'}
                             </button>
                         )}
                     </div>
@@ -163,14 +174,23 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', child
     });
 
     const handleToggle = (optionValue: string) => {
-        if (value.length === 0) {
-            // "All selected" — unchecking one means exclude just that item
+        if (exclusion) {
+            // Exclusion mode: simply toggle presence in the exclusion list
+            const isExcluded = value.includes(optionValue);
+            if (isExcluded) {
+                // Un-exclude (check it) → remove from list
+                onChange(value.filter(v => v !== optionValue));
+            } else {
+                // Exclude (uncheck it) → add to list
+                onChange([...value, optionValue]);
+            }
+        } else if (value.length === 0) {
+            // Normal "all selected" mode — unchecking one means exclude just that item
             onChange(allItems.map(i => i.optionValue).filter(v => v !== optionValue));
         } else {
             const isCurrentlySelected = value.includes(optionValue);
             if (isCurrentlySelected) {
-                const newVal = value.filter(v => v !== optionValue);
-                onChange(newVal);
+                onChange(value.filter(v => v !== optionValue));
             } else {
                 onChange([...value, optionValue]);
             }
@@ -224,7 +244,11 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', child
                 padding: '6px 6px',
             }}>
                 {allItems.map(({ optionValue, label }) => {
-                    const isChecked = value.length === 0 || value.includes(optionValue);
+                    const isExcluded = value.includes(optionValue);
+                    // exclusion: checked = NOT excluded. normal: checked = in value OR value empty
+                    const isChecked = exclusion
+                        ? !isExcluded
+                        : value.length === 0 || value.includes(optionValue);
                     return (
                         <FilterCheckItemRow
                             key={optionValue}
@@ -275,7 +299,7 @@ function FilterCheckItemRow({ label, isChecked, showCheckbox = true, onToggle }:
                 transition: 'background 0.15s ease',
             }}
         >
-            {/* Checkbox — always reserves space; invisible in All mode */}
+            {/* Checkbox — always reserves space; invisible when not hovered */}
             <div
                 style={{
                     width: '15px',
