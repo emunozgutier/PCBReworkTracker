@@ -207,7 +207,7 @@ export function PcbFilter() {
                     onToggle={() => setExpandedGroup(expandedGroup === 'pcb' ? null : 'pcb')}
                 >
                     <div className="pcb-filter-group-inner">
-                        <PcbFilterElement title="Name" value={selectedBoardNumbers} onChange={setSelectedBoardNumbers}>
+                        <PcbFilterElement title="Name" value={selectedBoardNumbers} onChange={setSelectedBoardNumbers} width="150px">
                             {pcbs
                                 .filter(pcb => matchPcb(pcb, 'boardnum'))
                                 .sort((a,b) => a.board_number.localeCompare(b.board_number))
@@ -380,7 +380,7 @@ export function PcbFilter() {
 
             {/* PCB Group */}
             <PcbFilterGroup title="PCB Filters" color={COLORS.purpleAccent}>
-                <PcbFilterElement title="Name" value={selectedBoardNumbers} onChange={setSelectedBoardNumbers}>
+                <PcbFilterElement title="Name" value={selectedBoardNumbers} onChange={setSelectedBoardNumbers} width="150px">
                     {(anyFieldDeselectedAll ? pcbs : pcbs.filter(pcb => matchPcb(pcb, 'boardnum')))
                         .sort((a,b) => a.board_number.localeCompare(b.board_number))
                         .map(pcb => (
