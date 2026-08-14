@@ -25,7 +25,31 @@ const SPINNER_ICON = (
     </svg>
 );
 
+const PENDING_ICON = (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="9" />
+    </svg>
+);
+
 export function BrdLoadingOverlay({ steps, currentStep, filename }: BrdLoadingOverlayProps) {
+    // Auto-scroll: keep the active step visible by scrolling it into view
+    const activeRef = React.useRef<HTMLLIElement>(null);
+    const listRef = React.useRef<HTMLUListElement>(null);
+
+    React.useEffect(() => {
+        if (!activeRef.current || !listRef.current) return;
+        const list = listRef.current;
+        const item = activeRef.current;
+        // Scroll so the active step is at the bottom of the visible area
+        const itemBottom = item.offsetTop + item.offsetHeight;
+        const listVisible = list.clientHeight;
+        if (itemBottom > list.scrollTop + listVisible) {
+            list.scrollTop = itemBottom - listVisible + 8;
+        }
+    }, [currentStep]);
+
+    const pct = Math.round((currentStep / steps.length) * 100);
+
     return (
         <div className="brd-loading-overlay">
             <div className="brd-loading-card">
@@ -54,37 +78,29 @@ export function BrdLoadingOverlay({ steps, currentStep, filename }: BrdLoadingOv
 
                 {/* Progress bar */}
                 <div className="brd-progress-track">
-                    <div
-                        className="brd-progress-fill"
-                        style={{ width: `${Math.round((currentStep / steps.length) * 100)}%` }}
-                    />
+                    <div className="brd-progress-fill" style={{ width: `${pct}%` }} />
                 </div>
-                <span className="brd-progress-pct">
-                    {Math.round((currentStep / steps.length) * 100)}%
-                </span>
+                <span className="brd-progress-pct">{pct}%</span>
 
-                {/* Step checklist */}
-                <ul className="brd-step-list">
+                {/* Step checklist — scrollable, top clips away as steps complete */}
+                <ul className="brd-step-list" ref={listRef}>
                     {steps.map((step, idx) => {
-                        const done = idx < currentStep;
-                        const active = idx === currentStep;
+                        const done    = idx < currentStep;
+                        const active  = idx === currentStep;
                         const pending = idx > currentStep;
                         return (
                             <li
                                 key={step.id}
+                                ref={active ? activeRef : undefined}
                                 className={[
                                     'brd-step',
-                                    done ? 'brd-step--done' : '',
-                                    active ? 'brd-step--active' : '',
-                                    pending ? 'brd-step--pending' : '',
-                                ].join(' ')}
+                                    done    ? 'brd-step--done'    : '',
+                                    active  ? 'brd-step--active'  : '',
+                                    pending ? 'brd-step--pending'  : '',
+                                ].filter(Boolean).join(' ')}
                             >
                                 <span className="brd-step-icon">
-                                    {done ? CHECK_ICON : active ? SPINNER_ICON : (
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <circle cx="12" cy="12" r="9" />
-                                        </svg>
-                                    )}
+                                    {done ? CHECK_ICON : active ? SPINNER_ICON : PENDING_ICON}
                                 </span>
                                 <span className="brd-step-label">{step.label}</span>
                             </li>

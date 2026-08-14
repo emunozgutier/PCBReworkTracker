@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { useProjectStore } from '../store/clientDataBase/useProjectStore';
 import { BoardCanvas } from './BoardViewer/canvas';
@@ -20,29 +20,27 @@ interface BoardViewerProps {
 
 // ── Loading step definitions ──────────────────────────────────────────────────
 const LOAD_STEPS: LoadStep[] = [
-    { id: 'projects',  label: 'Loading projects'         },
-    { id: 'docs',      label: 'Loading project documents' },
-    { id: 'resolve',   label: 'Resolving board file'      },
-    { id: 'download',  label: 'Downloading board file'    },
-    { id: 'detect',    label: 'Detecting file format'     },
-    { id: 'parse',     label: 'Parsing board layout'      },
-    { id: 'adapt',     label: 'Building component data'   },
-    { id: 'layers',    label: 'Initializing layers'       },
+    { id: 'projects',  label: 'Loading projects'          },
+    { id: 'docs',      label: 'Loading project documents'  },
+    { id: 'resolve',   label: 'Resolving board file'       },
+    { id: 'download',  label: 'Downloading board file'     },
+    { id: 'detect',    label: 'Detecting file format'      },
+    { id: 'parse',     label: 'Parsing board layout'       },
+    { id: 'adapt',     label: 'Building component data'    },
+    { id: 'layers',    label: 'Initializing layers'        },
 ];
 
 export function BoardViewer({ docId, onBack }: BoardViewerProps) {
-    const { projects, projectDocs, fetchProjects, fetchDocs } = useProjectStore();
     const { isMobile } = useAppState();
     const [error, setError] = useState<string | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // ── Step-driven loading state ─────────────────────────────────────────────
-    /** Index of the step currently executing (0 = not started / all done when > last index) */
-    const [currentStep, setCurrentStep] = useState(0);
+    const [currentStep, setCurrentStep] = useState<number>(0);
     const isLoading = currentStep < LOAD_STEPS.length;
+    const hasStarted = useRef(false);
 
-    const [fileContent, setFileContent] = useState<string | ArrayBuffer | null>(null);
-    const [formatType, setFormatType] = useState<'eagle' | 'allegro' | 'binary' | null>(null);
+    const [boardDoc, setBoardDoc] = useState<any>(null);
     const [boardData, setBoardData] = useState<BoardData | null>(null);
 
     const {
@@ -55,86 +53,67 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
         setVisibleLayers,
     } = useBoardViewer();
 
-    // ── Find the doc from the store ───────────────────────────────────────────
-    const boardDoc = useMemo(() => {
-        for (const projectId in projectDocs) {
-            const docs = projectDocs[projectId];
-            const found = docs.find((d: any) => d.id.toString() === docId.toString());
-            if (found) return found;
-        }
-        return null;
-    }, [projectDocs, docId]);
-
-    // ── Sequential async loader ───────────────────────────────────────────────
-    const runLoad = useCallback(async () => {
-        try {
-            // Step 0 — load projects
-            setCurrentStep(0);
-            if (projects.length === 0) {
-                await fetchProjects();
-            }
-
-            // Step 1 — load docs for all projects
-            setCurrentStep(1);
-            const promises = projects.map(p => fetchDocs(p.id));
-            await Promise.all(promises);
-
-            // Step 2 — resolve document (boardDoc is derived from the store; re-check)
-            setCurrentStep(2);
-            // Give React one tick to propagate the fetched docs into `boardDoc`
-            await new Promise(r => setTimeout(r, 50));
-
-            // boardDoc is still computed via useMemo from store — read it fresh via ref trick below
-
-        } catch (err: any) {
-            setError(err.message || 'Failed to load board metadata.');
-            setCurrentStep(LOAD_STEPS.length); // stop spinner
-        }
-    }, [projects, fetchProjects, fetchDocs]);
-
-    // Kick off metadata loading once
+    // ── Single sequential loader — runs exactly once ──────────────────────────
     useEffect(() => {
-        runLoad();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // intentionally only once on mount
+        if (hasStarted.current) return;
+        hasStarted.current = true;
 
-    // Step 3+ — once boardDoc is resolved, download + parse
-    useEffect(() => {
-        if (!boardDoc) return;
-        if (currentStep > 2) return; // already past this point
-
-        const load = async () => {
+        const doLoad = async () => {
             try {
+                // Step 0 — load projects
+                setCurrentStep(0);
+                const { fetchProjects, fetchDocs } = useProjectStore.getState();
+                let { projects } = useProjectStore.getState();
+                if (projects.length === 0) {
+                    await fetchProjects();
+                    projects = useProjectStore.getState().projects;
+                }
+
+                // Step 1 — load docs for every project
+                setCurrentStep(1);
+                await Promise.all(projects.map(p => fetchDocs(p.id)));
+
+                // Step 2 — resolve board document by docId
+                setCurrentStep(2);
+                await new Promise(r => setTimeout(r, 30)); // let store settle
+                const { projectDocs } = useProjectStore.getState();
+                let found: any = null;
+                for (const pid in projectDocs) {
+                    const doc = projectDocs[pid].find(
+                        (d: any) => d.id.toString() === docId.toString()
+                    );
+                    if (doc) { found = doc; break; }
+                }
+                if (!found) {
+                    setError('Board document not found. It may have been removed.');
+                    setCurrentStep(LOAD_STEPS.length);
+                    return;
+                }
+                setBoardDoc(found);
+
                 // Step 3 — download
                 setCurrentStep(3);
-                const fullUrl = getDocumentUrl(boardDoc.path, boardDoc.filename);
+                const fullUrl = getDocumentUrl(found.path, found.filename);
                 const res = await fetch(fullUrl);
                 if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to retrieve board file`);
                 const buffer = await res.arrayBuffer();
 
                 // Step 4 — detect format
                 setCurrentStep(4);
-                await new Promise(r => setTimeout(r, 0)); // let React paint the step
+                await new Promise(r => setTimeout(r, 0));
                 const uint8 = new Uint8Array(buffer.slice(0, 100));
                 let headerText = '';
                 for (let i = 0; i < uint8.length; i++) headerText += String.fromCharCode(uint8[i]);
                 const isXml = headerText.trim().startsWith('<?xml') || headerText.trim().startsWith('<eagle');
 
-                let content: string | ArrayBuffer;
-                let fmt: 'eagle' | 'allegro' | 'binary';
-                if (isXml) {
-                    content = new TextDecoder().decode(buffer);
-                    fmt = 'eagle';
-                } else {
-                    content = buffer;
-                    fmt = 'allegro';
-                }
-                setFileContent(content);
-                setFormatType(fmt);
+                const content: string | ArrayBuffer = isXml
+                    ? new TextDecoder().decode(buffer)
+                    : buffer;
+                const fmt: 'eagle' | 'allegro' = isXml ? 'eagle' : 'allegro';
 
-                // Step 5 — parse (synchronous but CPU-heavy — yield first so the UI paints)
+                // Step 5 — parse (CPU heavy — yield first so UI can paint the step)
                 setCurrentStep(5);
-                await new Promise(r => setTimeout(r, 10));
+                await new Promise(r => setTimeout(r, 20));
 
                 let parsed: BoardData;
                 try {
@@ -148,14 +127,14 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
                         parsed = parseAllegro(content as ArrayBuffer);
                     }
                 } catch (e: any) {
-                    console.warn('Parse failed, falling back:', e);
+                    console.warn('Primary parse failed, using fallback:', e);
                     const text = typeof content === 'string'
                         ? content
                         : new TextDecoder().decode(content);
                     parsed = parseBinaryFallback(text);
                 }
 
-                // Step 6 — adapt / post-process (already done inside parse, but label it)
+                // Step 6 — store adapted board data
                 setCurrentStep(6);
                 await new Promise(r => setTimeout(r, 0));
                 setBoardData(parsed);
@@ -176,9 +155,9 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
             }
         };
 
-        load();
+        doLoad();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [boardDoc]);
+    }, []); // intentionally empty — runs exactly once on mount
 
     // ── Handlers ──────────────────────────────────────────────────────────────
     const [selectionSource, setSelectionSource] = useState<'search' | 'click' | null>(null);
@@ -199,7 +178,9 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
 
     const handleSelectSearchItem = (type: 'element' | 'net', name: string) => {
         setSelectionSource('search');
-        setSelectedItem((selectedItem?.type === type && selectedItem?.name === name) ? null : { type, name });
+        setSelectedItem(
+            (selectedItem?.type === type && selectedItem?.name === name) ? null : { type, name }
+        );
     };
 
     // ── Render ────────────────────────────────────────────────────────────────

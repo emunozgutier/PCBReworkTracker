@@ -20,6 +20,9 @@
     min-width: 300px;
     max-width: 380px;
     width: 100%;
+    /* Constrain card height so it always fits the screen */
+    max-height: 90vh;
+    overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
@@ -84,7 +87,7 @@
     margin-top: -4px;
 }
 
-/* Step list */
+/* Step list — scrollable, completed steps disappear upward */
 .brd-step-list {
     list-style: none;
     margin: 4px 0 0 0;
@@ -93,6 +96,19 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+    /* Show ~5 steps max; top clips away as progress advances */
+    max-height: 180px;
+    overflow-y: auto;
+    /* Hide the scrollbar visually — scrolling is programmatic only */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    /* Top fade to reinforce that completed steps scroll away */
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 20%);
+}
+
+.brd-step-list::-webkit-scrollbar {
+    display: none;
 }
 
 .brd-step {
