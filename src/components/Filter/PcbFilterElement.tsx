@@ -166,6 +166,7 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
 
     // ── Desktop ───────────────────────────────────────────────────────────────
     const [isHovered, setIsHovered] = React.useState(false);
+    const [headerHovered, setHeaderHovered] = React.useState(false);
 
     const allItems: { optionValue: string; label: React.ReactNode }[] = [];
     React.Children.forEach(children, (child: any) => {
@@ -197,10 +198,18 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
         }
     };
 
+    const hasActiveSelections = value.length > 0;
+
+    const handleHeaderCheckboxClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        // Reset — deselect all
+        onChange([]);
+    };
+
     return (
         <div
             onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            onMouseLeave={() => { setIsHovered(false); setHeaderHovered(false); }}
             style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -212,13 +221,17 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                 background: 'rgba(255,255,255,0.015)',
                 overflow: 'hidden',
             }}>
-            {/* Header: title */}
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '8px 10px',
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
-            }}>
+            {/* Header: title + hover-revealed deselect-all checkbox */}
+            <div
+                onMouseEnter={() => setHeaderHovered(true)}
+                onMouseLeave={() => setHeaderHovered(false)}
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '8px 10px',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    gap: '6px',
+                }}>
                 <span style={{
                     fontSize: '0.78rem',
                     fontWeight: 700,
@@ -228,10 +241,37 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    width: '100%',
+                    flex: 1,
                 }}>
                     {title}
                 </span>
+
+                {/* Deselect-all checkbox — amber color, fades in on header hover */}
+                <div
+                    onClick={hasActiveSelections ? handleHeaderCheckboxClick : undefined}
+                    title={hasActiveSelections ? 'Deselect all' : 'Nothing active to deselect'}
+                    style={{
+                        width: '13px',
+                        height: '13px',
+                        borderRadius: '3px',
+                        border: `1.5px solid ${hasActiveSelections ? '#f59e0b' : 'rgba(255,255,255,0.2)'}`,
+                        backgroundColor: hasActiveSelections ? '#f59e0b' : 'transparent',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        cursor: hasActiveSelections ? 'pointer' : 'default',
+                        transition: 'opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease',
+                        opacity: headerHovered ? 1 : 0,
+                        pointerEvents: headerHovered ? 'auto' : 'none',
+                    }}
+                >
+                    {hasActiveSelections && (
+                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    )}
+                </div>
             </div>
 
             {/* Item list — checkboxes visible only on hover */}

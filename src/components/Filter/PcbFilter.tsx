@@ -334,7 +334,7 @@ export function PcbFilter() {
                 <PcbFilterElement title="Projects" value={selectedProjects} onChange={setSelectedProjects}>
                     {projects.map(p => {
                         const count = pcbs.filter(pcb => pcb.project === p.name && matchPcb(pcb, 'project')).length;
-                        if (count === 0 && hasAnyOtherFilter('project')) return null;
+                        if (count === 0 && hasAnyOtherFilter('project') && !selectedProjects.includes(p.id.toString())) return null;
                         return <option key={p.id} value={p.id.toString()}>{p.name} ({count})</option>;
                     })}
                 </PcbFilterElement>
@@ -352,7 +352,7 @@ export function PcbFilter() {
 
                         return Array.from(allRevs).sort().map(rev => {
                             const count = pcbs.filter(pcb => (pcb.silicon_rev === rev || (rev === 'No part' && (pcb.silicon_rev === 'No part yet' || pcb.silicon_rev === 'No part'))) && matchPcb(pcb, 'revision')).length;
-                            if (count === 0 && hasAnyOtherFilter('revision')) return null;
+                            if (count === 0 && hasAnyOtherFilter('revision') && !selectedRevisions.includes(rev)) return null;
                             return <option key={rev} value={rev}>{rev === 'No part' || rev === 'No part yet' ? 'N/A (No part)' : rev} ({count})</option>;
                         });
                     })()}
@@ -366,7 +366,7 @@ export function PcbFilter() {
 
                         return Array.from(allCorners).filter(Boolean).sort().map(corner => {
                             const count = pcbs.filter(pcb => pcb.silicon_corner === corner && matchPcb(pcb, 'corner')).length;
-                            if (count === 0 && hasAnyOtherFilter('corner')) return null;
+                            if (count === 0 && hasAnyOtherFilter('corner') && !selectedCorners.includes(corner)) return null;
                             return <option key={corner} value={corner}>{corner} ({count})</option>;
                         });
                     })()}
@@ -394,7 +394,7 @@ export function PcbFilter() {
 
                         return Array.from(allFlavors).sort().map(ff => {
                             const count = pcbs.filter(pcb => pcb.board_flavor === ff && matchPcb(pcb, 'flavor')).length;
-                            if (count === 0 && hasAnyOtherFilter('flavor')) return null;
+                            if (count === 0 && hasAnyOtherFilter('flavor') && !selectedFlavors.includes(ff)) return null;
                             return <option key={ff} value={ff}>{ff} ({count})</option>;
                         });
                     })()}
@@ -416,7 +416,7 @@ export function PcbFilter() {
 
                         return Array.from(allPcbRevs).sort().map(pr => {
                             const count = pcbs.filter(pcb => pcb.board_rev === pr && matchPcb(pcb, 'pcbrev')).length;
-                            if (count === 0 && hasAnyOtherFilter('pcbrev')) return null;
+                            if (count === 0 && hasAnyOtherFilter('pcbrev') && !selectedPcbRevs.includes(pr)) return null;
                             return <option key={pr} value={pr}>{pr} ({count})</option>;
                         });
                     })()}
@@ -431,7 +431,7 @@ export function PcbFilter() {
 
                         return Array.from(allBoms).filter(Boolean).sort().map(b => {
                             const count = pcbs.filter(pcb => pcb.bom === b && matchPcb(pcb, 'bom')).length;
-                            if (count === 0 && hasAnyOtherFilter('bom')) return null;
+                            if (count === 0 && hasAnyOtherFilter('bom') && !selectedBoms.includes(b)) return null;
                             return <option key={b} value={b}>{b} ({count})</option>;
                         });
                     })()}
@@ -476,8 +476,8 @@ export function PcbFilter() {
                         return Array.from(grouped.entries()).map(([name, groupTags]) => {
                             const groupIds = groupTags.map(t => t.id);
                             const count = pcbs.filter(pcb => pcb.tag_ids && pcb.tag_ids.some(id => groupIds.includes(id)) && matchPcb(pcb, 'tag')).length;
-                            if (count === 0 && hasAnyOtherFilter('tag')) return null;
                             const valueStr = groupIds.join(',');
+                            if (count === 0 && hasAnyOtherFilter('tag') && !selectedTags.some(id => groupIds.includes(id))) return null;
                             return <option key={name} value={valueStr}>{name} ({count})</option>;
                         });
                     })()}
@@ -486,7 +486,7 @@ export function PcbFilter() {
                 <PcbFilterElement title="Owner" value={selectedOwners} onChange={setSelectedOwners}>
                     {owners.map(owner => {
                         const count = pcbs.filter(pcb => pcb.owner === owner.name && matchPcb(pcb, 'owner')).length;
-                        if (count === 0 && hasAnyOtherFilter('owner')) return null;
+                        if (count === 0 && hasAnyOtherFilter('owner') && !selectedOwners.includes(owner.name)) return null;
                         return <option key={owner.id} value={owner.name}>{owner.username} ({count})</option>;
                     })}
                 </PcbFilterElement>
