@@ -169,7 +169,6 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
     const NONE = '__NONE__';
 
     const [isHovered, setIsHovered] = React.useState(false);
-    const [headerHovered, setHeaderHovered] = React.useState(false);
 
     const allItems: { optionValue: string; label: React.ReactNode }[] = [];
     React.Children.forEach(children, (child: any) => {
@@ -197,7 +196,10 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
             onChange([optionValue]);
         } else if (value.length === 0) {
             // Implicit-all → unchecking one item means "show everything except this"
-            onChange(allItems.map(i => i.optionValue).filter(v => v !== optionValue));
+            const next = allItems.map(i => i.optionValue).filter(v => v !== optionValue);
+            // If there was only one item, result is [] which would cycle back to "all selected"
+            // Use sentinel instead to properly represent "all deselected"
+            onChange(next.length === 0 ? [NONE] : next);
         } else {
             const isCurrentlySelected = value.includes(optionValue);
             if (isCurrentlySelected) {
@@ -210,19 +212,12 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
         }
     };
 
-    const handleMasterClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
+    // Simplified toggle without event param — used by FilterCheckItemRow's onToggle
+    const handleMasterToggle = () => {
         if (exclusion) {
-            // Exclusion: toggle between "exclude all" and "exclude none"
             onChange(value.length === 0 ? allItems.map(i => i.optionValue) : []);
         } else {
-            if (masterChecked) {
-                // All currently selected → deselect all (use sentinel so 0 boards show)
-                onChange([NONE]);
-            } else {
-                // Some or none selected → select all (reset to implicit-all)
-                onChange([]);
-            }
+            onChange(masterChecked ? [NONE] : []);
         }
     };
 
@@ -241,59 +236,30 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                 background: 'rgba(255,255,255,0.015)',
                 overflow: 'hidden',
             }}>
-            {/* Header: master-checkbox (LEFT) + title */}
+            {/* Header — identical FilterCheckItemRow with amber checkbox + border separator */}
             <div
-                onMouseEnter={() => setHeaderHovered(true)}
-                onMouseLeave={() => setHeaderHovered(false)}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '8px 10px',
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
-                    gap: '7px',
-                    cursor: headerHovered ? 'pointer' : 'default',
-                }}
-                onClick={headerHovered ? handleMasterClick : undefined}
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
             >
-                {/* Master checkbox — amber, left-aligned, fades in on header hover */}
-                <div
-                    style={{
-                        width: '13px',
-                        height: '13px',
-                        borderRadius: '3px',
-                        border: `1.5px solid ${masterChecked ? '#f59e0b' : 'rgba(245,158,11,0.45)'}`,
-                        backgroundColor: masterChecked ? '#f59e0b' : 'transparent',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        transition: 'opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease',
-                        opacity: headerHovered ? 1 : 0,
-                        pointerEvents: 'none', // click handled by parent div
-                    }}
-                >
-                    {masterChecked && (
-                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                    )}
-                </div>
-
-                <span style={{
-                    fontSize: '0.78rem',
-                    fontWeight: 700,
-                    color: 'var(--text-muted)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    flex: 1,
-                    userSelect: 'none',
-                }}>
-                    {title}
-                </span>
+                <FilterCheckItemRow
+                    optionValue="__master__"
+                    label={
+                        <span style={{
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.04em',
+                            fontWeight: isHovered ? (masterChecked ? 600 : 400) : 400,
+                        }}>
+                            {title}
+                        </span>
+                    }
+                    isChecked={masterChecked}
+                    showCheckbox={isHovered}
+                    onToggle={handleMasterToggle}
+                    checkboxColor="#f59e0b"
+                    noStrikethrough
+                />
             </div>
+
 
             {/* Item list — checkboxes visible only on hover */}
             <div style={{
@@ -302,7 +268,7 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                 gap: '2px',
                 maxHeight: '160px',
                 overflowY: 'auto',
-                padding: '6px 6px',
+                padding: '6px 0',
             }}>
                 {allItems.map(({ optionValue, label }) => {
                     const isExcluded = value.includes(optionValue);
@@ -334,11 +300,16 @@ interface FilterCheckItemRowProps {
     isChecked: boolean;
     showCheckbox?: boolean;
     onToggle?: () => void;
+    /** Override the checkbox fill/border color (default: var(--accent) purple) */
+    checkboxColor?: string;
+    /** When true the label never gets a strikethrough, even when unchecked */
+    noStrikethrough?: boolean;
 }
 
-function FilterCheckItemRow({ label, isChecked, showCheckbox = true, onToggle }: FilterCheckItemRowProps) {
+function FilterCheckItemRow({ label, isChecked, showCheckbox = true, onToggle, checkboxColor, noStrikethrough }: FilterCheckItemRowProps) {
     const [hovered, setHovered] = React.useState(false);
     const interactive = showCheckbox && !!onToggle;
+    const color = checkboxColor ?? 'var(--accent)';
 
     return (
         <div
@@ -367,8 +338,8 @@ function FilterCheckItemRow({ label, isChecked, showCheckbox = true, onToggle }:
                     width: '15px',
                     height: '15px',
                     borderRadius: '3px',
-                    border: `1.5px solid ${isChecked ? 'var(--accent)' : 'rgba(255,255,255,0.25)'}`,
-                    backgroundColor: isChecked ? 'var(--accent)' : 'transparent',
+                    border: `1.5px solid ${isChecked ? color : 'rgba(255,255,255,0.25)'}`,
+                    backgroundColor: isChecked ? color : 'transparent',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -405,7 +376,7 @@ function FilterCheckItemRow({ label, isChecked, showCheckbox = true, onToggle }:
                     textOverflow: 'ellipsis',
                     transition: 'color 0.15s ease, text-decoration-color 0.15s ease',
                     fontWeight: showCheckbox ? (isChecked ? 500 : 400) : 400,
-                    textDecoration: !isChecked ? 'line-through' : 'none',
+                    textDecoration: (!isChecked && !noStrikethrough) ? 'line-through' : 'none',
                     textDecorationColor: 'var(--text-muted)',
                 }}
             >
