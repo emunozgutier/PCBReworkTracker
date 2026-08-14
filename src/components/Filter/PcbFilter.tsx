@@ -82,56 +82,64 @@ export function PcbFilter() {
     const { tags } = useTagStore();
     const { owners } = useOwnerStore();
 
-    // Helper to evaluate a PCB against all filters except the one currently generating options
+    // Helper to evaluate a PCB against all filters except the one currently generating options.
+    // Fields whose value is the deselect-all sentinel ['__NONE__'] are treated as inactive
+    // so that other filter elements keep showing meaningful counts.
     const matchPcb = (pcb: any, ignoreField: 'project' | 'revision' | 'corner' | 'flavor' | 'pcbrev' | 'tag' | 'owner' | 'boardnum' | 'bom') => {
-        if (ignoreField !== 'project' && selectedProjects.length > 0) {
+        if (ignoreField !== 'project' && selectedProjects.length > 0 && !isDeselectedAll(selectedProjects)) {
             const pObj = projects.find(p => p.name === pcb.project);
             if (!pObj || !selectedProjects.includes(pObj.id.toString())) return false;
         }
-        if (ignoreField !== 'revision' && selectedRevisions.length > 0) {
+        if (ignoreField !== 'revision' && selectedRevisions.length > 0 && !isDeselectedAll(selectedRevisions)) {
             if (!pcb.silicon_rev || !selectedRevisions.includes(pcb.silicon_rev)) return false;
         }
-        if (ignoreField !== 'corner' && selectedCorners.length > 0) {
+        if (ignoreField !== 'corner' && selectedCorners.length > 0 && !isDeselectedAll(selectedCorners)) {
             if (!pcb.silicon_corner || !selectedCorners.includes(pcb.silicon_corner)) return false;
         }
-        if (ignoreField !== 'flavor' && selectedFlavors.length > 0) {
+        if (ignoreField !== 'flavor' && selectedFlavors.length > 0 && !isDeselectedAll(selectedFlavors)) {
             if (!pcb.board_flavor || !selectedFlavors.includes(pcb.board_flavor)) return false;
         }
-        if (ignoreField !== 'pcbrev' && selectedPcbRevs.length > 0) {
+        if (ignoreField !== 'pcbrev' && selectedPcbRevs.length > 0 && !isDeselectedAll(selectedPcbRevs)) {
             if (!pcb.board_rev || !selectedPcbRevs.includes(pcb.board_rev)) return false;
         }
-        if (ignoreField !== 'tag' && selectedTags.length > 0) {
+        if (ignoreField !== 'tag' && selectedTags.length > 0 && !isDeselectedAll(selectedTags)) {
             // selectedTags = excluded tag IDs → hide boards that have any excluded tag
             if (pcb.tag_ids && pcb.tag_ids.some((id: number) => selectedTags.includes(id.toString()))) return false;
         }
-        if (ignoreField !== 'owner' && selectedOwners.length > 0) {
+        if (ignoreField !== 'owner' && selectedOwners.length > 0 && !isDeselectedAll(selectedOwners)) {
             if (!selectedOwners.includes(pcb.owner)) return false;
         }
-        if (ignoreField !== 'boardnum' && selectedBoardNumbers.length > 0) {
+        if (ignoreField !== 'boardnum' && selectedBoardNumbers.length > 0 && !isDeselectedAll(selectedBoardNumbers)) {
             if (!selectedBoardNumbers.includes(pcb.board_number)) return false;
         }
-        if (ignoreField !== 'bom' && selectedBoms.length > 0) {
+        if (ignoreField !== 'bom' && selectedBoms.length > 0 && !isDeselectedAll(selectedBoms)) {
             if (!pcb.bom || !selectedBoms.includes(pcb.bom)) return false;
         }
         return true;
     };
 
     const hasAnyOtherFilter = (ignoreField: string) => {
+        // A field counts as "active" only if it has real selections (not the deselect-all sentinel)
+        const isActive = (arr: string[]) => arr.length > 0 && !isDeselectedAll(arr);
         const filters = {
-            project: selectedProjects.length > 0,
-            revision: selectedRevisions.length > 0,
-            corner: selectedCorners.length > 0,
-            flavor: selectedFlavors.length > 0,
-            pcbrev: selectedPcbRevs.length > 0,
-            tag: selectedTags.length > 0,
-            owner: selectedOwners.length > 0,
-            boardnum: selectedBoardNumbers.length > 0,
-            bom: selectedBoms.length > 0
+            project: isActive(selectedProjects),
+            revision: isActive(selectedRevisions),
+            corner: isActive(selectedCorners),
+            flavor: isActive(selectedFlavors),
+            pcbrev: isActive(selectedPcbRevs),
+            tag: isActive(selectedTags),
+            owner: isActive(selectedOwners),
+            boardnum: isActive(selectedBoardNumbers),
+            bom: isActive(selectedBoms)
         };
         // @ts-ignore
         filters[ignoreField] = false;
         return Object.values(filters).some(Boolean);
     };
+
+    /** Returns true when a filter's value holds only the deselect-all sentinel ('__NONE__').
+     *  In this state all items should remain visible in the filter UI even if count=0. */
+    const isDeselectedAll = (arr: string[]) => arr.length === 1 && arr[0] === '__NONE__';
 
     if (isMobile) {
         return (
@@ -334,7 +342,7 @@ export function PcbFilter() {
                 <PcbFilterElement title="Projects" value={selectedProjects} onChange={setSelectedProjects}>
                     {projects.map(p => {
                         const count = pcbs.filter(pcb => pcb.project === p.name && matchPcb(pcb, 'project')).length;
-                        if (count === 0 && hasAnyOtherFilter('project') && !selectedProjects.includes(p.id.toString())) return null;
+                        if (count === 0 && hasAnyOtherFilter('project') && !isDeselectedAll(selectedProjects) && !selectedProjects.includes(p.id.toString())) return null;
                         return <option key={p.id} value={p.id.toString()}>{p.name} ({count})</option>;
                     })}
                 </PcbFilterElement>
@@ -352,7 +360,7 @@ export function PcbFilter() {
 
                         return Array.from(allRevs).sort().map(rev => {
                             const count = pcbs.filter(pcb => (pcb.silicon_rev === rev || (rev === 'No part' && (pcb.silicon_rev === 'No part yet' || pcb.silicon_rev === 'No part'))) && matchPcb(pcb, 'revision')).length;
-                            if (count === 0 && hasAnyOtherFilter('revision') && !selectedRevisions.includes(rev)) return null;
+                            if (count === 0 && hasAnyOtherFilter('revision') && !isDeselectedAll(selectedRevisions) && !selectedRevisions.includes(rev)) return null;
                             return <option key={rev} value={rev}>{rev === 'No part' || rev === 'No part yet' ? 'N/A (No part)' : rev} ({count})</option>;
                         });
                     })()}
@@ -366,7 +374,7 @@ export function PcbFilter() {
 
                         return Array.from(allCorners).filter(Boolean).sort().map(corner => {
                             const count = pcbs.filter(pcb => pcb.silicon_corner === corner && matchPcb(pcb, 'corner')).length;
-                            if (count === 0 && hasAnyOtherFilter('corner') && !selectedCorners.includes(corner)) return null;
+                            if (count === 0 && hasAnyOtherFilter('corner') && !isDeselectedAll(selectedCorners) && !selectedCorners.includes(corner)) return null;
                             return <option key={corner} value={corner}>{corner} ({count})</option>;
                         });
                     })()}
@@ -394,7 +402,7 @@ export function PcbFilter() {
 
                         return Array.from(allFlavors).sort().map(ff => {
                             const count = pcbs.filter(pcb => pcb.board_flavor === ff && matchPcb(pcb, 'flavor')).length;
-                            if (count === 0 && hasAnyOtherFilter('flavor') && !selectedFlavors.includes(ff)) return null;
+                            if (count === 0 && hasAnyOtherFilter('flavor') && !isDeselectedAll(selectedFlavors) && !selectedFlavors.includes(ff)) return null;
                             return <option key={ff} value={ff}>{ff} ({count})</option>;
                         });
                     })()}
@@ -416,7 +424,7 @@ export function PcbFilter() {
 
                         return Array.from(allPcbRevs).sort().map(pr => {
                             const count = pcbs.filter(pcb => pcb.board_rev === pr && matchPcb(pcb, 'pcbrev')).length;
-                            if (count === 0 && hasAnyOtherFilter('pcbrev') && !selectedPcbRevs.includes(pr)) return null;
+                            if (count === 0 && hasAnyOtherFilter('pcbrev') && !isDeselectedAll(selectedPcbRevs) && !selectedPcbRevs.includes(pr)) return null;
                             return <option key={pr} value={pr}>{pr} ({count})</option>;
                         });
                     })()}
@@ -431,7 +439,7 @@ export function PcbFilter() {
 
                         return Array.from(allBoms).filter(Boolean).sort().map(b => {
                             const count = pcbs.filter(pcb => pcb.bom === b && matchPcb(pcb, 'bom')).length;
-                            if (count === 0 && hasAnyOtherFilter('bom') && !selectedBoms.includes(b)) return null;
+                            if (count === 0 && hasAnyOtherFilter('bom') && !isDeselectedAll(selectedBoms) && !selectedBoms.includes(b)) return null;
                             return <option key={b} value={b}>{b} ({count})</option>;
                         });
                     })()}
@@ -486,7 +494,7 @@ export function PcbFilter() {
                 <PcbFilterElement title="Owner" value={selectedOwners} onChange={setSelectedOwners}>
                     {owners.map(owner => {
                         const count = pcbs.filter(pcb => pcb.owner === owner.name && matchPcb(pcb, 'owner')).length;
-                        if (count === 0 && hasAnyOtherFilter('owner') && !selectedOwners.includes(owner.name)) return null;
+                        if (count === 0 && hasAnyOtherFilter('owner') && !isDeselectedAll(selectedOwners) && !selectedOwners.includes(owner.name)) return null;
                         return <option key={owner.id} value={owner.name}>{owner.username} ({count})</option>;
                     })}
                 </PcbFilterElement>

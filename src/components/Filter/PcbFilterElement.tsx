@@ -165,6 +165,9 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
     }
 
     // ── Desktop ───────────────────────────────────────────────────────────────
+    /** Sentinel stored in value[] to represent "all items explicitly deselected". */
+    const NONE = '__NONE__';
+
     const [isHovered, setIsHovered] = React.useState(false);
     const [headerHovered, setHeaderHovered] = React.useState(false);
 
@@ -174,36 +177,53 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
         allItems.push({ optionValue: child.props.value, label: child.props.children });
     });
 
+    // "All deselected" state: value contains only the sentinel (no boards pass the filter)
+    const isDeselectedAll = value.length === 1 && value[0] === NONE;
+    // Master is "checked" (all items on) when value=[] (default implicit-all) or all explicitly included
+    const masterChecked = !exclusion
+        ? value.length === 0 || allItems.every(i => value.includes(i.optionValue))
+        : value.length === 0; // exclusion: checked = nothing excluded
+
     const handleToggle = (optionValue: string) => {
         if (exclusion) {
-            // Exclusion mode: simply toggle presence in the exclusion list
             const isExcluded = value.includes(optionValue);
             if (isExcluded) {
-                // Un-exclude (check it) → remove from list
                 onChange(value.filter(v => v !== optionValue));
             } else {
-                // Exclude (uncheck it) → add to list
                 onChange([...value, optionValue]);
             }
+        } else if (isDeselectedAll) {
+            // Coming from "all deselected" — select just this one item
+            onChange([optionValue]);
         } else if (value.length === 0) {
-            // Normal "all selected" mode — unchecking one means exclude just that item
+            // Implicit-all → unchecking one item means "show everything except this"
             onChange(allItems.map(i => i.optionValue).filter(v => v !== optionValue));
         } else {
             const isCurrentlySelected = value.includes(optionValue);
             if (isCurrentlySelected) {
-                onChange(value.filter(v => v !== optionValue));
+                const next = value.filter(v => v !== optionValue);
+                // If we just unchecked the last real item, move to "all deselected" state
+                onChange(next.length === 0 ? [NONE] : next);
             } else {
                 onChange([...value, optionValue]);
             }
         }
     };
 
-    const hasActiveSelections = value.length > 0;
-
-    const handleHeaderCheckboxClick = (e: React.MouseEvent) => {
+    const handleMasterClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // Reset — deselect all
-        onChange([]);
+        if (exclusion) {
+            // Exclusion: toggle between "exclude all" and "exclude none"
+            onChange(value.length === 0 ? allItems.map(i => i.optionValue) : []);
+        } else {
+            if (masterChecked) {
+                // All currently selected → deselect all (use sentinel so 0 boards show)
+                onChange([NONE]);
+            } else {
+                // Some or none selected → select all (reset to implicit-all)
+                onChange([]);
+            }
+        }
     };
 
     return (
@@ -221,7 +241,7 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                 background: 'rgba(255,255,255,0.015)',
                 overflow: 'hidden',
             }}>
-            {/* Header: title + hover-revealed deselect-all checkbox */}
+            {/* Header: master-checkbox (LEFT) + title */}
             <div
                 onMouseEnter={() => setHeaderHovered(true)}
                 onMouseLeave={() => setHeaderHovered(false)}
@@ -230,8 +250,35 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                     alignItems: 'center',
                     padding: '8px 10px',
                     borderBottom: '1px solid rgba(255,255,255,0.06)',
-                    gap: '6px',
-                }}>
+                    gap: '7px',
+                    cursor: headerHovered ? 'pointer' : 'default',
+                }}
+                onClick={headerHovered ? handleMasterClick : undefined}
+            >
+                {/* Master checkbox — amber, left-aligned, fades in on header hover */}
+                <div
+                    style={{
+                        width: '13px',
+                        height: '13px',
+                        borderRadius: '3px',
+                        border: `1.5px solid ${masterChecked ? '#f59e0b' : 'rgba(245,158,11,0.45)'}`,
+                        backgroundColor: masterChecked ? '#f59e0b' : 'transparent',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        transition: 'opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease',
+                        opacity: headerHovered ? 1 : 0,
+                        pointerEvents: 'none', // click handled by parent div
+                    }}
+                >
+                    {masterChecked && (
+                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    )}
+                </div>
+
                 <span style={{
                     fontSize: '0.78rem',
                     fontWeight: 700,
@@ -242,36 +289,10 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     flex: 1,
+                    userSelect: 'none',
                 }}>
                     {title}
                 </span>
-
-                {/* Deselect-all checkbox — amber color, fades in on header hover */}
-                <div
-                    onClick={hasActiveSelections ? handleHeaderCheckboxClick : undefined}
-                    title={hasActiveSelections ? 'Deselect all' : 'Nothing active to deselect'}
-                    style={{
-                        width: '13px',
-                        height: '13px',
-                        borderRadius: '3px',
-                        border: `1.5px solid ${hasActiveSelections ? '#f59e0b' : 'rgba(255,255,255,0.2)'}`,
-                        backgroundColor: hasActiveSelections ? '#f59e0b' : 'transparent',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        cursor: hasActiveSelections ? 'pointer' : 'default',
-                        transition: 'opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease',
-                        opacity: headerHovered ? 1 : 0,
-                        pointerEvents: headerHovered ? 'auto' : 'none',
-                    }}
-                >
-                    {hasActiveSelections && (
-                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                    )}
-                </div>
             </div>
 
             {/* Item list — checkboxes visible only on hover */}
@@ -285,10 +306,11 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
             }}>
                 {allItems.map(({ optionValue, label }) => {
                     const isExcluded = value.includes(optionValue);
-                    // exclusion: checked = NOT excluded. normal: checked = in value OR value empty
+                    // exclusion: checked = NOT excluded
+                    // normal: checked = implicit-all (value=[]) OR explicitly in value; NOT when isDeselectedAll
                     const isChecked = exclusion
                         ? !isExcluded
-                        : value.length === 0 || value.includes(optionValue);
+                        : !isDeselectedAll && (value.length === 0 || value.includes(optionValue));
                     return (
                         <FilterCheckItemRow
                             key={optionValue}
