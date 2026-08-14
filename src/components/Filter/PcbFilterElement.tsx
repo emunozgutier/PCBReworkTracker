@@ -1,6 +1,7 @@
 import React from 'react';
 import './PcbFilterElement.css';
 import { useAppState } from '../../store/useAppState';
+import { FilterScrollBar } from './FilterScrollBar';
 
 interface PcbFilterElementProps {
     title: string;
@@ -170,7 +171,7 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
             </div>
 
             {/* Item list — checkboxes visible only on hover */}
-            <div className="pfe-item-list">
+            <FilterScrollBar className="pfe-item-list">
                 {allItems.map(({ optionValue, label }) => {
                     const isExcluded = value.includes(optionValue);
                     // exclusion: checked = NOT excluded
@@ -189,7 +190,7 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                         />
                     );
                 })}
-            </div>
+            </FilterScrollBar>
         </div>
     );
 }
