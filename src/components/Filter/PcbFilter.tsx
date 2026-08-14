@@ -7,6 +7,7 @@ import { useTagStore, formatTagName } from '../../store/clientDataBase/useTagSto
 import { useOwnerStore } from '../../store/clientDataBase/useOwnerStore';
 import { PcbFilterElement } from './PcbFilterElement';
 import { PcbFilterGroup } from './PcbFilterGroup';
+import './PcbFilter.css';
 
 function MobileFilterGroup({ title, activeCount, isExpanded, onToggle, children }: { title: string; activeCount: number; isExpanded: boolean; onToggle: () => void; children: React.ReactNode }) {
     return (
@@ -152,20 +153,14 @@ export function PcbFilter() {
 
     if (isMobile) {
         return (
-            <div className="pcb-filters-mobile" style={{  
-                marginBottom: '24px', 
-                display: 'flex', 
-                flexDirection: 'column',
-                gap: '12px', 
-                width: '100%'
-            }}>
+            <div className="pcb-filters-mobile">
                 <MobileFilterGroup 
                     title="Silicon Filters" 
                     activeCount={selectedProjects.length + selectedRevisions.length + selectedCorners.length}
                     isExpanded={expandedGroup === 'silicon'}
                     onToggle={() => setExpandedGroup(expandedGroup === 'silicon' ? null : 'silicon')}
                 >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div className="pcb-filter-group-inner">
                         <PcbFilterElement title="Projects" value={selectedProjects} onChange={setSelectedProjects}>
                             {projects.map(p => {
                                 const count = pcbs.filter(pcb => pcb.project === p.name && matchPcb(pcb, 'project')).length;
@@ -211,7 +206,7 @@ export function PcbFilter() {
                     isExpanded={expandedGroup === 'pcb'}
                     onToggle={() => setExpandedGroup(expandedGroup === 'pcb' ? null : 'pcb')}
                 >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div className="pcb-filter-group-inner">
                         <PcbFilterElement title="Name" value={selectedBoardNumbers} onChange={setSelectedBoardNumbers}>
                             {pcbs
                                 .filter(pcb => matchPcb(pcb, 'boardnum'))
@@ -278,7 +273,7 @@ export function PcbFilter() {
                     isExpanded={expandedGroup === 'org'}
                     onToggle={() => setExpandedGroup(expandedGroup === 'org' ? null : 'org')}
                 >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div className="pcb-filter-group-inner">
                         <PcbFilterElement 
                             title="Tags"
                             exclusion
@@ -336,15 +331,7 @@ export function PcbFilter() {
     }
 
     return (
-        <div className="pcb-filters" style={{  
-            marginBottom: '24px', 
-            display: 'flex', 
-            gap: '24px', 
-            alignItems: 'stretch', 
-            overflowX: 'auto', 
-            width: '100%',
-            paddingBottom: '12px'
-        }}>
+        <div className="pcb-filters">
             
             {/* Silicon Group */}
             <PcbFilterGroup title="Silicon Filters" color={COLORS.purpleAccent}>

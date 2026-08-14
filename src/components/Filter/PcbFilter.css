@@ -1,0 +1,27 @@
+/* ── PcbFilter — Desktop layout ──────────────────────────────────────────── */
+
+.pcb-filters {
+    margin-bottom: 24px;
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 12px;
+}
+
+/* ── PcbFilter — Mobile layout ───────────────────────────────────────────── */
+
+.pcb-filters-mobile {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.pcb-filter-group-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}

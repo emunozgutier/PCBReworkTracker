@@ -1,0 +1,223 @@
+/* ── PcbFilterElement — Desktop ──────────────────────────────────────────── */
+
+.pfe-desktop {
+    display: flex;
+    flex-direction: column;
+    min-width: 120px;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.015);
+    overflow: hidden;
+}
+
+/* Header wrapper — just provides the bottom border separator */
+.pfe-header-wrap {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Item list container */
+.pfe-item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 160px;
+    overflow-y: auto;
+    padding: 6px 0;
+}
+
+/* ── FilterCheckItemRow ───────────────────────────────────────────────────── */
+
+.fcir-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    cursor: default;
+    user-select: none;
+    background: transparent;
+    transition: background 0.15s ease;
+}
+
+.fcir-row--interactive {
+    cursor: pointer;
+}
+
+.fcir-row--interactive.fcir-row--hovered {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.fcir-row--interactive.fcir-row--checked {
+    background: rgba(99, 102, 241, 0.06);
+}
+
+/* Checked takes precedence over hovered */
+.fcir-row--interactive.fcir-row--hovered.fcir-row--checked {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+/* Checkbox box */
+.fcir-checkbox {
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+    visibility: hidden;
+}
+
+.fcir-checkbox--visible {
+    visibility: visible;
+}
+
+/* Label span */
+.fcir-label {
+    font-size: 0.82rem;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
+    font-weight: 400;
+}
+
+.fcir-label--interactive-checked {
+    color: var(--text-h);
+    font-weight: 500;
+}
+
+.fcir-label--interactive-unchecked {
+    color: var(--text-muted);
+    text-decoration: line-through;
+    text-decoration-color: var(--text-muted);
+}
+
+/* Header title span inside FilterCheckItemRow */
+.pfe-title {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ── PcbFilterElement — Mobile ───────────────────────────────────────────── */
+
+.pfe-mobile {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.01);
+    box-sizing: border-box;
+}
+
+.pfe-mobile-btn {
+    width: 100%;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.pfe-mobile-btn-inner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pfe-mobile-title {
+    color: var(--text-muted);
+}
+
+.pfe-mobile-count {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.pfe-mobile-chevron {
+    transition: transform 0.2s;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+}
+
+.pfe-mobile-chevron--expanded {
+    transform: rotate(90deg);
+}
+
+.pfe-mobile-body {
+    padding: 8px 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 180px;
+    overflow-y: auto;
+    background-color: rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+}
+
+.pfe-mobile-option {
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    background-color: transparent;
+    color: var(--text);
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.pfe-mobile-option--checked {
+    background-color: rgba(99, 102, 241, 0.08);
+    color: var(--accent);
+}
+
+.pfe-mobile-option-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pfe-mobile-check {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--text-muted);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    flex-shrink: 0;
+}
+
+.pfe-mobile-check--checked {
+    border-color: var(--accent);
+    background-color: var(--accent);
+}
+
+.pfe-mobile-clear {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 8px 0 4px 8px;
+    align-self: flex-start;
+    font-weight: 600;
+}

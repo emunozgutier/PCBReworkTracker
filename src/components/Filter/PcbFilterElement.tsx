@@ -1,5 +1,5 @@
 import React from 'react';
-
+import './PcbFilterElement.css';
 import { useAppState } from '../../store/useAppState';
 
 interface PcbFilterElementProps {
@@ -24,74 +24,34 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
     if (isMobile) {
         const activeCount = value ? value.length : 0;
         return (
-            <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                width: '100%', 
-                border: '1px solid rgba(255,255,255,0.05)',
-                borderRadius: '6px',
-                background: 'rgba(255,255,255,0.01)',
-                boxSizing: 'border-box'
-            }}>
+            <div className="pfe-mobile">
                 <button
+                    className="pfe-mobile-btn"
                     onClick={(e) => { e.stopPropagation(); setIsElementExpanded(!isElementExpanded); }}
-                    style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        background: 'transparent',
-                        border: 'none',
-                        color: 'var(--text)',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
-                        cursor: 'pointer'
-                    }}
                 >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>{title}</span>
+                    <div className="pfe-mobile-btn-inner">
+                        <span className="pfe-mobile-title">{title}</span>
                         {activeCount > 0 && (
-                            <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '0.85rem' }}>
-                                #{activeCount}
-                            </span>
+                            <span className="pfe-mobile-count">#{activeCount}</span>
                         )}
                     </div>
-                    <span style={{ 
-                        transition: 'transform 0.2s', 
-                        transform: isElementExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
-                        color: 'var(--text-muted)',
-                        display: 'flex',
-                        alignItems: 'center'
-                    }}>
+                    <span className={`pfe-mobile-chevron${isElementExpanded ? ' pfe-mobile-chevron--expanded' : ''}`}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
                     </span>
                 </button>
 
                 {isElementExpanded && (
-                    <div style={{
-                        padding: '8px 12px',
-                        borderTop: '1px solid rgba(255,255,255,0.05)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '6px',
-                        maxHeight: '180px',
-                        overflowY: 'auto',
-                        backgroundColor: 'rgba(0,0,0,0.15)',
-                        boxSizing: 'border-box'
-                    }}>
+                    <div className="pfe-mobile-body">
                         {React.Children.map(children, (child: any) => {
                             if (!child) return null;
                             const optionValue = child.props.value;
                             const isInValue = value.includes(optionValue);
-                            // In exclusion mode: being IN value means EXCLUDED (unchecked).
-                            // In normal mode: being IN value means SELECTED (checked).
                             const isChecked = exclusion ? !isInValue : isInValue;
                             return (
-                                <div 
+                                <div
+                                    className={`pfe-mobile-option${isChecked ? ' pfe-mobile-option--checked' : ''}`}
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        // Toggle the item in/out of the value list
                                         let newVal = [...value];
                                         if (isInValue) {
                                             newVal = newVal.filter(v => v !== optionValue);
@@ -100,38 +60,9 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                                         }
                                         onChange(newVal);
                                     }}
-                                    style={{
-                                        padding: '6px 8px',
-                                        borderRadius: '4px',
-                                        fontSize: '0.85rem',
-                                        cursor: 'pointer',
-                                        backgroundColor: isChecked ? 'rgba(99, 102, 241, 0.08)' : 'transparent',
-                                        color: isChecked ? 'var(--accent)' : 'var(--text)',
-                                        userSelect: 'none',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        gap: '8px'
-                                    }}
                                 >
-                                    <span style={{
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis'
-                                    }}>
-                                        {child.props.children}
-                                    </span>
-                                    <div style={{
-                                        width: '16px',
-                                        height: '16px',
-                                        border: `1.5px solid ${isChecked ? 'var(--accent)' : 'var(--text-muted)'}`,
-                                        borderRadius: '3px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        backgroundColor: isChecked ? 'var(--accent)' : 'transparent',
-                                        flexShrink: 0
-                                    }}>
+                                    <span className="pfe-mobile-option-label">{child.props.children}</span>
+                                    <div className={`pfe-mobile-check${isChecked ? ' pfe-mobile-check--checked' : ''}`}>
                                         {isChecked && (
                                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                                                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -142,19 +73,7 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                             );
                         })}
                         {value && value.length > 0 && (
-                            <button 
-                                onClick={() => onChange([])}
-                                style={{ 
-                                    background: 'none', 
-                                    border: 'none', 
-                                    color: 'var(--accent)', 
-                                    fontSize: '0.75rem', 
-                                    cursor: 'pointer',
-                                    padding: '8px 0 4px 8px',
-                                    alignSelf: 'flex-start',
-                                    fontWeight: 600
-                                }}
-                            >
+                            <button className="pfe-mobile-clear" onClick={() => onChange([])}>
                                 {exclusion ? 'Show All' : 'Clear All'}
                             </button>
                         )}
@@ -223,30 +142,20 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
 
     return (
         <div
+            className="pfe-desktop"
+            style={{ width }}
             onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => { setIsHovered(false); setHeaderHovered(false); }}
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                width: width,
-                minWidth: '120px',
-                flexShrink: 0,
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '8px',
-                background: 'rgba(255,255,255,0.015)',
-                overflow: 'hidden',
-            }}>
+            onMouseLeave={() => setIsHovered(false)}
+        >
             {/* Header — identical FilterCheckItemRow with amber checkbox + border separator */}
             <div
-                style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                className="pfe-header-wrap"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
             >
                 <FilterCheckItemRow
                     optionValue="__master__"
                     label={
-                        <span style={{
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.04em',
+                        <span className="pfe-title" style={{
                             fontWeight: isHovered ? (masterChecked ? 600 : 400) : 400,
                         }}>
                             {title}
@@ -260,16 +169,8 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                 />
             </div>
 
-
             {/* Item list — checkboxes visible only on hover */}
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '2px',
-                maxHeight: '160px',
-                overflowY: 'auto',
-                padding: '6px 0',
-            }}>
+            <div className="pfe-item-list">
                 {allItems.map(({ optionValue, label }) => {
                     const isExcluded = value.includes(optionValue);
                     // exclusion: checked = NOT excluded
@@ -311,75 +212,43 @@ function FilterCheckItemRow({ label, isChecked, showCheckbox = true, onToggle, c
     const interactive = showCheckbox && !!onToggle;
     const color = checkboxColor ?? 'var(--accent)';
 
+    const rowClasses = [
+        'fcir-row',
+        interactive ? 'fcir-row--interactive' : '',
+        interactive && hovered ? 'fcir-row--hovered' : '',
+        interactive && isChecked ? 'fcir-row--checked' : '',
+    ].filter(Boolean).join(' ');
+
+    const labelClasses = [
+        'fcir-label',
+        interactive && isChecked ? 'fcir-label--interactive-checked' : '',
+        interactive && !isChecked && !noStrikethrough ? 'fcir-label--interactive-unchecked' : '',
+    ].filter(Boolean).join(' ');
+
     return (
         <div
+            className={rowClasses}
             onClick={interactive ? onToggle : undefined}
             onMouseEnter={interactive ? () => setHovered(true) : undefined}
             onMouseLeave={interactive ? () => setHovered(false) : undefined}
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '5px 8px',
-                borderRadius: '5px',
-                cursor: interactive ? 'pointer' : 'default',
-                userSelect: 'none',
-                background: interactive && hovered
-                    ? 'rgba(255,255,255,0.04)'
-                    : interactive && isChecked
-                    ? 'rgba(99,102,241,0.06)'
-                    : 'transparent',
-                transition: 'background 0.15s ease',
-            }}
         >
             {/* Checkbox — always reserves space; invisible when not hovered */}
             <div
+                className={`fcir-checkbox${showCheckbox ? ' fcir-checkbox--visible' : ''}`}
                 style={{
-                    width: '15px',
-                    height: '15px',
-                    borderRadius: '3px',
                     border: `1.5px solid ${isChecked ? color : 'rgba(255,255,255,0.25)'}`,
                     backgroundColor: isChecked ? color : 'transparent',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    transition: 'background-color 0.15s ease, border-color 0.15s ease',
-                    visibility: showCheckbox ? 'visible' : 'hidden',
                 }}
             >
                 {isChecked && (
-                    <svg
-                        width="9"
-                        height="9"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#fff"
-                        strokeWidth="4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    >
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
                     </svg>
                 )}
             </div>
 
             {/* Label */}
-            <span
-                style={{
-                    fontSize: '0.82rem',
-                    color: showCheckbox
-                        ? (isChecked ? 'var(--text-h)' : 'var(--text-muted)')
-                        : 'var(--text)',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    transition: 'color 0.15s ease, text-decoration-color 0.15s ease',
-                    fontWeight: showCheckbox ? (isChecked ? 500 : 400) : 400,
-                    textDecoration: (!isChecked && !noStrikethrough) ? 'line-through' : 'none',
-                    textDecorationColor: 'var(--text-muted)',
-                }}
-            >
+            <span className={labelClasses}>
                 {label}
             </span>
         </div>
