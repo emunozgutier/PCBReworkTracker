@@ -37,3 +37,16 @@
 .filter-scrollbar::-webkit-scrollbar-corner {
     background: transparent;
 }
+
+/* Hidden state — thumb fades out when the parent filter element is not hovered */
+.filter-scrollbar--hidden {
+    scrollbar-color: transparent transparent; /* Firefox */
+}
+
+.filter-scrollbar--hidden::-webkit-scrollbar-thumb {
+    background: transparent;
+}
+
+.filter-scrollbar--hidden::-webkit-scrollbar-thumb:hover {
+    background: transparent;
+}

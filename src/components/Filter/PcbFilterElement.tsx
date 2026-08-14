@@ -171,7 +171,7 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
             </div>
 
             {/* Item list — checkboxes visible only on hover */}
-            <FilterScrollBar className="pfe-item-list">
+            <FilterScrollBar className="pfe-item-list" visible={isHovered}>
                 {allItems.map(({ optionValue, label }) => {
                     const isExcluded = value.includes(optionValue);
                     // exclusion: checked = NOT excluded
