@@ -34,7 +34,26 @@ export default defineConfig(({ command }) => {
     server: {
       host: '0.0.0.0', // Listen on all network interfaces
       port: 5001,      // Port number
-      strictPort: true // Fail if port is already in use
+      strictPort: true, // Fail if port is already in use
+      // Block every connection that isn't from localhost or the 10.x.x.x subnet
+      middlewares: [
+        (req: any, res: any, next: any) => {
+          const raw = req.socket?.remoteAddress ?? '';
+          // Normalise IPv6-mapped IPv4 (e.g. "::ffff:10.0.0.1" → "10.0.0.1")
+          const ip = raw.replace(/^::ffff:/, '');
+          const allowed =
+            ip === '127.0.0.1' ||
+            ip === '::1'       ||
+            ip === 'localhost'  ||
+            ip.startsWith('10.');
+          if (!allowed) {
+            res.writeHead(403, { 'Content-Type': 'text/plain' });
+            res.end(`403 Forbidden — access from ${ip} is not allowed.`);
+            return;
+          }
+          next();
+        },
+      ],
     }
   }
 })
