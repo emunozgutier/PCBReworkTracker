@@ -145,7 +145,9 @@ export function ProjectDocList({ isOpen, onClose, project }: ProjectDocListProps
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <button
                                                 onClick={() => {
-                                                    editItem('doc_viewer', item.id);
+                                                    const ext = item.filename.split('.').pop()?.toLowerCase();
+                                                    const viewer = ext === 'brd' ? 'board_viewer' : 'doc_viewer';
+                                                    editItem(viewer, item.id);
                                                     onClose();
                                                 }}
                                                 style={{

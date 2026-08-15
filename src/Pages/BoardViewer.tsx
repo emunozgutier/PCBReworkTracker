@@ -60,30 +60,44 @@ export function BoardViewer({ docId, onBack }: BoardViewerProps) {
 
         const doLoad = async () => {
             try {
-                // Step 0 — load projects
-                setCurrentStep(0);
-                const { fetchProjects, fetchDocs } = useProjectStore.getState();
-                let { projects } = useProjectStore.getState();
-                if (projects.length === 0) {
-                    await fetchProjects();
-                    projects = useProjectStore.getState().projects;
-                }
-
-                // Step 1 — load docs for every project
-                setCurrentStep(1);
-                await Promise.all(projects.map(p => fetchDocs(p.id)));
-
-                // Step 2 — resolve board document by docId
-                setCurrentStep(2);
-                await new Promise(r => setTimeout(r, 30)); // let store settle
-                const { projectDocs } = useProjectStore.getState();
+                // ── Fast path: doc already in store (opened from a card) ──────
+                setCurrentStep(2); // show "Resolving" immediately
+                const existing = useProjectStore.getState().projectDocs;
                 let found: any = null;
-                for (const pid in projectDocs) {
-                    const doc = projectDocs[pid].find(
+                for (const pid in existing) {
+                    const doc = existing[pid].find(
                         (d: any) => d.id.toString() === docId.toString()
                     );
                     if (doc) { found = doc; break; }
                 }
+
+                if (!found) {
+                    // ── Slow path: need to fetch metadata first ───────────────
+                    // Step 0 — load projects
+                    setCurrentStep(0);
+                    const { fetchProjects, fetchDocs } = useProjectStore.getState();
+                    let { projects } = useProjectStore.getState();
+                    if (projects.length === 0) {
+                        await fetchProjects();
+                        projects = useProjectStore.getState().projects;
+                    }
+
+                    // Step 1 — load docs for every project
+                    setCurrentStep(1);
+                    await Promise.all(projects.map(p => fetchDocs(p.id)));
+
+                    // Step 2 — resolve
+                    setCurrentStep(2);
+                    await new Promise(r => setTimeout(r, 30));
+                    const { projectDocs } = useProjectStore.getState();
+                    for (const pid in projectDocs) {
+                        const doc = projectDocs[pid].find(
+                            (d: any) => d.id.toString() === docId.toString()
+                        );
+                        if (doc) { found = doc; break; }
+                    }
+                }
+
                 if (!found) {
                     setError('Board document not found. It may have been removed.');
                     setCurrentStep(LOAD_STEPS.length);
