@@ -11,6 +11,7 @@ export interface Owner {
     rework_count?: number;
     tag_count?: number;
     otp_secret?: string;
+    is_super_user?: number;
 }
 
 interface OwnerState {
@@ -20,6 +21,7 @@ interface OwnerState {
     fetchOwners: () => Promise<void>;
     addOwner: (data: { name: string; username: string; email?: string; otp_secret?: string }) => Promise<boolean>;
     updateOwner: (id: number | string, data: { name: string; username: string; email?: string }) => Promise<boolean>;
+    updateOwnerRole: (id: number | string, role: 'Super User' | 'User') => Promise<boolean>;
     deleteOwner: (id: number | string) => Promise<boolean>;
 }
 
@@ -82,6 +84,26 @@ export const useOwnerStore = create<OwnerState>((set, get) => ({
             return true;
         } catch (err: any) {
             set({ error: err.message, loading: false });
+            return false;
+        }
+    },
+
+    updateOwnerRole: async (id, role) => {
+        try {
+            const res = await apiFetch(`${API_BASE}/owners/${id}/role`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role })
+            });
+            if (!res.ok) {
+                const result = await res.json();
+                set({ error: result.error || 'Failed to update role' });
+                return false;
+            }
+            await get().fetchOwners();
+            return true;
+        } catch (err: any) {
+            set({ error: err.message });
             return false;
         }
     },

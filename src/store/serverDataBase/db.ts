@@ -1,4 +1,4 @@
-﻿import sqlite3 from 'sqlite3';
+import sqlite3 from 'sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -122,10 +122,21 @@ const initDb = async (): Promise<void> => {
                 otp_reset_by TEXT,
                 otp_reset_at TEXT,
                 crc_format TEXT,
-                login_attempts TEXT
+                login_attempts TEXT,
+                is_super_user INTEGER DEFAULT 0
             )`);
             dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_owners_username ON owners(username)`);
             dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_owners_name_nocase ON owners(name COLLATE NOCASE)`);
+
+            // Migration: add is_super_user column if it doesn't exist yet
+            dbInstance.run(`ALTER TABLE owners ADD COLUMN is_super_user INTEGER DEFAULT 0`, () => {
+                // Set the first registered user (lowest id) as Super User if none are marked yet
+                dbInstance.get("SELECT COUNT(*) as cnt FROM owners WHERE is_super_user = 1", [], (_e: any, row: any) => {
+                    if (row && row.cnt === 0) {
+                        dbInstance.run("UPDATE owners SET is_super_user = 1 WHERE id = (SELECT MIN(id) FROM owners)");
+                    }
+                });
+            });
 
             // Tags Table
             dbInstance.run(`CREATE TABLE IF NOT EXISTS tags (

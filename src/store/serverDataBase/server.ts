@@ -692,12 +692,9 @@ function generateSecret(): string {
 
 function getUserRole(ownerId: number): Promise<'Super User' | 'User'> {
     return new Promise((resolve) => {
-        db.all("SELECT id FROM owners ORDER BY id ASC", [], (err: Error | null, rows: any[]) => {
-            if (err || !rows || rows.length === 0) return resolve('User');
-            const isOnlyUser = rows.length === 1;
-            const minId = rows[0].id;
-            const isFirstUser = ownerId === minId;
-            resolve((isOnlyUser || isFirstUser) ? 'Super User' : 'User');
+        db.get("SELECT is_super_user FROM owners WHERE id = ?", [ownerId], (err: Error | null, row: any) => {
+            if (err || !row) return resolve('User');
+            resolve(row.is_super_user === 1 ? 'Super User' : 'User');
         });
     });
 }
@@ -1406,6 +1403,24 @@ app.put('/api/owners/:id', (req: Request, res: Response) => {
             return res.status(500).json({ error: err.message });
         }
         res.json({ updated: this.changes });
+    });
+});
+
+// --- Change User Role (Super User only) ---
+app.patch('/api/owners/:id/role', (req: Request, res: Response) => {
+    const user = (req as any).user;
+    if (!user || user.role !== 'Super User') {
+        return res.status(403).json({ error: 'Only Super Users can change user roles.' });
+    }
+    const { role } = req.body;
+    if (!role || !['Super User', 'User'].includes(role)) {
+        return res.status(400).json({ error: 'Invalid role. Must be "Super User" or "User".' });
+    }
+    const isSuperUserValue = role === 'Super User' ? 1 : 0;
+    db.run("UPDATE owners SET is_super_user = ? WHERE id = ?", [isSuperUserValue, req.params.id], function(this: any, err: Error | null) {
+        if (err) return res.status(500).json({ error: err.message });
+        if (this.changes === 0) return res.status(404).json({ error: 'Owner not found.' });
+        res.json({ success: true, role });
     });
 });
 

@@ -1,7 +1,8 @@
-﻿import { useState } from 'react';
-import { Edit2, KeyRound, Copy, Check } from 'lucide-react';
+import { useState } from 'react';
+import { Edit2, KeyRound, Copy, Check, ShieldCheck, ShieldOff } from 'lucide-react';
 import { useAppState } from '../../../store/useAppState';
 import { apiFetch, API_BASE } from '../../../store/serverDataBase/apiBridge';
+import { useOwnerStore } from '../../../store/clientDataBase/useOwnerStore';
 
 interface OwnerCardBodyProps {
     owner: any;
@@ -10,14 +11,21 @@ interface OwnerCardBodyProps {
 
 export function OwnerCardBody({ owner, onEdit }: OwnerCardBodyProps) {
     const { currentUser, currentUserRole } = useAppState();
+    const { updateOwnerRole } = useOwnerStore();
     const [resetLink, setResetLink] = useState('');
     const [isResetting, setIsResetting] = useState(false);
     const [copied, setCopied] = useState(false);
     const [error, setError] = useState('');
+    const [isChangingRole, setIsChangingRole] = useState(false);
+    const [roleSuccess, setRoleSuccess] = useState('');
 
     const isSuperUser = currentUserRole === 'Super User';
     const isSelf = currentUser && owner.id.toString() === currentUser.id.toString();
     const canEdit = isSuperUser || (currentUserRole === 'User' && isSelf);
+
+    // Derive current owner role from the is_super_user flag
+    const ownerIsSuperUser = owner.is_super_user === 1 || owner.is_super_user === true;
+    const ownerRole: 'Super User' | 'User' = ownerIsSuperUser ? 'Super User' : 'User';
 
     const handleResetOtp = async () => {
         setError('');
@@ -47,9 +55,27 @@ export function OwnerCardBody({ owner, onEdit }: OwnerCardBodyProps) {
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const handleRoleChange = async (newRole: 'Super User' | 'User') => {
+        if (newRole === ownerRole) return;
+        if (isSelf && newRole === 'User') {
+            if (!confirm('Are you sure you want to demote yourself? You will lose Super User access immediately.')) return;
+        }
+        setError('');
+        setRoleSuccess('');
+        setIsChangingRole(true);
+        const success = await updateOwnerRole(owner.id, newRole);
+        setIsChangingRole(false);
+        if (success) {
+            setRoleSuccess(`Role changed to ${newRole}`);
+            setTimeout(() => setRoleSuccess(''), 3000);
+        } else {
+            setError('Failed to change role.');
+        }
+    };
+
     return (
         <div className="card-expanded-content" style={{ padding: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                 {onEdit && (
                     <button
                         onClick={() => canEdit && onEdit(owner.id)}
@@ -114,11 +140,75 @@ export function OwnerCardBody({ owner, onEdit }: OwnerCardBodyProps) {
                     <KeyRound size={14} />
                     <span>{isResetting ? 'Resetting...' : 'Reset OTP'}</span>
                 </button>
+
+                {/* Role change — Super User only */}
+                {isSuperUser && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <button
+                            onClick={() => handleRoleChange(ownerRole === 'Super User' ? 'User' : 'Super User')}
+                            disabled={isChangingRole}
+                            title={ownerRole === 'Super User' ? 'Demote to regular User' : 'Promote to Super User'}
+                            style={{
+                                background: 'none',
+                                border: `1px solid ${ownerRole === 'Super User' ? 'rgba(234, 179, 8, 0.4)' : 'rgba(99, 102, 241, 0.4)'}`,
+                                color: ownerRole === 'Super User' ? '#eab308' : '#818cf8',
+                                padding: '8px 16px',
+                                borderRadius: '10px',
+                                cursor: isChangingRole ? 'not-allowed' : 'pointer',
+                                fontSize: '0.85rem',
+                                fontWeight: 600,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                fontFamily: 'inherit',
+                                transition: 'all 0.2s ease',
+                                margin: 0,
+                                opacity: isChangingRole ? 0.6 : 1,
+                            }}
+                            onMouseEnter={(e) => {
+                                if (!isChangingRole) {
+                                    e.currentTarget.style.background = ownerRole === 'Super User'
+                                        ? 'rgba(234, 179, 8, 0.08)'
+                                        : 'rgba(99, 102, 241, 0.08)';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'none';
+                            }}
+                        >
+                            {ownerRole === 'Super User'
+                                ? <><ShieldOff size={14} /><span>{isChangingRole ? 'Saving...' : 'Demote to User'}</span></>
+                                : <><ShieldCheck size={14} /><span>{isChangingRole ? 'Saving...' : 'Promote to Super User'}</span></>
+                            }
+                        </button>
+
+                        {/* Current role badge */}
+                        <span style={{
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            padding: '3px 8px',
+                            borderRadius: '20px',
+                            background: ownerRole === 'Super User' ? 'rgba(234,179,8,0.12)' : 'rgba(156,163,175,0.12)',
+                            color: ownerRole === 'Super User' ? '#eab308' : 'var(--text-muted)',
+                            border: `1px solid ${ownerRole === 'Super User' ? 'rgba(234,179,8,0.3)' : 'rgba(156,163,175,0.2)'}`,
+                            letterSpacing: '0.03em',
+                        }}>
+                            {ownerRole}
+                        </span>
+                    </div>
+                )}
             </div>
 
             {error && (
                 <div style={{ color: '#ef4444', padding: '10px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.3)', fontSize: '0.8rem' }}>
                     {error}
+                </div>
+            )}
+
+            {roleSuccess && (
+                <div style={{ color: '#10b981', padding: '10px', background: 'rgba(16, 185, 129, 0.08)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.25)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <ShieldCheck size={14} />
+                    {roleSuccess}
                 </div>
             )}
 
@@ -215,3 +305,4 @@ export function OwnerCardBody({ owner, onEdit }: OwnerCardBodyProps) {
         </div>
     );
 }
+

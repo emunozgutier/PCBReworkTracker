@@ -373,6 +373,14 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
             internalOwners = internalOwners.filter(p => p.id !== id);
             return createResponse({ message: 'Owner deleted' });
         }
+        if (method === 'PATCH' && localPath.includes('/role')) {
+            const id = parseInt(localPath.split('/')[2] || '0');
+            const { role } = body as any;
+            internalOwners = internalOwners.map(p =>
+                p.id === id ? { ...p, is_super_user: role === 'Super User' ? 1 : 0 } : p
+            );
+            return createResponse({ success: true, role });
+        }
     }
     
     if (localPath.startsWith('/reworks')) {
