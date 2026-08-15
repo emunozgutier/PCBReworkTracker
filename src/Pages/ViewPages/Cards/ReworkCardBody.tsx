@@ -103,22 +103,7 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                     color="var(--text-muted)"
                 />
 
-                {/* Description — single line, truncated, flex fills remaining space */}
-                <span style={{
-                    fontSize: '0.82rem',
-                    color: rework.description?.trim() ? 'var(--text)' : 'var(--text-muted)',
-                    fontStyle: rework.description?.trim() ? 'normal' : 'italic',
-                    flex: 1,
-                    minWidth: 0,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    textAlign: 'left',
-                }}>
-                    {rework.description?.trim() || 'No description'}
-                </span>
-
-                {/* Photos button */}
+                {/* Photos button — right of user pill */}
                 {imagePaths.length > 0 && (
                     <button
                         onClick={(e) => { e.stopPropagation(); setShowGallery(true); }}
@@ -149,6 +134,21 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
                         <span>{imagePaths.length} Photo{imagePaths.length !== 1 ? 's' : ''}</span>
                     </button>
                 )}
+
+                {/* Description — single line, truncated, flex fills remaining space */}
+                <span style={{
+                    fontSize: '0.82rem',
+                    color: rework.description?.trim() ? 'var(--text)' : 'var(--text-muted)',
+                    fontStyle: rework.description?.trim() ? 'normal' : 'italic',
+                    flex: 1,
+                    minWidth: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    textAlign: 'left',
+                }}>
+                    {rework.description?.trim() || 'No description'}
+                </span>
             </div>
 
             {showDescriptionModal && createPortal(
