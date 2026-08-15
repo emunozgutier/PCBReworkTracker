@@ -23,7 +23,16 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
     const [isElementExpanded, setIsElementExpanded] = React.useState(false);
 
     if (isMobile) {
+        // For non-exclusion filters: value=[] means "all selected" (implicit-all).
+        // A real restriction is active only when value is non-empty.
+        // For exclusion filters: value holds excluded items, so activeCount = items excluded.
         const activeCount = value ? value.length : 0;
+        // Collect all available option values so we can build the "all items" set.
+        const allOptionValues: string[] = [];
+        React.Children.forEach(children, (child: any) => {
+            if (child) allOptionValues.push(child.props.value);
+        });
+
         return (
             <div className="pfe-mobile">
                 <button
@@ -47,19 +56,37 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                             if (!child) return null;
                             const optionValue = child.props.value;
                             const isInValue = value.includes(optionValue);
-                            const isChecked = exclusion ? !isInValue : isInValue;
+                            // Mirror desktop logic:
+                            //   exclusion mode  → checked = NOT excluded (not in value)
+                            //   normal mode     → checked = implicit-all (value=[]) OR explicitly included
+                            const isChecked = exclusion ? !isInValue : (value.length === 0 || isInValue);
                             return (
                                 <div
                                     className={`pfe-mobile-option${isChecked ? ' pfe-mobile-option--checked' : ''}`}
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        let newVal = [...value];
-                                        if (isInValue) {
-                                            newVal = newVal.filter(v => v !== optionValue);
+                                        if (exclusion) {
+                                            // Toggle exclusion
+                                            let newVal = [...value];
+                                            if (isInValue) {
+                                                newVal = newVal.filter(v => v !== optionValue);
+                                            } else {
+                                                newVal.push(optionValue);
+                                            }
+                                            onChange(newVal);
+                                        } else if (value.length === 0) {
+                                            // Implicit-all → uncheck one = keep all others selected
+                                            onChange(allOptionValues.filter(v => v !== optionValue));
                                         } else {
-                                            newVal.push(optionValue);
+                                            // Explicit selection
+                                            let newVal = [...value];
+                                            if (isInValue) {
+                                                newVal = newVal.filter(v => v !== optionValue);
+                                            } else {
+                                                newVal.push(optionValue);
+                                            }
+                                            onChange(newVal);
                                         }
-                                        onChange(newVal);
                                     }}
                                 >
                                     <span className="pfe-mobile-option-label">{child.props.children}</span>
