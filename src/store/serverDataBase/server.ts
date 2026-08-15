@@ -1416,12 +1416,28 @@ app.patch('/api/owners/:id/role', (req: Request, res: Response) => {
     if (!role || !['Super User', 'User'].includes(role)) {
         return res.status(400).json({ error: 'Invalid role. Must be "Super User" or "User".' });
     }
-    const isSuperUserValue = role === 'Super User' ? 1 : 0;
-    db.run("UPDATE owners SET is_super_user = ? WHERE id = ?", [isSuperUserValue, req.params.id], function(this: any, err: Error | null) {
-        if (err) return res.status(500).json({ error: err.message });
-        if (this.changes === 0) return res.status(404).json({ error: 'Owner not found.' });
-        res.json({ success: true, role });
-    });
+
+    // Enforce: must always have at least one Super User
+    if (role === 'User') {
+        db.get("SELECT COUNT(*) as cnt FROM owners WHERE is_super_user = 1", [], (err: Error | null, row: any) => {
+            if (err) return res.status(500).json({ error: err.message });
+            if (row && row.cnt <= 1) {
+                return res.status(400).json({ error: 'Cannot demote: there must always be at least one Super User.' });
+            }
+            const isSuperUserValue = 0;
+            db.run("UPDATE owners SET is_super_user = ? WHERE id = ?", [isSuperUserValue, req.params.id], function(this: any, err: Error | null) {
+                if (err) return res.status(500).json({ error: err.message });
+                if (this.changes === 0) return res.status(404).json({ error: 'Owner not found.' });
+                res.json({ success: true, role });
+            });
+        });
+    } else {
+        db.run("UPDATE owners SET is_super_user = 1 WHERE id = ?", [req.params.id], function(this: any, err: Error | null) {
+            if (err) return res.status(500).json({ error: err.message });
+            if (this.changes === 0) return res.status(404).json({ error: 'Owner not found.' });
+            res.json({ success: true, role });
+        });
+    }
 });
 
 app.delete('/api/owners/:id', (req: Request, res: Response) => {

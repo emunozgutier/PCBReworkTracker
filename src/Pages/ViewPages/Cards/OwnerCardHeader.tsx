@@ -13,10 +13,10 @@ export function OwnerCardHeader({ owner, isExpanded, onToggle }: OwnerCardHeader
     const isMobile = useAppState(state => state.isMobile);
     const { owners } = useOwnerStore();
 
-    const isOnlyUser = owners.length === 1;
-    const minId = owners.length > 0 ? Math.min(...owners.map(o => o.id)) : -1;
-    const isFirstUser = owner.id === minId;
-    const isOwnerSuperUser = isOnlyUser || isFirstUser;
+    // Use is_super_user flag if available; fall back to old min-ID heuristic for
+    // databases that haven't run the migration yet
+    const isOwnerSuperUser = owner.is_super_user === 1 || owner.is_super_user === true
+        || (owner.is_super_user == null && owners.length > 0 && owner.id === Math.min(...owners.map((o: any) => o.id)));
 
     return (
         <div 

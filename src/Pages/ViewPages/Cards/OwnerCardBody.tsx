@@ -11,7 +11,7 @@ interface OwnerCardBodyProps {
 
 export function OwnerCardBody({ owner, onEdit }: OwnerCardBodyProps) {
     const { currentUser, currentUserRole } = useAppState();
-    const { updateOwnerRole } = useOwnerStore();
+    const { updateOwnerRole, owners } = useOwnerStore();
     const [resetLink, setResetLink] = useState('');
     const [isResetting, setIsResetting] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -57,9 +57,22 @@ export function OwnerCardBody({ owner, onEdit }: OwnerCardBodyProps) {
 
     const handleRoleChange = async (newRole: 'Super User' | 'User') => {
         if (newRole === ownerRole) return;
-        if (isSelf && newRole === 'User') {
-            if (!confirm('Are you sure you want to demote yourself? You will lose Super User access immediately.')) return;
+
+        // Enforce: must always have at least one Super User
+        if (newRole === 'User') {
+            const superUserCount = owners.filter(
+                (o: any) => o.is_super_user === 1 || o.is_super_user === true
+            ).length;
+            if (superUserCount <= 1) {
+                setError('Cannot demote: there must always be at least one Super User.');
+                setTimeout(() => setError(''), 4000);
+                return;
+            }
+            if (isSelf) {
+                if (!confirm('Are you sure you want to demote yourself? You will lose Super User access immediately.')) return;
+            }
         }
+
         setError('');
         setRoleSuccess('');
         setIsChangingRole(true);
@@ -181,20 +194,6 @@ export function OwnerCardBody({ owner, onEdit }: OwnerCardBodyProps) {
                                 : <><ShieldCheck size={14} /><span>{isChangingRole ? 'Saving...' : 'Promote to Super User'}</span></>
                             }
                         </button>
-
-                        {/* Current role badge */}
-                        <span style={{
-                            fontSize: '0.72rem',
-                            fontWeight: 700,
-                            padding: '3px 8px',
-                            borderRadius: '20px',
-                            background: ownerRole === 'Super User' ? 'rgba(234,179,8,0.12)' : 'rgba(156,163,175,0.12)',
-                            color: ownerRole === 'Super User' ? '#eab308' : 'var(--text-muted)',
-                            border: `1px solid ${ownerRole === 'Super User' ? 'rgba(234,179,8,0.3)' : 'rgba(156,163,175,0.2)'}`,
-                            letterSpacing: '0.03em',
-                        }}>
-                            {ownerRole}
-                        </span>
                     </div>
                 )}
             </div>

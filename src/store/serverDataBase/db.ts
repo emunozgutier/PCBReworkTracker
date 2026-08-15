@@ -128,15 +128,17 @@ const initDb = async (): Promise<void> => {
             dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_owners_username ON owners(username)`);
             dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_owners_name_nocase ON owners(name COLLATE NOCASE)`);
 
-            // Migration: add is_super_user column if it doesn't exist yet
-            dbInstance.run(`ALTER TABLE owners ADD COLUMN is_super_user INTEGER DEFAULT 0`, () => {
-                // Set the first registered user (lowest id) as Super User if none are marked yet
+            // Migration: add is_super_user column if it doesn't exist yet (ignore error if already exists)
+            dbInstance.run(`ALTER TABLE owners ADD COLUMN is_super_user INTEGER DEFAULT 0`);
+            // Seed: set the first registered user (lowest id) as Super User if none are marked yet.
+            // Run unconditionally so it works even if the column already existed before ALTER TABLE.
+            setTimeout(() => {
                 dbInstance.get("SELECT COUNT(*) as cnt FROM owners WHERE is_super_user = 1", [], (_e: any, row: any) => {
                     if (row && row.cnt === 0) {
                         dbInstance.run("UPDATE owners SET is_super_user = 1 WHERE id = (SELECT MIN(id) FROM owners)");
                     }
                 });
-            });
+            }, 500);
 
             // Tags Table
             dbInstance.run(`CREATE TABLE IF NOT EXISTS tags (
