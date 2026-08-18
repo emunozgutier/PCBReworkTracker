@@ -10,40 +10,44 @@ describe('Authentication & Session Cookie API tests', () => {
     let projectId: number;
     let pcbId: number;
 
+    let superUsername: string;
+    let normalUsername: string;
+
     beforeAll(async () => {
         // Run cleanup to clear any leftover test data
         await fetch(`${API_URL}/test/cleanup`, { method: 'POST' });
     });
 
     it('should setup test owners in database', async () => {
-        // Fetch owners to find the actual Super User (lowest ID)
-        const resOwners = await fetch(`${API_URL}/owners`);
-        const ownersList = await resOwners.json();
-        
-        let superOwner = ownersList.sort((a: any, b: any) => a.id - b.id)[0];
-        if (!superOwner) {
-            // Fallback if no owners exist (should not happen due to initDb loading demo owners)
-            const resSuper = await fetch(`${API_URL}/owners`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: 'Vitest Super User',
-                    username: 'vitest_super',
-                    email: 'super@vitest.test',
-                    crc_format: 'letter'
-                })
-            });
-            superOwner = await resSuper.json();
-        }
+        superUsername = `vitest_super_${Date.now()}`;
+        const resSuper = await fetch(`${API_URL}/owners`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: 'Vitest Super User',
+                username: superUsername,
+                email: 'super@vitest.test',
+                crc_format: 'letter'
+            })
+        });
+        const superOwner = await resSuper.json();
         superUserId = superOwner.id;
 
+        // Elevate to Super User
+        await fetch(`${API_URL}/owners/${superUserId}/role`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role: 'Super User' })
+        });
+
         // Create a normal user
+        normalUsername = `vitest_normal_${Date.now()}`;
         const resUser = await fetch(`${API_URL}/owners`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 name: 'Vitest Normal User',
-                username: 'vitest_normal',
+                username: normalUsername,
                 email: 'normal@vitest.test',
                 crc_format: 'letter'
             })
@@ -55,18 +59,12 @@ describe('Authentication & Session Cookie API tests', () => {
     });
 
     it('should generate a 1-week session token upon successful OTP verification', async () => {
-        // Fetch owners to get the super user username
-        const resOwners = await fetch(`${API_URL}/owners`);
-        const ownersList = await resOwners.json();
-        const superOwner = ownersList.find((o: any) => o.id === superUserId);
-
-        // Verify OTP for super user
+        // Verify OTP for super user (no OTP configured -> succeeds without code)
         const resVerify = await fetch(`${API_URL}/otp/verify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                username: superOwner.username,
-                secret: null,
+                username: superUsername,
                 token: null
             })
         });
@@ -83,8 +81,7 @@ describe('Authentication & Session Cookie API tests', () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                username: 'vitest_normal',
-                secret: null,
+                username: normalUsername,
                 token: null
             })
         });
@@ -212,6 +209,7 @@ describe('Authentication & Session Cookie API tests', () => {
         await fetch(`${API_URL}/test/cleanup`, { method: 'POST' });
         
         // Custom cleanup for our test owners
-        await fetch(`${API_URL}/owners/${normalUserId}`, { method: 'DELETE' });
+        if (normalUserId) await fetch(`${API_URL}/owners/${normalUserId}`, { method: 'DELETE' });
+        if (superUserId) await fetch(`${API_URL}/owners/${superUserId}`, { method: 'DELETE' });
     });
 });

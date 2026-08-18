@@ -1,9 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { cleanupTestData } from './cleanup';
 import crypto from 'crypto';
-import request from 'supertest';
 
-function base32ToBuf(base32) {
+function base32ToBuf(base32: string) {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
     let clean = base32.replace(/=+$/, '').toUpperCase();
     let length = clean.length;
@@ -25,7 +24,7 @@ function base32ToBuf(base32) {
     return buf;
 }
 
-function generateTotp(secret, time = Date.now()) {
+function generateTotp(secret: string, time = Date.now()) {
     const counter = Math.floor(time / 1000 / 30);
     const key = base32ToBuf(secret);
     
@@ -52,7 +51,7 @@ function generateTotp(secret, time = Date.now()) {
 const API_URL = 'http://localhost:5002/api';
 
 describe('Projects API - Silicon Version', () => {
-    let projectId;
+    let projectId: number;
 
     it('should create a test project', async () => {
         const res = await fetch(`${API_URL}/projects`, {
@@ -106,7 +105,7 @@ describe('Projects API - Silicon Version', () => {
         // Verify audit logs on project update
         const getProjectsRes = await fetch(`${API_URL}/projects`);
         const projects = await getProjectsRes.json();
-        const project = projects.find(p => p.id === projectId);
+        const project = projects.find((p: any) => p.id === projectId);
         expect(project.created_by).toBe('vitest_project_creator');
         expect(project.updated_by).toBe('vitest_project_editor');
         expect(data.updated).toBeDefined();
@@ -260,12 +259,26 @@ describe('Projects API - Silicon Version', () => {
         });
         expect(confirmRes.status).toBe(200);
 
-        // 7. Verify fields are cleared and otp_secret is updated
+        // 7. Verify fields are cleared and otp_secret is updated (hidden as has_otp: 1)
         const finalCheckRes = await fetch(`${API_URL}/owners/${createdUser.id}`);
         const finalOwner = await finalCheckRes.json();
-        expect(finalOwner.otp_secret).toBe(newSecret);
+        expect(finalOwner.has_otp).toBe(1);
         expect(finalOwner.otp_reset_token).toBeNull();
         expect(finalOwner.otp_reset_expires).toBeNull();
+
+        // 8. Verify login succeeds with the new OTP token
+        const newLoginCode = generateTotp(newSecret);
+        const loginRes = await fetch(`${API_URL}/otp/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: resetUsername,
+                token: newLoginCode
+            })
+        });
+        expect(loginRes.status).toBe(200);
+        const loginData = await loginRes.json();
+        expect(loginData.valid).toBe(true);
     });
 
     it('should delete the test project', async () => {

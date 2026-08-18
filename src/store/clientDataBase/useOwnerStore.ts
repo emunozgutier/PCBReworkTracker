@@ -10,8 +10,10 @@ export interface Owner {
     pcb_count?: number;
     rework_count?: number;
     tag_count?: number;
+    has_otp?: number | boolean;
     otp_secret?: string;
     is_super_user?: number;
+    crc_format?: string;
 }
 
 interface OwnerState {

@@ -57,7 +57,7 @@ export function UserLoginButton() {
 
     // Find if the currently selected user in modal has OTP
     const selectedOwner = owners.find(o => o.username === selectedUsername);
-    const hasOtpSecret = selectedOwner && !!selectedOwner.otp_secret;
+    const hasOtpSecret = selectedOwner && (Boolean(selectedOwner.has_otp) || Boolean(selectedOwner.otp_secret));
 
     const handleModalLoginSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -89,7 +89,6 @@ export function UserLoginButton() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         username: selectedOwner.username,
-                        secret: hasOtpSecret ? selectedOwner.otp_secret : null, 
                         token: hasOtpSecret ? loginOtp : null 
                     })
                 });

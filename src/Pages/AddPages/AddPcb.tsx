@@ -14,7 +14,7 @@ const isNA = (str: string) => {
     return s === 'n/a' || s === 'na' || s === 'not applicable';
 };
 
-const getBiggestRevision = (revisions: string[]): string => {
+export const getBiggestRevision = (revisions: string[]): string => {
     if (!revisions || revisions.length === 0) return '';
     const sorted = [...revisions].sort((a, b) => {
         const matchA = a.trim().match(/^([A-Za-z]+)(\d+)$/);

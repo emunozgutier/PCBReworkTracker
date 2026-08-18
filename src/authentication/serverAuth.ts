@@ -1,8 +1,65 @@
 import type { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { db } from '../store/serverDataBase/db';
 
-const SECRET = 'pcb-rework-tracker-secure-secret-key-12345';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const SECRET_FILE_PATH = path.resolve(__dirname, '../store/serverDataBase/data/secret.key');
+
+export const DEMO_SECRET = 'pcb-rework-tracker-secure-secret-key-12345';
+
+/**
+ * Checks whether a custom secret file exists on disk
+ */
+export function hasCustomSecret(): boolean {
+    try {
+        return fs.existsSync(SECRET_FILE_PATH);
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Get active secret from secret.key file or fallback to demo secret
+ */
+export function getSecret(): string {
+    try {
+        if (fs.existsSync(SECRET_FILE_PATH)) {
+            const content = fs.readFileSync(SECRET_FILE_PATH, 'utf8').trim();
+            if (content.length > 0) return content;
+        }
+    } catch (err) {
+        console.error('Error reading secret file:', err);
+    }
+    return process.env.SESSION_SECRET || DEMO_SECRET;
+}
+
+/**
+ * Set and persist a new custom secret key to the secret.key file
+ */
+export function setSecret(newSecret: string): void {
+    const dir = path.dirname(SECRET_FILE_PATH);
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(SECRET_FILE_PATH, newSecret.trim(), { encoding: 'utf8', mode: 0o600 });
+}
+
+/**
+ * Remove custom secret file and reset to default demo secret
+ */
+export function resetToDemoSecret(): void {
+    try {
+        if (fs.existsSync(SECRET_FILE_PATH)) {
+            fs.unlinkSync(SECRET_FILE_PATH);
+        }
+    } catch (err) {
+        console.error('Error removing secret file:', err);
+    }
+}
 
 export interface AuthenticatedRequest extends Request {
     user?: {
@@ -19,7 +76,7 @@ export interface AuthenticatedRequest extends Request {
 export function generateToken(payload: { id: number | null; username: string; name: string; role: string }): string {
     const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000; // 1 week
     const tokenData = JSON.stringify({ ...payload, expiresAt });
-    const signature = crypto.createHmac('sha256', SECRET).update(tokenData).digest('hex');
+    const signature = crypto.createHmac('sha256', getSecret()).update(tokenData).digest('hex');
     return Buffer.from(tokenData).toString('base64') + '.' + signature;
 }
 
@@ -32,7 +89,7 @@ export function verifyToken(token: string): any | null {
         if (parts.length !== 2) return null;
         const data = Buffer.from(parts[0], 'base64').toString('utf8');
         const signature = parts[1];
-        const expectedSignature = crypto.createHmac('sha256', SECRET).update(data).digest('hex');
+        const expectedSignature = crypto.createHmac('sha256', getSecret()).update(data).digest('hex');
         if (signature !== expectedSignature) return null;
         const payload = JSON.parse(data);
         if (payload.expiresAt && Date.now() > payload.expiresAt) {
@@ -87,48 +144,59 @@ export function authenticateToken(req: AuthenticatedRequest, _res: Response, nex
         }
     }
 
-    // Fallback: Check X-User-* headers
-    const usernameHeader = req.headers['x-user-username'] || req.headers['X-User-Username'];
-    const roleHeader = req.headers['x-user-role'] || req.headers['X-User-Role'];
-    const nameHeader = req.headers['x-user-name'] || req.headers['X-User-Name'];
+    // In automated testing environments, allow header-based role simulation
+    const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
+    if (isTestEnv) {
+        const usernameHeader = req.headers['x-user-username'] || req.headers['X-User-Username'];
+        const roleHeader = req.headers['x-user-role'] || req.headers['X-User-Role'];
+        const nameHeader = req.headers['x-user-name'] || req.headers['X-User-Name'];
 
-    if (usernameHeader || roleHeader) {
-        let role: 'Super User' | 'User' | 'Guest' = 'Super User'; // Default to Super User for test suite compatibility
-        const rawRole = String(roleHeader || '').toLowerCase();
-        if (rawRole === 'guest' || rawRole === 'anonymous') {
-            role = 'Guest';
-        } else if (rawRole === 'user') {
-            role = 'User';
-        } else if (rawRole === 'super user') {
-            role = 'Super User';
+        if (usernameHeader || roleHeader) {
+            let role: 'Super User' | 'User' | 'Guest' = 'Super User';
+            const rawRole = String(roleHeader || '').toLowerCase();
+            if (rawRole === 'guest' || rawRole === 'anonymous') {
+                role = 'Guest';
+            } else if (rawRole === 'user') {
+                role = 'User';
+            } else if (rawRole === 'super user') {
+                role = 'Super User';
+            }
+
+            req.user = {
+                id: null,
+                username: (usernameHeader as string) || (role === 'Super User' ? 'admin' : 'guest'),
+                name: (nameHeader as string) || (role === 'Super User' ? 'Super User' : 'Guest'),
+                role: role
+            };
+
+            if (req.user.username && req.user.username !== 'guest' && req.user.username !== 'admin') {
+                db.get("SELECT id FROM owners WHERE username = ?", [req.user.username.replace(/\s+/g, '').toLowerCase()], (err: Error | null, row: any) => {
+                    if (!err && row) {
+                        req.user!.id = row.id;
+                    }
+                    next();
+                });
+                return;
+            }
+            return next();
         }
 
+        // Test runner default if no token and no headers
         req.user = {
             id: null,
-            username: (usernameHeader as string) || (role === 'Super User' ? 'admin' : 'guest'),
-            name: (nameHeader as string) || (role === 'Super User' ? 'Super User' : 'Guest'),
-            role: role
+            username: 'admin',
+            name: 'Super User',
+            role: 'Super User'
         };
-
-        if (req.user.username && req.user.username !== 'guest' && req.user.username !== 'admin') {
-            db.get("SELECT id FROM owners WHERE username = ?", [req.user.username.replace(/\s+/g, '').toLowerCase()], (err: Error | null, row: any) => {
-                if (!err && row) {
-                    req.user!.id = row.id;
-                }
-                next();
-            });
-            return;
-        }
         return next();
     }
 
-    // If no session token AND no headers are present (e.g. concurrency test),
-    // default to Super User to keep existing test scripts and direct requests working.
+    // Default to Guest for unauthenticated production / real requests
     req.user = {
         id: null,
-        username: 'admin',
-        name: 'Super User',
-        role: 'Super User'
+        username: 'guest',
+        name: 'Guest',
+        role: 'Guest'
     };
     next();
 }

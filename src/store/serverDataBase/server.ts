@@ -16,7 +16,10 @@ import {
     canUpdatePcb,
     canUpdateRework,
     canAddPcb,
-    canAddRework
+    canAddRework,
+    hasCustomSecret,
+    setSecret,
+    resetToDemoSecret
 } from '../../authentication/serverAuth';
 import {
     inputSanityCheckMiddleware,
@@ -700,6 +703,36 @@ function getUserRole(ownerId: number): Promise<'Super User' | 'User'> {
 }
 
 
+app.get('/api/auth/secret-status', (_req: Request, res: Response) => {
+    const hasSecret = hasCustomSecret();
+    res.json({
+        hasCustomSecret: hasSecret,
+        isDemo: !hasSecret
+    });
+});
+
+app.post('/api/auth/init-secret', (req: Request, res: Response) => {
+    const { secret } = req.body;
+    if (!secret || typeof secret !== 'string' || secret.trim().length < 16) {
+        return res.status(400).json({ error: "Secret key must be a valid string of at least 16 characters." });
+    }
+    try {
+        setSecret(secret);
+        return res.json({ success: true, message: "Custom secret key successfully stored in secret.key" });
+    } catch (err: any) {
+        return res.status(500).json({ error: err.message || "Failed to save secret key." });
+    }
+});
+
+app.post('/api/auth/reset-secret', (_req: Request, res: Response) => {
+    try {
+        resetToDemoSecret();
+        return res.json({ success: true, message: "Secret key successfully reset to demo secret." });
+    } catch (err: any) {
+        return res.status(500).json({ error: err.message || "Failed to reset secret key." });
+    }
+});
+
 app.get('/api/otp/setup', (req: Request, res: Response) => {
     const { username, host } = req.query;
     if (!username) return res.status(400).json({ error: "Username is required." });
@@ -741,7 +774,7 @@ app.post('/api/otp/verify', (req: Request, res: Response) => {
     const cleanUsername = username.replace(/\s+/g, '').toLowerCase();
     console.log("[OTP DEBUG] Statefull verify for user:", cleanUsername);
 
-    db.get("SELECT id, login_attempts FROM owners WHERE username = ?", [cleanUsername], (err: Error | null, row: any) => {
+    db.get("SELECT id, login_attempts, otp_secret FROM owners WHERE username = ?", [cleanUsername], (err: Error | null, row: any) => {
         if (err) {
             console.error("[OTP DEBUG] DB Select Error:", err);
             return res.status(500).json({ error: err.message });
@@ -751,7 +784,7 @@ app.post('/api/otp/verify', (req: Request, res: Response) => {
             return res.status(404).json({ error: "User not found." });
         }
 
-        console.log("[OTP DEBUG] User row found:", row);
+        console.log("[OTP DEBUG] User row found:", { id: row.id, has_otp: !!row.otp_secret });
 
         let attempts: LoginAttempt[] = [];
         if (row.login_attempts) {
@@ -783,16 +816,19 @@ app.post('/api/otp/verify', (req: Request, res: Response) => {
             }
         }
 
-        // If secret is not provided (user has no OTP), login is always successful
+        // Look up OTP secret directly from DB (or fallback to passed secret)
+        const userSecret = row.otp_secret || secret;
+
+        // If user has an OTP secret configured, verify the token
         let isValid = true;
-        if (secret) {
+        if (userSecret) {
             if (!token) {
                 console.log("[OTP DEBUG] Token is missing, isValid = false");
                 isValid = false;
             } else {
                 try {
-                    console.log("[OTP DEBUG] Calling verifyTotp with secret length:", secret.length, "token:", token);
-                    isValid = verifyTotp(secret, token);
+                    console.log("[OTP DEBUG] Calling verifyTotp with DB secret length:", userSecret.length, "token:", token);
+                    isValid = verifyTotp(userSecret, token);
                     console.log("[OTP DEBUG] verifyTotp returned:", isValid);
                 } catch (totpErr: any) {
                     console.error("[OTP DEBUG] verifyTotp exception:", totpErr);
@@ -886,7 +922,18 @@ app.post('/api/otp/verify', (req: Request, res: Response) => {
 // Owners API
 app.get('/api/owners', (_req: Request, res: Response) => {
     const query = `
-        SELECT owners.*,
+        SELECT 
+            owners.id,
+            owners.name,
+            owners.username,
+            owners.email,
+            owners.crc_format,
+            owners.is_super_user,
+            owners.otp_reset_token,
+            owners.otp_reset_expires,
+            owners.otp_reset_by,
+            owners.otp_reset_at,
+            CASE WHEN (owners.otp_secret IS NOT NULL AND owners.otp_secret != '') THEN 1 ELSE 0 END AS has_otp,
             (SELECT COUNT(*) FROM pcbs WHERE pcbs.owner_id = owners.id) AS pcb_count,
             (SELECT COUNT(*) FROM reworks WHERE reworks.owner_id = owners.id) AS rework_count,
             (SELECT COUNT(*) FROM tags WHERE tags.owner_id = owners.id) AS tag_count
@@ -1386,7 +1433,22 @@ app.delete('/api/pcbs/:id', (req: Request, res: Response) => {
 
 // --- Owners API Expansions ---
 app.get('/api/owners/:id', (req: Request, res: Response) => {
-    db.get("SELECT * FROM owners WHERE id = ?", [req.params.id], (err: Error | null, row: any) => {
+    const query = `
+        SELECT 
+            id,
+            name,
+            username,
+            email,
+            crc_format,
+            is_super_user,
+            otp_reset_token,
+            otp_reset_expires,
+            otp_reset_by,
+            otp_reset_at,
+            CASE WHEN (otp_secret IS NOT NULL AND otp_secret != '') THEN 1 ELSE 0 END AS has_otp
+        FROM owners WHERE id = ?
+    `;
+    db.get(query, [req.params.id], (err: Error | null, row: any) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(row);
     });
