@@ -92,7 +92,11 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                                         }}
                                     >
                                         <span className="pfe-mobile-option-label" style={{ textDecoration: state === 'excluded' ? 'line-through' : 'none', opacity: state === 'excluded' ? 0.5 : 1 }}>{child.props.children}</span>
-                                        <div className="pfe-mobile-check" style={{ backgroundColor: bg, border: `1px solid ${border}`, opacity: state !== 'ignored' ? 1 : 0.5 }}>
+                                        <div 
+                                            className="pfe-mobile-check" 
+                                            style={{ backgroundColor: bg, border: `1px solid ${border}`, opacity: state !== 'ignored' ? 1 : 0.5 }}
+                                            title={state === 'required' ? 'Must have it' : state === 'excluded' ? 'Must NOT have it' : 'Does not matter'}
+                                        >
                                             {state === 'required' && (
                                                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                                                     <line x1="5" y1="12" x2="19" y2="12" />
@@ -391,6 +395,7 @@ function FilterCheckItemRow({ label, isChecked, state, showCheckbox = true, onTo
                     border: `1.5px solid ${border}`,
                     backgroundColor: bg,
                 }}
+                title={activeState === 'required' ? 'Must have it' : activeState === 'excluded' ? 'Must NOT have it' : 'Does not matter'}
             >
                 {activeState === 'checked' && (
                     <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
