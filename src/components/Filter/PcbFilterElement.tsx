@@ -4,7 +4,7 @@ import { useAppState } from '../../store/useAppState';
 import { FilterScrollBar } from './FilterScrollBar';
 
 interface PcbFilterElementProps {
-    title: string;
+    title: React.ReactNode;
     value: string[];
     onChange: (selected: string[]) => void;
     width?: string;
@@ -15,10 +15,13 @@ interface PcbFilterElementProps {
      * value=[] → nothing excluded → all boards visible
      */
     exclusion?: boolean;
+    threeStateMode?: boolean;
+    requiredValue?: string[];
+    onRequiredChange?: (selected: string[]) => void;
     children: React.ReactNode;
 }
 
-export function PcbFilterElement({ title, value, onChange, width = 'auto', exclusion = false, children }: PcbFilterElementProps) {
+export function PcbFilterElement({ title, value, onChange, width = 'auto', exclusion = false, threeStateMode = false, requiredValue, onRequiredChange, children }: PcbFilterElementProps) {
     const isMobile = useAppState(state => state.isMobile);
     const [isElementExpanded, setIsElementExpanded] = React.useState(false);
 
@@ -55,6 +58,57 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                         {React.Children.map(children, (child: any) => {
                             if (!child) return null;
                             const optionValue = child.props.value;
+                            
+                            if (threeStateMode && requiredValue && onRequiredChange) {
+                                const isReq = requiredValue.includes(optionValue);
+                                const isExc = value.includes(optionValue);
+                                let state: 'ignored' | 'required' | 'excluded' = 'ignored';
+                                if (isReq) state = 'required';
+                                if (isExc) state = 'excluded';
+                                
+                                let bg = 'transparent';
+                                let border = 'rgba(255,255,255,0.25)';
+                                if (state === 'required') {
+                                    bg = '#eab308';
+                                    border = '#eab308';
+                                } else if (state === 'excluded') {
+                                    bg = '#ef4444';
+                                    border = '#ef4444';
+                                }
+                                
+                                return (
+                                    <div
+                                        className={`pfe-mobile-option${state !== 'ignored' ? ' pfe-mobile-option--checked' : ''}`}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            if (!isReq && !isExc) {
+                                                onRequiredChange([...requiredValue, optionValue]);
+                                            } else if (isReq) {
+                                                onRequiredChange(requiredValue.filter(v => v !== optionValue));
+                                                onChange([...value, optionValue]);
+                                            } else if (isExc) {
+                                                onChange(value.filter(v => v !== optionValue));
+                                            }
+                                        }}
+                                    >
+                                        <span className="pfe-mobile-option-label" style={{ textDecoration: state === 'excluded' ? 'line-through' : 'none', opacity: state === 'excluded' ? 0.5 : 1 }}>{child.props.children}</span>
+                                        <div className="pfe-mobile-check" style={{ backgroundColor: bg, border: `1px solid ${border}`, opacity: state !== 'ignored' ? 1 : 0.5 }}>
+                                            {state === 'required' && (
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                                </svg>
+                                            )}
+                                            {state === 'excluded' && (
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                                </svg>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            }
+
                             const isInValue = value.includes(optionValue);
                             // Mirror desktop logic:
                             //   exclusion mode  → checked = NOT excluded (not in value)
@@ -100,11 +154,14 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                                 </div>
                             );
                         })}
-                        {value && value.length > 0 && (
-                            <button className="pfe-mobile-clear" onClick={() => onChange([])}>
+                        {(value && value.length > 0) || (requiredValue && requiredValue.length > 0) ? (
+                            <button className="pfe-mobile-clear" onClick={() => {
+                                onChange([]);
+                                if (onRequiredChange) onRequiredChange([]);
+                            }}>
                                 {exclusion ? 'Show All' : 'Clear All'}
                             </button>
-                        )}
+                        ) : null}
                     </div>
                 )}
             </div>
@@ -126,12 +183,33 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
     // "All deselected" state: value contains only the sentinel (no boards pass the filter)
     const isDeselectedAll = value.length === 1 && value[0] === NONE;
     // Master is "checked" (all items on) when value=[] (default implicit-all) or all explicitly included
-    const masterChecked = !exclusion
-        ? value.length === 0 || allItems.every(i => value.includes(i.optionValue))
-        : value.length === 0; // exclusion: checked = nothing excluded
+    let masterChecked = false;
+    if (threeStateMode && requiredValue) {
+        masterChecked = value.length === 0 && requiredValue.length === 0;
+    } else {
+        masterChecked = !exclusion
+            ? value.length === 0 || allItems.every(i => value.includes(i.optionValue))
+            : value.length === 0; // exclusion: checked = nothing excluded
+    }
 
     const handleToggle = (optionValue: string) => {
-        if (exclusion) {
+        if (threeStateMode && requiredValue && onRequiredChange) {
+            // 3-state cycle: ignored -> required -> excluded -> ignored
+            const isReq = requiredValue.includes(optionValue);
+            const isExc = value.includes(optionValue);
+            
+            if (!isReq && !isExc) {
+                // ignored -> required
+                onRequiredChange([...requiredValue, optionValue]);
+            } else if (isReq) {
+                // required -> excluded
+                onRequiredChange(requiredValue.filter(v => v !== optionValue));
+                onChange([...value, optionValue]);
+            } else if (isExc) {
+                // excluded -> ignored
+                onChange(value.filter(v => v !== optionValue));
+            }
+        } else if (exclusion) {
             const isExcluded = value.includes(optionValue);
             if (isExcluded) {
                 onChange(value.filter(v => v !== optionValue));
@@ -161,7 +239,11 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
 
     // Simplified toggle without event param — used by FilterCheckItemRow's onToggle
     const handleMasterToggle = () => {
-        if (exclusion) {
+        if (threeStateMode && onRequiredChange) {
+            // Clear all
+            onChange([]);
+            onRequiredChange([]);
+        } else if (exclusion) {
             onChange(value.length === 0 ? allItems.map(i => i.optionValue) : []);
         } else {
             onChange(masterChecked ? [NONE] : []);
@@ -200,6 +282,24 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
             {/* Item list — checkboxes visible only on hover */}
             <FilterScrollBar className="pfe-item-list" visible={isHovered}>
                 {allItems.map(({ optionValue, label }) => {
+                    if (threeStateMode && requiredValue) {
+                        const isReq = requiredValue.includes(optionValue);
+                        const isExc = value.includes(optionValue);
+                        let state: 'ignored' | 'required' | 'excluded' = 'ignored';
+                        if (isReq) state = 'required';
+                        if (isExc) state = 'excluded';
+                        return (
+                            <FilterCheckItemRow
+                                key={optionValue}
+                                optionValue={optionValue}
+                                label={label}
+                                state={state}
+                                showCheckbox={isHovered}
+                                onToggle={() => handleToggle(optionValue)}
+                            />
+                        );
+                    }
+
                     const isExcluded = value.includes(optionValue);
                     // exclusion: checked = NOT excluded
                     // normal: checked = implicit-all (value=[]) OR explicitly in value; NOT when isDeselectedAll
@@ -226,7 +326,8 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
 interface FilterCheckItemRowProps {
     optionValue: string;
     label: React.ReactNode;
-    isChecked: boolean;
+    isChecked?: boolean;
+    state?: 'ignored' | 'required' | 'excluded' | 'checked';
     showCheckbox?: boolean;
     onToggle?: () => void;
     /** Override the checkbox fill/border color (default: var(--accent) purple) */
@@ -235,22 +336,45 @@ interface FilterCheckItemRowProps {
     noStrikethrough?: boolean;
 }
 
-function FilterCheckItemRow({ label, isChecked, showCheckbox = true, onToggle, checkboxColor, noStrikethrough }: FilterCheckItemRowProps) {
+function FilterCheckItemRow({ label, isChecked, state, showCheckbox = true, onToggle, checkboxColor, noStrikethrough }: FilterCheckItemRowProps) {
     const [hovered, setHovered] = React.useState(false);
     const interactive = showCheckbox && !!onToggle;
-    const color = checkboxColor ?? 'var(--accent)';
+    
+    // Normalize state vs isChecked
+    let activeState = state || (isChecked ? 'checked' : 'ignored');
+    
+    // Background and border colors
+    let bg = 'transparent';
+    let border = 'rgba(255,255,255,0.25)';
+    const defaultColor = checkboxColor ?? 'var(--accent)';
+    
+    if (activeState === 'checked') {
+        bg = defaultColor;
+        border = defaultColor;
+    } else if (activeState === 'required') {
+        bg = '#eab308'; // yellow-500
+        border = '#eab308';
+    } else if (activeState === 'excluded') {
+        bg = '#ef4444'; // red-500
+        border = '#ef4444';
+    }
+
+    // Is the visual row "selected" (changes background slightly on hover/active)?
+    const isVisualChecked = activeState !== 'ignored';
 
     const rowClasses = [
         'fcir-row',
         interactive ? 'fcir-row--interactive' : '',
         interactive && hovered ? 'fcir-row--hovered' : '',
-        interactive && isChecked ? 'fcir-row--checked' : '',
+        interactive && isVisualChecked ? 'fcir-row--checked' : '',
     ].filter(Boolean).join(' ');
+
+    const isStrikethrough = activeState === 'excluded' || (activeState === 'ignored' && !noStrikethrough && state === undefined && isChecked === false);
 
     const labelClasses = [
         'fcir-label',
-        interactive && isChecked ? 'fcir-label--interactive-checked' : '',
-        interactive && !isChecked && !noStrikethrough ? 'fcir-label--interactive-unchecked' : '',
+        interactive && isVisualChecked ? 'fcir-label--interactive-checked' : '',
+        interactive && isStrikethrough ? 'fcir-label--interactive-unchecked' : '',
     ].filter(Boolean).join(' ');
 
     return (
@@ -264,13 +388,24 @@ function FilterCheckItemRow({ label, isChecked, showCheckbox = true, onToggle, c
             <div
                 className={`fcir-checkbox${showCheckbox ? ' fcir-checkbox--visible' : ''}`}
                 style={{
-                    border: `1.5px solid ${isChecked ? color : 'rgba(255,255,255,0.25)'}`,
-                    backgroundColor: isChecked ? color : 'transparent',
+                    border: `1.5px solid ${border}`,
+                    backgroundColor: bg,
                 }}
             >
-                {isChecked && (
+                {activeState === 'checked' && (
                     <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                )}
+                {activeState === 'required' && (
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                )}
+                {activeState === 'excluded' && (
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                 )}
             </div>

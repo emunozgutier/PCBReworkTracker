@@ -16,7 +16,7 @@ interface PcbViewProps {
 
 export function PcbView({ title }: PcbViewProps) {
     const { projects, loading: projectsLoading, fetchProjects } = useProjectStore();
-    const { pcbs, loading: pcbsLoading, fetchPcbs, selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs, selectedTags, selectedOwners, selectedBoardNumbers, selectedBoms } = usePcbStore();
+    const { pcbs, loading: pcbsLoading, fetchPcbs, selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs, selectedTags, requiredTags, selectedOwners, selectedBoardNumbers, selectedBoms } = usePcbStore();
     const { fetchOwners } = useOwnerStore();
     const { fetchTags } = useTagStore();
     const { isolatedView, searchQuery, showFilters, setShowFilters, crcFormat } = useAppState();
@@ -28,7 +28,7 @@ export function PcbView({ title }: PcbViewProps) {
         fetchOwners();
     }, [fetchPcbs, fetchProjects, fetchTags, fetchOwners]);
 
-    const activePcbFilterCount = selectedProjects.length + selectedRevisions.length + selectedFlavors.length + selectedCorners.length + selectedPcbRevs.length + selectedTags.length + selectedOwners.length + selectedBoardNumbers.length;
+    const activePcbFilterCount = selectedProjects.length + selectedRevisions.length + selectedFlavors.length + selectedCorners.length + selectedPcbRevs.length + selectedTags.length + requiredTags.length + selectedOwners.length + selectedBoardNumbers.length;
     
     useEffect(() => {
         if (activePcbFilterCount > 0 && !isolatedView) {
@@ -61,8 +61,12 @@ export function PcbView({ title }: PcbViewProps) {
         items = items.filter(pcb => selectedPcbRevs.includes(pcb.board_rev || ''));
     }
     if (selectedTags.length > 0) {
-        // selectedTags = excluded tag IDs → hide boards that have any excluded tag
-        items = items.filter(pcb => !selectedTags.some(tagId => pcb.tag_ids?.includes(parseInt(tagId))));
+        // selectedTags = excluded tag groups
+        items = items.filter(pcb => !selectedTags.some(group => group.split(',').some(tagId => pcb.tag_ids?.includes(parseInt(tagId)))));
+    }
+    if (requiredTags.length > 0) {
+        // requiredTags = required tag groups
+        items = items.filter(pcb => requiredTags.every(group => group.split(',').some(tagId => pcb.tag_ids?.includes(parseInt(tagId)))));
     }
     if (selectedOwners.length > 0) {
         items = items.filter(pcb => selectedOwners.includes(pcb.owner));

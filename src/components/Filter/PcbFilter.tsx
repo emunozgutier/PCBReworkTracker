@@ -74,6 +74,7 @@ export function PcbFilter() {
         selectedFlavors, setSelectedFlavors,
         selectedPcbRevs, setSelectedPcbRevs,
         selectedTags, setSelectedTags,
+        requiredTags, setRequiredTags,
         selectedOwners, setSelectedOwners,
         selectedBoardNumbers, setSelectedBoardNumbers,
         selectedBoms, setSelectedBoms
@@ -118,9 +119,15 @@ export function PcbFilter() {
         if (ignoreField !== 'pcbrev' && selectedPcbRevs.length > 0) {
             if (!pcb.board_rev || !selectedPcbRevs.includes(pcb.board_rev)) return false;
         }
-        if (ignoreField !== 'tag' && selectedTags.length > 0) {
-            // selectedTags = excluded tag IDs → hide boards that have any excluded tag
-            if (pcb.tag_ids && pcb.tag_ids.some((id: number) => selectedTags.includes(id.toString()))) return false;
+        if (ignoreField !== 'tag') {
+            if (selectedTags.length > 0) {
+                // selectedTags = excluded tag groups → hide boards that have any excluded tag
+                if (pcb.tag_ids && selectedTags.some(group => group.split(',').some(tagId => pcb.tag_ids?.includes(parseInt(tagId))))) return false;
+            }
+            if (requiredTags.length > 0) {
+                // requiredTags = required tag groups → board must have at least one tag from each required group
+                if (!pcb.tag_ids || !requiredTags.every(group => group.split(',').some(tagId => pcb.tag_ids?.includes(parseInt(tagId))))) return false;
+            }
         }
         if (ignoreField !== 'owner' && selectedOwners.length > 0) {
             if (!selectedOwners.includes(pcb.owner)) return false;
@@ -141,7 +148,7 @@ export function PcbFilter() {
             corner: selectedCorners.length > 0,
             flavor: selectedFlavors.length > 0,
             pcbrev: selectedPcbRevs.length > 0,
-            tag: selectedTags.length > 0,
+            tag: selectedTags.length > 0 || requiredTags.length > 0,
             owner: selectedOwners.length > 0,
             boardnum: selectedBoardNumbers.length > 0,
             bom: selectedBoms.length > 0
@@ -275,28 +282,15 @@ export function PcbFilter() {
                 >
                     <div className="pcb-filter-group-inner">
                         <PcbFilterElement 
-                            title="Tags"
-                            exclusion
-                            value={(() => {
-                                // value = groups that are currently EXCLUDED (unchecked)
-                                const publicTags = tags.filter(t => t.type === 'public');
-                                const grouped = new Map<string, string[]>();
-                                publicTags.forEach(t => {
-                                    const name = formatTagName(t);
-                                    if (!grouped.has(name)) grouped.set(name, []);
-                                    grouped.get(name)!.push(t.id.toString());
-                                });
-                                const excluded: string[] = [];
-                                grouped.forEach((ids) => {
-                                    if (ids.some(id => selectedTags.includes(id))) {
-                                        excluded.push(ids.join(','));
-                                    }
-                                });
-                                return excluded;
-                            })()} 
+                            title={<span>Tags <span title="empty = does not matter, yellow minus = must have, red X = must not have" style={{cursor: 'help', color: 'var(--accent)', marginLeft: '4px'}}>?</span></span>}
+                            threeStateMode
+                            value={selectedTags} 
+                            requiredValue={requiredTags}
                             onChange={(newExcluded) => {
-                                // Flatten excluded group strings back to individual tag IDs
-                                setSelectedTags(newExcluded.flatMap(v => v.split(',')));
+                                setSelectedTags(newExcluded);
+                            }}
+                            onRequiredChange={(newRequired) => {
+                                setRequiredTags(newRequired);
                             }}
                         >
                             {(() => {
@@ -444,29 +438,17 @@ export function PcbFilter() {
             {/* Tags & Owner Group */}
             <PcbFilterGroup title="Organization" color="#0ea5e9">
                 <PcbFilterElement 
-                    title="Tags"
-                    exclusion
-                    value={(() => {
-                        // value = groups that are currently EXCLUDED (unchecked)
-                        const publicTags = tags.filter(t => t.type === 'public');
-                        const grouped = new Map<string, string[]>();
-                        publicTags.forEach(t => {
-                            const name = formatTagName(t);
-                            if (!grouped.has(name)) grouped.set(name, []);
-                            grouped.get(name)!.push(t.id.toString());
-                        });
-                        const excluded: string[] = [];
-                        grouped.forEach((ids) => {
-                            if (ids.some(id => selectedTags.includes(id))) {
-                                excluded.push(ids.join(','));
-                            }
-                        });
-                        return excluded;
-                    })()} 
-                    onChange={(newExcluded) => {
-                        setSelectedTags(newExcluded.flatMap(v => v.split(',')));
-                    }}
-                >
+                            title={<span>Tags <span title="empty = does not matter, yellow minus = must have, red X = must not have" style={{cursor: 'help', color: 'var(--accent)', marginLeft: '4px'}}>?</span></span>}
+                            threeStateMode
+                            value={selectedTags}
+                            requiredValue={requiredTags}
+                            onChange={(newExcluded) => {
+                                setSelectedTags(newExcluded);
+                            }}
+                            onRequiredChange={(newRequired) => {
+                                setRequiredTags(newRequired);
+                            }}
+                        >
                     {(() => {
                         const publicTags = tags.filter((t: any) => t.type === 'public');
                         const grouped = new Map<string, any[]>();

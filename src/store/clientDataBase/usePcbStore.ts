@@ -39,6 +39,7 @@ interface PcbState {
     selectedPcbRevs: string[];
     selectedCorners: string[];
     selectedTags: string[];
+    requiredTags: string[];
     selectedOwners: string[];
     selectedBoardNumbers: string[];
     selectedBoms: string[];
@@ -48,6 +49,7 @@ interface PcbState {
     setSelectedPcbRevs: (revs: string[]) => void;
     setSelectedCorners: (corners: string[]) => void;
     setSelectedTags: (tags: string[]) => void;
+    setRequiredTags: (tags: string[]) => void;
     setSelectedOwners: (owners: string[]) => void;
     setSelectedBoardNumbers: (boardNumbers: string[]) => void;
     setSelectedBoms: (boms: string[]) => void;
@@ -65,6 +67,7 @@ export const usePcbStore = create<PcbState>((set, get) => ({
     selectedPcbRevs: [],
     selectedCorners: [],
     selectedTags: [],
+    requiredTags: [],
     selectedOwners: [],
     selectedBoardNumbers: [],
     selectedBoms: [],
@@ -75,6 +78,7 @@ export const usePcbStore = create<PcbState>((set, get) => ({
     setSelectedPcbRevs: (revs) => set({ selectedPcbRevs: revs }),
     setSelectedCorners: (corners) => set({ selectedCorners: corners }),
     setSelectedTags: (tags) => set({ selectedTags: tags }),
+    setRequiredTags: (tags) => set({ requiredTags: tags }),
     setSelectedOwners: (owners) => set({ selectedOwners: owners }),
     setSelectedBoardNumbers: (boardNumbers) => set({ selectedBoardNumbers: boardNumbers }),
     setSelectedBoms: (boms) => set({ selectedBoms: boms }),
@@ -85,6 +89,7 @@ export const usePcbStore = create<PcbState>((set, get) => ({
         selectedPcbRevs: [],
         selectedCorners: [],
         selectedTags: [],
+        requiredTags: [],
         selectedOwners: [],
         selectedBoardNumbers: [],
         selectedBoms: []

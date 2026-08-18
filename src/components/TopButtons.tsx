@@ -56,6 +56,7 @@ export function TopButtons() {
         selectedCorners,
         selectedPcbRevs,
         selectedTags,
+        requiredTags,
         selectedOwners,
         selectedBoardNumbers,
         resetFilters: resetPcbFilters
@@ -68,6 +69,7 @@ export function TopButtons() {
         selectedCorners.length +
         selectedPcbRevs.length +
         selectedTags.length +
+        requiredTags.length +
         selectedOwners.length +
         selectedBoardNumbers.length
         : 0;
