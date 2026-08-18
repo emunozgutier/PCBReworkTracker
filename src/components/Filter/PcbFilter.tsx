@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAppState } from '../../store/useAppState';
 import { usePcbStore } from '../../store/clientDataBase/usePcbStore';
 import { useProjectStore } from '../../store/clientDataBase/useProjectStore';
@@ -8,6 +9,108 @@ import { useOwnerStore } from '../../store/clientDataBase/useOwnerStore';
 import { PcbFilterElement } from './PcbFilterElement';
 import { PcbFilterGroup } from './PcbFilterGroup';
 import './PcbFilter.css';
+
+function TagTooltipHeader() {
+    const [visible, setVisible] = useState(false);
+    const [coords, setCoords] = useState({ left: 0, top: 0, placeBelow: false });
+    const iconRef = useRef<HTMLSpanElement>(null);
+
+    const updatePosition = () => {
+        if (iconRef.current) {
+            const rect = iconRef.current.getBoundingClientRect();
+            const placeBelow = rect.top < 130;
+            setCoords({
+                left: Math.max(100, Math.min(window.innerWidth - 100, rect.left + rect.width / 2)),
+                top: placeBelow ? rect.bottom + 8 : rect.top - 8,
+                placeBelow
+            });
+        }
+    };
+
+    const handleMouseEnter = () => {
+        updatePosition();
+        setVisible(true);
+    };
+
+    const handleMouseLeave = () => {
+        setVisible(false);
+    };
+
+    const handleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        updatePosition();
+        setVisible(prev => !prev);
+    };
+
+    useEffect(() => {
+        if (!visible) return;
+        const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+            if (iconRef.current && !iconRef.current.contains(e.target as Node)) {
+                setVisible(false);
+            }
+        };
+        const handleScroll = () => {
+            setVisible(false);
+        };
+        window.addEventListener('click', handleOutsideClick);
+        window.addEventListener('scroll', handleScroll, true);
+        return () => {
+            window.removeEventListener('click', handleOutsideClick);
+            window.removeEventListener('scroll', handleScroll, true);
+        };
+    }, [visible]);
+
+    return (
+        <span className="pfe-tooltip-wrapper">
+            Tags
+            <span 
+                className="pfe-tooltip-icon" 
+                ref={iconRef}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onClick={handleClick}
+                role="button"
+                tabIndex={0}
+                aria-label="Tag filter explanation"
+            >
+                ?
+            </span>
+            {visible && createPortal(
+                <div 
+                    className="pfe-tooltip-content" 
+                    style={{ 
+                        visibility: 'visible', 
+                        opacity: 1, 
+                        position: 'fixed', 
+                        left: coords.left, 
+                        top: coords.top, 
+                        transform: coords.placeBelow ? 'translate(-50%, 0)' : 'translate(-50%, -100%)',
+                        zIndex: 999999
+                    }}
+                >
+                    <div className="pfe-tooltip-row">
+                        <div className="pfe-tooltip-box pfe-tooltip-ignored"></div>
+                        <span>Does not matter</span>
+                    </div>
+                    <div className="pfe-tooltip-row">
+                        <div className="pfe-tooltip-box pfe-tooltip-required">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                        </div>
+                        <span>Must have it</span>
+                    </div>
+                    <div className="pfe-tooltip-row">
+                        <div className="pfe-tooltip-box pfe-tooltip-excluded">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                        </div>
+                        <span>Must NOT have it</span>
+                    </div>
+                </div>,
+                document.body
+            )}
+        </span>
+    );
+}
 
 function MobileFilterGroup({ title, activeCount, isExpanded, onToggle, children }: { title: string; activeCount: number; isExpanded: boolean; onToggle: () => void; children: React.ReactNode }) {
     return (
@@ -282,30 +385,7 @@ export function PcbFilter() {
                 >
                     <div className="pcb-filter-group-inner">
                         <PcbFilterElement 
-                            title={
-                                <span className="pfe-tooltip-wrapper">
-                                    Tags 
-                                    <span className="pfe-tooltip-icon">?</span>
-                                    <div className="pfe-tooltip-content">
-                                        <div className="pfe-tooltip-row">
-                                            <div className="pfe-tooltip-box pfe-tooltip-ignored"></div>
-                                            <span>Does not matter</span>
-                                        </div>
-                                        <div className="pfe-tooltip-row">
-                                            <div className="pfe-tooltip-box pfe-tooltip-required">
-                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                                            </div>
-                                            <span>Must have it</span>
-                                        </div>
-                                        <div className="pfe-tooltip-row">
-                                            <div className="pfe-tooltip-box pfe-tooltip-excluded">
-                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                                            </div>
-                                            <span>Must NOT have it</span>
-                                        </div>
-                                    </div>
-                                </span>
-                            }
+                            title={<TagTooltipHeader />}
                             threeStateMode
                             value={selectedTags} 
                             requiredValue={requiredTags}
@@ -461,30 +541,7 @@ export function PcbFilter() {
             {/* Tags & Owner Group */}
             <PcbFilterGroup title="Organization" color="#0ea5e9">
                 <PcbFilterElement 
-                            title={
-                                <span className="pfe-tooltip-wrapper">
-                                    Tags 
-                                    <span className="pfe-tooltip-icon">?</span>
-                                    <div className="pfe-tooltip-content">
-                                        <div className="pfe-tooltip-row">
-                                            <div className="pfe-tooltip-box pfe-tooltip-ignored"></div>
-                                            <span>Does not matter</span>
-                                        </div>
-                                        <div className="pfe-tooltip-row">
-                                            <div className="pfe-tooltip-box pfe-tooltip-required">
-                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                                            </div>
-                                            <span>Must have it</span>
-                                        </div>
-                                        <div className="pfe-tooltip-row">
-                                            <div className="pfe-tooltip-box pfe-tooltip-excluded">
-                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                                            </div>
-                                            <span>Must NOT have it</span>
-                                        </div>
-                                    </div>
-                                </span>
-                            }
+                            title={<TagTooltipHeader />}
                             threeStateMode
                             value={selectedTags}
                             requiredValue={requiredTags}

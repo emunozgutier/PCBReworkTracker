@@ -276,10 +276,11 @@ export function PcbFilterElement({ title, value, onChange, width = 'auto', exclu
                         </span>
                     }
                     isChecked={masterChecked}
-                    showCheckbox={isHovered}
-                    onToggle={handleMasterToggle}
+                    showCheckbox={threeStateMode ? false : isHovered}
+                    onToggle={threeStateMode ? undefined : handleMasterToggle}
                     checkboxColor="#f59e0b"
                     noStrikethrough
+                    overflowVisible
                 />
             </div>
 
@@ -338,9 +339,10 @@ interface FilterCheckItemRowProps {
     checkboxColor?: string;
     /** When true the label never gets a strikethrough, even when unchecked */
     noStrikethrough?: boolean;
+    overflowVisible?: boolean;
 }
 
-function FilterCheckItemRow({ label, isChecked, state, showCheckbox = true, onToggle, checkboxColor, noStrikethrough }: FilterCheckItemRowProps) {
+function FilterCheckItemRow({ label, isChecked, state, showCheckbox = true, onToggle, checkboxColor, noStrikethrough, overflowVisible }: FilterCheckItemRowProps) {
     const [hovered, setHovered] = React.useState(false);
     const interactive = showCheckbox && !!onToggle;
     
@@ -416,7 +418,7 @@ function FilterCheckItemRow({ label, isChecked, state, showCheckbox = true, onTo
             </div>
 
             {/* Label */}
-            <span className={labelClasses}>
+            <span className={labelClasses} style={overflowVisible ? { overflow: 'visible' } : undefined}>
                 {label}
             </span>
         </div>
