@@ -282,7 +282,30 @@ export function PcbFilter() {
                 >
                     <div className="pcb-filter-group-inner">
                         <PcbFilterElement 
-                            title={<span>Tags <span title="empty = does not matter, yellow minus = must have, red X = must not have" style={{cursor: 'help', color: 'var(--accent)', marginLeft: '4px'}}>?</span></span>}
+                            title={
+                                <span className="pfe-tooltip-wrapper">
+                                    Tags 
+                                    <span className="pfe-tooltip-icon">?</span>
+                                    <div className="pfe-tooltip-content">
+                                        <div className="pfe-tooltip-row">
+                                            <div className="pfe-tooltip-box pfe-tooltip-ignored"></div>
+                                            <span>Does not matter</span>
+                                        </div>
+                                        <div className="pfe-tooltip-row">
+                                            <div className="pfe-tooltip-box pfe-tooltip-required">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                                            </div>
+                                            <span>Must have it</span>
+                                        </div>
+                                        <div className="pfe-tooltip-row">
+                                            <div className="pfe-tooltip-box pfe-tooltip-excluded">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                            </div>
+                                            <span>Must NOT have it</span>
+                                        </div>
+                                    </div>
+                                </span>
+                            }
                             threeStateMode
                             value={selectedTags} 
                             requiredValue={requiredTags}
@@ -438,7 +461,30 @@ export function PcbFilter() {
             {/* Tags & Owner Group */}
             <PcbFilterGroup title="Organization" color="#0ea5e9">
                 <PcbFilterElement 
-                            title={<span>Tags <span title="empty = does not matter, yellow minus = must have, red X = must not have" style={{cursor: 'help', color: 'var(--accent)', marginLeft: '4px'}}>?</span></span>}
+                            title={
+                                <span className="pfe-tooltip-wrapper">
+                                    Tags 
+                                    <span className="pfe-tooltip-icon">?</span>
+                                    <div className="pfe-tooltip-content">
+                                        <div className="pfe-tooltip-row">
+                                            <div className="pfe-tooltip-box pfe-tooltip-ignored"></div>
+                                            <span>Does not matter</span>
+                                        </div>
+                                        <div className="pfe-tooltip-row">
+                                            <div className="pfe-tooltip-box pfe-tooltip-required">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                                            </div>
+                                            <span>Must have it</span>
+                                        </div>
+                                        <div className="pfe-tooltip-row">
+                                            <div className="pfe-tooltip-box pfe-tooltip-excluded">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                            </div>
+                                            <span>Must NOT have it</span>
+                                        </div>
+                                    </div>
+                                </span>
+                            }
                             threeStateMode
                             value={selectedTags}
                             requiredValue={requiredTags}

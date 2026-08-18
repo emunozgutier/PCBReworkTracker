@@ -219,3 +219,93 @@
     align-self: flex-start;
     font-weight: 600;
 }
+
+/* ── Tooltip ──────────────────────────────────────────────────────────────── */
+.pfe-tooltip-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pfe-tooltip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: bold;
+    cursor: help;
+    transition: background 0.2s;
+}
+
+.pfe-tooltip-wrapper:hover .pfe-tooltip-icon {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.pfe-tooltip-content {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 120%; /* Show above */
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+    background: #1e1e24;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 180px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+    font-weight: normal;
+    text-transform: none;
+    letter-spacing: normal;
+    pointer-events: none;
+}
+
+.pfe-tooltip-wrapper:hover .pfe-tooltip-content {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.pfe-tooltip-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: #e2e8f0;
+}
+
+.pfe-tooltip-box {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.pfe-tooltip-ignored {
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    background: transparent;
+}
+
+.pfe-tooltip-required {
+    border: 1.5px solid #eab308;
+    background: #eab308;
+}
+
+.pfe-tooltip-excluded {
+    border: 1.5px solid #ef4444;
+    background: #ef4444;
+}
