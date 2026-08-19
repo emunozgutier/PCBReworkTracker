@@ -14,7 +14,7 @@ export function TagCardBody({ tag }: TagCardBodyProps) {
     const [taggedPcbs, setTaggedPcbs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const { setActiveTab, crcFormat } = useAppState();
-    const { pcbs, fetchPcbs, setSelectedTags } = usePcbStore();
+    const { pcbs, fetchPcbs, setRequiredTags, setSelectedTags } = usePcbStore();
 
     useEffect(() => {
         if (pcbs.length === 0) {
@@ -48,7 +48,8 @@ export function TagCardBody({ tag }: TagCardBodyProps) {
                             setActiveTab('pcbs');
                             const { tags } = useTagStore.getState();
                             const groupIds = tags.filter((t: any) => t.type === 'public' && formatTagName(t) === formatTagName(tag)).map((t: any) => t.id.toString());
-                            setSelectedTags(groupIds);
+                            setRequiredTags(groupIds);
+                            setSelectedTags(usePcbStore.getState().selectedTags.filter(id => !groupIds.includes(id)));
                         }}
                         label="View PCBs Global List"
                         style={{ marginBottom: '4px' }}
