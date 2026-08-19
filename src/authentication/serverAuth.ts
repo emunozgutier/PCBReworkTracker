@@ -1,8 +1,38 @@
 import type { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { db } from '../store/serverDataBase/db';
 
-const SECRET = process.env.SESSION_SECRET || 'pcb-rework-tracker-secure-secret-key-12345';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+function getSessionSecret(): string {
+    if (process.env.SESSION_SECRET) {
+        return process.env.SESSION_SECRET;
+    }
+
+    try {
+        const secretPath = path.resolve(__dirname, '../store/serverDataBase/data/secret.key');
+        if (fs.existsSync(secretPath)) {
+            const storedKey = fs.readFileSync(secretPath, 'utf8').trim();
+            if (storedKey) return storedKey;
+        }
+        const generatedKey = crypto.randomBytes(32).toString('hex');
+        const dir = path.dirname(secretPath);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        fs.writeFileSync(secretPath, generatedKey, { encoding: 'utf8', mode: 0o600 });
+        return generatedKey;
+    } catch {
+        // Fallback to runtime in-memory cryptographically random secret if filesystem is not writable
+        return crypto.randomBytes(32).toString('hex');
+    }
+}
+
+const SECRET = getSessionSecret();
 
 export interface AuthenticatedRequest extends Request {
     user?: {
@@ -39,7 +69,7 @@ export function verifyToken(token: string): any | null {
             return null; // Token expired
         }
         return payload;
-    } catch (e) {
+    } catch {
         return null;
     }
 }
