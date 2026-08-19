@@ -212,6 +212,7 @@ export const useAppState = create<NavigationState>()(
                     expandedProject: null,
                     expandedPcb: null,
                     expandedRework: null,
+                    isolatedView: false,
                     searchQuery: '',
                     showFilters: false,
                     showMobileSearch: false

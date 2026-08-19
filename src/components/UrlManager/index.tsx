@@ -88,12 +88,15 @@ export function UrlManager() {
                 let board = decodeURIComponent(rawPath.replace(/^\/pcbs?\//, ''));
                 let isolated = false;
                 if (board.endsWith('/view')) {
-                    board = board.replace('/view', '');
+                    board = board.replace(/\/view$/, '');
                     isolated = true;
                 }
                 setActiveTab('pcbs');
                 setExpandedPcb(board || null);
                 setIsolatedView(isolated);
+                if (isolated && board) {
+                    usePcbStore.getState().setSelectedBoardNumbers([board]);
+                }
                 return;
             }
             // Reworks
@@ -217,20 +220,31 @@ export function UrlManager() {
                      useAppState.getState().setPage('pcbs');
                      useAppState.getState().setExpandedPcb(pcb.board_number);
                      useAppState.getState().setIsolatedView(true);
+                     usePcbStore.getState().setSelectedBoardNumbers([pcb.board_number]);
                  } else {
                      useAppState.getState().setPage('wrong_url');
                  }
                  return;
              }
              
-             const exists = pcbs.some(p => p.board_number === expandedPcb);
-             if (!exists) {
+             const pcb = pcbs.find(p => 
+                 p.board_number === expandedPcb || 
+                 p.board_number.toLowerCase() === expandedPcb.toLowerCase() ||
+                 (p.short_code && p.short_code.toUpperCase() === expandedPcb.toUpperCase())
+             );
+             if (!pcb) {
                  useAppState.getState().setPage('wrong_url');
              } else {
                  useAppState.getState().setPage('pcbs');
+                 if (expandedPcb !== pcb.board_number) {
+                     useAppState.getState().setExpandedPcb(pcb.board_number);
+                 }
+                 if (isolatedView) {
+                     usePcbStore.getState().setSelectedBoardNumbers([pcb.board_number]);
+                 }
              }
         }
-    }, [activeTab, expandedPcb, pcbs, loading, hasFetched]);
+    }, [activeTab, expandedPcb, pcbs, loading, hasFetched, isolatedView]);
 
     return null;
 }
