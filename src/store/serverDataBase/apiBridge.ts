@@ -555,5 +555,12 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
         }
     }
 
+    if (localPath.startsWith('/otp/verify')) {
+        return createResponse({ valid: true, token: 'demo-session-token' });
+    }
+    if (localPath.startsWith('/otp/setup')) {
+        return createResponse({ secret: 'JBSWY3DPEHPK3PXP', otpauthUrl: 'otpauth://totp/ReworkTracker:demo?secret=JBSWY3DPEHPK3PXP' });
+    }
+
     return createResponse({ error: 'Not found in demo mode' }, 404);
 }

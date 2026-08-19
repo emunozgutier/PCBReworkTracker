@@ -23,8 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 
-# Database files
+# Database and Secret files
 *.db
+*.key
+src/store/serverDataBase/data/secret.key
 
 # Uploaded files
 docs/

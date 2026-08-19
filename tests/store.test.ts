@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { cleanupTestData } from './cleanup';
 import { useProjectStore } from '../src/store/clientDataBase/useProjectStore';
 import { usePcbStore } from '../src/store/clientDataBase/usePcbStore';
@@ -14,10 +14,12 @@ describe('Store and Database Integration Tests', () => {
     let ownerId: number;
     let tagId: number;
 
-    const testProjectName = 'VitestUniqueProject123';
-    const testPcbName = 'VITEST-PCB-001';
-    const testOwnerName = 'Vitest Owner';
-    const testTagName = 'VITEST-TAG';
+    const uniqueSuffix = Date.now();
+    const testProjectName = `VitestUniqueProject${uniqueSuffix}`;
+    const testProjectName2 = `VitestProjectTwo${uniqueSuffix}`;
+    const testPcbName = `VITEST-PCB-${uniqueSuffix}`;
+    const testOwnerName = `Vitest Owner ${uniqueSuffix}`;
+    const testTagName = `VITEST-TAG-${uniqueSuffix}`;
 
     beforeAll(() => {
         useAppState.getState().setCurrentUser(null, 'Super User');
@@ -55,7 +57,7 @@ describe('Store and Database Integration Tests', () => {
 
     it('should add an owner (user)', async () => {
         const store = useOwnerStore.getState();
-        const success = await store.addOwner({ name: testOwnerName });
+        const success = await store.addOwner({ name: testOwnerName, username: `vitest_owner_${uniqueSuffix}` });
         expect(success).toBe(true);
         
         const updatedStore = useOwnerStore.getState();
@@ -66,7 +68,7 @@ describe('Store and Database Integration Tests', () => {
 
     it('should fail to add an owner with the same name (case-insensitive)', async () => {
         const store = useOwnerStore.getState();
-        const success = await store.addOwner({ name: testOwnerName.toLowerCase() });
+        const success = await store.addOwner({ name: testOwnerName.toLowerCase(), username: `vitest_owner_dup_${uniqueSuffix}` });
         expect(success).toBe(false);
     });
 
@@ -75,7 +77,10 @@ describe('Store and Database Integration Tests', () => {
         const success = await store.addPcb({
             board_number: testPcbName,
             status: 'In Progress',
-            product_name_and_rev: 'RevA',
+            board_flavor: 'Flavor1',
+            board_rev: 'A',
+            silicon_rev: 'A0',
+            silicon_corner: 'TT',
             project_id: projectId,
             owner_id: ownerId
         });
@@ -95,7 +100,10 @@ describe('Store and Database Integration Tests', () => {
         const success = await store.addPcb({
             board_number: testPcbName.toLowerCase(),
             status: 'Done',
-            product_name_and_rev: 'RevB',
+            board_flavor: 'Flavor1',
+            board_rev: 'A',
+            silicon_rev: 'A0',
+            silicon_corner: 'TT',
             project_id: projectId,
             owner_id: ownerId
         });
@@ -104,13 +112,14 @@ describe('Store and Database Integration Tests', () => {
 
     it('should add a PCB with the same board_number to a DIFFERENT project', async () => {
         const projectStore = useProjectStore.getState();
+        const randKey = 'V' + Math.floor(Math.random() * 90 + 10);
         await projectStore.addProject({
-            name: 'VitestProjectTwo',
+            name: testProjectName2,
             description: 'Second project',
             revisions: 'A1',
-            project_key: 'VT2'
+            project_key: randKey
         });
-        const p2 = useProjectStore.getState().projects.find(p => p.name.toLowerCase() === 'VitestProjectTwo'.toLowerCase());
+        const p2 = useProjectStore.getState().projects.find(p => p.name.toLowerCase() === testProjectName2.toLowerCase());
         expect(p2).toBeDefined();
         if (p2) projectId2 = p2.id;
 
@@ -118,7 +127,10 @@ describe('Store and Database Integration Tests', () => {
         const success = await store.addPcb({
             board_number: testPcbName, // Same board number
             status: 'Done',
-            product_name_and_rev: 'RevC',
+            board_flavor: 'Flavor1',
+            board_rev: 'A',
+            silicon_rev: 'A0',
+            silicon_corner: 'TT',
             project_id: projectId2, // Different project
             owner_id: ownerId
         });
@@ -153,11 +165,10 @@ describe('Store and Database Integration Tests', () => {
     it('should add a rework', async () => {
         const store = useReworkStore.getState();
         const success = await store.addRework({
-            pcb_id: pcbId.toString(),
+            pcb_id: pcbId,
             title: 'Test Rework',
             description: 'Vitest test description',
-            status: 'Completed',
-            owner_id: ownerId ? ownerId.toString() : '-1'
+            owner_id: ownerId ? ownerId.toString() : null
         });
         if (!success) {
             console.log("addRework failed with store error:", useReworkStore.getState().error);

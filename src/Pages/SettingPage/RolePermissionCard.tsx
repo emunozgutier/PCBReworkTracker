@@ -205,7 +205,6 @@ export function RolePermissionCard() {
                 <table className="permissions-table">
                     <thead>
                         <tr>
-                            <th>Resource</th>
                             <th>Action</th>
                             <th className={`cb-header-cell ${currentUserRole === 'Super User' ? 'active-column' : ''}`}>Super User</th>
                             <th className={`cb-header-cell ${currentUserRole === 'User' ? 'active-column' : ''}`}>User</th>
@@ -215,8 +214,6 @@ export function RolePermissionCard() {
                     <tbody>
                         {selectedSubTable === 'Projects' && (
                             <RolePermissionSubTable
-                                resourceName="Projects"
-                                rowSpan={4}
                                 actions={projectActions}
                                 currentUserRole={currentUserRole}
                                 isSuperUser={isSuperUser}
@@ -224,8 +221,6 @@ export function RolePermissionCard() {
                         )}
                         {selectedSubTable === 'PCBs' && (
                             <RolePermissionSubTable
-                                resourceName="PCBs"
-                                rowSpan={4}
                                 actions={pcbActions}
                                 currentUserRole={currentUserRole}
                                 isSuperUser={isSuperUser}
@@ -233,8 +228,6 @@ export function RolePermissionCard() {
                         )}
                         {selectedSubTable === 'Reworks' && (
                             <RolePermissionSubTable
-                                resourceName="Reworks"
-                                rowSpan={7}
                                 actions={reworkActions}
                                 currentUserRole={currentUserRole}
                                 isSuperUser={isSuperUser}
@@ -242,8 +235,6 @@ export function RolePermissionCard() {
                         )}
                         {selectedSubTable === 'Users' && (
                             <RolePermissionSubTable
-                                resourceName="Users"
-                                rowSpan={5}
                                 actions={userActions}
                                 currentUserRole={currentUserRole}
                                 isSuperUser={isSuperUser}
@@ -251,8 +242,6 @@ export function RolePermissionCard() {
                         )}
                         {selectedSubTable === 'Tags' && (
                             <RolePermissionSubTable
-                                resourceName="Tags"
-                                rowSpan={4}
                                 actions={tagActions}
                                 currentUserRole={currentUserRole}
                                 isSuperUser={isSuperUser}
@@ -260,8 +249,6 @@ export function RolePermissionCard() {
                         )}
                         {selectedSubTable === 'Docs' && (
                             <RolePermissionSubTable
-                                resourceName="Docs"
-                                rowSpan={3}
                                 actions={docActions}
                                 currentUserRole={currentUserRole}
                                 isSuperUser={isSuperUser}

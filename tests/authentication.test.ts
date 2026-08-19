@@ -27,18 +27,12 @@ describe('Authentication & Session Cookie API tests', () => {
                 name: 'Vitest Super User',
                 username: superUsername,
                 email: 'super@vitest.test',
-                crc_format: 'letter'
+                crc_format: 'letter',
+                role: 'Super User'
             })
         });
         const superOwner = await resSuper.json();
         superUserId = superOwner.id;
-
-        // Elevate to Super User
-        await fetch(`${API_URL}/owners/${superUserId}/role`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ role: 'Super User' })
-        });
 
         // Create a normal user
         normalUsername = `vitest_normal_${Date.now()}`;

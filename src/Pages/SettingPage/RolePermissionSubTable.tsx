@@ -12,23 +12,16 @@ export interface ActionItem {
 }
 
 interface RolePermissionSubTableProps {
-    resourceName: string;
-    rowSpan: number;
     actions: ActionItem[];
     currentUserRole: string;
     isSuperUser: boolean;
 }
 
-export function RolePermissionSubTable({ resourceName, rowSpan, actions, currentUserRole, isSuperUser }: RolePermissionSubTableProps) {
+export function RolePermissionSubTable({ actions, currentUserRole, isSuperUser }: RolePermissionSubTableProps) {
     return (
         <>
-            {actions.map((action, idx) => (
+            {actions.map((action) => (
                 <tr key={action.name} className={action.isEditRow ? 'edit-row' : undefined}>
-                    {idx === 0 && (
-                        <td className="resource-cell" rowSpan={rowSpan}>
-                            {resourceName}
-                        </td>
-                    )}
                     <td>{action.name}</td>
                     <PermissionCheckbox
                         allowed={action.superUserAllowed}

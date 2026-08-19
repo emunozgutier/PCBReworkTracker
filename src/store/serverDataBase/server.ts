@@ -16,10 +16,7 @@ import {
     canUpdatePcb,
     canUpdateRework,
     canAddPcb,
-    canAddRework,
-    hasCustomSecret,
-    setSecret,
-    resetToDemoSecret
+    canAddRework
 } from '../../authentication/serverAuth';
 import {
     inputSanityCheckMiddleware,
@@ -703,35 +700,7 @@ function getUserRole(ownerId: number): Promise<'Super User' | 'User'> {
 }
 
 
-app.get('/api/auth/secret-status', (_req: Request, res: Response) => {
-    const hasSecret = hasCustomSecret();
-    res.json({
-        hasCustomSecret: hasSecret,
-        isDemo: !hasSecret
-    });
-});
 
-app.post('/api/auth/init-secret', (req: Request, res: Response) => {
-    const { secret } = req.body;
-    if (!secret || typeof secret !== 'string' || secret.trim().length < 16) {
-        return res.status(400).json({ error: "Secret key must be a valid string of at least 16 characters." });
-    }
-    try {
-        setSecret(secret);
-        return res.json({ success: true, message: "Custom secret key successfully stored in secret.key" });
-    } catch (err: any) {
-        return res.status(500).json({ error: err.message || "Failed to save secret key." });
-    }
-});
-
-app.post('/api/auth/reset-secret', (_req: Request, res: Response) => {
-    try {
-        resetToDemoSecret();
-        return res.json({ success: true, message: "Secret key successfully reset to demo secret." });
-    } catch (err: any) {
-        return res.status(500).json({ error: err.message || "Failed to reset secret key." });
-    }
-});
 
 app.get('/api/otp/setup', (req: Request, res: Response) => {
     const { username, host } = req.query;
@@ -946,16 +915,17 @@ app.get('/api/owners', (_req: Request, res: Response) => {
 });
 
 app.post('/api/owners', (req: Request, res: Response) => {
-    const { name, username, email, otp_secret, crc_format } = req.body;
+    const { name, username, email, otp_secret, crc_format, is_super_user, role } = req.body;
     const cleanUsername = username ? username.replace(/\s+/g, '').toLowerCase() : null;
-    db.run("INSERT INTO owners (name, username, email, otp_secret, crc_format) VALUES (?, ?, ?, ?, ?)", [name, cleanUsername, email || null, otp_secret || null, crc_format || 'letter'], function(this: any, err: Error | null) {
+    const superUserVal = is_super_user !== undefined ? (is_super_user ? 1 : 0) : (role === 'Super User' ? 1 : 0);
+    db.run("INSERT INTO owners (name, username, email, otp_secret, crc_format, is_super_user) VALUES (?, ?, ?, ?, ?, ?)", [name, cleanUsername, email || null, otp_secret || null, crc_format || 'letter', superUserVal], function(this: any, err: Error | null) {
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {
                 return res.status(400).json({ error: `Username "${cleanUsername}" is already taken.` });
             }
             return res.status(500).json({ error: err.message });
         }
-        res.status(201).json({ id: this.lastID, name, username: cleanUsername, email: email || null, crc_format: crc_format || 'letter' });
+        res.status(201).json({ id: this.lastID, name, username: cleanUsername, email: email || null, crc_format: crc_format || 'letter', is_super_user: superUserVal });
     });
 });
 
