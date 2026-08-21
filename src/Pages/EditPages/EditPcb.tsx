@@ -24,6 +24,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     const { currentUserRole } = useAppState();
 
     const [boardNumber, setBoardNumber] = useState('');
+    const [manufacturerId, setManufacturerId] = useState('');
     const [status, setStatus] = useState('In Progress');
     const [pcbRev, setPcbRev] = useState('');
     const [bom, setBom] = useState('');
@@ -59,6 +60,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                 const parts = pcb.board_number.split('-');
                 const hexPart = parts.length > 1 ? parts.slice(1).join('-') : pcb.board_number;
                 setBoardNumber(hexPart);
+                setManufacturerId(pcb.manufacturer_id || '');
                 setStatus(pcb.status);
                 setBom(pcb.bom || '');
                 // Use new split fields directly
@@ -101,6 +103,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
             silicon_rev: revPart,
             silicon_corner: cornerPart,
             bom: bom.trim(),
+            manufacturer_id: manufacturerId.trim(),
             project_id: selectedProject ? parseInt(selectedProject) : null,
             owner_id: selectedOwner ? parseInt(selectedOwner) : null
         });
@@ -168,6 +171,16 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                                 <option value="">Unassigned</option>
                                 {owners.map(o => <option key={o.id} value={o.id}>@{o.username}</option>)}
                             </select>
+                        </div>
+                        <div className="form-group flex-1">
+                            <label htmlFor="manufacturer_id">Manufacturer ID</label>
+                            <input 
+                                id="manufacturer_id"
+                                type="text"
+                                placeholder="e.g. SN12345, MFG-987"
+                                value={manufacturerId}
+                                onChange={(e) => setManufacturerId(e.target.value)}
+                            />
                         </div>
                     </div>
                 </FormGroup>

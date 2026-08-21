@@ -19,6 +19,7 @@ export interface Pcb {
     silicon_rev?: string;
     silicon_corner?: string;
     bom?: string;
+    manufacturer_id?: string;
     tag_ids?: number[];
     short_code?: string;
     created_at?: string;
@@ -30,8 +31,8 @@ interface PcbState {
     hasFetched: boolean;
     error: string | null;
     fetchPcbs: () => Promise<void>;
-    addPcb: (data: { board_number: string; status: string; board_flavor: string; board_rev: string; silicon_rev: string; silicon_corner: string; bom?: string; project_id: number | null; owner_id: number | null }) => Promise<boolean>;
-    updatePcb: (id: number | string, data: { board_number: string; status: string; board_flavor: string; board_rev: string; silicon_rev: string; silicon_corner: string; bom?: string; project_id: number | null; owner_id: number | null }) => Promise<boolean>;
+    addPcb: (data: { board_number: string; status: string; board_flavor: string; board_rev: string; silicon_rev: string; silicon_corner: string; bom?: string; manufacturer_id?: string; project_id: number | null; owner_id: number | null }) => Promise<boolean>;
+    updatePcb: (id: number | string, data: { board_number: string; status: string; board_flavor: string; board_rev: string; silicon_rev: string; silicon_corner: string; bom?: string; manufacturer_id?: string; project_id: number | null; owner_id: number | null }) => Promise<boolean>;
     deletePcb: (id: number | string) => Promise<boolean>;
     selectedProjects: string[];
     selectedRevisions: string[];

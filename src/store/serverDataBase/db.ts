@@ -180,6 +180,7 @@ const initDb = async (): Promise<void> => {
                 project_id INTEGER,
                 owner_id INTEGER,
                 short_code TEXT UNIQUE,
+                manufacturer_id TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 created_by TEXT,
                 updated_by TEXT,
@@ -187,6 +188,13 @@ const initDb = async (): Promise<void> => {
                 FOREIGN KEY (owner_id) REFERENCES owners (id)
             )`);
             dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_pcbs_project_board_nocase ON pcbs(project_id, board_number COLLATE NOCASE)`);
+
+            // Migration: add manufacturer_id column if it doesn't exist yet
+            dbInstance.all('PRAGMA table_info(pcbs)', (_err: any, columns: any[]) => {
+                if (columns && !columns.some((c: any) => c.name === 'manufacturer_id')) {
+                    dbInstance.run(`ALTER TABLE pcbs ADD COLUMN manufacturer_id TEXT`);
+                }
+            });
 
             // Reworks Table
             dbInstance.run(`CREATE TABLE IF NOT EXISTS reworks (

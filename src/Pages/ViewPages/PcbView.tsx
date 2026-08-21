@@ -82,7 +82,8 @@ export function PcbView({ title }: PcbViewProps) {
         items = items.filter(pcb => 
             pcb.board_number.toLowerCase().includes(sq) || 
             (pcb.product && pcb.product.toLowerCase().includes(sq)) ||
-            (pcb.project && pcb.project.toLowerCase().includes(sq))
+            (pcb.project && pcb.project.toLowerCase().includes(sq)) ||
+            (pcb.manufacturer_id && pcb.manufacturer_id.toLowerCase().includes(sq))
         );
     }
 

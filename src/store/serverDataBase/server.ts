@@ -582,6 +582,7 @@ app.get('/api/pcbs', (_req: Request, res: Response) => {
                 silicon_rev: row.silicon_rev || '',
                 silicon_corner: row.silicon_corner || '',
                 bom: row.bom,
+                manufacturer_id: row.manufacturer_id || '',
                 tag_ids: row.tag_ids ? row.tag_ids.split(',').map(Number) : [],
                 short_code: row.short_code,
                 created_at: row.created_at
@@ -594,7 +595,7 @@ app.post('/api/pcbs', async (req: Request, res: Response) => {
     if (!canAddPcb(req as any)) {
         return res.status(403).json({ error: "Guest users cannot add PCBs." });
     }
-    const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id } = req.body;
+    const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, manufacturer_id } = req.body;
     let numPart = board_number;
     if (board_number && board_number.includes('-')) {
         const parts = board_number.split('-');
@@ -617,10 +618,10 @@ app.post('/api/pcbs', async (req: Request, res: Response) => {
             });
         };
         resolveFlavorId((board_flavor_id) => {
-            const query = "INSERT INTO pcbs (board_number, status, board_flavor, board_flavor_id, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, created_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)";
-            db.run(query, [numPart, status, board_flavor, board_flavor_id, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, creator, creator], function(this: any, err: Error | null) {
+            const query = "INSERT INTO pcbs (board_number, status, board_flavor, board_flavor_id, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, manufacturer_id, created_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)";
+            db.run(query, [numPart, status, board_flavor, board_flavor_id, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, manufacturer_id || null, creator, creator], function(this: any, err: Error | null) {
                 if (err) return res.status(500).json({ error: err.message });
-                res.status(201).json({ id: this.lastID, board_number, short_code });
+                res.status(201).json({ id: this.lastID, board_number, short_code, manufacturer_id });
             });
         });
     } catch (err: any) {
@@ -1329,7 +1330,7 @@ app.put('/api/pcbs/:id', async (req: Request, res: Response) => {
     if (!authorized) {
         return res.status(403).json({ error: "You are not authorized to update this PCB because you do not own it." });
     }
-    const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id } = req.body;
+    const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, manufacturer_id } = req.body;
     let numPart = board_number;
     if (board_number && board_number.includes('-')) {
         const parts = board_number.split('-');
@@ -1350,8 +1351,8 @@ app.put('/api/pcbs/:id', async (req: Request, res: Response) => {
         });
     };
     resolveFlavorId((board_flavor_id) => {
-        const query = "UPDATE pcbs SET board_number = ?, status = ?, board_flavor = ?, board_flavor_id = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ?, bom = ?, project_id = ?, owner_id = ?, updated_by = ? WHERE id = ?";
-        db.run(query, [numPart, status, board_flavor, board_flavor_id, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, editor, req.params.id], function(this: any, err: Error | null) {
+        const query = "UPDATE pcbs SET board_number = ?, status = ?, board_flavor = ?, board_flavor_id = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ?, bom = ?, project_id = ?, owner_id = ?, manufacturer_id = ?, updated_by = ? WHERE id = ?";
+        db.run(query, [numPart, status, board_flavor, board_flavor_id, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, manufacturer_id || null, editor, req.params.id], function(this: any, err: Error | null) {
             if (err) return res.status(500).json({ error: err.message });
             res.json({ updated: this.changes });
         });

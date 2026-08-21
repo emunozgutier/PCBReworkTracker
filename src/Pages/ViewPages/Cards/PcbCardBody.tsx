@@ -190,7 +190,26 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                 />
             </div>
 
-            <div style={{ marginTop: '20px' }}>
+            {pcb.manufacturer_id && (
+                <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 12px',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    marginBottom: '16px',
+                    fontSize: '0.85rem'
+                }}>
+                    <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>Manufacturer ID:</span>
+                    <span style={{ color: 'var(--text)', fontWeight: 600, fontFamily: 'monospace', letterSpacing: '0.5px' }}>
+                        {pcb.manufacturer_id}
+                    </span>
+                </div>
+            )}
+
+            <div style={{ marginTop: pcb.manufacturer_id ? '4px' : '20px' }}>
                 <FormTabs
                     tabs={isMobile ? mobileTabsList : tabsList}
                     activeTab={activeTabIndex}
