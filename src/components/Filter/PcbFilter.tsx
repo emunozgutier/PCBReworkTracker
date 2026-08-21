@@ -217,7 +217,8 @@ export function PcbFilter() {
         requiredTags, setRequiredTags,
         selectedOwners, setSelectedOwners,
         selectedBoardNumbers, setSelectedBoardNumbers,
-        selectedBoms, setSelectedBoms
+        selectedBoms, setSelectedBoms,
+        selectedMfrs, setSelectedMfrs
     } = usePcbStore();
     
     const { projects } = useProjectStore();
@@ -238,11 +239,12 @@ export function PcbFilter() {
         isDeselectedAll(selectedPcbRevs) ||
         isDeselectedAll(selectedOwners) ||
         isDeselectedAll(selectedBoardNumbers) ||
-        isDeselectedAll(selectedBoms);
+        isDeselectedAll(selectedBoms) ||
+        isDeselectedAll(selectedMfrs);
 
     // Helper to evaluate a PCB against all filters except the one currently generating options.
     // The sentinel ['__NONE__'] IS treated as an active filter so other elements correctly show count=0.
-    const matchPcb = (pcb: any, ignoreField: 'project' | 'revision' | 'corner' | 'flavor' | 'pcbrev' | 'tag' | 'owner' | 'boardnum' | 'bom') => {
+    const matchPcb = (pcb: any, ignoreField: 'project' | 'revision' | 'corner' | 'flavor' | 'pcbrev' | 'tag' | 'owner' | 'boardnum' | 'bom' | 'mfr') => {
         if (ignoreField !== 'project' && selectedProjects.length > 0) {
             const pObj = projects.find(p => p.name === pcb.project);
             if (!pObj || !selectedProjects.includes(pObj.id.toString())) return false;
@@ -278,6 +280,9 @@ export function PcbFilter() {
         if (ignoreField !== 'bom' && selectedBoms.length > 0) {
             if (!pcb.bom || !selectedBoms.includes(pcb.bom)) return false;
         }
+        if (ignoreField !== 'mfr' && selectedMfrs.length > 0) {
+            if (!pcb.manufacturer_id || !selectedMfrs.includes(pcb.manufacturer_id)) return false;
+        }
         return true;
     };
 
@@ -291,7 +296,8 @@ export function PcbFilter() {
             tag: selectedTags.length > 0 || requiredTags.length > 0,
             owner: selectedOwners.length > 0,
             boardnum: selectedBoardNumbers.length > 0,
-            bom: selectedBoms.length > 0
+            bom: selectedBoms.length > 0,
+            mfr: selectedMfrs.length > 0
         };
         // @ts-ignore
         filters[ignoreField] = false;
@@ -360,7 +366,7 @@ export function PcbFilter() {
 
                 <MobileFilterGroup 
                     title="PCB Filters" 
-                    activeCount={selectedBoardNumbers.length + selectedFlavors.length + selectedPcbRevs.length + selectedBoms.length}
+                    activeCount={selectedBoardNumbers.length + selectedFlavors.length + selectedPcbRevs.length + selectedBoms.length + selectedMfrs.length}
                     isExpanded={expandedGroup === 'pcb'}
                     onToggle={() => setExpandedGroup(expandedGroup === 'pcb' ? null : 'pcb')}
                 >
@@ -419,6 +425,20 @@ export function PcbFilter() {
                                     const count = pcbs.filter(pcb => pcb.bom === b && matchPcb(pcb, 'bom')).length;
                                     if (count === 0 && hasAnyOtherFilter('bom')) return null;
                                     return <option key={b} value={b}>{b} ({count})</option>;
+                                });
+                            })()}
+                        </PcbFilterElement>
+
+                        <PcbFilterElement title="mfrs id" value={selectedMfrs} onChange={setSelectedMfrs}>
+                            {(() => {
+                                const allMfrs = new Set<string>();
+                                pcbs.forEach(pcb => {
+                                    if (pcb.manufacturer_id) allMfrs.add(pcb.manufacturer_id);
+                                });
+                                return Array.from(allMfrs).filter(Boolean).sort().map(mfr => {
+                                    const count = pcbs.filter(pcb => pcb.manufacturer_id === mfr && matchPcb(pcb, 'mfr')).length;
+                                    if (count === 0 && hasAnyOtherFilter('mfr')) return null;
+                                    return <option key={mfr} value={mfr}>{mfr} ({count})</option>;
                                 });
                             })()}
                         </PcbFilterElement>
@@ -592,6 +612,21 @@ export function PcbFilter() {
                             const count = pcbs.filter(pcb => pcb.bom === b && matchPcb(pcb, 'bom')).length;
                             if (count === 0 && hasAnyOtherFilter('bom') && !anyFieldDeselectedAll && !selectedBoms.includes(b)) return null;
                             return <option key={b} value={b}>{b} ({count})</option>;
+                        });
+                    })()}
+                </PcbFilterElement>
+
+                <PcbFilterElement title="mfrs id" value={selectedMfrs} onChange={setSelectedMfrs}>
+                    {(() => {
+                        const allMfrs = new Set<string>();
+                        pcbs.forEach(pcb => {
+                            if (pcb.manufacturer_id) allMfrs.add(pcb.manufacturer_id);
+                        });
+
+                        return Array.from(allMfrs).filter(Boolean).sort().map(mfr => {
+                            const count = pcbs.filter(pcb => pcb.manufacturer_id === mfr && matchPcb(pcb, 'mfr')).length;
+                            if (count === 0 && hasAnyOtherFilter('mfr') && !anyFieldDeselectedAll && !selectedMfrs.includes(mfr)) return null;
+                            return <option key={mfr} value={mfr}>{mfr} ({count})</option>;
                         });
                     })()}
                 </PcbFilterElement>

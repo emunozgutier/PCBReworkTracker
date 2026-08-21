@@ -16,7 +16,7 @@ interface PcbViewProps {
 
 export function PcbView({ title }: PcbViewProps) {
     const { projects, loading: projectsLoading, fetchProjects } = useProjectStore();
-    const { pcbs, loading: pcbsLoading, fetchPcbs, selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs, selectedTags, requiredTags, selectedOwners, selectedBoardNumbers, selectedBoms } = usePcbStore();
+    const { pcbs, loading: pcbsLoading, fetchPcbs, selectedProjects, selectedRevisions, selectedFlavors, selectedCorners, selectedPcbRevs, selectedTags, requiredTags, selectedOwners, selectedBoardNumbers, selectedBoms, selectedMfrs } = usePcbStore();
     const { fetchOwners } = useOwnerStore();
     const { fetchTags } = useTagStore();
     const { isolatedView, searchQuery, showFilters, setShowFilters, crcFormat } = useAppState();
@@ -28,7 +28,7 @@ export function PcbView({ title }: PcbViewProps) {
         fetchOwners();
     }, [fetchPcbs, fetchProjects, fetchTags, fetchOwners]);
 
-    const activePcbFilterCount = selectedProjects.length + selectedRevisions.length + selectedFlavors.length + selectedCorners.length + selectedPcbRevs.length + selectedTags.length + requiredTags.length + selectedOwners.length + selectedBoardNumbers.length;
+    const activePcbFilterCount = selectedProjects.length + selectedRevisions.length + selectedFlavors.length + selectedCorners.length + selectedPcbRevs.length + selectedTags.length + requiredTags.length + selectedOwners.length + selectedBoardNumbers.length + selectedBoms.length + selectedMfrs.length;
     
     useEffect(() => {
         if (activePcbFilterCount > 0 && !isolatedView) {
@@ -76,6 +76,9 @@ export function PcbView({ title }: PcbViewProps) {
     }
     if (selectedBoms && selectedBoms.length > 0) {
         items = items.filter(pcb => selectedBoms.includes(pcb.bom || ''));
+    }
+    if (selectedMfrs && selectedMfrs.length > 0) {
+        items = items.filter(pcb => selectedMfrs.includes(pcb.manufacturer_id || ''));
     }
     if (searchQuery) {
         const sq = searchQuery.toLowerCase();

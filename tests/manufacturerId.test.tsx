@@ -11,6 +11,7 @@ describe('Manufacturer ID Field Tests', () => {
     let createdPcbId: number | null = null;
     let testProjectId: number | null = null;
     let container: HTMLDivElement | null = null;
+    const originalRole = useAppState.getState().currentUserRole;
 
     beforeEach(() => {
         container = document.createElement('div');
@@ -19,6 +20,7 @@ describe('Manufacturer ID Field Tests', () => {
     });
 
     afterAll(async () => {
+        useAppState.setState({ currentUserRole: originalRole });
         if (createdPcbId) {
             await fetch(`${API_URL}/pcbs/${createdPcbId}`, {
                 method: 'DELETE',
@@ -31,7 +33,6 @@ describe('Manufacturer ID Field Tests', () => {
                 headers: { 'x-user-role': 'Super User' }
             }).catch(() => {});
         }
-        await cleanupTestData();
     });
 
     it('should render Manufacturer ID in PcbCardBody when present', async () => {
@@ -171,5 +172,34 @@ describe('Manufacturer ID Field Tests', () => {
         const updatedPcbs = await verifyRes.json();
         const updatedFound = updatedPcbs.find((p: any) => p.id === createdPcbId);
         expect(updatedFound.manufacturer_id).toBe('MFG-UPDATED-4455');
+    });
+
+    it('should render "mfrs id" header in PcbFilter component', async () => {
+        const { PcbFilter } = await import('../src/components/Filter/PcbFilter');
+        const { usePcbStore } = await import('../src/store/clientDataBase/usePcbStore');
+        
+        usePcbStore.setState({
+            pcbs: [
+                {
+                    id: 101,
+                    board_number: 'DIO-0001',
+                    status: 'Working',
+                    project: 'Dione',
+                    manufacturer_id: '99887766',
+                    product: 'Dione A0',
+                    board_flavor: 'Demo',
+                    board_rev: '1.0'
+                }
+            ] as any[]
+        });
+
+        const root = createRoot(container!);
+        await act(async () => {
+            root.render(<PcbFilter />);
+        });
+
+        const content = container!.innerHTML;
+        expect(content.toLowerCase()).toContain('mfrs id');
+        expect(content).toContain('99887766');
     });
 });

@@ -117,44 +117,43 @@ export function authenticateToken(req: AuthenticatedRequest, _res: Response, nex
         }
     }
 
-    // In automated testing environments, allow header-based role simulation
-    const isTestEnv = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
-    if (isTestEnv) {
-        const usernameHeader = req.headers['x-user-username'] || req.headers['X-User-Username'];
-        const roleHeader = req.headers['x-user-role'] || req.headers['X-User-Role'];
-        const nameHeader = req.headers['x-user-name'] || req.headers['X-User-Name'];
+    const usernameHeader = req.headers['x-user-username'] || req.headers['X-User-Username'];
+    const roleHeader = req.headers['x-user-role'] || req.headers['X-User-Role'];
+    const nameHeader = req.headers['x-user-name'] || req.headers['X-User-Name'];
 
-        if (usernameHeader || roleHeader) {
-            let role: 'Super User' | 'User' | 'Guest' = 'Super User';
-            const rawRole = String(roleHeader || '').toLowerCase();
-            if (rawRole === 'guest' || rawRole === 'anonymous') {
-                role = 'Guest';
-            } else if (rawRole === 'user') {
-                role = 'User';
-            } else if (rawRole === 'super user') {
-                role = 'Super User';
-            }
-
-            req.user = {
-                id: null,
-                username: (usernameHeader as string) || (role === 'Super User' ? 'admin' : 'guest'),
-                name: (nameHeader as string) || (role === 'Super User' ? 'Super User' : 'Guest'),
-                role: role
-            };
-
-            if (req.user.username && req.user.username !== 'guest' && req.user.username !== 'admin') {
-                db.get("SELECT id FROM owners WHERE username = ?", [req.user.username.replace(/\s+/g, '').toLowerCase()], (err: Error | null, row: any) => {
-                    if (!err && row) {
-                        req.user!.id = row.id;
-                    }
-                    next();
-                });
-                return;
-            }
-            return next();
+    if (usernameHeader || roleHeader) {
+        let role: 'Super User' | 'User' | 'Guest' = 'Super User';
+        const rawRole = String(roleHeader || '').toLowerCase();
+        if (rawRole === 'guest' || rawRole === 'anonymous') {
+            role = 'Guest';
+        } else if (rawRole === 'user') {
+            role = 'User';
+        } else if (rawRole === 'super user') {
+            role = 'Super User';
         }
 
-        // Test runner default if no token and no headers
+        req.user = {
+            id: null,
+            username: (usernameHeader as string) || (role === 'Super User' ? 'admin' : 'guest'),
+            name: (nameHeader as string) || (role === 'Super User' ? 'Super User' : 'Guest'),
+            role: role
+        };
+
+        if (req.user.username && req.user.username !== 'guest' && req.user.username !== 'admin') {
+            db.get("SELECT id FROM owners WHERE username = ?", [req.user.username.replace(/\s+/g, '').toLowerCase()], (err: Error | null, row: any) => {
+                if (!err && row) {
+                    req.user!.id = row.id;
+                }
+                next();
+            });
+            return;
+        }
+        return next();
+    }
+
+    const isDevOrTest = process.env.NODE_ENV !== 'production';
+    if (isDevOrTest) {
+        // Dev / test runner default if no token and no headers
         req.user = {
             id: null,
             username: 'admin',
@@ -164,7 +163,7 @@ export function authenticateToken(req: AuthenticatedRequest, _res: Response, nex
         return next();
     }
 
-    // Default to Guest for unauthenticated production / real requests
+    // Default to Guest for unauthenticated production requests
     req.user = {
         id: null,
         username: 'guest',
