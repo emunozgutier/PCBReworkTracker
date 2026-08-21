@@ -165,6 +165,43 @@ function MobileFilterGroup({ title, activeCount, isExpanded, onToggle, children 
     );
 }
 
+export const isNoPartRev = (pcb: any): boolean => {
+    if (!pcb.silicon_rev) return true;
+    const rev = String(pcb.silicon_rev).trim();
+    if (rev === '' || rev === 'No part' || rev === 'No part yet' || rev === 'NA' || rev === 'N/A' || rev === 'Not Applicable') {
+        return true;
+    }
+    if (pcb.product && (pcb.product.includes('No part yet') || pcb.product.includes('No part'))) {
+        return true;
+    }
+    return false;
+};
+
+export const isNoPartCorner = (pcb: any): boolean => {
+    if (!pcb.silicon_corner) return true;
+    const corner = String(pcb.silicon_corner).trim();
+    if (corner === '' || corner === 'NA' || corner === 'N/A' || corner === 'No part' || corner === 'No part yet' || corner === 'Not Applicable') {
+        return true;
+    }
+    return isNoPartRev(pcb);
+};
+
+export const matchRevision = (pcb: any, selectedRevs: string[]): boolean => {
+    if (selectedRevs.length === 0) return true;
+    const noPart = isNoPartRev(pcb);
+    if (selectedRevs.includes('NA') && noPart) return true;
+    if (selectedRevs.includes('No part') && noPart) return true;
+    return Boolean(pcb.silicon_rev && selectedRevs.includes(pcb.silicon_rev) && !noPart);
+};
+
+export const matchCorner = (pcb: any, selectedCornersList: string[]): boolean => {
+    if (selectedCornersList.length === 0) return true;
+    const noPart = isNoPartCorner(pcb);
+    if (selectedCornersList.includes('NA') && noPart) return true;
+    if (selectedCornersList.includes('No part') && noPart) return true;
+    return Boolean(pcb.silicon_corner && selectedCornersList.includes(pcb.silicon_corner) && !noPart);
+};
+
 export function PcbFilter() {
     const isMobile = useAppState(state => state.isMobile);
     const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
@@ -211,10 +248,10 @@ export function PcbFilter() {
             if (!pObj || !selectedProjects.includes(pObj.id.toString())) return false;
         }
         if (ignoreField !== 'revision' && selectedRevisions.length > 0) {
-            if (!pcb.silicon_rev || !selectedRevisions.includes(pcb.silicon_rev)) return false;
+            if (!matchRevision(pcb, selectedRevisions)) return false;
         }
         if (ignoreField !== 'corner' && selectedCorners.length > 0) {
-            if (!pcb.silicon_corner || !selectedCorners.includes(pcb.silicon_corner)) return false;
+            if (!matchCorner(pcb, selectedCorners)) return false;
         }
         if (ignoreField !== 'flavor' && selectedFlavors.length > 0) {
             if (!pcb.board_flavor || !selectedFlavors.includes(pcb.board_flavor)) return false;
@@ -284,13 +321,17 @@ export function PcbFilter() {
                                 const activeProjects = selectedProjects.length > 0 ? projects.filter(p => selectedProjects.includes(p.id.toString())) : projects;
                                 const allRevs = new Set<string>();
                                 activeProjects.forEach((p: any) => { if (p.revisions) p.revisions.forEach((r: string) => allRevs.add(r)); });
-                                if (pcbs.some(pcb => pcb.product && (pcb.product.includes('No part yet') || pcb.product.includes('No part')))) {
-                                    allRevs.add('No part');
+                                if (pcbs.some(pcb => isNoPartRev(pcb))) {
+                                    allRevs.add('NA');
                                 }
-                                return Array.from(allRevs).sort().map(rev => {
-                                    const count = pcbs.filter(pcb => (pcb.silicon_rev === rev || (rev === 'No part' && (pcb.silicon_rev === 'No part yet' || pcb.silicon_rev === 'No part'))) && matchPcb(pcb, 'revision')).length;
+                                return Array.from(allRevs).sort((a, b) => {
+                                    if (a === 'NA') return 1;
+                                    if (b === 'NA') return -1;
+                                    return a.localeCompare(b);
+                                }).map(rev => {
+                                    const count = pcbs.filter(pcb => (rev === 'NA' ? isNoPartRev(pcb) : pcb.silicon_rev === rev) && matchPcb(pcb, 'revision')).length;
                                     if (count === 0 && hasAnyOtherFilter('revision')) return null;
-                                    return <option key={rev} value={rev}>{rev === 'No part' || rev === 'No part yet' ? 'N/A (No part)' : rev} ({count})</option>;
+                                    return <option key={rev} value={rev}>{rev} ({count})</option>;
                                 });
                             })()}
                         </PcbFilterElement>
@@ -300,8 +341,15 @@ export function PcbFilter() {
                                 const activeProjects = selectedProjects.length > 0 ? projects.filter(p => selectedProjects.includes(p.id.toString())) : projects;
                                 const allCorners = new Set<string>();
                                 activeProjects.forEach((p: any) => { if (p.silicon_corners) p.silicon_corners.split(',').forEach((c: string) => allCorners.add(c.trim())); });
-                                return Array.from(allCorners).filter(Boolean).sort().map(corner => {
-                                    const count = pcbs.filter(pcb => pcb.silicon_corner === corner && matchPcb(pcb, 'corner')).length;
+                                if (pcbs.some(pcb => isNoPartCorner(pcb))) {
+                                    allCorners.add('NA');
+                                }
+                                return Array.from(allCorners).filter(Boolean).sort((a, b) => {
+                                    if (a === 'NA') return 1;
+                                    if (b === 'NA') return -1;
+                                    return a.localeCompare(b);
+                                }).map(corner => {
+                                    const count = pcbs.filter(pcb => (corner === 'NA' ? isNoPartCorner(pcb) : pcb.silicon_corner === corner) && matchPcb(pcb, 'corner')).length;
                                     if (count === 0 && hasAnyOtherFilter('corner')) return null;
                                     return <option key={corner} value={corner}>{corner} ({count})</option>;
                                 });
@@ -446,15 +494,18 @@ export function PcbFilter() {
                         const allRevs = new Set<string>();
                         activeProjects.forEach((p: any) => { if (p.revisions) p.revisions.forEach((r: string) => allRevs.add(r)); });
                         
-                        // Dynamically inject implicit 'No part' placeholder if any board matches
-                        if (pcbs.some(pcb => pcb.product && (pcb.product.includes('No part yet') || pcb.product.includes('No part')))) {
-                            allRevs.add('No part');
+                        if (pcbs.some(pcb => isNoPartRev(pcb))) {
+                            allRevs.add('NA');
                         }
 
-                        return Array.from(allRevs).sort().map(rev => {
-                            const count = pcbs.filter(pcb => (pcb.silicon_rev === rev || (rev === 'No part' && (pcb.silicon_rev === 'No part yet' || pcb.silicon_rev === 'No part'))) && matchPcb(pcb, 'revision')).length;
+                        return Array.from(allRevs).sort((a, b) => {
+                            if (a === 'NA') return 1;
+                            if (b === 'NA') return -1;
+                            return a.localeCompare(b);
+                        }).map(rev => {
+                            const count = pcbs.filter(pcb => (rev === 'NA' ? isNoPartRev(pcb) : pcb.silicon_rev === rev) && matchPcb(pcb, 'revision')).length;
                             if (count === 0 && hasAnyOtherFilter('revision') && !anyFieldDeselectedAll && !selectedRevisions.includes(rev)) return null;
-                            return <option key={rev} value={rev}>{rev === 'No part' || rev === 'No part yet' ? 'N/A (No part)' : rev} ({count})</option>;
+                            return <option key={rev} value={rev}>{rev} ({count})</option>;
                         });
                     })()}
                 </PcbFilterElement>
@@ -465,8 +516,16 @@ export function PcbFilter() {
                         const allCorners = new Set<string>();
                         activeProjects.forEach((p: any) => { if (p.silicon_corners) p.silicon_corners.split(',').forEach((c: string) => allCorners.add(c.trim())); });
 
-                        return Array.from(allCorners).filter(Boolean).sort().map(corner => {
-                            const count = pcbs.filter(pcb => pcb.silicon_corner === corner && matchPcb(pcb, 'corner')).length;
+                        if (pcbs.some(pcb => isNoPartCorner(pcb))) {
+                            allCorners.add('NA');
+                        }
+
+                        return Array.from(allCorners).filter(Boolean).sort((a, b) => {
+                            if (a === 'NA') return 1;
+                            if (b === 'NA') return -1;
+                            return a.localeCompare(b);
+                        }).map(corner => {
+                            const count = pcbs.filter(pcb => (corner === 'NA' ? isNoPartCorner(pcb) : pcb.silicon_corner === corner) && matchPcb(pcb, 'corner')).length;
                             if (count === 0 && hasAnyOtherFilter('corner') && !anyFieldDeselectedAll && !selectedCorners.includes(corner)) return null;
                             return <option key={corner} value={corner}>{corner} ({count})</option>;
                         });

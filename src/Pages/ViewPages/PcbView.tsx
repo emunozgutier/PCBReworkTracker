@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PcbCard } from './Cards/PcbCard';
-import { PcbFilter } from '../../components/Filter/PcbFilter';
+import { PcbFilter, matchRevision, matchCorner } from '../../components/Filter/PcbFilter';
 
 import { useProjectStore } from '../../store/clientDataBase/useProjectStore';
 import { usePcbStore } from '../../store/clientDataBase/usePcbStore';
@@ -49,10 +49,10 @@ export function PcbView({ title }: PcbViewProps) {
         items = items.filter(pcb => projNames.includes(pcb.project));
     }
     if (selectedRevisions.length > 0) {
-        items = items.filter(pcb => selectedRevisions.includes(pcb.silicon_rev || ''));
+        items = items.filter(pcb => matchRevision(pcb, selectedRevisions));
     }
     if (selectedCorners.length > 0) {
-        items = items.filter(pcb => selectedCorners.includes(pcb.silicon_corner || ''));
+        items = items.filter(pcb => matchCorner(pcb, selectedCorners));
     }
     if (selectedFlavors.length > 0) {
         items = items.filter(pcb => selectedFlavors.includes(pcb.board_flavor || ''));
