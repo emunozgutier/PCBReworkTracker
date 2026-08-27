@@ -209,6 +209,7 @@ export function PcbFilter() {
     const { 
         pcbs,
         selectedProjects, setSelectedProjects, 
+        selectedPackages, setSelectedPackages,
         selectedRevisions, setSelectedRevisions, 
         selectedCorners, setSelectedCorners,
         selectedFlavors, setSelectedFlavors,
@@ -233,6 +234,7 @@ export function PcbFilter() {
      *  so the user can re-select options without the list going blank. */
     const anyFieldDeselectedAll =
         isDeselectedAll(selectedProjects) ||
+        isDeselectedAll(selectedPackages) ||
         isDeselectedAll(selectedRevisions) ||
         isDeselectedAll(selectedCorners) ||
         isDeselectedAll(selectedFlavors) ||
@@ -244,10 +246,13 @@ export function PcbFilter() {
 
     // Helper to evaluate a PCB against all filters except the one currently generating options.
     // The sentinel ['__NONE__'] IS treated as an active filter so other elements correctly show count=0.
-    const matchPcb = (pcb: any, ignoreField: 'project' | 'revision' | 'corner' | 'flavor' | 'pcbrev' | 'tag' | 'owner' | 'boardnum' | 'bom' | 'mfr') => {
+    const matchPcb = (pcb: any, ignoreField: 'project' | 'package' | 'revision' | 'corner' | 'flavor' | 'pcbrev' | 'tag' | 'owner' | 'boardnum' | 'bom' | 'mfr') => {
         if (ignoreField !== 'project' && selectedProjects.length > 0) {
             const pObj = projects.find(p => p.name === pcb.project);
             if (!pObj || !selectedProjects.includes(pObj.id.toString())) return false;
+        }
+        if (ignoreField !== 'package' && selectedPackages.length > 0) {
+            if (!pcb.package_name || !selectedPackages.includes(pcb.package_name)) return false;
         }
         if (ignoreField !== 'revision' && selectedRevisions.length > 0) {
             if (!matchRevision(pcb, selectedRevisions)) return false;
@@ -289,6 +294,7 @@ export function PcbFilter() {
     const hasAnyOtherFilter = (ignoreField: string) => {
         const filters = {
             project: selectedProjects.length > 0,
+            package: selectedPackages.length > 0,
             revision: selectedRevisions.length > 0,
             corner: selectedCorners.length > 0,
             flavor: selectedFlavors.length > 0,
@@ -309,7 +315,7 @@ export function PcbFilter() {
             <div className="pcb-filters-mobile">
                 <MobileFilterGroup 
                     title="Silicon Filters" 
-                    activeCount={selectedProjects.length + selectedRevisions.length + selectedCorners.length}
+                    activeCount={selectedProjects.length + selectedPackages.length + selectedRevisions.length + selectedCorners.length}
                     isExpanded={expandedGroup === 'silicon'}
                     onToggle={() => setExpandedGroup(expandedGroup === 'silicon' ? null : 'silicon')}
                 >
@@ -320,6 +326,21 @@ export function PcbFilter() {
                                 if (count === 0 && hasAnyOtherFilter('project')) return null;
                                 return <option key={p.id} value={p.id.toString()}>{p.name} ({count})</option>;
                             })}
+                        </PcbFilterElement>
+
+                        <PcbFilterElement title="Package" value={selectedPackages} onChange={setSelectedPackages}>
+                            {(() => {
+                                const activeProjects = selectedProjects.length > 0 ? projects.filter(p => selectedProjects.includes(p.id.toString())) : projects;
+                                const allPkgs = new Set<string>();
+                                activeProjects.forEach((p: any) => {
+                                    if (p.packages) p.packages.forEach((pkg: any) => allPkgs.add(pkg.name));
+                                });
+                                return Array.from(allPkgs).sort().map(pkgName => {
+                                    const count = pcbs.filter(pcb => pcb.package_name === pkgName && matchPcb(pcb, 'package')).length;
+                                    if (count === 0 && hasAnyOtherFilter('package')) return null;
+                                    return <option key={pkgName} value={pkgName}>{pkgName} ({count})</option>;
+                                });
+                            })()}
                         </PcbFilterElement>
 
                         <PcbFilterElement title="Rev" value={selectedRevisions} onChange={setSelectedRevisions}>
@@ -506,6 +527,22 @@ export function PcbFilter() {
                         if (count === 0 && hasAnyOtherFilter('project') && !anyFieldDeselectedAll && !selectedProjects.includes(p.id.toString())) return null;
                         return <option key={p.id} value={p.id.toString()}>{p.name} ({count})</option>;
                     })}
+                </PcbFilterElement>
+
+                <PcbFilterElement title="Package" value={selectedPackages} onChange={setSelectedPackages}>
+                    {(() => {
+                        const activeProjects = selectedProjects.length > 0 ? projects.filter(p => selectedProjects.includes(p.id.toString())) : projects;
+                        const allPkgs = new Set<string>();
+                        activeProjects.forEach((p: any) => {
+                            if (p.packages) p.packages.forEach((pkg: any) => allPkgs.add(pkg.name));
+                        });
+
+                        return Array.from(allPkgs).sort().map(pkgName => {
+                            const count = pcbs.filter(pcb => pcb.package_name === pkgName && matchPcb(pcb, 'package')).length;
+                            if (count === 0 && hasAnyOtherFilter('package') && !anyFieldDeselectedAll && !selectedPackages.includes(pkgName)) return null;
+                            return <option key={pkgName} value={pkgName}>{pkgName} ({count})</option>;
+                        });
+                    })()}
                 </PcbFilterElement>
 
                 <PcbFilterElement title="Rev" value={selectedRevisions} onChange={setSelectedRevisions}>

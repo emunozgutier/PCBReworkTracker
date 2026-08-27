@@ -25,6 +25,69 @@ CREATE TABLE pcb_flavors (
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
 
+CREATE TABLE packages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+
+CREATE TABLE silicon_versions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    package_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    silicon_corners TEXT,
+    description TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE
+);
+
+CREATE TABLE silicon_corners (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    silicon_version_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    FOREIGN KEY (silicon_version_id) REFERENCES silicon_versions(id) ON DELETE CASCADE
+);
+
+CREATE TABLE board_formfactors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    silicon_version_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (silicon_version_id) REFERENCES silicon_versions(id) ON DELETE CASCADE
+);
+
+CREATE TABLE board_formfactor_revisions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    board_formfactor_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (board_formfactor_id) REFERENCES board_formfactors(id) ON DELETE CASCADE
+);
+
+CREATE TABLE bom_flavors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    formfactor_revision_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (formfactor_revision_id) REFERENCES board_formfactor_revisions(id) ON DELETE CASCADE
+);
+
+CREATE TABLE formfactor_revision_docs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    formfactor_revision_id INTEGER NOT NULL,
+    doc_type TEXT NOT NULL,
+    filename TEXT NOT NULL,
+    path TEXT NOT NULL,
+    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (formfactor_revision_id) REFERENCES board_formfactor_revisions(id) ON DELETE CASCADE
+);
+
 CREATE TABLE "reworks" (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     pcb_id INTEGER,

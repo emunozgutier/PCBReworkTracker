@@ -422,73 +422,365 @@ function generateProjectKey(name: string, attempt = 1): Promise<string> {
     });
 }
 
-// Projects API
-app.get('/api/projects', (_req: Request, res: Response) => {
+function saveProjectHierarchy(projectId: number | string, packagesInput: any[], done: (err?: Error | null) => void) {
+    db.run("DELETE FROM packages WHERE project_id = ?", [projectId], (errDel: Error | null) => {
+        if (errDel) return done(errDel);
+        if (!packagesInput || packagesInput.length === 0) return done(null);
+
+        let pkgPending = packagesInput.length;
+        let hasError = false;
+
+        packagesInput.forEach((pkg: any) => {
+            if (hasError) return;
+            const pkgName = pkg.name || 'Default Package';
+            db.run("INSERT INTO packages (project_id, name, description) VALUES (?, ?, ?)", [projectId, pkgName, pkg.description || ''], function(this: any, errPkg: Error | null) {
+                if (errPkg) {
+                    if (!hasError) { hasError = true; done(errPkg); }
+                    return;
+                }
+                const packageId = this.lastID;
+                const siVersions = pkg.silicon_versions || [];
+                if (siVersions.length === 0) {
+                    if (--pkgPending === 0 && !hasError) done(null);
+                    return;
+                }
+
+                let svPending = siVersions.length;
+                siVersions.forEach((sv: any) => {
+                    if (hasError) return;
+                    const svName = sv.name || 'A0';
+                    const cornersStr = Array.isArray(sv.silicon_corners) ? sv.silicon_corners.join(', ') : (sv.silicon_corners || '');
+                    db.run("INSERT INTO silicon_versions (package_id, name, silicon_corners, description) VALUES (?, ?, ?, ?)", [packageId, svName, cornersStr, sv.description || ''], function(this: any, errSv: Error | null) {
+                        if (errSv) {
+                            if (!hasError) { hasError = true; done(errSv); }
+                            return;
+                        }
+                        const siliconVersionId = this.lastID;
+                        const cornersArr = Array.isArray(sv.silicon_corners) ? sv.silicon_corners : (sv.silicon_corners ? String(sv.silicon_corners).split(',').map((s: string) => s.trim()).filter(Boolean) : []);
+                        cornersArr.forEach((c: string) => {
+                            db.run("INSERT OR IGNORE INTO silicon_corners (silicon_version_id, name) VALUES (?, ?)", [siliconVersionId, c]);
+                        });
+
+                        const formfactors = sv.formfactors || [];
+                        if (formfactors.length === 0) {
+                            if (--svPending === 0) {
+                                if (--pkgPending === 0 && !hasError) done(null);
+                            }
+                            return;
+                        }
+
+                        let ffPending = formfactors.length;
+                        formfactors.forEach((ff: any) => {
+                            if (hasError) return;
+                            const ffName = ff.name || 'Default';
+                            db.run("INSERT INTO board_formfactors (silicon_version_id, name, description) VALUES (?, ?, ?)", [siliconVersionId, ffName, ff.description || ''], function(this: any, errFf: Error | null) {
+                                if (errFf) {
+                                    if (!hasError) { hasError = true; done(errFf); }
+                                    return;
+                                }
+                                const formfactorId = this.lastID;
+                                const revisions = ff.revisionDetails || ff.revisions || [];
+                                if (revisions.length === 0) {
+                                    if (--ffPending === 0) {
+                                        if (--svPending === 0) {
+                                            if (--pkgPending === 0 && !hasError) done(null);
+                                        }
+                                    }
+                                    return;
+                                }
+
+                                let revPending = revisions.length;
+                                revisions.forEach((r: any) => {
+                                    if (hasError) return;
+                                    const revName = typeof r === 'object' ? (r.name || '1.0') : String(r);
+                                    db.run("INSERT INTO board_formfactor_revisions (board_formfactor_id, name, description) VALUES (?, ?, ?)", [formfactorId, revName, (typeof r === 'object' ? r.description : '') || ''], function(this: any, errRev: Error | null) {
+                                        if (errRev) {
+                                            if (!hasError) { hasError = true; done(errRev); }
+                                            return;
+                                        }
+                                        const revisionId = this.lastID;
+
+                                        let bomsList: string[] = [];
+                                        if (typeof r === 'object' && r) {
+                                            if (Array.isArray(r.boms)) bomsList = r.boms;
+                                            else if (r.boms) bomsList = String(r.boms).split(',').map((s: string) => s.trim()).filter(Boolean);
+                                            else if (Array.isArray(r.bom_flavors)) bomsList = r.bom_flavors.map((b: any) => b.name);
+                                        }
+
+                                        bomsList.forEach((bomName: string) => {
+                                            db.run("INSERT OR IGNORE INTO bom_flavors (formfactor_revision_id, name) VALUES (?, ?)", [revisionId, bomName]);
+                                        });
+
+                                        if (typeof r === 'object' && r) {
+                                            if (r.schematic || r.doc) {
+                                                const sch = r.schematic || r.doc;
+                                                db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'schematic', ?, ?)", [revisionId, sch, `/docs/${sch}`]);
+                                            }
+                                            if (r.board_file) {
+                                                db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'board_file', ?, ?)", [revisionId, r.board_file, `/docs/${r.board_file}`]);
+                                            }
+                                            if (r.bom_csv) {
+                                                db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'bom_csv', ?, ?)", [revisionId, r.bom_csv, `/docs/${r.bom_csv}`]);
+                                            }
+                                            if (r.datasheet) {
+                                                db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'datasheet', ?, ?)", [revisionId, r.datasheet, `/docs/${r.datasheet}`]);
+                                            }
+                                            if (Array.isArray(r.documents)) {
+                                                r.documents.forEach((docItem: any) => {
+                                                    if (docItem.filename && !['schematic', 'board_file', 'bom_csv', 'datasheet'].includes(docItem.doc_type)) {
+                                                        db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, ?, ?, ?)", [revisionId, docItem.doc_type || 'other', docItem.filename, docItem.path || `/docs/${docItem.filename}`]);
+                                                    }
+                                                });
+                                            }
+                                        }
+
+                                        if (--revPending === 0) {
+                                            if (--ffPending === 0) {
+                                                if (--svPending === 0) {
+                                                    if (--pkgPending === 0 && !hasError) done(null);
+                                                }
+                                            }
+                                        }
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+}
+
+function normalizeIncomingPackages(body: any): any[] {
+    if (body.packages && Array.isArray(body.packages) && body.packages.length > 0) {
+        return body.packages;
+    }
+    let revs = body.revisions;
+    if (!revs) revs = ['A0'];
+    else if (typeof revs === 'string') revs = revs.split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (!Array.isArray(revs) || revs.length === 0) revs = ['A0'];
+
+    const corners = body.silicon_corners ? String(body.silicon_corners).split(',').map((s: string) => s.trim()).filter(Boolean) : ['TT'];
+    const flavors = body.flavors && Array.isArray(body.flavors) && body.flavors.length > 0
+        ? body.flavors
+        : [{ name: 'Default', revisions: [{ name: '1.0', boms: ['Default'] }] }];
+
+    const silicon_versions = revs.map((r: string) => ({
+        name: r,
+        silicon_corners: corners,
+        formfactors: flavors.map((f: any) => {
+            let fRevs: any[] = [];
+            if (Array.isArray(f.revisionDetails) && f.revisionDetails.length > 0) {
+                fRevs = f.revisionDetails;
+            } else if (Array.isArray(f.revisions) && f.revisions.length > 0) {
+                fRevs = f.revisions;
+            } else if (typeof f.revisions === 'string' && f.revisions.trim()) {
+                fRevs = f.revisions.split(',').map((s: string) => s.trim()).filter(Boolean);
+            } else {
+                fRevs = [{ name: '1.0', boms: [] }];
+            }
+
+            return {
+                name: f.name || 'Default',
+                revisionDetails: fRevs.map((revItem: any) => {
+                    if (typeof revItem === 'object' && revItem !== null) return revItem;
+                    return {
+                        name: String(revItem),
+                        boms: f.boms || []
+                    };
+                })
+            };
+        })
+    }));
+
+    return [{
+        name: 'Default Package',
+        silicon_versions
+    }];
+}
+
+function fetchProjectsWithHierarchy(callback: (err: Error | null, projects?: any[]) => void) {
     const query = `
         SELECT projects.*, 
         COUNT(DISTINCT pcbs.id) as pcb_count,
         GROUP_CONCAT(DISTINCT pcbs.board_number) as pcb_list,
-        (SELECT COUNT(*) FROM project_docs WHERE project_docs.project_id = projects.id) as doc_count
+        (
+            (SELECT COUNT(*) FROM project_docs WHERE project_docs.project_id = projects.id) +
+            (SELECT COUNT(*) FROM formfactor_revision_docs ffrd 
+             JOIN board_formfactor_revisions bfr ON ffrd.formfactor_revision_id = bfr.id
+             JOIN board_formfactors bf ON bfr.board_formfactor_id = bf.id
+             JOIN silicon_versions sv ON bf.silicon_version_id = sv.id
+             JOIN packages pkg ON sv.package_id = pkg.id
+             WHERE pkg.project_id = projects.id)
+        ) as doc_count
         FROM projects
         LEFT JOIN pcbs ON projects.id = pcbs.project_id
         GROUP BY projects.id
     `;
+
     db.all(query, [], (err: Error | null, rows: any[]) => {
+        if (err) return callback(err);
+
+        db.all("SELECT * FROM packages", [], (errPkg: Error | null, packages: any[]) => {
+            if (errPkg) return callback(errPkg);
+            db.all("SELECT * FROM silicon_versions", [], (errSv: Error | null, siliconVersions: any[]) => {
+                if (errSv) return callback(errSv);
+                db.all("SELECT * FROM silicon_corners", [], (errSc: Error | null, siliconCorners: any[]) => {
+                    if (errSc) return callback(errSc);
+                    db.all("SELECT * FROM board_formfactors", [], (errBff: Error | null, boardFormFactors: any[]) => {
+                        if (errBff) return callback(errBff);
+                        db.all("SELECT * FROM board_formfactor_revisions", [], (errBfr: Error | null, bffRevisions: any[]) => {
+                            if (errBfr) return callback(errBfr);
+                            db.all("SELECT * FROM bom_flavors", [], (errBoms: Error | null, bomFlavors: any[]) => {
+                                if (errBoms) return callback(errBoms);
+                                db.all("SELECT * FROM formfactor_revision_docs", [], (errDocs: Error | null, revisionDocs: any[]) => {
+                                    if (errDocs) return callback(errDocs);
+                                    db.all("SELECT * FROM pcb_flavors", [], (errFlv: Error | null, legacyFlavors: any[]) => {
+                                        if (errFlv) return callback(errFlv);
+
+                                        const result = rows.map(row => {
+                                            const projPkgs = (packages || []).filter(pkg => pkg.project_id === row.id);
+                                            const assembledPackages = projPkgs.map(pkg => {
+                                                const pkgSiVers = (siliconVersions || []).filter(sv => sv.package_id === pkg.id);
+                                                const assembledSiVers = pkgSiVers.map(sv => {
+                                                    const svCorners = (siliconCorners || []).filter(sc => sc.silicon_version_id === sv.id).map(sc => sc.name);
+                                                    const svCornersList = svCorners.length > 0 
+                                                        ? svCorners 
+                                                        : (sv.silicon_corners ? sv.silicon_corners.split(',').map((s: string) => s.trim()).filter(Boolean) : []);
+                                                    
+                                                    const svFfs = (boardFormFactors || []).filter(ff => ff.silicon_version_id === sv.id);
+                                                    const assembledFfs = svFfs.map(ff => {
+                                                        const ffRevs = (bffRevisions || []).filter(r => r.board_formfactor_id === ff.id);
+                                                        const assembledRevs = ffRevs.map(r => {
+                                                            const rBoms = (bomFlavors || []).filter(b => b.formfactor_revision_id === r.id);
+                                                            const rDocs = (revisionDocs || []).filter(d => d.formfactor_revision_id === r.id);
+                                                            
+                                                            const schDoc = rDocs.find(d => d.doc_type === 'schematic');
+                                                            const brdDoc = rDocs.find(d => d.doc_type === 'board_file');
+                                                            const bomCsvDoc = rDocs.find(d => d.doc_type === 'bom_csv');
+                                                            const dsDoc = rDocs.find(d => d.doc_type === 'datasheet');
+
+                                                            return {
+                                                                id: r.id,
+                                                                name: r.name,
+                                                                description: r.description,
+                                                                boms: rBoms.map(b => b.name),
+                                                                bom_flavors: rBoms,
+                                                                documents: rDocs,
+                                                                schematic: schDoc ? schDoc.filename : null,
+                                                                board_file: brdDoc ? brdDoc.filename : null,
+                                                                bom_csv: bomCsvDoc ? bomCsvDoc.filename : null,
+                                                                datasheet: dsDoc ? dsDoc.filename : null,
+                                                                doc: schDoc ? schDoc.filename : null
+                                                            };
+                                                        });
+                                                        return {
+                                                            id: ff.id,
+                                                            name: ff.name,
+                                                            description: ff.description,
+                                                            revisions: assembledRevs.map(r => r.name),
+                                                            revisionDetails: assembledRevs
+                                                        };
+                                                    });
+                                                    return {
+                                                        id: sv.id,
+                                                        name: sv.name,
+                                                        silicon_corners: svCornersList,
+                                                        formfactors: assembledFfs
+                                                    };
+                                                });
+                                                return {
+                                                    id: pkg.id,
+                                                    name: pkg.name,
+                                                    description: pkg.description,
+                                                    silicon_versions: assembledSiVers
+                                                };
+                                            });
+
+                                            // Synthesize summaries
+                                            const allSiRevs = new Set<string>();
+                                            const allCorners = new Set<string>();
+                                            const allFlavorsMap = new Map<string, any>();
+
+                                            assembledPackages.forEach(pkg => {
+                                                pkg.silicon_versions.forEach(sv => {
+                                                    allSiRevs.add(sv.name);
+                                                    sv.silicon_corners.forEach((c: string) => allCorners.add(c));
+                                                    sv.formfactors.forEach(ff => {
+                                                        if (!allFlavorsMap.has(ff.name)) {
+                                                            allFlavorsMap.set(ff.name, {
+                                                                id: ff.id,
+                                                                name: ff.name,
+                                                                revisions: [...ff.revisions],
+                                                                revisionDetails: [...ff.revisionDetails]
+                                                            });
+                                                        } else {
+                                                            const existing = allFlavorsMap.get(ff.name);
+                                                            ff.revisions.forEach(r => {
+                                                                if (!existing.revisions.includes(r)) existing.revisions.push(r);
+                                                            });
+                                                            ff.revisionDetails.forEach(rd => {
+                                                                if (!existing.revisionDetails.some((e: any) => e.name === rd.name)) {
+                                                                    existing.revisionDetails.push(rd);
+                                                                }
+                                                            });
+                                                        }
+                                                    });
+                                                });
+                                            });
+
+                                            const synthesizedRevs = allSiRevs.size > 0 
+                                                ? Array.from(allSiRevs) 
+                                                : (row.revisions ? row.revisions.split(',').map((s: string) => s.trim()).filter(Boolean) : []);
+                                            const synthesizedCorners = allCorners.size > 0 
+                                                ? Array.from(allCorners).join(', ') 
+                                                : (row.silicon_corners || '');
+                                            const synthesizedFlavors = allFlavorsMap.size > 0 
+                                                ? Array.from(allFlavorsMap.values()) 
+                                                : (legacyFlavors || []).filter(f => f.project_id === row.id).map(f => {
+                                                    let parsedRevs: any[] = [];
+                                                    try {
+                                                        parsedRevs = (typeof f.revisions === 'string' && (f.revisions.startsWith('[') || f.revisions.startsWith('{'))) ? JSON.parse(f.revisions) : (f.revisions ? f.revisions.split(',').map((s: string) => s.trim()) : []);
+                                                    } catch { parsedRevs = []; }
+                                                    return {
+                                                        id: f.id,
+                                                        name: f.name,
+                                                        revisions: parsedRevs.map(r => typeof r === 'object' ? r.name : r),
+                                                        revisionDetails: parsedRevs.map(r => typeof r === 'object' ? r : { name: r, boms: [] })
+                                                    };
+                                                });
+
+                                            return {
+                                                ...row,
+                                                packages: assembledPackages,
+                                                revisions: synthesizedRevs,
+                                                silicon_corners: synthesizedCorners,
+                                                flavors: synthesizedFlavors,
+                                                pcbs: row.pcb_list ? row.pcb_list.split(',') : []
+                                            };
+                                        });
+
+                                        callback(null, result);
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+}
+
+// Projects API
+app.get('/api/projects', (_req: Request, res: Response) => {
+    fetchProjectsWithHierarchy((err, projects) => {
         if (err) {
             console.error("PROJECTS QUERY ERROR:", err.message);
             return res.status(500).json({ error: err.message });
         }
-        
-        db.all("SELECT * FROM pcb_flavors", [], (errFlavors: Error | null, flavors: any[]) => {
-            if (errFlavors) {
-                console.error("FLAVORS QUERY ERROR:", errFlavors.message);
-                return res.status(500).json({ error: errFlavors.message });
-            }
-            
-            res.json(rows.map(row => {
-                const projectFlavors = flavors.filter(f => f.project_id === row.id).map(f => {
-                    let parsedRevisions: any[] = [];
-                    if (f.revisions) {
-                        try {
-                            const p = (typeof f.revisions === 'string' && (f.revisions.startsWith('[') || f.revisions.startsWith('{')))
-                                ? JSON.parse(f.revisions)
-                                : f.revisions;
-                            parsedRevisions = Array.isArray(p) ? p : (typeof p === 'string' ? p.split(',').map((s: string) => s.trim()) : [p]);
-                        } catch (e) {
-                            parsedRevisions = String(f.revisions).split(',').map((s: string) => s.trim());
-                        }
-                    }
-
-                    let parsedBoms: any[] = [];
-                    if (f.boms) {
-                        try {
-                            const p = (typeof f.boms === 'string' && (f.boms.startsWith('[') || f.boms.startsWith('{')))
-                                ? JSON.parse(f.boms)
-                                : f.boms;
-                            parsedBoms = Array.isArray(p) ? p : (typeof p === 'string' ? p.split(',').map((s: string) => s.trim()) : [p]);
-                        } catch (e) {
-                            parsedBoms = String(f.boms).split(',').map((s: string) => s.trim());
-                        }
-                    }
-
-                    return {
-                        id: f.id,
-                        name: f.name,
-                        revisions: parsedRevisions,
-                        boms: parsedBoms
-                    };
-                });
-                
-                delete row.formfactors; // Remove old column if it was present
-                
-                return {
-                    ...row,
-                    revisions: row.revisions ? row.revisions.split(',').map((r: string) => r.trim()) : [],
-                    flavors: projectFlavors,
-                    pcbs: row.pcb_list ? row.pcb_list.split(',') : []
-                };
-            }));
-        });
+        res.json(projects);
     });
 });
 
@@ -496,7 +788,7 @@ app.post('/api/projects', async (req: Request, res: Response) => {
     if (!isSuperUser(req as any)) {
         return res.status(403).json({ error: "Only Super Users can create projects." });
     }
-    const { name, description, revisions, project_key, flavors, silicon_corners, number_format } = req.body;
+    const { name, description, revisions, project_key, flavors, silicon_corners, number_format, packages } = req.body;
     const cleanName = sanitizeProjectName(name);
     
     if (!cleanName) return res.status(400).json({ error: "Project name is required and must contain alphanumeric characters" });
@@ -504,7 +796,7 @@ app.post('/api/projects', async (req: Request, res: Response) => {
     try {
         const finalProjectKey = project_key ? project_key.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : await generateProjectKey(cleanName);
         const creator = req.headers['x-user-username'] || 'guest';
-        db.run("INSERT INTO projects (name, description, revisions, project_key, silicon_corners, number_format, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [cleanName, description, revisions, finalProjectKey, silicon_corners || null, number_format || 'decimal', creator, creator], function(this: any, err: Error | null) {
+        db.run("INSERT INTO projects (name, description, revisions, project_key, silicon_corners, number_format, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [cleanName, description || '', revisions || '', finalProjectKey, silicon_corners || null, number_format || 'decimal', creator, creator], function(this: any, err: Error | null) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
                     if (err.message.includes('projects.name')) {
@@ -518,15 +810,14 @@ app.post('/api/projects', async (req: Request, res: Response) => {
             }
             const newProjectId = this.lastID;
             
-            if (flavors && flavors.length > 0) {
-                flavors.forEach((f: any) => {
-                    db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [newProjectId, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])], (errFlavor: Error | null) => {
-                        if (errFlavor) console.error("Error inserting flavor (POST):", errFlavor.message, f);
-                    });
-                });
-            }
-            
-            res.status(201).json({ id: newProjectId, name: cleanName, project_key: finalProjectKey });
+            const pkgsToSave = packages && Array.isArray(packages) && packages.length > 0 
+                ? packages 
+                : normalizeIncomingPackages({ revisions, flavors, silicon_corners });
+
+            saveProjectHierarchy(newProjectId, pkgsToSave, (errHierarchy) => {
+                if (errHierarchy) console.error("Error saving project hierarchy:", errHierarchy.message);
+                res.status(201).json({ id: newProjectId, name: cleanName, project_key: finalProjectKey });
+            });
         });
     } catch (err: any) {
         res.status(500).json({ error: err.message });
@@ -572,6 +863,12 @@ app.get('/api/pcbs', (_req: Request, res: Response) => {
                 status: row.status,
                 project: row.project_name,
                 project_id: row.project_id,
+                package_id: row.package_id || null,
+                package_name: row.package_name || undefined,
+                silicon_version_id: row.silicon_version_id || null,
+                board_formfactor_id: row.board_formfactor_id || null,
+                formfactor_revision_id: row.formfactor_revision_id || null,
+                bom_flavor_id: row.bom_flavor_id || null,
                 number_format: row.number_format || 'decimal',
                 owner: row.owner_name || 'Unassigned',
                 owner_username: row.owner_username || undefined,
@@ -585,7 +882,9 @@ app.get('/api/pcbs', (_req: Request, res: Response) => {
                 manufacturer_id: row.manufacturer_id || '',
                 tag_ids: row.tag_ids ? row.tag_ids.split(',').map(Number) : [],
                 short_code: row.short_code,
-                created_at: row.created_at
+                created_at: row.created_at,
+                created_by: row.created_by,
+                updated_by: row.updated_by
             };
         }));
     });
@@ -595,7 +894,7 @@ app.post('/api/pcbs', async (req: Request, res: Response) => {
     if (!canAddPcb(req as any)) {
         return res.status(403).json({ error: "Guest users cannot add PCBs." });
     }
-    const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, manufacturer_id } = req.body;
+    const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, package_id, package_name, silicon_version_id, board_formfactor_id, formfactor_revision_id, bom_flavor_id, owner_id, manufacturer_id } = req.body;
     let numPart = board_number;
     if (board_number && board_number.includes('-')) {
         const parts = board_number.split('-');
@@ -618,8 +917,8 @@ app.post('/api/pcbs', async (req: Request, res: Response) => {
             });
         };
         resolveFlavorId((board_flavor_id) => {
-            const query = "INSERT INTO pcbs (board_number, status, board_flavor, board_flavor_id, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, manufacturer_id, created_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)";
-            db.run(query, [numPart, status, board_flavor, board_flavor_id, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, short_code, manufacturer_id || null, creator, creator], function(this: any, err: Error | null) {
+            const query = "INSERT INTO pcbs (board_number, status, board_flavor, board_flavor_id, board_rev, silicon_rev, silicon_corner, bom, project_id, package_id, package_name, silicon_version_id, board_formfactor_id, formfactor_revision_id, bom_flavor_id, owner_id, short_code, manufacturer_id, created_at, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)";
+            db.run(query, [numPart, status, board_flavor, board_flavor_id, board_rev, silicon_rev, silicon_corner, bom, project_id, package_id || null, package_name || null, silicon_version_id || null, board_formfactor_id || null, formfactor_revision_id || null, bom_flavor_id || null, owner_id, short_code, manufacturer_id || null, creator, creator], function(this: any, err: Error | null) {
                 if (err) return res.status(500).json({ error: err.message });
                 res.status(201).json({ id: this.lastID, board_number, short_code, manufacturer_id });
             });
@@ -1066,7 +1365,7 @@ app.put('/api/projects/:id', (req: Request, res: Response) => {
     if (!isSuperUser(req as any)) {
         return res.status(403).json({ error: "Only Super Users can update projects." });
     }
-    const { name, description, revisions, project_key, flavors, silicon_corners, number_format } = req.body;
+    const { name, description, revisions, project_key, flavors, silicon_corners, number_format, packages } = req.body;
     const cleanName = sanitizeProjectName(name);
 
     if (!cleanName) return res.status(400).json({ error: "Project name is required" });
@@ -1074,7 +1373,7 @@ app.put('/api/projects/:id', (req: Request, res: Response) => {
 
     db.get("SELECT number_format, project_key FROM projects WHERE id = ?", [req.params.id], (_err: Error | null, _row: any) => {
         const editor = req.headers['x-user-username'] || 'guest';
-        db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, silicon_corners = ?, number_format = ?, updated_by = ? WHERE id = ?", [cleanName, description, revisions, finalProjectKey, silicon_corners || null, number_format || 'decimal', editor, req.params.id], function(this: any, errUpdate: Error | null) {
+        db.run("UPDATE projects SET name = ?, description = ?, revisions = ?, project_key = ?, silicon_corners = ?, number_format = ?, updated_by = ? WHERE id = ?", [cleanName, description || '', revisions || '', finalProjectKey, silicon_corners || null, number_format || 'decimal', editor, req.params.id], function(this: any, errUpdate: Error | null) {
             if (errUpdate) {
                 if (errUpdate.message.includes('UNIQUE constraint failed')) {
                     if (errUpdate.message.includes('projects.name')) {
@@ -1087,54 +1386,14 @@ app.put('/api/projects/:id', (req: Request, res: Response) => {
                 return res.status(500).json({ error: errUpdate.message });
             }
             
-            // Before replacing flavors, detect renames by comparing old vs new names by position.
-            // Propagate any rename to existing PCBs so board_flavor stays in sync.
-            db.all("SELECT name FROM pcb_flavors WHERE project_id = ? ORDER BY rowid ASC", [req.params.id], (errOld: Error | null, oldFlavors: any[]) => {
-                const newFlavors: any[] = (flavors && flavors.length > 0) ? flavors : [];
+            const pkgsToSave = packages && Array.isArray(packages) && packages.length > 0
+                ? packages
+                : normalizeIncomingPackages({ revisions, flavors, silicon_corners });
 
-                // Build list of renames: { oldName, newName }
-                const renames: { oldName: string; newName: string }[] = [];
-                if (!errOld && oldFlavors) {
-                    oldFlavors.forEach((oldF, idx) => {
-                        const newF = newFlavors[idx];
-                        if (newF && oldF.name && newF.name && oldF.name !== newF.name) {
-                            renames.push({ oldName: oldF.name, newName: newF.name });
-                        }
-                    });
-                }
-
-                // Apply renames to pcbs in this project
-                const applyRenames = (done: () => void) => {
-                    if (renames.length === 0) return done();
-                    let pending = renames.length;
-                    renames.forEach(({ oldName, newName }) => {
-                        db.run(
-                            "UPDATE pcbs SET board_flavor = ? WHERE board_flavor = ? AND project_id = ?",
-                            [newName, oldName, req.params.id],
-                            (errRename: Error | null) => {
-                                if (errRename) console.error("Error renaming board_flavor on pcbs:", errRename.message);
-                                if (--pending === 0) done();
-                            }
-                        );
-                    });
-                };
-
-                applyRenames(() => {
-                    db.run("DELETE FROM pcb_flavors WHERE project_id = ?", [req.params.id], () => {
-                        if (newFlavors.length > 0) {
-                            newFlavors.forEach((f: any) => {
-                                db.run("INSERT INTO pcb_flavors (project_id, name, revisions, boms) VALUES (?, ?, ?, ?)", [req.params.id, f.name, JSON.stringify(f.revisions || []), JSON.stringify(f.boms || [])], (errFlavor: Error | null) => {
-                                    if (errFlavor) console.error("Error inserting flavor (PUT):", errFlavor.message, f);
-                                });
-                            });
-                        }
-                    });
-                });
+            saveProjectHierarchy(String(req.params.id), pkgsToSave, (errHierarchy) => {
+                if (errHierarchy) console.error("Error saving updated project hierarchy:", errHierarchy.message);
+                res.json({ updated: this.changes, name: cleanName });
             });
-
-            const changes = this.changes;
-            
-            res.json({ updated: changes, name: cleanName });
         });
     });
 });
@@ -1246,7 +1505,6 @@ app.delete('/api/projects/:projectId/docs/:docId', (req: Request, res: Response)
         db.run("DELETE FROM project_docs WHERE id = ?", [docId], function(this: any, deleteErr: Error | null) {
             if (deleteErr) return res.status(500).json({ error: deleteErr.message });
 
-            // Attempt to delete file from disk
             try {
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
@@ -1262,18 +1520,21 @@ app.delete('/api/projects/:projectId/docs/:docId', (req: Request, res: Response)
 
 // --- PCBs API Expansions ---
 app.get('/api/pcbs/:id', (req: Request, res: Response) => {
-    const singleQuery = `
-        SELECT pcbs.*, projects.project_key, projects.number_format,
+    const query = `
+        SELECT pcbs.*, projects.name as project_name, projects.project_key, projects.number_format as number_format,
+               owners.name as owner_name, owners.username as owner_username,
                pf.name as flavor_name_fk
         FROM pcbs
         LEFT JOIN projects ON pcbs.project_id = projects.id
+        LEFT JOIN owners ON pcbs.owner_id = owners.id
         LEFT JOIN pcb_flavors pf ON pcbs.board_flavor_id = pf.id
         WHERE pcbs.id = ?
     `;
-    db.get(singleQuery, [req.params.id], (err: Error | null, row: any) => {
+    db.get(query, [req.params.id], (err: Error | null, row: any) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: "PCB not found" });
-
+        
+        let fullBoardName = row.board_number;
         if (row.project_key && !row.board_number.toString().includes('-')) {
             let formattedNum = '';
             if (row.number_format === 'hex') {
@@ -1285,20 +1546,47 @@ app.get('/api/pcbs/:id', (req: Request, res: Response) => {
             if (row.number_format !== 'hex') {
                 generatedCrc = generateCRC(`${row.project_key}-${formattedNum}`);
             }
-            row.board_number = `${row.project_key}-${formattedNum}${generatedCrc}`;
+            fullBoardName = `${row.project_key}-${formattedNum}${generatedCrc}`;
         }
-        // Resolve flavor name from FK, fall back to stored text
-        row.board_flavor = row.flavor_name_fk || row.board_flavor || '';
-        res.json(row);
+        
+        const resolvedFlavor = row.flavor_name_fk || row.board_flavor || '';
+        
+        res.json({
+            id: row.id,
+            board_number: fullBoardName,
+            status: row.status,
+            project: row.project_name,
+            project_id: row.project_id,
+            package_id: row.package_id || null,
+            package_name: row.package_name || undefined,
+            silicon_version_id: row.silicon_version_id || null,
+            board_formfactor_id: row.board_formfactor_id || null,
+            formfactor_revision_id: row.formfactor_revision_id || null,
+            bom_flavor_id: row.bom_flavor_id || null,
+            number_format: row.number_format || 'decimal',
+            owner: row.owner_name || 'Unassigned',
+            owner_username: row.owner_username || undefined,
+            product: [resolvedFlavor, row.board_rev, row.silicon_rev, row.silicon_corner].filter(Boolean).join(' ') || '',
+            board_flavor: resolvedFlavor,
+            board_flavor_id: row.board_flavor_id || null,
+            board_rev: row.board_rev || '',
+            silicon_rev: row.silicon_rev || '',
+            silicon_corner: row.silicon_corner || '',
+            bom: row.bom,
+            manufacturer_id: row.manufacturer_id || '',
+            short_code: row.short_code,
+            created_at: row.created_at,
+            created_by: row.created_by,
+            updated_by: row.updated_by
+        });
     });
 });
 
-// PCB Tags Association API
 app.get('/api/pcbs/:id/tags', (req: Request, res: Response) => {
     const query = `
-        SELECT tags.*, owners.username as owner_username, owners.name as owner_name 
-        FROM tags 
-        JOIN pcb_tags ON tags.id = pcb_tags.tag_id 
+        SELECT tags.*, owners.username as owner_username 
+        FROM tags
+        JOIN pcb_tags ON tags.id = pcb_tags.tag_id
         LEFT JOIN owners ON tags.owner_id = owners.id
         WHERE pcb_tags.pcb_id = ?
     `;
@@ -1330,7 +1618,7 @@ app.put('/api/pcbs/:id', async (req: Request, res: Response) => {
     if (!authorized) {
         return res.status(403).json({ error: "You are not authorized to update this PCB because you do not own it." });
     }
-    const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, manufacturer_id } = req.body;
+    const { board_number, status, board_flavor, board_rev, silicon_rev, silicon_corner, bom, project_id, package_id, package_name, silicon_version_id, board_formfactor_id, formfactor_revision_id, bom_flavor_id, owner_id, manufacturer_id } = req.body;
     let numPart = board_number;
     if (board_number && board_number.includes('-')) {
         const parts = board_number.split('-');
@@ -1343,7 +1631,6 @@ app.put('/api/pcbs/:id', async (req: Request, res: Response) => {
         if (!isNaN(val)) numPart = val.toString();
     }
     const editor = req.headers['x-user-username'] || 'guest';
-    // Resolve flavor name to FK id
     const resolveFlavorId = (cb: (id: number | null) => void) => {
         if (!board_flavor || !project_id) return cb(null);
         db.get("SELECT id FROM pcb_flavors WHERE project_id = ? AND name = ? LIMIT 1", [project_id, board_flavor], (_e: Error | null, row: any) => {
@@ -1351,8 +1638,8 @@ app.put('/api/pcbs/:id', async (req: Request, res: Response) => {
         });
     };
     resolveFlavorId((board_flavor_id) => {
-        const query = "UPDATE pcbs SET board_number = ?, status = ?, board_flavor = ?, board_flavor_id = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ?, bom = ?, project_id = ?, owner_id = ?, manufacturer_id = ?, updated_by = ? WHERE id = ?";
-        db.run(query, [numPart, status, board_flavor, board_flavor_id, board_rev, silicon_rev, silicon_corner, bom, project_id, owner_id, manufacturer_id || null, editor, req.params.id], function(this: any, err: Error | null) {
+        const query = "UPDATE pcbs SET board_number = ?, status = ?, board_flavor = ?, board_flavor_id = ?, board_rev = ?, silicon_rev = ?, silicon_corner = ?, bom = ?, project_id = ?, package_id = ?, package_name = ?, silicon_version_id = ?, board_formfactor_id = ?, formfactor_revision_id = ?, bom_flavor_id = ?, owner_id = ?, manufacturer_id = ?, updated_by = ? WHERE id = ?";
+        db.run(query, [numPart, status, board_flavor, board_flavor_id, board_rev, silicon_rev, silicon_corner, bom, project_id, package_id || null, package_name || null, silicon_version_id || null, board_formfactor_id || null, formfactor_revision_id || null, bom_flavor_id || null, owner_id, manufacturer_id || null, editor, req.params.id], function(this: any, err: Error | null) {
             if (err) return res.status(500).json({ error: err.message });
             res.json({ updated: this.changes });
         });

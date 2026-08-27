@@ -12,42 +12,17 @@ import { EditButton, ViewButton, AddButton, QrButton, DeleteButton, DocsButton }
 import { RemovePcb } from '../../RemovePage/RemovePcb';
 import { Popup } from '../../../components/Popup';
 import { ReworkCardBody } from './ReworkCardBody';
-import { COLORS } from '../../../store/useStyles';
-import { InfoPill } from '../../../components/InfoPill';
 import { useProjectStore } from '../../../store/clientDataBase/useProjectStore';
+
 interface PcbCardBodyProps {
     pcb: any;
 }
-
-const getReworkTypeText = (type?: string) => {
-    if (type === 'Resistor Option Swap' || type === 'Resistor Swap' || type === 'R swap') {
-        return 'R Swap '.padEnd(7, ' ');
-    }
-    if (type === 'Silicon Swap') {
-        return 'Si Swap'.padEnd(7, ' ');
-    }
-    const val = type || 'Minor';
-    return val.padEnd(7, ' ');
-};
-
-const getReworkTypeTooltip = (type?: string) => {
-    if (type === 'Major') {
-        return 'some part is broken';
-    }
-    if (type === 'Silicon Swap') {
-        return 'Silicon Swap';
-    }
-    if (type === 'Resistor Option Swap' || type === 'Resistor Swap' || type === 'R swap') {
-        return 'a resistor option';
-    }
-    return 'it is working';
-};
 
 export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const { reworks, fetchReworks, setSelectedBoards } = useReworkStore();
     const { tags, fetchTags } = useTagStore();
     const { fetchPcbs, deletePcb } = usePcbStore();
-    const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile, currentUser, currentUserRole, allowGuestMinorRework } = useAppState();
+    const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile, currentUserRole, allowGuestMinorRework } = useAppState();
     const { projects, projectDocs, fetchDocs } = useProjectStore();
 
     const isSuperUser = currentUserRole === 'Super User';
@@ -82,20 +57,51 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
 
     let schematicFilename = '';
     let boardFileFilename = '';
-    if (project && pcb.board_flavor && pcb.board_rev) {
-        const ff = project.flavors?.find(f => f.name === pcb.board_flavor);
-        if (ff && ff.revisionDetails) {
-            const revDetail = ff.revisionDetails.find(r => r.name === pcb.board_rev);
-            if (revDetail) {
-                schematicFilename = revDetail.schematic || revDetail.doc || '';
-                boardFileFilename = revDetail.board_file || '';
+    let bomCsvFilename = '';
+    let datasheetFilename = '';
+
+    if (project) {
+        if (project.packages && project.packages.length > 0) {
+            for (const pkg of project.packages) {
+                if (pcb.package_name && pkg.name !== pcb.package_name) continue;
+                for (const sv of (pkg.silicon_versions || [])) {
+                    if (pcb.silicon_rev && sv.name !== pcb.silicon_rev) continue;
+                    for (const ff of (sv.formfactors || [])) {
+                        if (pcb.board_flavor && ff.name !== pcb.board_flavor) continue;
+                        for (const r of (ff.revisionDetails || [])) {
+                            if (pcb.board_rev && r.name === pcb.board_rev) {
+                                schematicFilename = r.schematic || r.doc || '';
+                                boardFileFilename = r.board_file || '';
+                                bomCsvFilename = r.bom_csv || '';
+                                datasheetFilename = r.datasheet || '';
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (!schematicFilename && pcb.board_flavor && pcb.board_rev) {
+            const ff = project.flavors?.find(f => f.name === pcb.board_flavor);
+            if (ff && ff.revisionDetails) {
+                const revDetail = ff.revisionDetails.find(r => r.name === pcb.board_rev);
+                if (revDetail) {
+                    schematicFilename = revDetail.schematic || revDetail.doc || '';
+                    boardFileFilename = revDetail.board_file || '';
+                    bomCsvFilename = revDetail.bom_csv || '';
+                    datasheetFilename = revDetail.datasheet || '';
+                }
             }
         }
     }
 
     const docs = project ? (projectDocs[project.id.toString()] || []) : [];
-    const schematicDoc = docs.find(s => s.filename === schematicFilename);
-    const boardFileDoc = docs.find(s => s.filename === boardFileFilename);
+    const schematicDoc = docs.find(s => s.filename === schematicFilename) || (schematicFilename ? { id: schematicFilename, filename: schematicFilename, path: `/docs/${schematicFilename}` } : null);
+    const boardFileDoc = docs.find(s => s.filename === boardFileFilename) || (boardFileFilename ? { id: boardFileFilename, filename: boardFileFilename, path: `/docs/${boardFileFilename}` } : null);
+    const bomCsvDoc = docs.find(s => s.filename === bomCsvFilename) || (bomCsvFilename ? { id: bomCsvFilename, filename: bomCsvFilename, path: `/docs/${bomCsvFilename}` } : null);
+    const datasheetDoc = docs.find(s => s.filename === datasheetFilename) || (datasheetFilename ? { id: datasheetFilename, filename: datasheetFilename, path: `/docs/${datasheetFilename}` } : null);
+
+    const hasAnyDocs = Boolean(schematicDoc || boardFileDoc || bomCsvDoc || datasheetDoc);
 
     useEffect(() => {
         if (project && !projectDocs[project.id.toString()]) {
@@ -167,15 +173,15 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                     label={isMobile ? "" : "Edit PCB"}
                 />
 
-                    {(schematicDoc || boardFileDoc) && (
-                        <DocsButton 
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setIsDocsPopupOpen(true);
-                            }}
-                            label={isMobile ? "" : "Docs"}
-                        />
-                    )}
+                {hasAnyDocs && (
+                    <DocsButton 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsDocsPopupOpen(true);
+                        }}
+                        label={isMobile ? "" : "Docs"}
+                    />
+                )}
 
                 <QrButton 
                     onClick={(e) => { e.stopPropagation(); setQrModalBoard(pcb.board_number); }}
@@ -249,156 +255,176 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                         style={{ 
                                             background: 'rgba(255,255,255,0.02)', 
                                             border: '1px solid var(--border)', 
-                                            borderRadius: '8px',
+                                            borderRadius: '6px',
                                             overflow: 'hidden'
                                         }}
                                     >
                                         <div 
                                             onClick={() => handleReworkClick(rework.id)}
-                                            style={{ 
-                                                padding: '10px 12px', 
-                                                display: 'flex', 
-                                                justifyContent: 'space-between', 
+                                            style={{
+                                                padding: '10px 14px',
+                                                display: 'flex',
                                                 alignItems: 'center',
+                                                justifyContent: 'space-between',
                                                 cursor: 'pointer',
-                                                fontWeight: expandedReworkId === rework.id ? 600 : 500
+                                                userSelect: 'none',
+                                                background: expandedReworkId === rework.id ? 'rgba(255,255,255,0.04)' : 'transparent',
+                                                transition: 'background 0.2s ease'
                                             }}
                                         >
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
-                                                 <InfoPill 
-                                                     text={getReworkTypeText(rework.rework_type)}
-                                                     color={rework.rework_type === 'Major' ? COLORS.red : rework.rework_type === 'Silicon Swap' ? COLORS.purple : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orange : COLORS.indigo}
-                                                     bg={rework.rework_type === 'Major' ? COLORS.redLight : rework.rework_type === 'Silicon Swap' ? COLORS.purpleMedium : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeMedium : COLORS.indigoLight}
-                                                     border={`1px solid ${rework.rework_type === 'Major' ? COLORS.redBorder : rework.rework_type === 'Silicon Swap' ? COLORS.purpleBorder : rework.rework_type === 'Resistor Option Swap' || rework.rework_type === 'Resistor Swap' || rework.rework_type === 'R swap' ? COLORS.orangeBorder : COLORS.indigoBorder}`}
-                                                     min_width={7}
-                                                     title={getReworkTypeTooltip(rework.rework_type)}
-                                                 />
-                                                <span style={{ 
-                                                    fontSize: '0.85rem',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis'
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ fontWeight: 600, color: 'var(--accent)', fontSize: '0.9rem' }}>
+                                                    {rework.pcb_board_number || (rework as any).board_number || pcb.board_number}-R{String(rework.rework_number).padStart(3, '0')}
+                                                </span>
+                                                <span style={{
+                                                    fontSize: '0.75rem',
+                                                    padding: '2px 8px',
+                                                    borderRadius: '12px',
+                                                    background: rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.15)' : rework.rework_type === 'Silicon Swap' ? 'rgba(168, 85, 247, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                                                    color: rework.rework_type === 'Major' ? '#ef4444' : rework.rework_type === 'Silicon Swap' ? '#a855f7' : '#3b82f6',
+                                                    border: `1px solid ${rework.rework_type === 'Major' ? 'rgba(239, 68, 68, 0.3)' : rework.rework_type === 'Silicon Swap' ? 'rgba(168, 85, 247, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`
                                                 }}>
-                                                    {rework.title || (rework.rework_number ? `Rework #${rework.rework_number}` : `Rework ${rework.id}`)}
+                                                    {rework.rework_type || 'Minor'}
+                                                </span>
+                                                <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                                                    {rework.title || rework.description}
                                                 </span>
                                             </div>
-                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '12px', flexShrink: 0 }}>
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                                                 {new Date(rework.timestamp).toLocaleDateString()}
                                             </span>
                                         </div>
                                         {expandedReworkId === rework.id && (
-                                            <div style={{ padding: '0 12px 12px 12px' }}>
+                                            <div style={{ borderTop: '1px solid var(--border)', padding: '12px 14px' }}>
                                                 <ReworkCardBody rework={rework} />
                                             </div>
                                         )}
                                     </div>
                                 ))}
-                                {pcbReworks.length > 5 && (
-                                    <p style={{ fontSize: '0.8rem', color: 'var(--accent)', textAlign: 'center', margin: '4px 0 0 0', cursor: 'pointer', padding: '4px' }}>
-                                        + {pcbReworks.length - 5} older reworks...
-                                    </p>
-                                )}
                             </div>
                         ) : (
-                            <p className="no-data" style={{ color: 'var(--text-muted)', fontStyle: 'italic', margin: 0, fontSize: '0.9rem' }}>No rework history logged for this board.</p>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontStyle: 'italic' }}>
+                                No rework history found for this board.
+                            </div>
                         )}
                     </>
                 )}
 
                 {activeTabName === 'Tags' && (
-                    <>
-                        {(() => {
-                            const allowedTag = (t: any) => {
-                                if (t.type === 'public') return true;
-                                if (currentUserRole === 'Super User') return true;
-                                if (!currentUser) return false;
-                                return t.owner_id === currentUser.id || t.owner_username === currentUser.username;
-                            };
-                            const filteredAttached = attachedTags.filter(allowedTag);
-                            const filteredAvailable = tags.filter(t => allowedTag(t) && !attachedTags.some(at => at.id === t.id));
-
-                            return (
-                                <div>
-                                    {isAssigningTag ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)', marginBottom: '16px' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Select Tag to Attach:</span>
-                                                <button onClick={(e) => { e.stopPropagation(); setIsAssigningTag(false); }} style={{ background: 'transparent', color: 'var(--text-muted)', border: 'none', cursor: 'pointer' }}><X size={18} /></button>
-                                            </div>
-                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '8px' }}>
-                                                {filteredAvailable.map(tag => (
-                                                    <div 
-                                                        key={tag.id} 
-                                                        onClick={(e) => { e.stopPropagation(); handleAssignTagDirect(tag.id); }}
-                                                        style={{ 
-                                                            display: 'flex', alignItems: 'center', gap: '6px', 
-                                                            background: `${tag.color}20`, color: tag.color, 
-                                                            border: `1px solid ${tag.color}40`, padding: '8px 12px', 
-                                                            borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, 
-                                                            cursor: 'pointer', transition: 'all 0.2s',
-                                                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
-                                                        }}
-                                                        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-                                                        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                                                    >
-                                                        <TagIcon size={14} style={{ flexShrink: 0 }} />
-                                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                            {formatTagName(tag)}
-                                                        </span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            {filteredAvailable.length === 0 && (
-                                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>All available tags are already attached.</p>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <AddButton 
-                                            onClick={(e) => { e.stopPropagation(); setIsAssigningTag(true); }}
-                                            label="Add Tag"
-                                            style={{ width: '100%', marginBottom: '16px' }}
-                                        />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                            {attachedTags.map((tag) => (
+                                <span 
+                                    key={tag.id} 
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        padding: '4px 10px',
+                                        borderRadius: '16px',
+                                        backgroundColor: tag.color ? `${tag.color}22` : 'rgba(99, 102, 241, 0.15)',
+                                        color: tag.color || 'var(--accent)',
+                                        border: `1px solid ${tag.color ? `${tag.color}66` : 'rgba(99, 102, 241, 0.3)'}`,
+                                        fontSize: '0.85rem',
+                                        fontWeight: 500
+                                    }}
+                                >
+                                    <TagIcon size={12} />
+                                    {formatTagName(tag)}
+                                    {isSuperUser && (
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); handleRemoveTagDirect(tag); }}
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                padding: 0,
+                                                color: 'inherit',
+                                                opacity: 0.7,
+                                                display: 'flex',
+                                                alignItems: 'center'
+                                            }}
+                                            title="Detach Tag"
+                                        >
+                                            <X size={12} />
+                                        </button>
                                     )}
+                                </span>
+                            ))}
+                            
+                            {isSuperUser && !isAssigningTag && (
+                                <button 
+                                    onClick={() => setIsAssigningTag(true)}
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        padding: '4px 10px',
+                                        borderRadius: '16px',
+                                        background: 'rgba(255, 255, 255, 0.05)',
+                                        border: '1px dashed var(--border)',
+                                        color: 'var(--text-muted)',
+                                        fontSize: '0.85rem',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    + Assign Tag
+                                </button>
+                            )}
+                        </div>
 
-                                    {filteredAttached.length > 0 ? (
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
-                                            {filteredAttached.map(tag => (
-                                                <div key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: `${tag.color}20`, color: tag.color, border: `1px solid ${tag.color}40`, padding: '4px 10px', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 600 }}>
-                                                    <TagIcon size={12} />
-                                                    {formatTagName(tag)}
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); handleRemoveTagDirect(tag); }}
-                                                        style={{
-                                                            background: 'none', border: 'none', cursor: 'pointer',
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                            color: tag.color, padding: 0, marginLeft: '4px', opacity: 0.7
-                                                        }}
-                                                        onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
-                                                        onMouseOut={(e) => e.currentTarget.style.opacity = '0.7'}
-                                                    >
-                                                        <X size={14} />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.9rem', margin: 0 }}>
-                                            No tags attached.
-                                        </p>
-                                    )}
-                                </div>
-                            );
-                        })()}
-                    </>
+                        {isAssigningTag && (
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '8px' }}>
+                                <select 
+                                    onChange={(e) => {
+                                        if (e.target.value) handleAssignTagDirect(e.target.value);
+                                    }}
+                                    defaultValue=""
+                                    style={{
+                                        padding: '6px 12px',
+                                        borderRadius: '4px',
+                                        background: 'var(--bg-secondary)',
+                                        border: '1px solid var(--border)',
+                                        color: 'var(--text)',
+                                        fontSize: '0.85rem'
+                                    }}
+                                >
+                                    <option value="" disabled>Select a tag to assign...</option>
+                                    {tags
+                                        .filter(t => !attachedTags.some(at => at.id === t.id))
+                                        .map(t => (
+                                            <option key={t.id} value={t.id}>
+                                                {formatTagName(t)}
+                                            </option>
+                                        ))
+                                    }
+                                </select>
+                                <button 
+                                    onClick={() => setIsAssigningTag(false)}
+                                    style={{
+                                        padding: '6px 10px',
+                                        background: 'none',
+                                        border: '1px solid var(--border)',
+                                        borderRadius: '4px',
+                                        color: 'var(--text-muted)',
+                                        cursor: 'pointer',
+                                        fontSize: '0.85rem'
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 )}
-            </FormTabs>
+                </FormTabs>
             </div>
 
             <RemoveTag 
                 isOpen={!!tagToRemove} 
                 onClose={() => setTagToRemove(null)} 
                 onConfirm={confirmRemoveTag} 
-                tag={tagToRemove} 
+                tag={tagToRemove}
                 pcb={pcb} 
             />
 
@@ -412,7 +438,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
             <Popup 
                 isOpen={isDocsPopupOpen} 
                 onClose={() => setIsDocsPopupOpen(false)} 
-                title={`${pcb.board_number} Docs`}
+                title="Board Revision Documents"
                 maxWidth="500px"
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
@@ -443,7 +469,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                     <FileText size={20} color="var(--accent)" />
                                 </div>
                                 <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                                    <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)' }}>Schematic</span>
+                                    <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)' }}>PDF Schematic</span>
                                     <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={schematicDoc.filename}>
                                         {schematicDoc.filename}
                                     </span>
@@ -467,12 +493,6 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                     fontSize: '0.85rem',
                                     fontWeight: 600,
                                     transition: 'all 0.2s'
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = 'rgba(99, 102, 241, 0.2)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)';
                                 }}
                             >
                                 <span>View</span>
@@ -507,7 +527,7 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                     <FileText size={20} color="var(--accent)" />
                                 </div>
                                 <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                                    <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)' }}>Board File</span>
+                                    <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)' }}>BRD Board File</span>
                                     <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={boardFileDoc.filename}>
                                         {boardFileDoc.filename}
                                     </span>
@@ -532,11 +552,121 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                                     fontWeight: 600,
                                     transition: 'all 0.2s'
                                 }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = 'rgba(99, 102, 241, 0.2)';
+                            >
+                                <span>View</span>
+                            </button>
+                        </div>
+                    )}
+
+                    {bomCsvDoc && (
+                        <div 
+                            style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'space-between', 
+                                padding: '12px 16px', 
+                                background: 'rgba(255, 255, 255, 0.02)', 
+                                border: '1px solid var(--border)', 
+                                borderRadius: '8px',
+                                gap: '12px'
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
+                                <div style={{ 
+                                    width: '40px', 
+                                    height: '40px', 
+                                    borderRadius: '8px', 
+                                    background: 'rgba(34, 197, 94, 0.1)', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    flexShrink: 0
+                                }}>
+                                    <FileText size={20} color="var(--success, #22c55e)" />
+                                </div>
+                                <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)' }}>BOM CSV File</span>
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={bomCsvDoc.filename}>
+                                        {bomCsvDoc.filename}
+                                    </span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    editItem('doc_viewer', bomCsvDoc.id);
+                                    setIsDocsPopupOpen(false);
                                 }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)';
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '8px 14px',
+                                    background: 'rgba(34, 197, 94, 0.1)',
+                                    border: '1px solid rgba(34, 197, 94, 0.3)',
+                                    borderRadius: '6px',
+                                    color: 'var(--success, #22c55e)',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 600,
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <span>View</span>
+                            </button>
+                        </div>
+                    )}
+
+                    {datasheetDoc && (
+                        <div 
+                            style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'space-between', 
+                                padding: '12px 16px', 
+                                background: 'rgba(255, 255, 255, 0.02)', 
+                                border: '1px solid var(--border)', 
+                                borderRadius: '8px',
+                                gap: '12px'
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
+                                <div style={{ 
+                                    width: '40px', 
+                                    height: '40px', 
+                                    borderRadius: '8px', 
+                                    background: 'rgba(245, 158, 11, 0.1)', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    flexShrink: 0
+                                }}>
+                                    <FileText size={20} color="var(--warning, #f59e0b)" />
+                                </div>
+                                <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)' }}>PDF Datasheet</span>
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={datasheetDoc.filename}>
+                                        {datasheetDoc.filename}
+                                    </span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    editItem('doc_viewer', datasheetDoc.id);
+                                    setIsDocsPopupOpen(false);
+                                }}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '8px 14px',
+                                    background: 'rgba(245, 158, 11, 0.1)',
+                                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                                    borderRadius: '6px',
+                                    color: 'var(--warning, #f59e0b)',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 600,
+                                    transition: 'all 0.2s'
                                 }}
                             >
                                 <span>View</span>

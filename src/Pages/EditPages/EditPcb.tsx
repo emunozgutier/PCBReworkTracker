@@ -31,6 +31,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     const [noPartYet, setNoPartYet] = useState(false);
     const [selectedRevision, setSelectedRevision] = useState('');
     const [selectedFormfactor, setSelectedFormfactor] = useState('');
+    const [selectedPackage, setSelectedPackage] = useState('');
     const [selectedProject, setSelectedProject] = useState('');
     const [selectedOwner, setSelectedOwner] = useState('');
     const [siliconVersion, setSiliconVersion] = useState('');
@@ -44,7 +45,6 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
     const [rawPcb, setRawPcb] = useState<any>(null);
 
     const selectedProjData = projects.find(p => p.id.toString() === selectedProject);
-
     const selectedProjectKey = selectedProjData?.project_key || 'XXX';
 
     useEffect(() => {
@@ -63,7 +63,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                 setManufacturerId(pcb.manufacturer_id || '');
                 setStatus(pcb.status);
                 setBom(pcb.bom || '');
-                // Use new split fields directly
+                setSelectedPackage(pcb.package_name || '');
                 setSiliconVersion(pcb.silicon_corner || '');
                 setSelectedFormfactor(pcb.board_flavor || '');
                 setSelectedRevision(pcb.silicon_rev === "No part yet" || pcb.silicon_rev === "No part" ? "" : (pcb.silicon_rev || ''));
@@ -74,7 +74,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                     setNoPartYet(false);
                 }
                 setPcbRev(pcb.board_rev || '');
-                setSelectedProject(pcb.project_id.toString());
+                setSelectedProject(pcb.project_id ? pcb.project_id.toString() : '');
                 setSelectedOwner(pcb.owner_id ? pcb.owner_id.toString() : '');
             }
             setLoading(false);
@@ -83,8 +83,6 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
             setLoading(false);
         });
     }, [id]);
-
-
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -98,6 +96,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
         const success = await updatePcb(id, {
             board_number: finalBoardName,
             status,
+            package_name: selectedPackage,
             board_flavor: ffPart,
             board_rev: finalPcbRev,
             silicon_rev: revPart,
@@ -185,7 +184,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                     </div>
                 </FormGroup>
 
-                <FormGroup title="Silicon">
+                <FormGroup title="Silicon & Package">
                     <div style={{ 
                         marginBottom: '1rem', 
                         padding: '0.75rem', 
@@ -195,7 +194,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                         fontSize: '0.875rem',
                         color: 'var(--text-muted)'
                     }}>
-                        Note: To change silicon you need to fill rework log.
+                        Note: To change silicon or package you need to fill a rework log.
                     </div>
                     <div className="form-row">
                         <div className="form-group flex-1">
@@ -205,7 +204,13 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                             </div>
                         </div>
                         <div className="form-group flex-1">
-                            <label>Rev</label>
+                            <label>Package</label>
+                            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
+                                {formatNA(selectedPackage)}
+                            </div>
+                        </div>
+                        <div className="form-group flex-1">
+                            <label>Silicon Version</label>
                             <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
                                 {noPartYet ? 'No part' : formatNA(selectedRevision)}
                             </div>
@@ -221,7 +226,7 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
 
                 <FormGroup title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        PCB
+                        Board FormFactor & Revision
                         <span 
                             title="Base PCB configuration cannot be changed after creation." 
                             style={{ 
@@ -236,19 +241,19 @@ export function EditPCB({ id, onBack, onSuccess }: EditPCBProps) {
                 }>
                     <div className="form-row">
                         <div className="form-group flex-1">
-                            <label>Flavor</label>
+                            <label>FormFactor</label>
                             <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
                                 {formatNA(selectedFormfactor)}
                             </div>
                         </div>
                         <div className="form-group flex-1">
-                            <label>Rev Number</label>
+                            <label>Revision</label>
                             <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
                                 {formatNA(pcbRev)}
                             </div>
                         </div>
                         <div className="form-group flex-1">
-                            <label>BOM</label>
+                            <label>BOM Flavor</label>
                             <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '6px', color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500, border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
                                 {bom || 'N/A'}
                             </div>

@@ -6,66 +6,145 @@
             "description": "Saturn Moon Project",
             "pcb_count": 30,
             "pcbs": [
-                "DIO-0001U",
-                "DIO-0002D",
-                "DIO-0003N",
-                "DIO-0004W",
-                "DIO-0005F",
-                "DIO-0006Q",
-                "DIO-0007Y",
-                "DIO-0008H",
-                "DIO-0009S",
-                "DIO-0010T",
-                "DIO-0011C",
-                "DIO-0012M",
-                "DIO-0013V",
-                "DIO-0014E",
-                "DIO-0015P",
-                "DIO-0016X",
-                "DIO-0017G",
-                "DIO-0018R",
-                "DIO-0019A",
-                "DIO-0020B",
-                "DIO-0021K",
-                "DIO-0022U",
-                "DIO-0023D",
-                "DIO-0024N",
-                "DIO-0025W",
-                "DIO-0026F",
-                "DIO-0027Q",
-                "DIO-0028Y",
-                "DIO-0029H",
-                "DIO-0030J"
+                "DIO-0001U", "DIO-0002D", "DIO-0003N", "DIO-0004W", "DIO-0005F",
+                "DIO-0006Q", "DIO-0007Y", "DIO-0008H", "DIO-0009S", "DIO-0010T",
+                "DIO-0011C", "DIO-0012M", "DIO-0013V", "DIO-0014E", "DIO-0015P",
+                "DIO-0016X", "DIO-0017G", "DIO-0018R", "DIO-0019A", "DIO-0020B",
+                "DIO-0021K", "DIO-0022U", "DIO-0023D", "DIO-0024N", "DIO-0025W",
+                "DIO-0026F", "DIO-0027Q", "DIO-0028Y", "DIO-0029H", "DIO-0030J"
             ],
             "revisions": [
-                "A0"
+                "A0", "B0"
             ],
             "project_key": "DIO",
-            "silicon_corners": "TT",
-            "flavors": [
+            "silicon_corners": "TT, FF, SS",
+            "packages": [
                 {
-                    "name": "SVB",
-                    "revisions": [
-                        "1.0",
-                        "1.1",
-                        "2.0"
+                    "name": "40 pin QFN",
+                    "silicon_versions": [
+                        {
+                            "name": "A0",
+                            "silicon_corners": ["TT", "FF", "SS"],
+                            "formfactors": [
+                                {
+                                    "name": "Demo",
+                                    "revisions": [
+                                        {
+                                            "name": "1.0",
+                                            "boms": ["BOM1", "BOM2"],
+                                            "schematic": "BBB-SCH.pdf",
+                                            "board_file": "BBB.brd",
+                                            "bom_csv": "BBB-BOM.csv",
+                                            "datasheet": "BBB-DS.pdf"
+                                        },
+                                        {
+                                            "name": "2.0",
+                                            "boms": ["BOM1"],
+                                            "schematic": "BBB-SCH.pdf",
+                                            "board_file": "BBB.brd",
+                                            "bom_csv": "BBB-BOM.csv",
+                                            "datasheet": "BBB-DS.pdf"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Validation",
+                                    "revisions": [
+                                        {
+                                            "name": "1.0",
+                                            "boms": ["Default"],
+                                            "schematic": "BBB-SCH.pdf",
+                                            "board_file": "BBB.brd",
+                                            "bom_csv": "BBB-BOM.csv",
+                                            "datasheet": "BBB-DS.pdf"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
                     ]
                 },
                 {
-                    "name": "Demo",
-                    "revisions": [
-                        "1.0",
-                        "1.1",
-                        "2.0"
+                    "name": "48 pin IC",
+                    "silicon_versions": [
+                        {
+                            "name": "A0",
+                            "silicon_corners": ["TT", "FF"],
+                            "formfactors": [
+                                {
+                                    "name": "SVB",
+                                    "revisions": [
+                                        {
+                                            "name": "1.0",
+                                            "boms": ["BOM1", "BOM2"],
+                                            "schematic": "BBB-SCH.pdf",
+                                            "board_file": "BBB.brd",
+                                            "bom_csv": "BBB-BOM.csv",
+                                            "datasheet": "BBB-DS.pdf"
+                                        },
+                                        {
+                                            "name": "1.1",
+                                            "boms": ["BOM1"],
+                                            "schematic": "BBB-SCH.pdf",
+                                            "board_file": "BBB.brd",
+                                            "bom_csv": "BBB-BOM.csv",
+                                            "datasheet": "BBB-DS.pdf"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Chamber",
+                                    "revisions": [
+                                        {
+                                            "name": "1.0",
+                                            "boms": ["Default"],
+                                            "schematic": "BBB-SCH.pdf",
+                                            "board_file": "BBB.brd",
+                                            "bom_csv": "BBB-BOM.csv",
+                                            "datasheet": "BBB-DS.pdf"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "B0",
+                            "silicon_corners": ["TT", "SS"],
+                            "formfactors": [
+                                {
+                                    "name": "Demo",
+                                    "revisions": [
+                                        {
+                                            "name": "1.0",
+                                            "boms": ["BOM1"],
+                                            "schematic": "BBB-SCH.pdf",
+                                            "board_file": "BBB.brd",
+                                            "bom_csv": "BBB-BOM.csv",
+                                            "datasheet": "BBB-DS.pdf"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
                     ]
+                }
+            ],
+            "flavors": [
+                {
+                    "name": "Demo",
+                    "revisions": ["1.0", "2.0"]
+                },
+                {
+                    "name": "Validation",
+                    "revisions": ["1.0"]
+                },
+                {
+                    "name": "SVB",
+                    "revisions": ["1.0", "1.1"]
                 },
                 {
                     "name": "Chamber",
-                    "revisions": [
-                        "1.0",
-                        "1.1",
-                        "2.0"
-                    ]
+                    "revisions": ["1.0"]
                 }
             ]
         },
@@ -75,51 +154,78 @@
             "description": "Saturn Moon Project",
             "pcb_count": 12,
             "pcbs": [
-                "TIT-0001E",
-                "TIT-0002P",
-                "TIT-0003X",
-                "TIT-0004G",
-                "TIT-0005R",
-                "TIT-0006A",
-                "TIT-0007J",
-                "TIT-0008T",
-                "TIT-0009C",
-                "TIT-0010D",
-                "TIT-0011N",
-                "TIT-0012W"
+                "TIT-0001E", "TIT-0002P", "TIT-0003X", "TIT-0004G", "TIT-0005R",
+                "TIT-0006A", "TIT-0007J", "TIT-0008T", "TIT-0009C", "TIT-0010D",
+                "TIT-0011N", "TIT-0012W"
             ],
             "revisions": [
-                "A0",
-                "B0",
-                "A1",
-                "C0"
+                "A0", "B0", "A1", "C0"
             ],
             "project_key": "TIT",
             "silicon_corners": "TT, SS, FF",
+            "packages": [
+                {
+                    "name": "48 pin IC",
+                    "silicon_versions": [
+                        {
+                            "name": "A0",
+                            "silicon_corners": ["TT", "SS", "FF"],
+                            "formfactors": [
+                                {
+                                    "name": "SVB",
+                                    "revisions": [
+                                        {
+                                            "name": "1.0",
+                                            "boms": ["BOM1", "BOM2"],
+                                            "schematic": "BBB-SCH.pdf",
+                                            "board_file": "BBB.brd",
+                                            "bom_csv": "BBB-BOM.csv",
+                                            "datasheet": "BBB-DS.pdf"
+                                        },
+                                        {
+                                            "name": "1.1",
+                                            "boms": ["BOM1"],
+                                            "schematic": "BBB-SCH.pdf",
+                                            "board_file": "BBB.brd",
+                                            "bom_csv": "BBB-BOM.csv",
+                                            "datasheet": "BBB-DS.pdf"
+                                        },
+                                        {
+                                            "name": "2.0",
+                                            "boms": ["BOM2"],
+                                            "schematic": "BBB-SCH.pdf",
+                                            "board_file": "BBB.brd",
+                                            "bom_csv": "BBB-BOM.csv",
+                                            "datasheet": "BBB-DS.pdf"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Demo",
+                                    "revisions": [
+                                        {
+                                            "name": "1.0",
+                                            "boms": ["Default"],
+                                            "schematic": "BBB-SCH.pdf",
+                                            "board_file": "BBB.brd",
+                                            "bom_csv": "BBB-BOM.csv",
+                                            "datasheet": "BBB-DS.pdf"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
             "flavors": [
                 {
                     "name": "SVB",
-                    "revisions": [
-                        "1.0",
-                        "1.1",
-                        "2.0"
-                    ]
+                    "revisions": ["1.0", "1.1", "2.0"]
                 },
                 {
                     "name": "Demo",
-                    "revisions": [
-                        "1.0",
-                        "1.1",
-                        "2.0"
-                    ]
-                },
-                {
-                    "name": "Chamber",
-                    "revisions": [
-                        "1.0",
-                        "1.1",
-                        "2.0"
-                    ]
+                    "revisions": ["1.0"]
                 }
             ]
         },
@@ -129,64 +235,65 @@
             "description": "Saturn Moon Project",
             "pcb_count": 26,
             "pcbs": [
-                "ATL-0001F",
-                "ATL-0002Q",
-                "ATL-0003Y",
-                "ATL-0004H",
-                "ATL-0005S",
-                "ATL-0006B",
-                "ATL-0007K",
-                "ATL-0008U",
-                "ATL-0009D",
-                "ATL-0010E",
-                "ATL-0011P",
-                "ATL-0012X",
-                "ATL-0013G",
-                "ATL-0014R",
-                "ATL-0015A",
-                "ATL-0016J",
-                "ATL-0017T",
-                "ATL-0018C",
-                "ATL-0019M",
-                "ATL-0020N",
-                "ATL-0021W",
-                "ATL-0022F",
-                "ATL-0023Q",
-                "ATL-0024Y",
-                "ATL-0025H",
+                "ATL-0001F", "ATL-0002Q", "ATL-0003Y", "ATL-0004H", "ATL-0005S",
+                "ATL-0006B", "ATL-0007K", "ATL-0008U", "ATL-0009D", "ATL-0010E",
+                "ATL-0011P", "ATL-0012X", "ATL-0013G", "ATL-0014R", "ATL-0015A",
+                "ATL-0016J", "ATL-0017T", "ATL-0018C", "ATL-0019M", "ATL-0020N",
+                "ATL-0021W", "ATL-0022F", "ATL-0023Q", "ATL-0024Y", "ATL-0025H",
                 "ATL-0026S"
             ],
             "revisions": [
-                "A0",
-                "B0",
-                "B1"
+                "A0", "B0", "B1"
             ],
             "project_key": "ATL",
             "silicon_corners": "TT, SS, FF",
+            "packages": [
+                {
+                    "name": "40 pin QFN",
+                    "silicon_versions": [
+                        {
+                            "name": "A0",
+                            "silicon_corners": ["TT", "SS", "FF"],
+                            "formfactors": [
+                                {
+                                    "name": "SVB",
+                                    "revisions": [
+                                        {
+                                            "name": "1.0",
+                                            "boms": ["BOM1"],
+                                            "schematic": "BBB-SCH.pdf",
+                                            "board_file": "BBB.brd",
+                                            "bom_csv": "BBB-BOM.csv",
+                                            "datasheet": "BBB-DS.pdf"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Demo",
+                                    "revisions": [
+                                        {
+                                            "name": "1.0",
+                                            "boms": ["Default"],
+                                            "schematic": "BBB-SCH.pdf",
+                                            "board_file": "BBB.brd",
+                                            "bom_csv": "BBB-BOM.csv",
+                                            "datasheet": "BBB-DS.pdf"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
             "flavors": [
                 {
                     "name": "SVB",
-                    "revisions": [
-                        "1.0",
-                        "1.1",
-                        "2.0"
-                    ]
+                    "revisions": ["1.0"]
                 },
                 {
                     "name": "Demo",
-                    "revisions": [
-                        "1.0",
-                        "1.1",
-                        "2.0"
-                    ]
-                },
-                {
-                    "name": "Chamber",
-                    "revisions": [
-                        "1.0",
-                        "1.1",
-                        "2.0"
-                    ]
+                    "revisions": ["1.0"]
                 }
             ]
         }

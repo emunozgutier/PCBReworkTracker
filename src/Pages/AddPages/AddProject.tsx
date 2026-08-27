@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Save, HelpCircle, Upload } from 'lucide-react';
+import { ArrowLeft, Save, HelpCircle, Upload, FileText, Cpu, Layers } from 'lucide-react';
 import { FormTabs } from '../../components/forms/FormTabs';
 import { MultipleInputs } from '../../components/forms/MultipleInputs';
 import { useProjectStore } from '../../store/clientDataBase/useProjectStore';
@@ -28,6 +28,31 @@ function generateUniqueKey(name: string, existingKeys: string[]): string {
     return '';
 }
 
+interface FormRevision {
+    name: string;
+    boms: string;
+    schematic?: string | null;
+    board_file?: string | null;
+    bom_csv?: string | null;
+    datasheet?: string | null;
+}
+
+interface FormBoardFormFactor {
+    name: string;
+    revisions: FormRevision[];
+}
+
+interface FormSiliconVersion {
+    name: string;
+    silicon_corners: string;
+    formfactors: FormBoardFormFactor[];
+}
+
+interface FormPackage {
+    name: string;
+    silicon_versions: FormSiliconVersion[];
+}
+
 export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     const { currentUserRole } = useAppState();
 
@@ -48,28 +73,43 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
     }
 
     const [name, setName] = useState('');
-    interface AddProjectRevision {
-        name: string;
-        boms: string;
-        doc?: string | null;
-        schematic?: string | null;
-        board_file?: string | null;
-    }
-    interface AddProjectFlavor {
-        name: string;
-        revisions: AddProjectRevision[];
-    }
-
-    const [revisions, setRevisions] = useState('A0');
-    const [siliconCorners, setSiliconCorners] = useState('TT');
     const [projectKey, setProjectKey] = useState('');
     const [numberFormat, setNumberFormat] = useState<'hex' | 'decimal'>('decimal');
-    const [flavors, setFlavors] = useState<AddProjectFlavor[]>([
-        { name: 'Validation', revisions: [{ name: '1.0', boms: 'BOM1, BOM2', doc: null, schematic: null, board_file: null }] }
+    
+    // Hierarchical Packages state
+    const [packages, setPackages] = useState<FormPackage[]>([
+        {
+            name: '40 pin',
+            silicon_versions: [
+                {
+                    name: 'A0',
+                    silicon_corners: 'TT, FF, SS',
+                    formfactors: [
+                        {
+                            name: 'Demo',
+                            revisions: [
+                                {
+                                    name: '1.0',
+                                    boms: 'BOM1, BOM2',
+                                    schematic: null,
+                                    board_file: null,
+                                    bom_csv: null,
+                                    datasheet: null
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
     ]);
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-    const [activeTab, setActiveTab] = useState(0);
+
+    const [activePkgTab, setActivePkgTab] = useState(0);
+    const [activeSiTab, setActiveSiTab] = useState(0);
+    const [activeFfTab, setActiveFfTab] = useState(0);
     const [activeRevTab, setActiveRevTab] = useState(0);
+
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [isKeyManuallyEdited, setIsKeyManuallyEdited] = useState(false);
     const [autoKeyError, setAutoKeyError] = useState('');
     
@@ -112,30 +152,54 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
         }
     };
 
+    const handleFileUpload = (file: File, updateRevField: (filename: string) => void) => {
+        if (!selectedFiles.some(f => f.name === file.name)) {
+            setSelectedFiles(prev => [...prev, file]);
+        }
+        updateRevField(file.name);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const payloadPcbFlavors = flavors.filter(f => f.name.trim() !== '').map(f => {
-            const allBoms = Array.from(new Set(f.revisions.flatMap(r => r.boms.split(',').map(b => b.trim()).filter(Boolean))));
-            return {
-                name: f.name.trim(),
-                revisions: f.revisions.map(r => ({
-                    name: r.name.trim(),
-                    boms: r.boms.split(',').map(b => b.trim()).filter(Boolean),
-                    doc: r.schematic || r.doc || null,
-                    schematic: r.schematic || null,
-                    board_file: r.board_file || null
-                })),
-                boms: allBoms
-            };
-        });
+        
+        // Assemble payload packages
+        const payloadPackages = packages.map(pkg => ({
+            name: pkg.name.trim() || 'Default Package',
+            silicon_versions: pkg.silicon_versions.map(sv => ({
+                name: sv.name.trim() || 'A0',
+                silicon_corners: sv.silicon_corners.split(',').map(s => s.trim()).filter(Boolean),
+                formfactors: sv.formfactors.map(ff => ({
+                    name: ff.name.trim() || 'Default',
+                    revisions: ff.revisions.map(r => r.name.trim() || '1.0'),
+                    revisionDetails: ff.revisions.map(r => ({
+                        name: r.name.trim() || '1.0',
+                        boms: r.boms.split(',').map(b => b.trim()).filter(Boolean),
+                        schematic: r.schematic || null,
+                        board_file: r.board_file || null,
+                        bom_csv: r.bom_csv || null,
+                        datasheet: r.datasheet || null,
+                        doc: r.schematic || null
+                    }))
+                }))
+            }))
+        }));
+
         const success = await addProject({ 
-            name, description: '', revisions, project_key: projectKey, 
-            flavors: payloadPcbFlavors, silicon_corners: siliconCorners, number_format: numberFormat 
+            name, 
+            project_key: projectKey, 
+            number_format: numberFormat,
+            packages: payloadPackages as any
         }, selectedFiles);
+
         if (success) {
             onSuccess();
         }
     };
+
+    const currentPkg = packages[activePkgTab];
+    const currentSi = currentPkg?.silicon_versions[activeSiTab];
+    const currentFf = currentSi?.formfactors[activeFfTab];
+    const currentRev = currentFf?.revisions[activeRevTab];
 
     return (
         <div className="add-page-container">
@@ -185,22 +249,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                     />
                     {autoKeyError && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{autoKeyError}</span>}
                 </div>
-                <div className="form-group">
-                    <label htmlFor="revisions">Global Available Revisions (Optional)</label>
-                    <MultipleInputs
-                        value={revisions}
-                        onChange={setRevisions}
-                        placeholder="e.g. A0, A1, B0, B1"
-                    />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="silicon_corners">Silicon Corners (Optional)</label>
-                    <MultipleInputs
-                        value={siliconCorners}
-                        onChange={setSiliconCorners}
-                        placeholder="e.g. TT, FF, SS"
-                    />
-                </div>
+                
                 <div className="form-group">
                     <label>Board Number Format</label>
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
@@ -226,235 +275,462 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                         </label>
                     </div>
                 </div>
-                <div className="form-group">
-                    <label>PCB Flavors & Revisions</label>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '-4px', marginBottom: '8px' }}>
-                        Define specific flavors (e.g., Demo, Validation) and their allowed revisions.
+
+                {/* --- HIERARCHY LEVEL 1: PACKAGES --- */}
+                <div className="form-group" style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '16px', backgroundColor: 'rgba(255, 255, 255, 0.01)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <Layers size={18} color="var(--accent)" />
+                        <label style={{ margin: 0, fontWeight: 600, fontSize: '1rem' }}>Packages</label>
+                    </div>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '12px' }}>
+                        Configure packages for this project (e.g. 40 pin, 48 pin IC, BGA-128).
                     </p>
+
                     <FormTabs
-                        tabs={flavors.map(ff => ff.name)}
-                        activeTab={activeTab}
-                        onTabChange={setActiveTab}
+                        tabs={packages.map(p => p.name || 'Unnamed Package')}
+                        activeTab={activePkgTab}
+                        onTabChange={(idx) => {
+                            setActivePkgTab(idx);
+                            setActiveSiTab(0);
+                            setActiveFfTab(0);
+                            setActiveRevTab(0);
+                        }}
                         onAddTab={() => {
-                            setFlavors([...flavors, { name: '', revisions: [{ name: '1.0', boms: '', doc: null, schematic: null, board_file: null }] }]);
-                            setActiveTab(flavors.length);
+                            const pkgName = prompt("Enter package name (e.g. 48 pin IC):");
+                            if (!pkgName || !pkgName.trim()) return;
+                            const newPkg: FormPackage = {
+                                name: pkgName.trim(),
+                                silicon_versions: [
+                                    {
+                                        name: 'A0',
+                                        silicon_corners: 'TT',
+                                        formfactors: [
+                                            {
+                                                name: 'Demo',
+                                                revisions: [
+                                                    { name: '1.0', boms: 'BOM1', schematic: null, board_file: null, bom_csv: null, datasheet: null }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            };
+                            setPackages([...packages, newPkg]);
+                            setActivePkgTab(packages.length);
+                            setActiveSiTab(0);
+                            setActiveFfTab(0);
                             setActiveRevTab(0);
                         }}
                         onDeleteActiveTab={() => {
-                            const newFf = flavors.filter((_, i) => i !== activeTab);
-                            setFlavors(newFf);
-                            setActiveTab(Math.max(0, activeTab - 1));
+                            const newPkgs = packages.filter((_, i) => i !== activePkgTab);
+                            setPackages(newPkgs);
+                            setActivePkgTab(Math.max(0, activePkgTab - 1));
+                            setActiveSiTab(0);
+                            setActiveFfTab(0);
                             setActiveRevTab(0);
                         }}
+                        canDeleteActiveTab={packages.length > 1}
                     >
-                        {flavors[activeTab] && (
+                        {currentPkg && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 <div>
-                                    <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>Flavor Name</label>
+                                    <label style={{ fontSize: '0.85rem', marginBottom: '4px', display: 'block' }}>Package Name</label>
                                     <input 
                                         type="text" 
-                                        placeholder="e.g. Demo" 
-                                        value={flavors[activeTab].name} 
-                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)', transition: 'border-color 0.2s ease' }}
+                                        placeholder="e.g. 40 pin QFN" 
+                                        value={currentPkg.name} 
+                                        style={{ width: '100%', padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)' }}
                                         onChange={e => {
-                                            const newFf = [...flavors];
-                                            newFf[activeTab].name = e.target.value;
-                                            setFlavors(newFf);
+                                            const updated = [...packages];
+                                            updated[activePkgTab].name = e.target.value;
+                                            setPackages(updated);
                                         }}
                                     />
                                 </div>
-                                <div>
-                                    <label style={{ fontSize: '0.85rem', marginBottom: '8px', display: 'block' }}>PCB Revisions & Configuration</label>
+
+                                {/* --- HIERARCHY LEVEL 2: SILICON VERSIONS --- */}
+                                <div style={{ border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', padding: '14px', backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                                        <Cpu size={16} color="var(--accent)" />
+                                        <label style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem' }}>Silicon Versions for {currentPkg.name || 'Package'}</label>
+                                    </div>
+
                                     <FormTabs
-                                        tabs={flavors[activeTab].revisions.map(r => r.name)}
-                                        activeTab={activeRevTab}
-                                        onTabChange={setActiveRevTab}
-                                        fallbackPrefix="Revision"
-                                        deleteLabel="Delete This Revision"
-                                        deleteDisabledTitle="At least one revision is required."
+                                        tabs={currentPkg.silicon_versions.map(sv => sv.name || 'Unnamed Version')}
+                                        activeTab={activeSiTab}
+                                        onTabChange={(idx) => {
+                                            setActiveSiTab(idx);
+                                            setActiveFfTab(0);
+                                            setActiveRevTab(0);
+                                        }}
                                         onAddTab={() => {
-                                            const name = prompt("Enter revision name:");
-                                            if (!name) return;
-                                            const trimmed = name.trim();
-                                            if (!trimmed) return;
-                                            if (flavors[activeTab].revisions.some(r => r.name.toLowerCase() === trimmed.toLowerCase())) {
-                                                alert("Revision name already exists.");
-                                                return;
-                                            }
-                                            const newRevs = [...flavors[activeTab].revisions, { name: trimmed, boms: '', doc: null, schematic: null, board_file: null }];
-                                            const newFf = [...flavors];
-                                            newFf[activeTab].revisions = newRevs;
-                                            setFlavors(newFf);
-                                            setActiveRevTab(newRevs.length - 1);
+                                            const siName = prompt("Enter silicon version (e.g. A0, B0):");
+                                            if (!siName || !siName.trim()) return;
+                                            const newSi: FormSiliconVersion = {
+                                                name: siName.trim(),
+                                                silicon_corners: 'TT, FF, SS',
+                                                formfactors: [
+                                                    {
+                                                        name: 'Demo',
+                                                        revisions: [
+                                                            { name: '1.0', boms: 'BOM1', schematic: null, board_file: null, bom_csv: null, datasheet: null }
+                                                        ]
+                                                    }
+                                                ]
+                                            };
+                                            const updated = [...packages];
+                                            updated[activePkgTab].silicon_versions.push(newSi);
+                                            setPackages(updated);
+                                            setActiveSiTab(updated[activePkgTab].silicon_versions.length - 1);
+                                            setActiveFfTab(0);
+                                            setActiveRevTab(0);
                                         }}
-                                        onRenameActiveTab={() => {
-                                            const currentName = flavors[activeTab].revisions[activeRevTab].name;
-                                            const name = prompt("Enter new revision name:", currentName);
-                                            if (!name) return;
-                                            const trimmed = name.trim();
-                                            if (!trimmed || trimmed === currentName) return;
-                                            if (flavors[activeTab].revisions.some(r => r.name.toLowerCase() === trimmed.toLowerCase())) {
-                                                alert("Revision name already exists.");
-                                                return;
-                                            }
-                                            const newFf = [...flavors];
-                                            newFf[activeTab].revisions[activeRevTab].name = trimmed;
-                                            setFlavors(newFf);
-                                        }}
-                                        renameLabel="Rename Revision"
-                                        canDeleteActiveTab={flavors[activeTab].revisions.length > 1}
                                         onDeleteActiveTab={() => {
-                                            const newRevs = flavors[activeTab].revisions.filter((_, i) => i !== activeRevTab);
-                                            const newFf = [...flavors];
-                                            newFf[activeTab].revisions = newRevs;
-                                            setFlavors(newFf);
-                                            setActiveRevTab(Math.max(0, activeRevTab - 1));
+                                            const updated = [...packages];
+                                            updated[activePkgTab].silicon_versions = updated[activePkgTab].silicon_versions.filter((_, i) => i !== activeSiTab);
+                                            setPackages(updated);
+                                            setActiveSiTab(Math.max(0, activeSiTab - 1));
+                                            setActiveFfTab(0);
+                                            setActiveRevTab(0);
                                         }}
+                                        canDeleteActiveTab={currentPkg.silicon_versions.length > 1}
                                     >
-                                        {flavors[activeTab].revisions[activeRevTab] && (
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                                <div>
-                                                    <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block' }}>BOM Options</label>
-                                                    <MultipleInputs
-                                                        value={flavors[activeTab].revisions[activeRevTab].boms}
-                                                        onChange={(val) => {
-                                                            const newFf = [...flavors];
-                                                            newFf[activeTab].revisions[activeRevTab].boms = val;
-                                                            setFlavors(newFf);
-                                                        }}
-                                                        placeholder="e.g. BOM1, BOM2"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block' }}>Schematic Doc</label>
-                                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                                        <select
-                                                            value={flavors[activeTab].revisions[activeRevTab].schematic || ''}
-                                                            style={{ flex: 1, padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)' }}
-                                                            onChange={e => {
-                                                                const newFf = [...flavors];
-                                                                newFf[activeTab].revisions[activeRevTab].schematic = e.target.value;
-                                                                setFlavors(newFf);
-                                                            }}
-                                                        >
-                                                            <option value="">-- No Schematic --</option>
-                                                            {selectedFiles.map(f => (
-                                                                <option key={f.name} value={f.name}>{f.name}</option>
-                                                            ))}
-                                                        </select>
-                                                        
+                                        {currentSi && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
+                                                    <div>
+                                                        <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block' }}>Silicon Version</label>
                                                         <input 
-                                                            type="file"
-                                                            accept=".pdf"
-                                                            style={{ display: 'none' }}
-                                                            id={`rev-schematic-file-${activeTab}-${activeRevTab}`}
-                                                            onChange={(e) => {
-                                                                if (e.target.files && e.target.files[0]) {
-                                                                    const file = e.target.files[0];
-                                                                    if (!selectedFiles.some(f => f.name === file.name)) {
-                                                                        setSelectedFiles([...selectedFiles, file]);
-                                                                    }
-                                                                    const newFf = [...flavors];
-                                                                    newFf[activeTab].revisions[activeRevTab].schematic = file.name;
-                                                                    setFlavors(newFf);
-                                                                }
+                                                            type="text" 
+                                                            placeholder="e.g. A0" 
+                                                            value={currentSi.name} 
+                                                            style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)' }}
+                                                            onChange={e => {
+                                                                const updated = [...packages];
+                                                                updated[activePkgTab].silicon_versions[activeSiTab].name = e.target.value;
+                                                                setPackages(updated);
                                                             }}
                                                         />
-                                                        <label 
-                                                            htmlFor={`rev-schematic-file-${activeTab}-${activeRevTab}`}
-                                                            className="action-btn-hover"
-                                                            style={{
-                                                                padding: '8px 12px',
-                                                                background: 'rgba(255, 255, 255, 0.02)',
-                                                                border: '1px dashed var(--border)',
-                                                                borderRadius: '4px',
-                                                                cursor: 'pointer',
-                                                                fontSize: '0.85rem',
-                                                                fontWeight: 500,
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                gap: '4px',
-                                                                color: 'var(--text-muted)'
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block' }}>Silicon Corners</label>
+                                                        <MultipleInputs
+                                                            value={currentSi.silicon_corners}
+                                                            onChange={(val) => {
+                                                                const updated = [...packages];
+                                                                updated[activePkgTab].silicon_versions[activeSiTab].silicon_corners = val;
+                                                                setPackages(updated);
                                                             }}
-                                                            onMouseEnter={(e) => {
-                                                                e.currentTarget.style.borderColor = 'var(--accent)';
-                                                                e.currentTarget.style.color = 'var(--text)';
-                                                            }}
-                                                            onMouseLeave={(e) => {
-                                                                e.currentTarget.style.borderColor = 'var(--border)';
-                                                                e.currentTarget.style.color = 'var(--text-muted)';
-                                                            }}
-                                                        >
-                                                            <Upload size={14} />
-                                                            Upload New
-                                                        </label>
+                                                            placeholder="e.g. TT, FF, SS"
+                                                        />
                                                     </div>
                                                 </div>
 
-                                                <div>
-                                                    <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block' }}>Board file Doc</label>
-                                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                                        <select
-                                                            value={flavors[activeTab].revisions[activeRevTab].board_file || ''}
-                                                            style={{ flex: 1, padding: '0.6rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)' }}
-                                                            onChange={e => {
-                                                                const newFf = [...flavors];
-                                                                newFf[activeTab].revisions[activeRevTab].board_file = e.target.value;
-                                                                setFlavors(newFf);
-                                                            }}
-                                                        >
-                                                            <option value="">-- No Board file --</option>
-                                                            {selectedFiles.map(f => (
-                                                                <option key={f.name} value={f.name}>{f.name}</option>
-                                                            ))}
-                                                        </select>
-                                                        
-                                                        <input 
-                                                            type="file"
-                                                            accept=".pdf"
-                                                            style={{ display: 'none' }}
-                                                            id={`rev-boardfile-file-${activeTab}-${activeRevTab}`}
-                                                            onChange={(e) => {
-                                                                if (e.target.files && e.target.files[0]) {
-                                                                    const file = e.target.files[0];
-                                                                    if (!selectedFiles.some(f => f.name === file.name)) {
-                                                                        setSelectedFiles([...selectedFiles, file]);
-                                                                    }
-                                                                    const newFf = [...flavors];
-                                                                    newFf[activeTab].revisions[activeRevTab].board_file = file.name;
-                                                                    setFlavors(newFf);
-                                                                }
-                                                            }}
-                                                        />
-                                                        <label 
-                                                            htmlFor={`rev-boardfile-file-${activeTab}-${activeRevTab}`}
-                                                            className="action-btn-hover"
-                                                            style={{
-                                                                padding: '8px 12px',
-                                                                background: 'rgba(255, 255, 255, 0.02)',
-                                                                border: '1px dashed var(--border)',
-                                                                borderRadius: '4px',
-                                                                cursor: 'pointer',
-                                                                fontSize: '0.85rem',
-                                                                fontWeight: 500,
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                gap: '4px',
-                                                                color: 'var(--text-muted)'
-                                                            }}
-                                                            onMouseEnter={(e) => {
-                                                                e.currentTarget.style.borderColor = 'var(--accent)';
-                                                                e.currentTarget.style.color = 'var(--text)';
-                                                            }}
-                                                            onMouseLeave={(e) => {
-                                                                e.currentTarget.style.borderColor = 'var(--border)';
-                                                                e.currentTarget.style.color = 'var(--text-muted)';
-                                                            }}
-                                                        >
-                                                            <Upload size={14} />
-                                                            Upload New
-                                                        </label>
-                                                    </div>
+                                                {/* --- HIERARCHY LEVEL 3: BOARD FORMFACTORS --- */}
+                                                <div style={{ border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', padding: '12px', backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
+                                                    <label style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '8px', display: 'block' }}>Board FormFactors</label>
+                                                    
+                                                    <FormTabs
+                                                        tabs={currentSi.formfactors.map(ff => ff.name || 'Unnamed FormFactor')}
+                                                        activeTab={activeFfTab}
+                                                        onTabChange={(idx) => {
+                                                            setActiveFfTab(idx);
+                                                            setActiveRevTab(0);
+                                                        }}
+                                                        onAddTab={() => {
+                                                            const ffName = prompt("Enter form factor name (e.g. Demo, Validation, SVB, Chamber):");
+                                                            if (!ffName || !ffName.trim()) return;
+                                                            const newFf: FormBoardFormFactor = {
+                                                                name: ffName.trim(),
+                                                                revisions: [
+                                                                    { name: '1.0', boms: 'Default', schematic: null, board_file: null, bom_csv: null, datasheet: null }
+                                                                ]
+                                                            };
+                                                            const updated = [...packages];
+                                                            updated[activePkgTab].silicon_versions[activeSiTab].formfactors.push(newFf);
+                                                            setPackages(updated);
+                                                            setActiveFfTab(updated[activePkgTab].silicon_versions[activeSiTab].formfactors.length - 1);
+                                                            setActiveRevTab(0);
+                                                        }}
+                                                        onDeleteActiveTab={() => {
+                                                            const updated = [...packages];
+                                                            updated[activePkgTab].silicon_versions[activeSiTab].formfactors = updated[activePkgTab].silicon_versions[activeSiTab].formfactors.filter((_, i) => i !== activeFfTab);
+                                                            setPackages(updated);
+                                                            setActiveFfTab(Math.max(0, activeFfTab - 1));
+                                                            setActiveRevTab(0);
+                                                        }}
+                                                        canDeleteActiveTab={currentSi.formfactors.length > 1}
+                                                    >
+                                                        {currentFf && (
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                                <div>
+                                                                    <label style={{ fontSize: '0.8rem', marginBottom: '4px', display: 'block' }}>FormFactor Name</label>
+                                                                    <input 
+                                                                        type="text" 
+                                                                        placeholder="e.g. Demo, Validation" 
+                                                                        value={currentFf.name} 
+                                                                        style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)' }}
+                                                                        onChange={e => {
+                                                                            const updated = [...packages];
+                                                                            updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].name = e.target.value;
+                                                                            setPackages(updated);
+                                                                        }}
+                                                                    />
+                                                                </div>
+
+                                                                {/* --- HIERARCHY LEVEL 4: REVISIONS, BOMS & DOCUMENTS --- */}
+                                                                <div style={{ border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', padding: '12px', backgroundColor: 'rgba(0, 0, 0, 0.25)' }}>
+                                                                    <label style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '6px', display: 'block' }}>Revisions, BOMs & Documents</label>
+                                                                    
+                                                                    <FormTabs
+                                                                        tabs={currentFf.revisions.map(r => r.name || 'Unnamed Revision')}
+                                                                        activeTab={activeRevTab}
+                                                                        onTabChange={setActiveRevTab}
+                                                                        onAddTab={() => {
+                                                                            const revName = prompt("Enter revision name (e.g. 1.0, 2.0):");
+                                                                            if (!revName || !revName.trim()) return;
+                                                                            const newRev: FormRevision = {
+                                                                                name: revName.trim(),
+                                                                                boms: 'Default',
+                                                                                schematic: null,
+                                                                                board_file: null,
+                                                                                bom_csv: null,
+                                                                                datasheet: null
+                                                                            };
+                                                                            const updated = [...packages];
+                                                                            updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions.push(newRev);
+                                                                            setPackages(updated);
+                                                                            setActiveRevTab(updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions.length - 1);
+                                                                        }}
+                                                                        onDeleteActiveTab={() => {
+                                                                            const updated = [...packages];
+                                                                            updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions = updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions.filter((_, i) => i !== activeRevTab);
+                                                                            setPackages(updated);
+                                                                            setActiveRevTab(Math.max(0, activeRevTab - 1));
+                                                                        }}
+                                                                        canDeleteActiveTab={currentFf.revisions.length > 1}
+                                                                    >
+                                                                        {currentRev && (
+                                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                                                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
+                                                                                    <div>
+                                                                                        <label style={{ fontSize: '0.75rem', marginBottom: '4px', display: 'block' }}>Revision Name</label>
+                                                                                        <input 
+                                                                                            type="text" 
+                                                                                            placeholder="e.g. 1.0" 
+                                                                                            value={currentRev.name} 
+                                                                                            style={{ width: '100%', padding: '0.45rem', border: '1px solid var(--border)', borderRadius: '4px', backgroundColor: 'rgba(0, 0, 0, 0.2)', color: 'var(--text)' }}
+                                                                                            onChange={e => {
+                                                                                                const updated = [...packages];
+                                                                                                updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].name = e.target.value;
+                                                                                                setPackages(updated);
+                                                                                            }}
+                                                                                        />
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <label style={{ fontSize: '0.75rem', marginBottom: '4px', display: 'block' }}>BOM Flavors</label>
+                                                                                        <MultipleInputs
+                                                                                            value={currentRev.boms}
+                                                                                            onChange={(val) => {
+                                                                                                const updated = [...packages];
+                                                                                                updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].boms = val;
+                                                                                                setPackages(updated);
+                                                                                            }}
+                                                                                            placeholder="e.g. BOM1, BOM2"
+                                                                                        />
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                {/* Documents Row (Schematic, Board File, BOM CSV, Datasheet) */}
+                                                                                <div>
+                                                                                    <label style={{ fontSize: '0.75rem', fontWeight: 600, marginBottom: '6px', display: 'block', color: 'var(--accent)' }}>
+                                                                                        Revision Documents (PDF Schematic, BRD Board, BOM CSV, PDF Datasheet)
+                                                                                    </label>
+                                                                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px' }}>
+                                                                                        {/* 1. Schematic (.pdf) */}
+                                                                                        <div style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: '4px', background: 'rgba(0,0,0,0.1)' }}>
+                                                                                            <span style={{ fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                                                                                                <FileText size={12} /> Schematic (.pdf)
+                                                                                            </span>
+                                                                                            <div style={{ display: 'flex', gap: '6px' }}>
+                                                                                                <select
+                                                                                                    value={currentRev.schematic || ''}
+                                                                                                    style={{ flex: 1, padding: '0.35rem', fontSize: '0.75rem', border: '1px solid var(--border)', borderRadius: '4px', background: 'transparent', color: 'var(--text)' }}
+                                                                                                    onChange={e => {
+                                                                                                        const updated = [...packages];
+                                                                                                        updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].schematic = e.target.value || null;
+                                                                                                        setPackages(updated);
+                                                                                                    }}
+                                                                                                >
+                                                                                                    <option value="">-- None --</option>
+                                                                                                    {selectedFiles.map(f => (
+                                                                                                        <option key={f.name} value={f.name}>{f.name}</option>
+                                                                                                    ))}
+                                                                                                </select>
+                                                                                                <input 
+                                                                                                    type="file" 
+                                                                                                    accept=".pdf" 
+                                                                                                    id={`sch-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
+                                                                                                    style={{ display: 'none' }}
+                                                                                                    onChange={e => {
+                                                                                                        if (e.target.files && e.target.files[0]) {
+                                                                                                            handleFileUpload(e.target.files[0], (fn) => {
+                                                                                                                const updated = [...packages];
+                                                                                                                updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].schematic = fn;
+                                                                                                                setPackages(updated);
+                                                                                                            });
+                                                                                                        }
+                                                                                                    }}
+                                                                                                />
+                                                                                                <label 
+                                                                                                    htmlFor={`sch-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
+                                                                                                    style={{ cursor: 'pointer', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.7rem' }}
+                                                                                                >
+                                                                                                    <Upload size={12} />
+                                                                                                </label>
+                                                                                            </div>
+                                                                                        </div>
+
+                                                                                        {/* 2. Board File (.brd) */}
+                                                                                        <div style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: '4px', background: 'rgba(0,0,0,0.1)' }}>
+                                                                                            <span style={{ fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                                                                                                <FileText size={12} /> Board File (.brd)
+                                                                                            </span>
+                                                                                            <div style={{ display: 'flex', gap: '6px' }}>
+                                                                                                <select
+                                                                                                    value={currentRev.board_file || ''}
+                                                                                                    style={{ flex: 1, padding: '0.35rem', fontSize: '0.75rem', border: '1px solid var(--border)', borderRadius: '4px', background: 'transparent', color: 'var(--text)' }}
+                                                                                                    onChange={e => {
+                                                                                                        const updated = [...packages];
+                                                                                                        updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].board_file = e.target.value || null;
+                                                                                                        setPackages(updated);
+                                                                                                    }}
+                                                                                                >
+                                                                                                    <option value="">-- None --</option>
+                                                                                                    {selectedFiles.map(f => (
+                                                                                                        <option key={f.name} value={f.name}>{f.name}</option>
+                                                                                                    ))}
+                                                                                                </select>
+                                                                                                <input 
+                                                                                                    type="file" 
+                                                                                                    accept=".brd" 
+                                                                                                    id={`brd-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
+                                                                                                    style={{ display: 'none' }}
+                                                                                                    onChange={e => {
+                                                                                                        if (e.target.files && e.target.files[0]) {
+                                                                                                            handleFileUpload(e.target.files[0], (fn) => {
+                                                                                                                const updated = [...packages];
+                                                                                                                updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].board_file = fn;
+                                                                                                                setPackages(updated);
+                                                                                                            });
+                                                                                                        }
+                                                                                                    }}
+                                                                                                />
+                                                                                                <label 
+                                                                                                    htmlFor={`brd-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
+                                                                                                    style={{ cursor: 'pointer', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.7rem' }}
+                                                                                                >
+                                                                                                    <Upload size={12} />
+                                                                                                </label>
+                                                                                            </div>
+                                                                                        </div>
+
+                                                                                        {/* 3. BOM CSV (.csv) */}
+                                                                                        <div style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: '4px', background: 'rgba(0,0,0,0.1)' }}>
+                                                                                            <span style={{ fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                                                                                                <FileText size={12} /> BOM File (.csv)
+                                                                                            </span>
+                                                                                            <div style={{ display: 'flex', gap: '6px' }}>
+                                                                                                <select
+                                                                                                    value={currentRev.bom_csv || ''}
+                                                                                                    style={{ flex: 1, padding: '0.35rem', fontSize: '0.75rem', border: '1px solid var(--border)', borderRadius: '4px', background: 'transparent', color: 'var(--text)' }}
+                                                                                                    onChange={e => {
+                                                                                                        const updated = [...packages];
+                                                                                                        updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].bom_csv = e.target.value || null;
+                                                                                                        setPackages(updated);
+                                                                                                    }}
+                                                                                                >
+                                                                                                    <option value="">-- None --</option>
+                                                                                                    {selectedFiles.map(f => (
+                                                                                                        <option key={f.name} value={f.name}>{f.name}</option>
+                                                                                                    ))}
+                                                                                                </select>
+                                                                                                <input 
+                                                                                                    type="file" 
+                                                                                                    accept=".csv" 
+                                                                                                    id={`bom-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
+                                                                                                    style={{ display: 'none' }}
+                                                                                                    onChange={e => {
+                                                                                                        if (e.target.files && e.target.files[0]) {
+                                                                                                            handleFileUpload(e.target.files[0], (fn) => {
+                                                                                                                const updated = [...packages];
+                                                                                                                updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].bom_csv = fn;
+                                                                                                                setPackages(updated);
+                                                                                                            });
+                                                                                                        }
+                                                                                                    }}
+                                                                                                />
+                                                                                                <label 
+                                                                                                    htmlFor={`bom-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
+                                                                                                    style={{ cursor: 'pointer', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.7rem' }}
+                                                                                                >
+                                                                                                    <Upload size={12} />
+                                                                                                </label>
+                                                                                            </div>
+                                                                                        </div>
+
+                                                                                        {/* 4. Datasheet (.pdf) */}
+                                                                                        <div style={{ padding: '8px', border: '1px solid var(--border)', borderRadius: '4px', background: 'rgba(0,0,0,0.1)' }}>
+                                                                                            <span style={{ fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                                                                                                <FileText size={12} /> Datasheet (.pdf)
+                                                                                            </span>
+                                                                                            <div style={{ display: 'flex', gap: '6px' }}>
+                                                                                                <select
+                                                                                                    value={currentRev.datasheet || ''}
+                                                                                                    style={{ flex: 1, padding: '0.35rem', fontSize: '0.75rem', border: '1px solid var(--border)', borderRadius: '4px', background: 'transparent', color: 'var(--text)' }}
+                                                                                                    onChange={e => {
+                                                                                                        const updated = [...packages];
+                                                                                                        updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].datasheet = e.target.value || null;
+                                                                                                        setPackages(updated);
+                                                                                                    }}
+                                                                                                >
+                                                                                                    <option value="">-- None --</option>
+                                                                                                    {selectedFiles.map(f => (
+                                                                                                        <option key={f.name} value={f.name}>{f.name}</option>
+                                                                                                    ))}
+                                                                                                </select>
+                                                                                                <input 
+                                                                                                    type="file" 
+                                                                                                    accept=".pdf" 
+                                                                                                    id={`ds-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
+                                                                                                    style={{ display: 'none' }}
+                                                                                                    onChange={e => {
+                                                                                                        if (e.target.files && e.target.files[0]) {
+                                                                                                            handleFileUpload(e.target.files[0], (fn) => {
+                                                                                                                const updated = [...packages];
+                                                                                                                updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].datasheet = fn;
+                                                                                                                setPackages(updated);
+                                                                                                            });
+                                                                                                        }
+                                                                                                    }}
+                                                                                                />
+                                                                                                <label 
+                                                                                                    htmlFor={`ds-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
+                                                                                                    style={{ cursor: 'pointer', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.7rem' }}
+                                                                                                >
+                                                                                                    <Upload size={12} />
+                                                                                                </label>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                    </FormTabs>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </FormTabs>
                                                 </div>
                                             </div>
                                         )}

@@ -12,12 +12,12 @@ interface PcbCardHeaderProps {
 }
 
 export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions, maxCrcLength }: PcbCardHeaderProps) {
-
     const flavor = (pcb.board_flavor || '').replace('No part yet', 'No part');
     const revText = pcb.board_rev || '';
     const pcbPillText = [flavor, revText].filter(Boolean).join(' ') || 'No PCB Info';
 
     const siInfo = [pcb.silicon_rev, pcb.silicon_corner].filter(Boolean).join(' ');
+    const pkgInfo = pcb.package_name || '';
 
     return (
         <div 
@@ -26,9 +26,16 @@ export function PcbCardHeader({ pcb, isExpanded, onToggle, hideActions, maxCrcLe
             style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', padding: '12px 16px', gap: '12px' }}
         >
             <div style={{ display: 'flex', flex: 1, flexWrap: 'wrap', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-                <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap' }}><BoardName name={pcb.board_number} isHex={pcb.number_format === 'hex'} maxCrcLength={maxCrcLength} /></span>
+                <span className="board-num" style={{ margin: 0, whiteSpace: 'nowrap' }}>
+                    <BoardName name={pcb.board_number} isHex={pcb.number_format === 'hex'} maxCrcLength={maxCrcLength} />
+                </span>
 
-                {/* Silicon Info Pill (Si Rev + Corner) - directly inline with board number */}
+                {/* Package Pill */}
+                {pkgInfo && (
+                    <InfoPill text={pkgInfo} color="var(--accent)" />
+                )}
+
+                {/* Silicon Info Pill (Si Rev + Corner) */}
                 {siInfo && (
                     <InfoPill text={siInfo} color={COLORS.purple} />
                 )}

@@ -3,12 +3,71 @@ import { API_BASE } from '../serverDataBase/apiBridge';
 import { apiFetch } from '../serverDataBase/apiBridge';
 import { useAppState } from '../useAppState';
 
+export interface RevisionDocument {
+    id?: number;
+    formfactor_revision_id?: number;
+    doc_type: 'schematic' | 'board_file' | 'bom_csv' | 'datasheet' | string;
+    filename: string;
+    path: string;
+    uploaded_at?: string;
+}
+
+export interface BomFlavor {
+    id?: number;
+    formfactor_revision_id?: number;
+    name: string;
+    description?: string;
+}
+
+export interface BoardFormFactorRevision {
+    id?: number;
+    board_formfactor_id?: number;
+    name: string;
+    description?: string;
+    boms: string[];
+    bom_flavors?: BomFlavor[];
+    documents?: RevisionDocument[];
+    schematic?: string | null;
+    board_file?: string | null;
+    bom_csv?: string | null;
+    datasheet?: string | null;
+    doc?: string | null;
+}
+
+export interface BoardFormFactor {
+    id?: number;
+    silicon_version_id?: number;
+    name: string;
+    description?: string;
+    revisions: BoardFormFactorRevision[];
+    revisionDetails?: BoardFormFactorRevision[];
+}
+
+export interface SiliconVersion {
+    id?: number;
+    package_id?: number;
+    name: string;
+    silicon_corners: string[];
+    formfactors: BoardFormFactor[];
+}
+
+export interface Package {
+    id?: number;
+    project_id?: number;
+    name: string;
+    description?: string;
+    silicon_versions: SiliconVersion[];
+}
+
+// Backward compatibility helper interfaces
 export interface PcbRevisionDetail {
     name: string;
     boms: string[];
     doc?: string | null;
     schematic?: string | null;
     board_file?: string | null;
+    bom_csv?: string | null;
+    datasheet?: string | null;
 }
 
 export interface PcbFlavor {
@@ -23,14 +82,18 @@ export interface Project {
     id: number;
     name: string;
     description: string;
+    project_key: string;
+    number_format?: 'hex' | 'decimal' | string;
+    packages: Package[];
     pcb_count: number;
     doc_count?: number;
     pcbs: string[];
     revisions: string[];
-    project_key: string;
     flavors: PcbFlavor[];
     silicon_corners?: string;
-    number_format?: string;
+    created_at?: string;
+    created_by?: string;
+    updated_by?: string;
 }
 
 interface ProjectState {
@@ -42,8 +105,8 @@ interface ProjectState {
     fetchDocs: (projectId: number | string) => Promise<void>;
     uploadDocs: (projectId: number | string, files: File[]) => Promise<boolean>;
     deleteDoc: (projectId: number | string, docId: number | string) => Promise<boolean>;
-    addProject: (data: { name: string; description: string; revisions: string; project_key: string; flavors?: any[]; silicon_corners?: string; number_format?: string }, files?: File[]) => Promise<boolean>;
-    updateProject: (id: number | string, data: { name: string; description: string; revisions: string; project_key: string; flavors?: any[]; silicon_corners?: string; number_format?: string }, files?: File[]) => Promise<boolean>;
+    addProject: (data: { name: string; description?: string; project_key: string; number_format?: string; packages?: Package[]; revisions?: string; flavors?: any[]; silicon_corners?: string }, files?: File[]) => Promise<boolean>;
+    updateProject: (id: number | string, data: { name: string; description?: string; project_key: string; number_format?: string; packages?: Package[]; revisions?: string; flavors?: any[]; silicon_corners?: string }, files?: File[]) => Promise<boolean>;
     deleteProject: (id: number | string) => Promise<boolean>;
 }
 
@@ -61,7 +124,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             const data = await res.json();
             const normalizedData = data.map((p: any) => ({
                 ...p,
-                flavors: p.flavors?.map((f: any) => {
+                packages: p.packages || [],
+                flavors: (p.flavors || []).map((f: any) => {
                     let rawRevs = f.revisions || [];
                     if (!Array.isArray(rawRevs)) {
                         rawRevs = typeof rawRevs === 'string' ? (rawRevs as string).split(',').map((s: string) => s.trim()) : [rawRevs];
@@ -71,20 +135,24 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                         ? rawRevs.map((r: any) => ({ 
                             name: r.name, 
                             boms: Array.isArray(r.boms) ? r.boms : (r.boms ? String(r.boms).split(',').map((b: string) => b.trim()) : []), 
-                            doc: r.doc || r.schematic || "BBB-SCH.pdf",
-                            schematic: r.schematic || r.doc || "BBB-SCH.pdf",
-                            board_file: r.board_file || "BBB.brd"
+                            doc: r.doc || r.schematic || null,
+                            schematic: r.schematic || r.doc || null,
+                            board_file: r.board_file || null,
+                            bom_csv: r.bom_csv || null,
+                            datasheet: r.datasheet || null
                           })) 
-                        : rawRevs.map((r: string) => ({ 
+                        : (f.revisionDetails || rawRevs.map((r: string) => ({ 
                             name: r, 
                             boms: Array.isArray(f.boms) ? f.boms : (f.boms ? String(f.boms).split(',').map((b: string) => b.trim()) : []), 
-                            doc: "BBB-SCH.pdf",
-                            schematic: "BBB-SCH.pdf",
-                            board_file: "BBB.brd"
-                          }));
+                            doc: null,
+                            schematic: null,
+                            board_file: null,
+                            bom_csv: null,
+                            datasheet: null
+                          })));
                     const revisionNames = isDetailed 
                         ? rawRevs.map((r: any) => r.name) 
-                        : rawRevs;
+                        : (Array.isArray(rawRevs) ? rawRevs.map((r: any) => typeof r === 'string' ? r : r.name) : []);
                     return {
                         ...f,
                         revisions: revisionNames,

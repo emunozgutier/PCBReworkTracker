@@ -9,16 +9,22 @@ export interface Pcb {
     status: string;
     project: string;
     project_id?: number;
+    package_id?: number | null;
+    package_name?: string;
+    silicon_version_id?: number | null;
+    silicon_rev?: string;
+    silicon_corner?: string;
+    board_formfactor_id?: number | null;
+    board_flavor?: string;
+    board_flavor_id?: number | null;
+    formfactor_revision_id?: number | null;
+    board_rev?: string;
+    bom_flavor_id?: number | null;
+    bom?: string;
     number_format?: 'hex' | 'decimal';
     owner: string;
     owner_username?: string;
     product: string;
-    board_flavor?: string;
-    board_flavor_id?: number | null;
-    board_rev?: string;
-    silicon_rev?: string;
-    silicon_corner?: string;
-    bom?: string;
     manufacturer_id?: string;
     tag_ids?: number[];
     short_code?: string;
@@ -31,10 +37,11 @@ interface PcbState {
     hasFetched: boolean;
     error: string | null;
     fetchPcbs: () => Promise<void>;
-    addPcb: (data: { board_number: string; status: string; board_flavor: string; board_rev: string; silicon_rev: string; silicon_corner: string; bom?: string; manufacturer_id?: string; project_id: number | null; owner_id: number | null }) => Promise<boolean>;
-    updatePcb: (id: number | string, data: { board_number: string; status: string; board_flavor: string; board_rev: string; silicon_rev: string; silicon_corner: string; bom?: string; manufacturer_id?: string; project_id: number | null; owner_id: number | null }) => Promise<boolean>;
+    addPcb: (data: { board_number: string; status: string; board_flavor: string; board_rev: string; silicon_rev: string; silicon_corner: string; bom?: string; package_name?: string; package_id?: number | null; silicon_version_id?: number | null; board_formfactor_id?: number | null; formfactor_revision_id?: number | null; bom_flavor_id?: number | null; manufacturer_id?: string; project_id: number | null; owner_id: number | null }) => Promise<boolean>;
+    updatePcb: (id: number | string, data: { board_number: string; status: string; board_flavor: string; board_rev: string; silicon_rev: string; silicon_corner: string; bom?: string; package_name?: string; package_id?: number | null; silicon_version_id?: number | null; board_formfactor_id?: number | null; formfactor_revision_id?: number | null; bom_flavor_id?: number | null; manufacturer_id?: string; project_id: number | null; owner_id: number | null }) => Promise<boolean>;
     deletePcb: (id: number | string) => Promise<boolean>;
     selectedProjects: string[];
+    selectedPackages: string[];
     selectedRevisions: string[];
     selectedFlavors: string[];
     selectedPcbRevs: string[];
@@ -46,6 +53,7 @@ interface PcbState {
     selectedBoms: string[];
     selectedMfrs: string[];
     setSelectedProjects: (projects: string[]) => void;
+    setSelectedPackages: (packages: string[]) => void;
     setSelectedRevisions: (revisions: string[]) => void;
     setSelectedFlavors: (flavors: string[]) => void;
     setSelectedPcbRevs: (revs: string[]) => void;
@@ -65,6 +73,7 @@ export const usePcbStore = create<PcbState>((set, get) => ({
     hasFetched: false,
     error: null,
     selectedProjects: [],
+    selectedPackages: [],
     selectedRevisions: [],
     selectedFlavors: [],
     selectedPcbRevs: [],
@@ -77,6 +86,7 @@ export const usePcbStore = create<PcbState>((set, get) => ({
     selectedMfrs: [],
 
     setSelectedProjects: (projects) => set({ selectedProjects: projects }),
+    setSelectedPackages: (packages) => set({ selectedPackages: packages }),
     setSelectedRevisions: (revisions) => set({ selectedRevisions: revisions }),
     setSelectedFlavors: (flavors) => set({ selectedFlavors: flavors }),
     setSelectedPcbRevs: (revs) => set({ selectedPcbRevs: revs }),
@@ -89,6 +99,7 @@ export const usePcbStore = create<PcbState>((set, get) => ({
     setSelectedMfrs: (mfrs) => set({ selectedMfrs: mfrs }),
     resetFilters: () => set({
         selectedProjects: [],
+        selectedPackages: [],
         selectedRevisions: [],
         selectedFlavors: [],
         selectedPcbRevs: [],

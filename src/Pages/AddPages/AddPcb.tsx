@@ -5,14 +5,8 @@ import { API_BASE, apiFetch } from '../../store/serverDataBase/apiBridge';
 import { usePcbStore } from '../../store/clientDataBase/usePcbStore';
 import { FormGroup } from '../../components/forms/FormGroup';
 import { generateCRC } from '../../components/UrlManager/crc';
-
 import { useAppState } from '../../store/useAppState';
-
-const isNA = (str: string) => {
-    if (!str) return false;
-    const s = str.trim().toLowerCase();
-    return s === 'n/a' || s === 'na' || s === 'not applicable';
-};
+import type { Package, SiliconVersion, BoardFormFactor, BoardFormFactorRevision } from '../../store/clientDataBase/useProjectStore';
 
 export const getBiggestRevision = (revisions: string[]): string => {
     if (!revisions || revisions.length === 0) return '';
@@ -26,12 +20,12 @@ export const getBiggestRevision = (revisions: string[]): string => {
         const letterA = matchA[1].toUpperCase();
         const letterB = matchB[1].toUpperCase();
         if (letterA !== letterB) {
-            return letterB.localeCompare(letterA); // Descending
+            return letterB.localeCompare(letterA);
         }
         
         const numA = parseInt(matchA[2], 10);
         const numB = parseInt(matchB[2], 10);
-        return numB - numA; // Descending
+        return numB - numA;
     });
     return sorted[0];
 };
@@ -62,24 +56,26 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
 
     const [boardNumber, setBoardNumber] = useState('');
     const [manufacturerId, setManufacturerId] = useState('');
-
     const [lastAutoAssignedProject, setLastAutoAssignedProject] = useState('');
     const [status] = useState('In Progress');
+
+    // Hierarchy selection states
+    const [selectedProject, setSelectedProject] = useState('');
+    const [selectedPackage, setSelectedPackage] = useState('');
+    const [selectedSiliconRev, setSelectedSiliconRev] = useState('');
+    const [siliconCorner, setSiliconCorner] = useState('');
+    const [noPartYet, setNoPartYet] = useState(false);
+
+    const [selectedFormfactor, setSelectedFormfactor] = useState('');
     const [pcbRev, setPcbRev] = useState('');
     const [bom, setBom] = useState('');
-    const [noPartYet, setNoPartYet] = useState(false);
-    const [selectedRevision, setSelectedRevision] = useState('');
-    const [selectedPcbFlavor, setSelectedPcbFlavor] = useState('');
-    const [selectedProject, setSelectedProject] = useState('');
     const [selectedOwner, setSelectedOwner] = useState('');
-    const [siliconVersion, setSiliconVersion] = useState('');
     
     const [projects, setProjects] = useState<any[]>([]);
     const [owners, setOwners] = useState<any[]>([]);
     const { addPcb, pcbs, fetchPcbs, loading } = usePcbStore();
 
     useEffect(() => {
-        // Always fetch fresh so the duplicate check is up-to-date
         fetchPcbs();
     }, [fetchPcbs]);
 
@@ -90,17 +86,26 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
     }, [currentUser, currentUserRole]);
 
     const selectedProjData = projects.find(p => p.id.toString() === selectedProject);
-    const availablePcbFlavors = selectedProjData?.flavors || [];
-    const availableSiliconVersions = selectedProjData?.silicon_corners ? selectedProjData.silicon_corners.split(',').map((s: string) => s.trim()).filter((s: string) => Boolean(s) && !isNA(s)) : [];
-    
-    const availableSiliconRevisions = (selectedProjData?.revisions || []).filter((s: string) => !isNA(s));
-    let availablePcbRevisions: string[] = [];
-    let availableBoms: string[] = [];
-    if (selectedProject && selectedPcbFlavor) {
-        const ff = availablePcbFlavors.find((f: any) => f.name === selectedPcbFlavor);
-        availablePcbRevisions = ff ? ff.revisions : [];
-        availableBoms = ff && ff.boms ? ff.boms : [];
-    }
+    const availablePackages: Package[] = selectedProjData?.packages || [];
+
+    const selectedPkgData = availablePackages.find(pkg => pkg.name === selectedPackage) || availablePackages[0];
+    const availableSiliconVersions: SiliconVersion[] = selectedPkgData?.silicon_versions || [];
+
+    const selectedSiData = availableSiliconVersions.find(sv => sv.name === selectedSiliconRev) || availableSiliconVersions[0];
+    const availableCorners: string[] = selectedSiData?.silicon_corners 
+        ? (Array.isArray(selectedSiData.silicon_corners) ? selectedSiData.silicon_corners : String(selectedSiData.silicon_corners).split(',').map(s => s.trim()))
+        : [];
+    const availableFormFactors: BoardFormFactor[] = selectedSiData?.formfactors || [];
+
+    const selectedFfData = availableFormFactors.find(ff => ff.name === selectedFormfactor) || availableFormFactors[0];
+    const availableRevisions: (string | BoardFormFactorRevision)[] = selectedFfData?.revisionDetails || selectedFfData?.revisions || [];
+
+    const selectedRevData = (typeof availableRevisions[0] === 'object' 
+        ? (availableRevisions as BoardFormFactorRevision[]).find(r => r.name === pcbRev)
+        : null) || (availableRevisions[0] as BoardFormFactorRevision | undefined);
+        
+    const availableBoms: string[] = selectedRevData?.boms || [];
+
     const selectedProjectKey = selectedProjData?.project_key || 'XXX';
 
     const handleAutoAssign = () => {
@@ -141,7 +146,6 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         } else {
             setBoardNumber(nextVal.toString(10).padStart(4, '0'));
         }
-
     };
 
     useEffect(() => {
@@ -151,99 +155,134 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         }
     }, [selectedProject, selectedProjData, loading, lastAutoAssignedProject]);
 
+    // Initial load
     useEffect(() => {
-        // Fetch projects and owners for dropdowns
         Promise.all([
             apiFetch(`${API_BASE}/projects`).then(res => res.json()),
             apiFetch(`${API_BASE}/owners`).then(res => res.json())
         ]).then(([projData, ownerData]) => {
-            const normalizedProjects = projData.map((p: any) => ({
-                ...p,
-                flavors: (p.flavors || []).map((f: any) => {
-                    const rawRevs = f.revisions || [];
-                    const normalizedRevs = (Array.isArray(rawRevs) ? rawRevs : [rawRevs]).map((r: any) => {
-                        return typeof r === 'object' && r !== null ? r.name : String(r);
-                    });
-                    return {
-                        ...f,
-                        revisions: normalizedRevs
-                    };
-                })
-            }));
-            setProjects(normalizedProjects);
+            setProjects(projData);
             setOwners(ownerData);
-            if (normalizedProjects.length > 0) {
-                const firstProj = normalizedProjects[0];
+            if (projData.length > 0) {
+                const firstProj = projData[0];
                 setSelectedProject(firstProj.id.toString());
-                if (firstProj.silicon_corners) {
-                    const corners = firstProj.silicon_corners.split(',').map((s: string) => s.trim()).filter((s: string) => Boolean(s) && !isNA(s));
-                    setSiliconVersion(corners.length > 0 ? corners[0] : '');
-                }
-                if (firstProj.flavors && firstProj.flavors.length > 0) {
-                    setSelectedPcbFlavor(firstProj.flavors[0].name);
-                    const revs = (firstProj.revisions || []).filter((s: string) => !isNA(s));
-                    setSelectedRevision(getBiggestRevision(revs));
-                    setPcbRev(firstProj.flavors[0].revisions[0] || '');
-                    setBom(firstProj.flavors[0].boms ? firstProj.flavors[0].boms[0] : '');
-                } else if (firstProj.revisions && firstProj.revisions.length > 0) {
-                    setSelectedPcbFlavor('');
-                    const revs = (firstProj.revisions || []).filter((s: string) => !isNA(s));
-                    setSelectedRevision(getBiggestRevision(revs));
-                    setPcbRev('');
-                    setBom('');
-                }
+                initializeCascading(firstProj);
             }
             if (ownerData.length > 0) {
                 const userMatch = currentUser ? ownerData.find((o: any) => o.id === currentUser.id) : null;
-                if (userMatch) {
-                    setSelectedOwner(userMatch.id.toString());
-                } else {
-                    setSelectedOwner(ownerData[0].id.toString());
-                }
+                setSelectedOwner(userMatch ? userMatch.id.toString() : ownerData[0].id.toString());
             }
         }).catch(err => console.error('Failed to pre-fetch data:', err));
     }, [currentUser]);
 
+    const initializeCascading = (proj: any) => {
+        const pkgs = proj.packages || [];
+        if (pkgs.length > 0) {
+            const firstPkg = pkgs[0];
+            setSelectedPackage(firstPkg.name);
+            const siVers = firstPkg.silicon_versions || [];
+            if (siVers.length > 0) {
+                const firstSi = siVers[0];
+                setSelectedSiliconRev(firstSi.name);
+                const corners = Array.isArray(firstSi.silicon_corners) ? firstSi.silicon_corners : String(firstSi.silicon_corners || '').split(',').map((s: string) => s.trim()).filter(Boolean);
+                setSiliconCorner(corners.length > 0 ? corners[0] : '');
+                
+                const ffs = firstSi.formfactors || [];
+                if (ffs.length > 0) {
+                    const firstFf = ffs[0];
+                    setSelectedFormfactor(firstFf.name);
+                    const revs = firstFf.revisionDetails || firstFf.revisions || [];
+                    if (revs.length > 0) {
+                        const firstRev = typeof revs[0] === 'object' ? revs[0].name : revs[0];
+                        setPcbRev(firstRev);
+                        const boms = typeof revs[0] === 'object' ? revs[0].boms : [];
+                        setBom(boms && boms.length > 0 ? boms[0] : '');
+                    }
+                }
+            }
+        }
+    };
+
     const handleProjectChange = (id: string) => {
         setSelectedProject(id);
-        const project = projects.find(p => p.id.toString() === id);
-        
-        if (project && project.silicon_corners) {
-            const corners = project.silicon_corners.split(',').map((s: string) => s.trim()).filter((s: string) => Boolean(s) && !isNA(s));
-            setSiliconVersion(corners.length > 0 ? corners[0] : '');
-        } else {
-            setSiliconVersion('');
+        const proj = projects.find(p => p.id.toString() === id);
+        if (proj) {
+            initializeCascading(proj);
         }
+    };
 
-        if (project && project.flavors && project.flavors.length > 0) {
-            setSelectedPcbFlavor(project.flavors[0].name);
-            const revs = (project.revisions || []).filter((s: string) => !isNA(s));
-            setSelectedRevision(getBiggestRevision(revs));
-            setPcbRev(project.flavors[0].revisions[0] || '');
-            setBom(project.flavors[0].boms ? project.flavors[0].boms[0] : '');
-        } else if (project && project.revisions && project.revisions.length > 0) {
-            setSelectedPcbFlavor('');
-            const revs = (project.revisions || []).filter((s: string) => !isNA(s));
-            setSelectedRevision(getBiggestRevision(revs));
-            setPcbRev('');
-            setBom('');
-        } else {
-            setSelectedPcbFlavor('');
-            setSelectedRevision('');
-            setPcbRev('');
-            setBom('');
+    const handlePackageChange = (pkgName: string) => {
+        setSelectedPackage(pkgName);
+        const pkg = availablePackages.find(p => p.name === pkgName);
+        if (pkg && pkg.silicon_versions && pkg.silicon_versions.length > 0) {
+            const firstSi = pkg.silicon_versions[0];
+            setSelectedSiliconRev(firstSi.name);
+            const corners = Array.isArray(firstSi.silicon_corners) ? firstSi.silicon_corners : String(firstSi.silicon_corners || '').split(',').map((s: string) => s.trim()).filter(Boolean);
+            setSiliconCorner(corners.length > 0 ? corners[0] : '');
+            
+            const ffs = firstSi.formfactors || [];
+            if (ffs.length > 0) {
+                const firstFf = ffs[0];
+                setSelectedFormfactor(firstFf.name);
+                const revs = firstFf.revisionDetails || firstFf.revisions || [];
+                if (revs.length > 0) {
+                    const firstRev = typeof revs[0] === 'object' ? revs[0].name : revs[0];
+                    setPcbRev(firstRev);
+                    const boms = typeof revs[0] === 'object' ? revs[0].boms : [];
+                    setBom(boms && boms.length > 0 ? boms[0] : '');
+                }
+            }
+        }
+    };
+
+    const handleSiliconRevChange = (siName: string) => {
+        setSelectedSiliconRev(siName);
+        const si = availableSiliconVersions.find(s => s.name === siName);
+        if (si) {
+            const corners = Array.isArray(si.silicon_corners) ? si.silicon_corners : String(si.silicon_corners || '').split(',').map((s: string) => s.trim()).filter(Boolean);
+            setSiliconCorner(corners.length > 0 ? corners[0] : '');
+            
+            const ffs = si.formfactors || [];
+            if (ffs.length > 0) {
+                const firstFf = ffs[0];
+                setSelectedFormfactor(firstFf.name);
+                const revs = firstFf.revisionDetails || firstFf.revisions || [];
+                if (revs.length > 0) {
+                    const firstRev = typeof revs[0] === 'object' ? revs[0].name : revs[0];
+                    setPcbRev(firstRev);
+                    const boms = typeof revs[0] === 'object' ? revs[0].boms : [];
+                    setBom(boms && boms.length > 0 ? boms[0] : '');
+                }
+            }
+        }
+    };
+
+    const handleFormFactorChange = (ffName: string) => {
+        setSelectedFormfactor(ffName);
+        const ff = availableFormFactors.find(f => f.name === ffName);
+        if (ff) {
+            const revs = ff.revisionDetails || ff.revisions || [];
+            if (revs.length > 0) {
+                const firstRev = typeof revs[0] === 'object' ? revs[0].name : revs[0];
+                setPcbRev(firstRev);
+                const boms = typeof revs[0] === 'object' ? revs[0].boms : [];
+                setBom(boms && boms.length > 0 ? boms[0] : '');
+            }
+        }
+    };
+
+    const handleRevChange = (rName: string) => {
+        setPcbRev(rName);
+        const rObj = (availableRevisions as any[]).find(r => (typeof r === 'object' ? r.name : r) === rName);
+        if (rObj && typeof rObj === 'object' && rObj.boms && rObj.boms.length > 0) {
+            setBom(rObj.boms[0]);
         }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        const finalPcbRev = pcbRev;
-        const revPart = noPartYet ? "No part" : (selectedRevision ? selectedRevision : '');
-        const cornerPart = noPartYet ? "" : siliconVersion;
-        const ffPart = selectedPcbFlavor ? selectedPcbFlavor : '';
         const finalBoardName = `${selectedProjectKey}-${boardNumber.trim()}`;
-        
         const numberFormat = selectedProjData?.number_format || 'decimal';
         let finalBoardWithCrc = finalBoardName;
         if (numberFormat !== 'hex') {
@@ -251,7 +290,6 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
             finalBoardWithCrc = `${finalBoardName}${crc}`;
         }
         
-        // Client-side duplicate check (guard against stale pcbs list)
         const clientDuplicate = pcbs.some(
             p => p.board_number.trim().toUpperCase() === finalBoardWithCrc.trim().toUpperCase()
         );
@@ -263,33 +301,28 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
         const success = await addPcb({
             board_number: finalBoardWithCrc,
             status,
-            board_flavor: ffPart,
-            board_rev: finalPcbRev,
-            silicon_rev: revPart,
-            silicon_corner: cornerPart,
+            package_name: selectedPackage,
+            package_id: selectedPkgData?.id || null,
+            silicon_version_id: selectedSiData?.id || null,
+            board_formfactor_id: selectedFfData?.id || null,
+            formfactor_revision_id: selectedRevData?.id || null,
+            board_flavor: selectedFormfactor,
+            board_rev: pcbRev,
+            silicon_rev: noPartYet ? "No part" : selectedSiliconRev,
+            silicon_corner: noPartYet ? "" : siliconCorner,
             bom: bom.trim(),
             manufacturer_id: manufacturerId.trim() || undefined,
             project_id: selectedProject ? parseInt(selectedProject) : null,
             owner_id: selectedOwner ? parseInt(selectedOwner) : null
         });
+
         if (success) {
             onSuccess();
         } else {
-            // Server rejected the request (e.g. duplicate detected server-side)
             const storeError = usePcbStore.getState().error;
             alert(storeError || `Board "${finalBoardWithCrc}" could not be saved. It may already exist.`);
         }
     };
-
-    const numberFormatUI = selectedProjData?.number_format || 'decimal';
-    const finalBoardNameForUI = `${selectedProjectKey}-${boardNumber.trim()}`;
-    let crcForUI = '';
-    let finalBoardWithCrcForUI = finalBoardNameForUI;
-    if (numberFormatUI !== 'hex') {
-        crcForUI = generateCRC(finalBoardNameForUI);
-        finalBoardWithCrcForUI = `${finalBoardNameForUI}${crcForUI}`;
-    }
-    const isDuplicate = pcbs.some(p => p.board_number && p.board_number.toUpperCase() === finalBoardWithCrcForUI.toUpperCase());
 
     return (
         <div className="add-page-container">
@@ -309,185 +342,162 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                                 id="project" 
                                 value={selectedProject} 
                                 onChange={(e) => {
-                                    setLastAutoAssignedProject(''); // Reset to allow auto-assign for new project
+                                    setLastAutoAssignedProject('');
                                     handleProjectChange(e.target.value);
                                 }}
                             >
                                 {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                             </select>
                         </div>
+
                         <div className="form-group flex-1">
-                            <label htmlFor="revision">Rev</label>
+                            <label htmlFor="package">Package</label>
                             <select 
-                                id="revision"
-                                value={selectedRevision}
-                                onChange={(e) => setSelectedRevision(e.target.value)} disabled={noPartYet}
+                                id="package"
+                                value={selectedPackage}
+                                onChange={(e) => handlePackageChange(e.target.value)}
                             >
-                                <option value="">N/A</option>
-                                {availableSiliconRevisions.map((rev: string) => (
-                                    <option key={rev} value={rev}>{rev}</option>
+                                {availablePackages.map((pkg) => (
+                                    <option key={pkg.name} value={pkg.name}>{pkg.name}</option>
                                 ))}
                             </select>
                         </div>
+
                         <div className="form-group flex-1">
-                            <label htmlFor="silicon_version">Corner</label>
+                            <label htmlFor="revision">Silicon Version</label>
                             <select 
-                                id="silicon_version"
-                                value={siliconVersion}
-                                onChange={(e) => setSiliconVersion(e.target.value)} disabled={noPartYet}
+                                id="revision"
+                                value={selectedSiliconRev}
+                                onChange={(e) => handleSiliconRevChange(e.target.value)} 
+                                disabled={noPartYet}
                             >
                                 <option value="">N/A</option>
-                                {availableSiliconVersions.map((v: string) => (
-                                    <option key={v} value={v}>{v}</option>
+                                {availableSiliconVersions.map((sv) => (
+                                    <option key={sv.name} value={sv.name}>{sv.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-group flex-1">
+                            <label htmlFor="silicon_corner">Silicon Corner</label>
+                            <select 
+                                id="silicon_corner"
+                                value={siliconCorner}
+                                onChange={(e) => setSiliconCorner(e.target.value)} 
+                                disabled={noPartYet}
+                            >
+                                <option value="">N/A</option>
+                                {availableCorners.map((c: string) => (
+                                    <option key={c} value={c}>{c}</option>
                                 ))}
                             </select>
                         </div>
                     </div>
+
                     <div className="form-row">
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'normal', fontSize: '1rem', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'normal', fontSize: '0.9rem', cursor: 'pointer', color: 'var(--text-muted)' }}>
                             <input 
                                 type="checkbox" 
                                 checked={noPartYet} 
-                                onChange={(e) => {
-                                    setNoPartYet(e.target.checked);
-                                    if (e.target.checked) {
-                                        setSelectedRevision('');
-                                        setSiliconVersion('');
-                                    } else {
-                                        setSelectedRevision(availableSiliconRevisions.length > 0 ? availableSiliconRevisions[0] : '');
-                                        setSiliconVersion(availableSiliconVersions.length > 0 ? availableSiliconVersions[0] : '');
-                                    }
-                                }} 
+                                onChange={(e) => setNoPartYet(e.target.checked)} 
                             />
-                            No part
+                            No Part Yet (Unmounted IC)
                         </label>
                     </div>
                 </FormGroup>
 
-                <FormGroup title="Instance">
+                <FormGroup title="Board FormFactor & Revision">
                     <div className="form-row">
                         <div className="form-group flex-1">
-                            <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span>Assigned Name</span>
-                                <button type="button" onClick={handleAutoAssign} style={{ fontSize: '0.8rem', padding: '4px 12px', borderRadius: '4px', backgroundColor: 'var(--bg-element)', color: 'var(--text)', border: '1px solid var(--border)', cursor: 'pointer' }}>
-                                    Auto Assign
-                                </button>
-                            </label>
-                            <div style={{ padding: '0.75rem', backgroundColor: 'rgba(0, 0, 0, 0.2)', borderRadius: '12px', color: 'var(--text)', fontSize: '1rem', fontWeight: 500, border: `1px solid ${isDuplicate ? '#ef4444' : 'var(--border)'}`, display: 'flex', alignItems: 'center' }}>
-                                <span>{selectedProjectKey}-</span>
-                                <input 
-                                    type="text"
-                                    value={boardNumber}
-                                    onChange={(e) => {
-                                        setBoardNumber(e.target.value);
-
-                                    }}
-                                    style={{ background: 'transparent', border: 'none', color: isDuplicate ? '#ef4444' : 'inherit', fontSize: 'inherit', fontWeight: 'inherit', outline: 'none', width: '100px', padding: 0 }}
-                                />
-                                <span style={{ color: '#a855f7', fontWeight: 800, marginLeft: '4px' }} title="Mathematical Checksum">
-                                    {crcForUI}
-                                </span>
-                            </div>
-                            {isDuplicate && <span style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '6px', display: 'block' }}>This board number is already assigned.</span>}
+                            <label htmlFor="formfactor">FormFactor</label>
+                            <select 
+                                id="formfactor"
+                                value={selectedFormfactor}
+                                onChange={(e) => handleFormFactorChange(e.target.value)}
+                            >
+                                {availableFormFactors.map((ff) => (
+                                    <option key={ff.name} value={ff.name}>{ff.name}</option>
+                                ))}
+                            </select>
                         </div>
+
+                        <div className="form-group flex-1">
+                            <label htmlFor="pcbRev">Board Revision</label>
+                            <select 
+                                id="pcbRev"
+                                value={pcbRev}
+                                onChange={(e) => handleRevChange(e.target.value)}
+                            >
+                                {availableRevisions.map((r) => {
+                                    const rName = typeof r === 'object' ? r.name : r;
+                                    return <option key={rName} value={rName}>{rName}</option>;
+                                })}
+                            </select>
+                        </div>
+
+                        <div className="form-group flex-1">
+                            <label htmlFor="bom">BOM Flavor</label>
+                            <select 
+                                id="bom"
+                                value={bom}
+                                onChange={(e) => setBom(e.target.value)}
+                            >
+                                {availableBoms.map((b) => (
+                                    <option key={b} value={b}>{b}</option>
+                                ))}
+                                {availableBoms.length === 0 && <option value="">Default</option>}
+                            </select>
+                        </div>
+                    </div>
+                </FormGroup>
+
+                <FormGroup title="Instance Information">
+                    <div className="form-row">
+                        <div className="form-group flex-1">
+                            <label htmlFor="boardNumber">Assigned Board Number *</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>{selectedProjectKey}-</span>
+                                <input 
+                                    id="boardNumber"
+                                    type="text" 
+                                    value={boardNumber} 
+                                    onChange={(e) => setBoardNumber(e.target.value)} 
+                                    placeholder="0001"
+                                    required 
+                                    style={{ flex: 1 }}
+                                />
+                            </div>
+                        </div>
+
                         <div className="form-group flex-1">
                             <label htmlFor="owner">Owner</label>
                             <select 
                                 id="owner" 
                                 value={selectedOwner} 
                                 onChange={(e) => setSelectedOwner(e.target.value)}
+                                disabled={currentUserRole === 'User'}
                             >
                                 <option value="">Unassigned</option>
                                 {owners.map(o => <option key={o.id} value={o.id}>@{o.username}</option>)}
                             </select>
                         </div>
+
                         <div className="form-group flex-1">
                             <label htmlFor="manufacturer_id">Manufacturer ID</label>
                             <input 
                                 id="manufacturer_id"
-                                type="text"
+                                type="text" 
+                                value={manufacturerId} 
+                                onChange={(e) => setManufacturerId(e.target.value)} 
                                 placeholder="e.g. SN12345, MFG-987"
-                                value={manufacturerId}
-                                onChange={(e) => setManufacturerId(e.target.value)}
                             />
                         </div>
                     </div>
                 </FormGroup>
 
-                <FormGroup title="PCB">
-                    <div className="form-row">
-                        <div className="form-group flex-1">
-                            <label htmlFor="formfactor">Flavor *</label>
-                            <select 
-                                id="formfactor"
-                                value={selectedPcbFlavor}
-                                onChange={(e) => {
-                                    setSelectedPcbFlavor(e.target.value);
-                                    const ff = availablePcbFlavors.find((f: any) => f.name === e.target.value);
-                                    setPcbRev(ff && ff.revisions.length > 0 ? ff.revisions[0] : '');
-                                    setBom(ff && ff.boms && ff.boms.length > 0 ? ff.boms[0] : '');
-                                }}
-                                required
-                            >
-                                {availablePcbFlavors
-                                    .filter((ff: any, idx: number, arr: any[]) => arr.findIndex((f: any) => f.name === ff.name) === idx)
-                                    .map((ff: any) => (
-                                        <option key={ff.name} value={ff.name}>{ff.name}</option>
-                                    ))}
-                            </select>
-                        </div>
-                        <div className="form-group flex-1">
-                            <label htmlFor="pcb_rev">Rev Number *</label>
-                            {availablePcbRevisions.length > 0 ? (
-                                <select 
-                                    id="pcb_rev"
-                                    value={pcbRev}
-                                    onChange={(e) => setPcbRev(e.target.value)}
-                                    required
-                                >
-
-                                    {availablePcbRevisions.map((rev) => (
-                                        <option key={rev} value={rev}>{rev}</option>
-                                    ))}
-                                </select>
-                            ) : (
-                                <input 
-                                    id="pcb_rev"
-                                    type="number" 
-                                    step="any"
-                                    value={pcbRev} 
-                                    onChange={(e) => setPcbRev(e.target.value)} 
-                                    required
-                                />
-                            )}
-                        </div>
-                        <div className="form-group flex-1">
-                            <label htmlFor="bom">BOM *</label>
-                            <select 
-                                id="bom"
-                                value={bom}
-                                onChange={(e) => setBom(e.target.value)}
-                                required
-                            >
-
-                                {availableBoms.length > 0 ? (
-                                    availableBoms.map((b) => (
-                                        <option key={b} value={b}>{b}</option>
-                                    ))
-                                ) : (
-                                    <>
-                                        <option value="BOM1">BOM1</option>
-                                        <option value="BOM2">BOM2</option>
-                                    </>
-                                )}
-                            </select>
-                        </div>
-                    </div>
-                </FormGroup>
-
-                <button type="submit" className="submit-button" disabled={loading || isDuplicate}>
+                <button type="submit" className="submit-button" disabled={loading}>
                     <Save size={18} />
-                    <span>{loading ? 'Saving...' : isDuplicate ? 'Duplicate Board Name' : 'Save PCB Board'}</span>
+                    <span>{loading ? 'Saving...' : 'Save PCB Board'}</span>
                 </button>
             </form>
         </div>

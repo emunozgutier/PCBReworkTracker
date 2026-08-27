@@ -1,8 +1,10 @@
 import { COLORS } from '../../../store/useStyles';
+import type { Package } from '../../../store/clientDataBase/useProjectStore';
 
 interface ProjectCardSummaryProps {
     project: {
         pcb_count: number;
+        packages?: Package[];
         revisions: string[];
         flavors?: { name: string; revisions: string[] }[];
         silicon_corners?: string;
@@ -10,8 +12,23 @@ interface ProjectCardSummaryProps {
 }
 
 export function ProjectCardSummary({ project }: ProjectCardSummaryProps) {
+    const pkgList = project.packages && project.packages.length > 0
+        ? project.packages.map(p => p.name)
+        : [];
+
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px', marginBottom: '8px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '10px', marginBottom: '8px', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+            {pkgList.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Packages</span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px' }}>
+                        {pkgList.map((pkgName, i) => (
+                            <span key={i} className="pcb-pill" style={{ borderColor: 'var(--accent)', color: 'var(--accent)', fontWeight: 600 }}>{pkgName}</span>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                 <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Silicon Versions</span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px' }}>
@@ -31,7 +48,7 @@ export function ProjectCardSummary({ project }: ProjectCardSummaryProps) {
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>PCB Flavors</span>
+                <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>FormFactors</span>
                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px' }}>
                     {project.flavors && project.flavors.length > 0 ? project.flavors.map((ff, i) => (
                         <span key={i} className="pcb-pill" style={{ padding: '2px 8px' }}>{ff.name}</span>

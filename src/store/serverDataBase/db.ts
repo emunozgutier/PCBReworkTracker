@@ -100,7 +100,7 @@ const initDb = async (): Promise<void> => {
                 }
             });
 
-            // PCB Flavors Table
+            // PCB Flavors Table (Legacy / compatibility)
             dbInstance.run(`CREATE TABLE IF NOT EXISTS pcb_flavors (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 project_id INTEGER NOT NULL,
@@ -109,6 +109,83 @@ const initDb = async (): Promise<void> => {
                 boms TEXT,
                 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
             )`);
+
+            // Packages Table (e.g. '40 pin', '48 pin IC')
+            dbInstance.run(`CREATE TABLE IF NOT EXISTS packages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                description TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+            )`);
+            dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_packages_project_name ON packages(project_id, name COLLATE NOCASE)`);
+
+            // Silicon Versions Table (e.g. 'A0', 'B0')
+            dbInstance.run(`CREATE TABLE IF NOT EXISTS silicon_versions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                package_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                silicon_corners TEXT,
+                description TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE CASCADE
+            )`);
+            dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_silicon_versions_pkg_name ON silicon_versions(package_id, name COLLATE NOCASE)`);
+
+            // Silicon Corners Table (e.g. 'TT', 'FF', 'SS')
+            dbInstance.run(`CREATE TABLE IF NOT EXISTS silicon_corners (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                silicon_version_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                FOREIGN KEY (silicon_version_id) REFERENCES silicon_versions(id) ON DELETE CASCADE
+            )`);
+            dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_silicon_corners_ver_name ON silicon_corners(silicon_version_id, name COLLATE NOCASE)`);
+
+            // Board FormFactors Table (e.g. 'Demo', 'Validation', 'SVB')
+            dbInstance.run(`CREATE TABLE IF NOT EXISTS board_formfactors (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                silicon_version_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                description TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (silicon_version_id) REFERENCES silicon_versions(id) ON DELETE CASCADE
+            )`);
+            dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_board_formfactors_ver_name ON board_formfactors(silicon_version_id, name COLLATE NOCASE)`);
+
+            // Board FormFactor Revisions Table (e.g. '1.0', '1.1', '2.0')
+            dbInstance.run(`CREATE TABLE IF NOT EXISTS board_formfactor_revisions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                board_formfactor_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                description TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (board_formfactor_id) REFERENCES board_formfactors(id) ON DELETE CASCADE
+            )`);
+            dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_bff_revisions_ff_name ON board_formfactor_revisions(board_formfactor_id, name COLLATE NOCASE)`);
+
+            // BOM Flavors Table (e.g. 'Default', 'BOM1', 'BOM2')
+            dbInstance.run(`CREATE TABLE IF NOT EXISTS bom_flavors (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                formfactor_revision_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                description TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (formfactor_revision_id) REFERENCES board_formfactor_revisions(id) ON DELETE CASCADE
+            )`);
+            dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_bom_flavors_rev_name ON bom_flavors(formfactor_revision_id, name COLLATE NOCASE)`);
+
+            // FormFactor Revision Documents Table (Schematic PDF, Board BRD, BOM CSV, Datasheet PDF)
+            dbInstance.run(`CREATE TABLE IF NOT EXISTS formfactor_revision_docs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                formfactor_revision_id INTEGER NOT NULL,
+                doc_type TEXT NOT NULL,
+                filename TEXT NOT NULL,
+                path TEXT NOT NULL,
+                uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (formfactor_revision_id) REFERENCES board_formfactor_revisions(id) ON DELETE CASCADE
+            )`);
+            dbInstance.run(`CREATE INDEX IF NOT EXISTS idx_ff_revision_docs_rev ON formfactor_revision_docs(formfactor_revision_id)`);
 
             // Owners Table
             dbInstance.run(`CREATE TABLE IF NOT EXISTS owners (
@@ -178,6 +255,12 @@ const initDb = async (): Promise<void> => {
                 silicon_corner TEXT,
                 bom TEXT,
                 project_id INTEGER,
+                package_id INTEGER REFERENCES packages(id),
+                package_name TEXT,
+                silicon_version_id INTEGER REFERENCES silicon_versions(id),
+                board_formfactor_id INTEGER REFERENCES board_formfactors(id),
+                formfactor_revision_id INTEGER REFERENCES board_formfactor_revisions(id),
+                bom_flavor_id INTEGER REFERENCES bom_flavors(id),
                 owner_id INTEGER,
                 short_code TEXT UNIQUE,
                 manufacturer_id TEXT,
@@ -189,12 +272,134 @@ const initDb = async (): Promise<void> => {
             )`);
             dbInstance.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_pcbs_project_board_nocase ON pcbs(project_id, board_number COLLATE NOCASE)`);
 
-            // Migration: add manufacturer_id column if it doesn't exist yet
+            // Migration: add new columns to pcbs if they don't exist yet
             dbInstance.all('PRAGMA table_info(pcbs)', (_err: any, columns: any[]) => {
-                if (columns && !columns.some((c: any) => c.name === 'manufacturer_id')) {
-                    dbInstance.run(`ALTER TABLE pcbs ADD COLUMN manufacturer_id TEXT`);
+                if (columns) {
+                    if (!columns.some((c: any) => c.name === 'manufacturer_id')) {
+                        dbInstance.run(`ALTER TABLE pcbs ADD COLUMN manufacturer_id TEXT`);
+                    }
+                    if (!columns.some((c: any) => c.name === 'package_id')) {
+                        dbInstance.run(`ALTER TABLE pcbs ADD COLUMN package_id INTEGER REFERENCES packages(id)`);
+                    }
+                    if (!columns.some((c: any) => c.name === 'package_name')) {
+                        dbInstance.run(`ALTER TABLE pcbs ADD COLUMN package_name TEXT`);
+                    }
+                    if (!columns.some((c: any) => c.name === 'silicon_version_id')) {
+                        dbInstance.run(`ALTER TABLE pcbs ADD COLUMN silicon_version_id INTEGER REFERENCES silicon_versions(id)`);
+                    }
+                    if (!columns.some((c: any) => c.name === 'board_formfactor_id')) {
+                        dbInstance.run(`ALTER TABLE pcbs ADD COLUMN board_formfactor_id INTEGER REFERENCES board_formfactors(id)`);
+                    }
+                    if (!columns.some((c: any) => c.name === 'formfactor_revision_id')) {
+                        dbInstance.run(`ALTER TABLE pcbs ADD COLUMN formfactor_revision_id INTEGER REFERENCES board_formfactor_revisions(id)`);
+                    }
+                    if (!columns.some((c: any) => c.name === 'bom_flavor_id')) {
+                        dbInstance.run(`ALTER TABLE pcbs ADD COLUMN bom_flavor_id INTEGER REFERENCES bom_flavors(id)`);
+                    }
                 }
             });
+
+            // Auto-migrate legacy project structure to packages hierarchy if packages table is empty
+            setTimeout(() => {
+                dbInstance.get("SELECT COUNT(*) as cnt FROM packages", [], (_e: any, rowPkg: any) => {
+                    if (rowPkg && rowPkg.cnt === 0) {
+                        dbInstance.all("SELECT * FROM projects", [], (_ePrj: any, prjRows: any[]) => {
+                            if (!prjRows || prjRows.length === 0) return;
+                            dbInstance.all("SELECT * FROM pcb_flavors", [], (_eFlv: any, flvRows: any[]) => {
+                                const flavors = flvRows || [];
+                                prjRows.forEach(proj => {
+                                    dbInstance.run("INSERT INTO packages (project_id, name, description) VALUES (?, ?, ?)", [proj.id, 'Default Package', 'Auto-migrated package'], function(this: any) {
+                                        const pkgId = this.lastID;
+                                        if (!pkgId) return;
+
+                                        let siliconRevs = ['A0'];
+                                        if (proj.revisions) {
+                                            const revs = proj.revisions.split(',').map((s: string) => s.trim()).filter(Boolean);
+                                            if (revs.length > 0) siliconRevs = revs;
+                                        }
+
+                                        siliconRevs.forEach(siRev => {
+                                            dbInstance.run("INSERT INTO silicon_versions (package_id, name, silicon_corners) VALUES (?, ?, ?)", [pkgId, siRev, proj.silicon_corners || null], function(this: any) {
+                                                const siVerId = this.lastID;
+                                                if (!siVerId) return;
+
+                                                if (proj.silicon_corners) {
+                                                    const corners = proj.silicon_corners.split(',').map((c: string) => c.trim()).filter(Boolean);
+                                                    corners.forEach((corner: string) => {
+                                                        dbInstance.run("INSERT OR IGNORE INTO silicon_corners (silicon_version_id, name) VALUES (?, ?)", [siVerId, corner]);
+                                                    });
+                                                }
+
+                                                const projFlavors = flavors.filter((f: any) => f.project_id === proj.id);
+                                                const flavorList = projFlavors.length > 0 ? projFlavors : [{ name: 'Default', revisions: '1.0', boms: 'Default' }];
+
+                                                flavorList.forEach((flv: any) => {
+                                                    dbInstance.run("INSERT INTO board_formfactors (silicon_version_id, name) VALUES (?, ?)", [siVerId, flv.name], function(this: any) {
+                                                        const bffId = this.lastID;
+                                                        if (!bffId) return;
+
+                                                        let revsList: any[] = [];
+                                                        if (flv.revisions) {
+                                                            try {
+                                                                const p = (typeof flv.revisions === 'string' && (flv.revisions.startsWith('[') || flv.revisions.startsWith('{'))) ? JSON.parse(flv.revisions) : flv.revisions;
+                                                                revsList = Array.isArray(p) ? p : [p];
+                                                            } catch {
+                                                                revsList = String(flv.revisions).split(',').map((s: string) => s.trim());
+                                                            }
+                                                        } else {
+                                                            revsList = ['1.0'];
+                                                        }
+
+                                                        revsList.forEach((revItem: any) => {
+                                                            const revName = typeof revItem === 'object' && revItem ? revItem.name : String(revItem);
+                                                            dbInstance.run("INSERT INTO board_formfactor_revisions (board_formfactor_id, name) VALUES (?, ?)", [bffId, revName], function(this: any) {
+                                                                const revId = this.lastID;
+                                                                if (!revId) return;
+
+                                                                let bomsList: string[] = [];
+                                                                if (typeof revItem === 'object' && revItem && revItem.boms) {
+                                                                    bomsList = Array.isArray(revItem.boms) ? revItem.boms : String(revItem.boms).split(',').map((s: string) => s.trim());
+                                                                } else if (flv.boms) {
+                                                                    try {
+                                                                        const p = (typeof flv.boms === 'string' && (flv.boms.startsWith('[') || flv.boms.startsWith('{'))) ? JSON.parse(flv.boms) : flv.boms;
+                                                                        bomsList = Array.isArray(p) ? p : [p];
+                                                                    } catch {
+                                                                        bomsList = String(flv.boms).split(',').map((s: string) => s.trim());
+                                                                    }
+                                                                }
+
+                                                                bomsList.filter(Boolean).forEach((bomName: string) => {
+                                                                    dbInstance.run("INSERT OR IGNORE INTO bom_flavors (formfactor_revision_id, name) VALUES (?, ?)", [revId, bomName]);
+                                                                });
+
+                                                                if (typeof revItem === 'object' && revItem) {
+                                                                    if (revItem.schematic || revItem.doc) {
+                                                                        const schName = revItem.schematic || revItem.doc;
+                                                                        dbInstance.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'schematic', ?, ?)", [revId, schName, `/docs/${schName}`]);
+                                                                    }
+                                                                    if (revItem.board_file) {
+                                                                        dbInstance.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'board_file', ?, ?)", [revId, revItem.board_file, `/docs/${revItem.board_file}`]);
+                                                                    }
+                                                                    if (revItem.bom_csv) {
+                                                                        dbInstance.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'bom_csv', ?, ?)", [revId, revItem.bom_csv, `/docs/${revItem.bom_csv}`]);
+                                                                    }
+                                                                    if (revItem.datasheet) {
+                                                                        dbInstance.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'datasheet', ?, ?)", [revId, revItem.datasheet, `/docs/${revItem.datasheet}`]);
+                                                                    }
+                                                                }
+                                                            });
+                                                        });
+                                                    });
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    }
+                });
+            }, 800);
 
             // Reworks Table
             dbInstance.run(`CREATE TABLE IF NOT EXISTS reworks (
