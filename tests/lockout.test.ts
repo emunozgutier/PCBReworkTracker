@@ -1,18 +1,13 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { cleanupTestData } from './cleanup';
 import sqlite3 from 'sqlite3';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { getDbPath } from '../src/store/serverDataBase/db';
 import crypto from 'crypto';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const API_URL = 'http://localhost:5002/api';
-const dbPath = path.resolve(__dirname, '../src/store/serverDataBase/data/pcb_tracker.db');
 
 function getDbConnection() {
-    const conn = new sqlite3.Database(dbPath);
+    const conn = new sqlite3.Database(getDbPath());
     conn.configure("busyTimeout", 10000);
     return conn;
 }

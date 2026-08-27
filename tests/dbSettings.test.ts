@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import path from 'path';
 import fs from 'fs';
 import { cleanupTestData } from './cleanup';
+import { getDbPath } from '../src/store/serverDataBase/db';
 
 const API_URL = 'http://localhost:5002/api';
 
@@ -18,6 +19,12 @@ describe('Database Settings, Backup & Test Mode API', () => {
             body: JSON.stringify({ mode: 'demo' })
         });
         await cleanupTestData();
+    });
+
+    it('should ensure testing uses an isolated test database (pcb_tracker_test.db) and NOT production', () => {
+        const activePath = getDbPath();
+        expect(activePath).toContain('pcb_tracker_test.db');
+        expect(activePath).not.toBe(path.resolve(__dirname, '../src/store/serverDataBase/data/pcb_tracker.db'));
     });
 
     it('should retrieve current DB settings and backup list', async () => {

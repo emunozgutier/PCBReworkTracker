@@ -6,7 +6,14 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbPath = path.resolve(__dirname, 'data', 'pcb_tracker.db');
+export const getDbPath = (): string => {
+    if (process.env.DB_PATH) return process.env.DB_PATH;
+    const isTest = process.env.NODE_ENV === 'test' || typeof (globalThis as any).__vitest_worker__ !== 'undefined';
+    const filename = isTest ? 'pcb_tracker_test.db' : 'pcb_tracker.db';
+    return path.resolve(__dirname, 'data', filename);
+};
+
+export const dbPath = getDbPath();
 
 let dbInstance: sqlite3.Database = new sqlite3.Database(dbPath);
 dbInstance.configure("busyTimeout", 10000);
@@ -22,18 +29,19 @@ const db = {
 
 const recreateDb = (): Promise<void> => {
     return new Promise((resolve, reject) => {
+        const activePath = getDbPath();
         dbInstance.close((err) => {
             if (err && (err as any).code !== 'SQLITE_MISUSE') {
                 console.error("Error closing corrupted DB:", err);
             }
             try {
-                if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
-                if (fs.existsSync(`${dbPath}-wal`)) fs.unlinkSync(`${dbPath}-wal`);
-                if (fs.existsSync(`${dbPath}-shm`)) fs.unlinkSync(`${dbPath}-shm`);
+                if (fs.existsSync(activePath)) fs.unlinkSync(activePath);
+                if (fs.existsSync(`${activePath}-wal`)) fs.unlinkSync(`${activePath}-wal`);
+                if (fs.existsSync(`${activePath}-shm`)) fs.unlinkSync(`${activePath}-shm`);
             } catch (e) {
                 console.error("Error deleting DB files:", e);
             }
-            dbInstance = new sqlite3.Database(dbPath, (err) => {
+            dbInstance = new sqlite3.Database(activePath, (err) => {
                 if (err) return reject(err);
                 dbInstance.configure("busyTimeout", 10000);
                 resolve();

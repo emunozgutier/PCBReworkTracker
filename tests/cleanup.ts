@@ -1,13 +1,9 @@
 import sqlite3 from 'sqlite3';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { getDbPath } from '../src/store/serverDataBase/db';
 
 export function cleanupTestData(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-        const dbPath = path.resolve(__dirname, '../src/store/serverDataBase/data/pcb_tracker.db');
+        const dbPath = getDbPath();
         const db = new sqlite3.Database(dbPath);
         db.configure("busyTimeout", 10000);
 
@@ -79,7 +75,7 @@ export function cleanupTestData(): Promise<void> {
 
 export function updateCreatedAt(pcbId: number, daysAgo: number): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-        const dbPath = path.resolve(__dirname, '../src/store/serverDataBase/data/pcb_tracker.db');
+        const dbPath = getDbPath();
         const db = new sqlite3.Database(dbPath);
         db.configure("busyTimeout", 10000);
         
@@ -104,7 +100,7 @@ export function updateCreatedAt(pcbId: number, daysAgo: number): Promise<void> {
 
 export function updateReworkTimestamp(reworkId: number, daysAgo: number): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-        const dbPath = path.resolve(__dirname, '../src/store/serverDataBase/data/pcb_tracker.db');
+        const dbPath = getDbPath();
         const db = new sqlite3.Database(dbPath);
         db.configure("busyTimeout", 10000);
         

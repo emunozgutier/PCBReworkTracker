@@ -7,7 +7,7 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { db, initDb } from './db';
+import { db, initDb, getDbPath } from './db';
 import { apiLoggerMiddleware } from './logger';
 import {
     authenticateToken,
@@ -2095,7 +2095,6 @@ app.post('/api/settings', (req: Request, res: Response) => {
 });
 
 // --- DB Settings, Backup & Test Mode Endpoints ---
-const dbPath = path.resolve(__dirname, 'data', 'pcb_tracker.db');
 const defaultBackupPath = path.resolve(__dirname, 'backups');
 
 function getBackupList(dirPath: string) {
@@ -2123,6 +2122,7 @@ function getBackupList(dirPath: string) {
 
 function performDatabaseBackup(customPath: string | undefined, callback: (err: Error | null, info?: any) => void) {
     const targetDir = customPath || defaultBackupPath;
+    const activeDbPath = getDbPath();
     try {
         if (!fs.existsSync(targetDir)) {
             fs.mkdirSync(targetDir, { recursive: true });
@@ -2131,11 +2131,11 @@ function performDatabaseBackup(customPath: string | undefined, callback: (err: E
         const filename = `pcb_tracker_backup_${timestamp}.db`;
         const destPath = path.join(targetDir, filename);
 
-        if (!fs.existsSync(dbPath)) {
+        if (!fs.existsSync(activeDbPath)) {
             return callback(new Error("Active database file does not exist."));
         }
 
-        fs.copyFileSync(dbPath, destPath);
+        fs.copyFileSync(activeDbPath, destPath);
         const stat = fs.statSync(destPath);
         callback(null, {
             filename,
