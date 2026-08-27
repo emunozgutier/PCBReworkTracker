@@ -29,7 +29,8 @@ dist-ssr
 src/store/serverDataBase/data/secret.key
 
 # Uploaded files
-docs/
+/docs/
+!public/docs/
 logs/
 pictures/
 src/store/serverDataBase/docs/
