@@ -2093,3 +2093,308 @@ app.post('/api/settings', (req: Request, res: Response) => {
         });
     });
 });
+
+// --- DB Settings, Backup & Test Mode Endpoints ---
+const dbPath = path.resolve(__dirname, 'data', 'pcb_tracker.db');
+const defaultBackupPath = path.resolve(__dirname, 'backups');
+
+function getBackupList(dirPath: string) {
+    const targetDir = dirPath || defaultBackupPath;
+    if (!fs.existsSync(targetDir)) return [];
+    try {
+        const files = fs.readdirSync(targetDir);
+        return files
+            .filter(f => f.endsWith('.db') || f.endsWith('.sqlite'))
+            .map(f => {
+                const fullPath = path.join(targetDir, f);
+                const stat = fs.statSync(fullPath);
+                return {
+                    filename: f,
+                    path: fullPath,
+                    size: stat.size,
+                    createdAt: stat.mtime ? stat.mtime.toISOString() : stat.birthtime.toISOString()
+                };
+            })
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } catch {
+        return [];
+    }
+}
+
+function performDatabaseBackup(customPath: string | undefined, callback: (err: Error | null, info?: any) => void) {
+    const targetDir = customPath || defaultBackupPath;
+    try {
+        if (!fs.existsSync(targetDir)) {
+            fs.mkdirSync(targetDir, { recursive: true });
+        }
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `pcb_tracker_backup_${timestamp}.db`;
+        const destPath = path.join(targetDir, filename);
+
+        if (!fs.existsSync(dbPath)) {
+            return callback(new Error("Active database file does not exist."));
+        }
+
+        fs.copyFileSync(dbPath, destPath);
+        const stat = fs.statSync(destPath);
+        callback(null, {
+            filename,
+            path: destPath,
+            size: stat.size,
+            createdAt: stat.mtime ? stat.mtime.toISOString() : new Date().toISOString()
+        });
+    } catch (err: any) {
+        callback(err);
+    }
+}
+
+async function seedDemoDatabase(): Promise<void> {
+    const demoDataPath = path.resolve(__dirname, 'data', 'demoData.json');
+    if (!fs.existsSync(demoDataPath)) {
+        throw new Error("demoData.json file not found.");
+    }
+    const demoJson = JSON.parse(fs.readFileSync(demoDataPath, 'utf8'));
+    const { demoProjects = [], demoOwners = [], demoTags = [], demoPcbs = [], demoPcbTags = {}, demoReworks = [] } = demoJson;
+
+    const runAsync = (sql: string, params: any[] = []): Promise<any> => {
+        return new Promise((resolve, reject) => {
+            db.run(sql, params, function(this: any, err: Error | null) {
+                if (err) return reject(err);
+                resolve(this);
+            });
+        });
+    };
+
+    await runAsync('PRAGMA foreign_keys = OFF');
+
+    await runAsync('DELETE FROM reworks');
+    await runAsync('DELETE FROM pcb_tags');
+    await runAsync('DELETE FROM pcbs');
+    await runAsync('DELETE FROM formfactor_revision_docs');
+    await runAsync('DELETE FROM bom_flavors');
+    await runAsync('DELETE FROM board_formfactor_revisions');
+    await runAsync('DELETE FROM board_formfactors');
+    await runAsync('DELETE FROM silicon_corners');
+    await runAsync('DELETE FROM silicon_versions');
+    await runAsync('DELETE FROM packages');
+    await runAsync('DELETE FROM project_docs');
+    await runAsync('DELETE FROM pcb_flavors');
+    await runAsync('DELETE FROM projects');
+    await runAsync('DELETE FROM tags');
+    await runAsync('DELETE FROM owners');
+
+    // 1. Insert demo owners
+    for (let i = 0; i < demoOwners.length; i++) {
+        const o = demoOwners[i];
+        const isSuper = i === 0 || o.username === 'admin' || o.username === 'asmith' ? 1 : 0;
+        await runAsync("INSERT OR REPLACE INTO owners (id, name, username, is_super_user) VALUES (?, ?, ?, ?)", [o.id, o.name, o.username, isSuper]);
+    }
+    await runAsync("INSERT OR IGNORE INTO owners (id, name, username, is_super_user) VALUES (999, 'Super Admin', 'admin', 1)");
+
+    // 2. Insert demo tags
+    for (const t of demoTags) {
+        await runAsync("INSERT OR REPLACE INTO tags (id, name, color, owner_id, type) VALUES (?, ?, ?, ?, ?)", [t.id, t.name, t.color || '#818cf8', t.owner_id || 1, t.type || 'public']);
+    }
+
+    // 3. Insert demo projects with packages hierarchy
+    for (const p of demoProjects) {
+        const cleanName = p.name;
+        const finalKey = p.project_key || 'PRJ';
+        const creator = 'admin';
+        await runAsync(
+            "INSERT OR REPLACE INTO projects (id, name, description, revisions, project_key, silicon_corners, number_format, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [p.id, cleanName, p.description || '', Array.isArray(p.revisions) ? p.revisions.join(', ') : (p.revisions || ''), finalKey, p.silicon_corners || null, p.number_format || 'decimal', creator, creator]
+        );
+
+        const pkgs = p.packages && Array.isArray(p.packages) && p.packages.length > 0
+            ? p.packages
+            : normalizeIncomingPackages(p);
+
+        await new Promise<void>((resolve, reject) => {
+            saveProjectHierarchy(p.id, pkgs, (err) => {
+                if (err) return reject(err);
+                resolve();
+            });
+        });
+    }
+
+    // 4. Insert demo PCBs
+    for (const pcb of demoPcbs) {
+        await runAsync(`
+            INSERT OR REPLACE INTO pcbs (
+                id, board_number, status, project_id, owner_id, 
+                board_flavor, board_rev, silicon_rev, silicon_corner, bom, short_code, manufacturer_id, created_by, updated_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'admin', 'admin')
+        `, [
+            pcb.id,
+            pcb.board_number,
+            pcb.status || 'In Progress',
+            pcb.project_id || null,
+            pcb.owner_id || null,
+            pcb.board_flavor || '',
+            pcb.board_rev || '',
+            pcb.silicon_rev || '',
+            pcb.silicon_corner || '',
+            pcb.bom || '',
+            pcb.short_code || null,
+            pcb.manufacturer_id || null
+        ]);
+    }
+
+    // 5. Insert demo PCB tags
+    for (const [pcbId, tagIds] of Object.entries(demoPcbTags)) {
+        if (Array.isArray(tagIds)) {
+            for (const tId of tagIds) {
+                await runAsync("INSERT OR IGNORE INTO pcb_tags (pcb_id, tag_id) VALUES (?, ?)", [parseInt(pcbId), tId]);
+            }
+        }
+    }
+
+    // 6. Insert demo reworks
+    for (const rw of demoReworks) {
+        await runAsync(`
+            INSERT OR REPLACE INTO reworks (
+                id, pcb_id, title, rework_number, description, rework_type, status, owner_id, timestamp, image_path, created_by, updated_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'admin', 'admin')
+        `, [
+            rw.id,
+            rw.pcb_id,
+            rw.title || rw.description || `Rework ${rw.rework_number || 1}`,
+            rw.rework_number || 1,
+            rw.description || 'Rework description',
+            rw.rework_type || 'Minor',
+            rw.status || 'Completed',
+            rw.owner_id || 1,
+            rw.timestamp || new Date().toISOString(),
+            rw.image_path || null
+        ]);
+    }
+
+    await runAsync("INSERT OR REPLACE INTO global_settings (key, value) VALUES ('db_mode', 'demo')");
+    await runAsync('PRAGMA foreign_keys = ON');
+}
+
+async function clearToEmptyDatabase(): Promise<void> {
+    const runAsync = (sql: string, params: any[] = []): Promise<any> => {
+        return new Promise((resolve, reject) => {
+            db.run(sql, params, function(this: any, err: Error | null) {
+                if (err) return reject(err);
+                resolve(this);
+            });
+        });
+    };
+
+    await runAsync('PRAGMA foreign_keys = OFF');
+
+    await runAsync('DELETE FROM reworks');
+    await runAsync('DELETE FROM pcb_tags');
+    await runAsync('DELETE FROM pcbs');
+    await runAsync('DELETE FROM formfactor_revision_docs');
+    await runAsync('DELETE FROM bom_flavors');
+    await runAsync('DELETE FROM board_formfactor_revisions');
+    await runAsync('DELETE FROM board_formfactors');
+    await runAsync('DELETE FROM silicon_corners');
+    await runAsync('DELETE FROM silicon_versions');
+    await runAsync('DELETE FROM packages');
+    await runAsync('DELETE FROM project_docs');
+    await runAsync('DELETE FROM pcb_flavors');
+    await runAsync('DELETE FROM projects');
+    await runAsync('DELETE FROM tags');
+
+    const adminCheck: any = await new Promise((resolve) => {
+        db.get("SELECT COUNT(*) as cnt FROM owners WHERE username = 'admin' OR is_super_user = 1", [], (_err: Error | null, row: any) => resolve(row));
+    });
+
+    if (!adminCheck || adminCheck.cnt === 0) {
+        await runAsync("INSERT OR REPLACE INTO owners (id, name, username, is_super_user) VALUES (1, 'Super Admin', 'admin', 1)");
+    }
+
+    await runAsync("INSERT OR REPLACE INTO global_settings (key, value) VALUES ('db_mode', 'empty')");
+    await runAsync('PRAGMA foreign_keys = ON');
+}
+
+app.get('/api/db/settings', (_req: Request, res: Response) => {
+    db.all("SELECT * FROM global_settings WHERE key IN ('db_backup_path', 'db_mode')", [], (err: Error | null, rows: any[]) => {
+        if (err) return res.status(500).json({ error: err.message });
+        const settings: Record<string, string> = {};
+        rows.forEach(r => { settings[r.key] = r.value; });
+
+        const currentBackupPath = settings['db_backup_path'] || defaultBackupPath;
+        const currentMode = settings['db_mode'] || 'production';
+        const backups = getBackupList(currentBackupPath);
+
+        res.json({
+            backup_path: currentBackupPath,
+            default_backup_path: defaultBackupPath,
+            current_mode: currentMode,
+            backups
+        });
+    });
+});
+
+app.post('/api/db/settings', (req: Request, res: Response) => {
+    if (!isSuperUser(req as any)) {
+        return res.status(403).json({ error: 'Only Super Users can modify DB settings.' });
+    }
+    const { backup_path } = req.body;
+    if (backup_path) {
+        db.run("INSERT OR REPLACE INTO global_settings (key, value) VALUES ('db_backup_path', ?)", [String(backup_path).trim()], (err: Error | null) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ success: true, backup_path: String(backup_path).trim() });
+        });
+    } else {
+        res.status(400).json({ error: 'backup_path is required' });
+    }
+});
+
+app.post('/api/db/backup', (req: Request, res: Response) => {
+    if (!isSuperUser(req as any)) {
+        return res.status(403).json({ error: 'Only Super Users can create database backups.' });
+    }
+
+    db.get("SELECT value FROM global_settings WHERE key = 'db_backup_path'", [], (_err: Error | null, row: any) => {
+        const targetPath = req.body.backup_path || (row ? row.value : null) || defaultBackupPath;
+        performDatabaseBackup(targetPath, (errBackup: Error | null, info: any) => {
+            if (errBackup) {
+                return res.status(500).json({ error: errBackup.message });
+            }
+            res.json({ success: true, backup: info });
+        });
+    });
+});
+
+app.post('/api/db/mode', async (req: Request, res: Response) => {
+    if (!isSuperUser(req as any)) {
+        return res.status(403).json({ error: 'Only Super Users can change database mode.' });
+    }
+
+    const { mode } = req.body;
+    if (!['production', 'demo', 'empty'].includes(mode)) {
+        return res.status(400).json({ error: "Invalid database mode. Must be 'production', 'demo', or 'empty'." });
+    }
+
+    // First take a safety snapshot before modifying dataset
+    performDatabaseBackup(undefined, async (errSnap) => {
+        if (errSnap) {
+            console.warn("Safety snapshot before DB mode switch failed:", errSnap.message);
+        }
+
+        try {
+            if (mode === 'demo') {
+                await seedDemoDatabase();
+                return res.json({ success: true, mode: 'demo', message: 'Database successfully seeded with demo dataset.' });
+            } else if (mode === 'empty') {
+                await clearToEmptyDatabase();
+                return res.json({ success: true, mode: 'empty', message: 'Database successfully cleared to an empty state.' });
+            } else {
+                db.run("INSERT OR REPLACE INTO global_settings (key, value) VALUES ('db_mode', 'production')", [], (errProd: Error | null) => {
+                    if (errProd) return res.status(500).json({ error: errProd.message });
+                    return res.json({ success: true, mode: 'production', message: 'Database mode set to production.' });
+                });
+            }
+        } catch (errMode: any) {
+            console.error("Error setting database mode:", errMode);
+            return res.status(500).json({ error: errMode.message });
+        }
+    });
+});

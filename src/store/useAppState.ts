@@ -13,7 +13,7 @@ type Page =
     | 'owners' | 'owners_add' | 'owners_edit'
     | 'tags' | 'tags_add' | 'tags_edit'
     | 'wrong_url' | 'fixed_url'
-    | 'sandbox' | 'settings' | 'settings_test' | 'reset_otp' | 'board_viewer' | 'doc_viewer';
+    | 'sandbox' | 'settings' | 'settings_test' | 'settings_secrets' | 'reset_otp' | 'board_viewer' | 'doc_viewer';
 
 interface NavigationState {
     page: Page;

@@ -33,6 +33,9 @@ const TopSettingPage = lazy(() =>
 const SettingsTest = lazy(() =>
   import('./Pages/SettingPage/SettingsTest').then(m => ({ default: m.SettingsTest }))
 );
+const SettingsSecrets = lazy(() =>
+  import('./Pages/SettingPage/SettingsSecrets').then(m => ({ default: m.SettingsSecrets }))
+);
 
 // Add / Edit forms (rarely on the critical path)
 const AddProject  = lazy(() => import('./Pages/AddPages/AddProject').then(m => ({ default: m.AddProject })));
@@ -127,6 +130,8 @@ export function PageWithMargins() {
         return <TopSettingPage />;
       case 'settings_test':
         return <SettingsTest onBack={goBack} />;
+      case 'settings_secrets':
+        return <SettingsSecrets onBack={goBack} />;
 
       // ── Heavy viewers ──────────────────────────────────────────────────────
       case 'board_viewer':

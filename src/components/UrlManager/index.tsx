@@ -49,6 +49,12 @@ export function UrlManager() {
         const handlePopState = () => {
             const rawPath = getNormalizedPath();
             
+            // settings secrets page (DB settings)
+            if (rawPath === '/settings/secrets' || rawPath === '/settings/secrets/') {
+                useAppState.getState().setPage('settings_secrets');
+                return;
+            }
+
             // settings test page
             if (rawPath === '/settings/test' || rawPath === '/settings/test/' || rawPath === '/projects/test' || rawPath === '/projects/test/') {
                 useAppState.getState().setPage('settings_test');
@@ -171,6 +177,16 @@ export function UrlManager() {
         if (page === 'board_viewer' && selectedId) {
             const search = window.location.search;
             const targetUrl = `${base}/boardViewer/${selectedId}${search}`;
+            const currentPath = window.location.pathname + window.location.search;
+            if (currentPath !== targetUrl) {
+                window.history.pushState({}, '', targetUrl);
+            }
+            return;
+        }
+
+        if (page === 'settings_secrets') {
+            const search = window.location.search;
+            const targetUrl = `${base}/settings/secrets${search}`;
             const currentPath = window.location.pathname + window.location.search;
             if (currentPath !== targetUrl) {
                 window.history.pushState({}, '', targetUrl);

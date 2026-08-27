@@ -555,6 +555,65 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
         }
     }
 
+    if (localPath.startsWith('/settings')) {
+        if (method === 'GET') {
+            return createResponse({
+                allowGuestMinorRework: 'true',
+                crcFormat: 'letter',
+                'priority_Silicon Swap': 'High',
+                'priority_Major Rework': 'High',
+                'priority_Minor Rework': 'Low',
+                'priority_Resistor Swap': 'Low',
+                db_mode: 'demo',
+                db_backup_path: '/src/store/serverDataBase/backups'
+            });
+        }
+        if (method === 'POST') {
+            return createResponse({ success: true });
+        }
+    }
+
+    if (localPath.startsWith('/db/settings')) {
+        if (method === 'GET') {
+            return createResponse({
+                backup_path: '/src/store/serverDataBase/backups',
+                default_backup_path: '/src/store/serverDataBase/backups',
+                current_mode: 'demo',
+                backups: [
+                    {
+                        filename: 'pcb_tracker_backup_demo.db',
+                        path: '/src/store/serverDataBase/backups/pcb_tracker_backup_demo.db',
+                        size: 45056,
+                        createdAt: new Date().toISOString()
+                    }
+                ]
+            });
+        }
+        if (method === 'POST') {
+            return createResponse({ success: true, backup_path: body?.backup_path || '/src/store/serverDataBase/backups' });
+        }
+    }
+
+    if (localPath.startsWith('/db/backup')) {
+        return createResponse({
+            success: true,
+            backup: {
+                filename: `pcb_tracker_backup_${new Date().toISOString().replace(/[:.]/g, '-')}.db`,
+                path: `/src/store/serverDataBase/backups/pcb_tracker_backup_${Date.now()}.db`,
+                size: 45056,
+                createdAt: new Date().toISOString()
+            }
+        });
+    }
+
+    if (localPath.startsWith('/db/mode')) {
+        return createResponse({
+            success: true,
+            mode: body?.mode || 'demo',
+            message: `Database successfully switched to ${body?.mode || 'demo'} mode.`
+        });
+    }
+
     if (localPath.startsWith('/otp/verify')) {
         return createResponse({ valid: true, token: 'demo-session-token' });
     }
