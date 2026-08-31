@@ -1,4 +1,5 @@
 import { CheckSumCard } from './CheckSumCard';
+import { QrCodeSettingCard } from './QrCodeSettingCard';
 import { RolePermissionCard } from './RolePermissionCard';
 import { ReworkPriorityCard } from './ReworkPriorityCard';
 import { Calendar } from 'lucide-react';
@@ -14,6 +15,7 @@ export function TopSettingPage() {
             <CheckSumCard />
             <RolePermissionCard />
             <ReworkPriorityCard />
+            <QrCodeSettingCard />
             
             <div className="settings-main-card">
                 <div className="settings-card-label">

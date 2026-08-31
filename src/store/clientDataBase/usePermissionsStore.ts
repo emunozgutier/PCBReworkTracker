@@ -109,6 +109,18 @@ export const usePermissionsStore = create<PermissionsStore>((set) => ({
                 if (data.allowGuestMinorRework) {
                     useAppState.getState().setAllowGuestMinorRework(data.allowGuestMinorRework === 'true');
                 }
+                if (data.qrCodeUrlType === 'full' || data.qrCodeUrlType === 'compressed') {
+                    useAppState.setState({ qrCodeUrlType: data.qrCodeUrlType });
+                }
+                if (data.qrCodeBaseUrlType === 'current' || data.qrCodeBaseUrlType === 'custom') {
+                    useAppState.setState({ qrCodeBaseUrlType: data.qrCodeBaseUrlType });
+                }
+                if (typeof data.qrCodeCustomBaseUrl === 'string') {
+                    useAppState.setState({ qrCodeCustomBaseUrl: data.qrCodeCustomBaseUrl });
+                }
+                if (data.qrCodeErrorCorrection === 'L' || data.qrCodeErrorCorrection === 'M' || data.qrCodeErrorCorrection === 'Q' || data.qrCodeErrorCorrection === 'H') {
+                    useAppState.setState({ qrCodeErrorCorrection: data.qrCodeErrorCorrection });
+                }
             }
         } catch (err) {
             console.error('Failed to fetch permissions from DB:', err);

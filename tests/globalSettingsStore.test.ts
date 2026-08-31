@@ -1,3 +1,4 @@
+/** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useAppState } from '../src/store/useAppState';
 import { formatCrc, getNatoWord } from '../src/components/UrlManager/crc';

@@ -144,7 +144,7 @@ export function UrlManager() {
                 return;
             }
 
-            if (path.length === 3 && /^[A-Za-z0-9]{3}$/.test(path)) {
+            if ((path.length === 3 || path.length === 4) && /^[A-Za-z0-9]{3,4}$/.test(path)) {
                 useAppState.getState().setActiveTab('pcbs');
                 useAppState.getState().setExpandedPcb(`SHORT:${path}`);
                 useAppState.getState().setIsolatedView(true);
