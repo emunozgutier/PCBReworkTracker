@@ -990,7 +990,7 @@ app.post('/api/pcbs', async (req: Request, res: Response) => {
 // --- OTP Helpers ---
 function base32ToBuf(base32: string): Buffer {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    let clean = base32.replace(/=+$/, '').toUpperCase();
+    let clean = base32.trim().replace(/=+$/, '').replace(/\s+/g, '').toUpperCase();
     let length = clean.length;
     let bits = 0;
     let value = 0;
@@ -1032,10 +1032,13 @@ function generateTotp(secret: string, time = Date.now()): string {
 }
 
 function verifyTotp(secret: string, token: string): boolean {
+    if (!secret || !token) return false;
+    const cleanSecret = String(secret).trim().replace(/\s+/g, '').toUpperCase();
+    const cleanToken = String(token).trim().replace(/\s+/g, '').padStart(6, '0');
     const now = Date.now();
     for (let i = -1; i <= 1; i++) {
-        const expected = generateTotp(secret, now + i * 30 * 1000);
-        if (expected === token) return true;
+        const expected = generateTotp(cleanSecret, now + i * 30 * 1000);
+        if (expected === cleanToken) return true;
     }
     return false;
 }
@@ -1065,11 +1068,13 @@ app.get('/api/otp/setup', (req: Request, res: Response) => {
     const { username, host } = req.query;
     if (!username) return res.status(400).json({ error: "Username is required." });
     const secret = generateSecret();
-    const cleanHost = host ? (host as string).replace(/^https?:\/\//i, '') : '';
+    // Strip protocol and any port number (e.g. localhost:5173 -> localhost) so no colons exist in host
+    const cleanHost = host ? (host as string).replace(/^https?:\/\//i, '').replace(/:\d+$/, '') : '';
     const issuer = 'ReworkTracker';
     const accountName = cleanHost ? `${username} (${cleanHost})` : (username as string);
-    const label = `${issuer}:${accountName}`;
-    const otpauthUrl = `otpauth://totp/${encodeURIComponent(label)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
+    // According to RFC 6238 Key URI Format (Google Authenticator specification):
+    // The issuer and accountname tokens must each be URL-encoded, but the colon character separating them must not be encoded.
+    const otpauthUrl = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(accountName)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
     res.json({ secret, otpauthUrl });
 });
 

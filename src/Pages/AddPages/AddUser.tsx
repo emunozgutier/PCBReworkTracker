@@ -79,11 +79,13 @@ export function AddUser({ onBack, onSuccess }: AddUserProps) {
             if (success) {
                 // Auto-sign-in: find the new owner in the refreshed list and set them as current user
                 const allOwners = useOwnerStore.getState().owners;
-                const newOwner = allOwners.find(o => o.username === username.trim());
+                const cleanUsername = username.replace(/\s+/g, '').toLowerCase();
+                const newOwner = allOwners.find(o => o.username.toLowerCase() === cleanUsername);
                 if (newOwner) {
+                    const isSuperUser = newOwner.is_super_user === 1 || newOwner.is_super_user === (true as any);
                     const minId = allOwners.length > 0 ? Math.min(...allOwners.map(o => o.id)) : -1;
                     const isFirstUser = newOwner.id === minId;
-                    const role = (allOwners.length === 1 || isFirstUser) ? 'Super User' : 'User';
+                    const role = (isSuperUser || allOwners.length === 1 || isFirstUser) ? 'Super User' : 'User';
                     setCurrentUser(newOwner, role);
                 }
                 onSuccess();
