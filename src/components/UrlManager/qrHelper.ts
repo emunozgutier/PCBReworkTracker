@@ -142,3 +142,57 @@ export function resolveQrUrl(
         isCustomBase
     };
 }
+
+/**
+ * Encodes a 3-letter project key (A-Z) and 4-digit board ID (0-9999) into
+ * a compact 5 to 6 character Base36 string (0-9, A-Z).
+ */
+export function encodeBase36ShortCode(projectKey: string, boardNumber: number | string): string {
+    const cleanKey = (projectKey || "PCB").toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3).padEnd(3, 'A');
+    const c0 = cleanKey.charCodeAt(0) - 65;
+    const c1 = cleanKey.charCodeAt(1) - 65;
+    const c2 = cleanKey.charCodeAt(2) - 65;
+    const projectIndex = (Math.max(0, Math.min(25, c0)) * 676) + 
+                         (Math.max(0, Math.min(25, c1)) * 26) + 
+                         Math.max(0, Math.min(25, c2));
+    
+    let num = 0;
+    if (typeof boardNumber === 'number') {
+        num = boardNumber;
+    } else {
+        const matches = String(boardNumber).match(/\d+/g);
+        if (matches && matches.length > 0) {
+            num = parseInt(matches[matches.length - 1], 10);
+        }
+    }
+    const safeNum = Math.abs(isNaN(num) ? 0 : num) % 10000;
+    
+    const combined = (projectIndex * 10000) + safeNum;
+    return combined.toString(36).toUpperCase().padStart(5, '0');
+}
+
+/**
+ * Decodes a Base36 short code back into its 3-letter project key and board number.
+ */
+export function decodeBase36ShortCode(code: string): { projectKey: string; boardNumber: number } | null {
+    if (!code) return null;
+    const cleanCode = code.toUpperCase().trim();
+    if (!/^[0-9A-Z]{3,8}$/.test(cleanCode)) return null;
+    
+    const num = parseInt(cleanCode, 36);
+    if (isNaN(num)) return null;
+    
+    const boardNumber = num % 10000;
+    const projectIndex = Math.floor(num / 10000);
+    
+    const c2 = projectIndex % 26;
+    const rem = Math.floor(projectIndex / 26);
+    const c1 = rem % 26;
+    const c0 = Math.floor(rem / 26);
+    
+    if (c0 < 0 || c0 > 25) return null;
+    
+    const projectKey = String.fromCharCode(c0 + 65, c1 + 65, c2 + 65);
+    return { projectKey, boardNumber };
+}
+

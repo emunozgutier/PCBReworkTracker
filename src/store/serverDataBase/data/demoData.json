@@ -6,15 +6,40 @@
             "description": "Saturn Moon Project",
             "pcb_count": 30,
             "pcbs": [
-                "DIO-0001U", "DIO-0002D", "DIO-0003N", "DIO-0004W", "DIO-0005F",
-                "DIO-0006Q", "DIO-0007Y", "DIO-0008H", "DIO-0009S", "DIO-0010T",
-                "DIO-0011C", "DIO-0012M", "DIO-0013V", "DIO-0014E", "DIO-0015P",
-                "DIO-0016X", "DIO-0017G", "DIO-0018R", "DIO-0019A", "DIO-0020B",
-                "DIO-0021K", "DIO-0022U", "DIO-0023D", "DIO-0024N", "DIO-0025W",
-                "DIO-0026F", "DIO-0027Q", "DIO-0028Y", "DIO-0029H", "DIO-0030J"
+                "DIO-0001U",
+                "DIO-0002D",
+                "DIO-0003N",
+                "DIO-0004W",
+                "DIO-0005F",
+                "DIO-0006Q",
+                "DIO-0007Y",
+                "DIO-0008H",
+                "DIO-0009S",
+                "DIO-0010T",
+                "DIO-0011C",
+                "DIO-0012M",
+                "DIO-0013V",
+                "DIO-0014E",
+                "DIO-0015P",
+                "DIO-0016X",
+                "DIO-0017G",
+                "DIO-0018R",
+                "DIO-0019A",
+                "DIO-0020B",
+                "DIO-0021K",
+                "DIO-0022U",
+                "DIO-0023D",
+                "DIO-0024N",
+                "DIO-0025W",
+                "DIO-0026F",
+                "DIO-0027Q",
+                "DIO-0028Y",
+                "DIO-0029H",
+                "DIO-0030J"
             ],
             "revisions": [
-                "A0", "B0"
+                "A0",
+                "B0"
             ],
             "project_key": "DIO",
             "silicon_corners": "TT, FF, SS",
@@ -24,14 +49,21 @@
                     "silicon_versions": [
                         {
                             "name": "A0",
-                            "silicon_corners": ["TT", "FF", "SS"],
+                            "silicon_corners": [
+                                "TT",
+                                "FF",
+                                "SS"
+                            ],
                             "formfactors": [
                                 {
                                     "name": "Demo",
                                     "revisions": [
                                         {
                                             "name": "1.0",
-                                            "boms": ["BOM1", "BOM2"],
+                                            "boms": [
+                                                "BOM1",
+                                                "BOM2"
+                                            ],
                                             "schematic": "BBB-SCH.pdf",
                                             "board_file": "BBB.brd",
                                             "bom_csv": "BBB-BOM.csv",
@@ -39,7 +71,9 @@
                                         },
                                         {
                                             "name": "2.0",
-                                            "boms": ["BOM1"],
+                                            "boms": [
+                                                "BOM1"
+                                            ],
                                             "schematic": "BBB-SCH.pdf",
                                             "board_file": "BBB.brd",
                                             "bom_csv": "BBB-BOM.csv",
@@ -52,7 +86,9 @@
                                     "revisions": [
                                         {
                                             "name": "1.0",
-                                            "boms": ["Default"],
+                                            "boms": [
+                                                "Default"
+                                            ],
                                             "schematic": "BBB-SCH.pdf",
                                             "board_file": "BBB.brd",
                                             "bom_csv": "BBB-BOM.csv",
@@ -69,14 +105,20 @@
                     "silicon_versions": [
                         {
                             "name": "A0",
-                            "silicon_corners": ["TT", "FF"],
+                            "silicon_corners": [
+                                "TT",
+                                "FF"
+                            ],
                             "formfactors": [
                                 {
                                     "name": "SVB",
                                     "revisions": [
                                         {
                                             "name": "1.0",
-                                            "boms": ["BOM1", "BOM2"],
+                                            "boms": [
+                                                "BOM1",
+                                                "BOM2"
+                                            ],
                                             "schematic": "BBB-SCH.pdf",
                                             "board_file": "BBB.brd",
                                             "bom_csv": "BBB-BOM.csv",
@@ -84,7 +126,9 @@
                                         },
                                         {
                                             "name": "1.1",
-                                            "boms": ["BOM1"],
+                                            "boms": [
+                                                "BOM1"
+                                            ],
                                             "schematic": "BBB-SCH.pdf",
                                             "board_file": "BBB.brd",
                                             "bom_csv": "BBB-BOM.csv",
@@ -97,7 +141,9 @@
                                     "revisions": [
                                         {
                                             "name": "1.0",
-                                            "boms": ["Default"],
+                                            "boms": [
+                                                "Default"
+                                            ],
                                             "schematic": "BBB-SCH.pdf",
                                             "board_file": "BBB.brd",
                                             "bom_csv": "BBB-BOM.csv",
@@ -109,14 +155,19 @@
                         },
                         {
                             "name": "B0",
-                            "silicon_corners": ["TT", "SS"],
+                            "silicon_corners": [
+                                "TT",
+                                "SS"
+                            ],
                             "formfactors": [
                                 {
                                     "name": "Demo",
                                     "revisions": [
                                         {
                                             "name": "1.0",
-                                            "boms": ["BOM1"],
+                                            "boms": [
+                                                "BOM1"
+                                            ],
                                             "schematic": "BBB-SCH.pdf",
                                             "board_file": "BBB.brd",
                                             "bom_csv": "BBB-BOM.csv",
@@ -132,19 +183,29 @@
             "flavors": [
                 {
                     "name": "Demo",
-                    "revisions": ["1.0", "2.0"]
+                    "revisions": [
+                        "1.0",
+                        "2.0"
+                    ]
                 },
                 {
                     "name": "Validation",
-                    "revisions": ["1.0"]
+                    "revisions": [
+                        "1.0"
+                    ]
                 },
                 {
                     "name": "SVB",
-                    "revisions": ["1.0", "1.1"]
+                    "revisions": [
+                        "1.0",
+                        "1.1"
+                    ]
                 },
                 {
                     "name": "Chamber",
-                    "revisions": ["1.0"]
+                    "revisions": [
+                        "1.0"
+                    ]
                 }
             ]
         },
@@ -154,12 +215,24 @@
             "description": "Saturn Moon Project",
             "pcb_count": 12,
             "pcbs": [
-                "TIT-0001E", "TIT-0002P", "TIT-0003X", "TIT-0004G", "TIT-0005R",
-                "TIT-0006A", "TIT-0007J", "TIT-0008T", "TIT-0009C", "TIT-0010D",
-                "TIT-0011N", "TIT-0012W"
+                "TIT-0001E",
+                "TIT-0002P",
+                "TIT-0003X",
+                "TIT-0004G",
+                "TIT-0005R",
+                "TIT-0006A",
+                "TIT-0007J",
+                "TIT-0008T",
+                "TIT-0009C",
+                "TIT-0010D",
+                "TIT-0011N",
+                "TIT-0012W"
             ],
             "revisions": [
-                "A0", "B0", "A1", "C0"
+                "A0",
+                "B0",
+                "A1",
+                "C0"
             ],
             "project_key": "TIT",
             "silicon_corners": "TT, SS, FF",
@@ -169,14 +242,21 @@
                     "silicon_versions": [
                         {
                             "name": "A0",
-                            "silicon_corners": ["TT", "SS", "FF"],
+                            "silicon_corners": [
+                                "TT",
+                                "SS",
+                                "FF"
+                            ],
                             "formfactors": [
                                 {
                                     "name": "SVB",
                                     "revisions": [
                                         {
                                             "name": "1.0",
-                                            "boms": ["BOM1", "BOM2"],
+                                            "boms": [
+                                                "BOM1",
+                                                "BOM2"
+                                            ],
                                             "schematic": "BBB-SCH.pdf",
                                             "board_file": "BBB.brd",
                                             "bom_csv": "BBB-BOM.csv",
@@ -184,7 +264,9 @@
                                         },
                                         {
                                             "name": "1.1",
-                                            "boms": ["BOM1"],
+                                            "boms": [
+                                                "BOM1"
+                                            ],
                                             "schematic": "BBB-SCH.pdf",
                                             "board_file": "BBB.brd",
                                             "bom_csv": "BBB-BOM.csv",
@@ -192,7 +274,9 @@
                                         },
                                         {
                                             "name": "2.0",
-                                            "boms": ["BOM2"],
+                                            "boms": [
+                                                "BOM2"
+                                            ],
                                             "schematic": "BBB-SCH.pdf",
                                             "board_file": "BBB.brd",
                                             "bom_csv": "BBB-BOM.csv",
@@ -205,7 +289,9 @@
                                     "revisions": [
                                         {
                                             "name": "1.0",
-                                            "boms": ["Default"],
+                                            "boms": [
+                                                "Default"
+                                            ],
                                             "schematic": "BBB-SCH.pdf",
                                             "board_file": "BBB.brd",
                                             "bom_csv": "BBB-BOM.csv",
@@ -221,11 +307,17 @@
             "flavors": [
                 {
                     "name": "SVB",
-                    "revisions": ["1.0", "1.1", "2.0"]
+                    "revisions": [
+                        "1.0",
+                        "1.1",
+                        "2.0"
+                    ]
                 },
                 {
                     "name": "Demo",
-                    "revisions": ["1.0"]
+                    "revisions": [
+                        "1.0"
+                    ]
                 }
             ]
         },
@@ -235,15 +327,37 @@
             "description": "Saturn Moon Project",
             "pcb_count": 26,
             "pcbs": [
-                "ATL-0001F", "ATL-0002Q", "ATL-0003Y", "ATL-0004H", "ATL-0005S",
-                "ATL-0006B", "ATL-0007K", "ATL-0008U", "ATL-0009D", "ATL-0010E",
-                "ATL-0011P", "ATL-0012X", "ATL-0013G", "ATL-0014R", "ATL-0015A",
-                "ATL-0016J", "ATL-0017T", "ATL-0018C", "ATL-0019M", "ATL-0020N",
-                "ATL-0021W", "ATL-0022F", "ATL-0023Q", "ATL-0024Y", "ATL-0025H",
+                "ATL-0001F",
+                "ATL-0002Q",
+                "ATL-0003Y",
+                "ATL-0004H",
+                "ATL-0005S",
+                "ATL-0006B",
+                "ATL-0007K",
+                "ATL-0008U",
+                "ATL-0009D",
+                "ATL-0010E",
+                "ATL-0011P",
+                "ATL-0012X",
+                "ATL-0013G",
+                "ATL-0014R",
+                "ATL-0015A",
+                "ATL-0016J",
+                "ATL-0017T",
+                "ATL-0018C",
+                "ATL-0019M",
+                "ATL-0020N",
+                "ATL-0021W",
+                "ATL-0022F",
+                "ATL-0023Q",
+                "ATL-0024Y",
+                "ATL-0025H",
                 "ATL-0026S"
             ],
             "revisions": [
-                "A0", "B0", "B1"
+                "A0",
+                "B0",
+                "B1"
             ],
             "project_key": "ATL",
             "silicon_corners": "TT, SS, FF",
@@ -253,14 +367,20 @@
                     "silicon_versions": [
                         {
                             "name": "A0",
-                            "silicon_corners": ["TT", "SS", "FF"],
+                            "silicon_corners": [
+                                "TT",
+                                "SS",
+                                "FF"
+                            ],
                             "formfactors": [
                                 {
                                     "name": "SVB",
                                     "revisions": [
                                         {
                                             "name": "1.0",
-                                            "boms": ["BOM1"],
+                                            "boms": [
+                                                "BOM1"
+                                            ],
                                             "schematic": "BBB-SCH.pdf",
                                             "board_file": "BBB.brd",
                                             "bom_csv": "BBB-BOM.csv",
@@ -273,7 +393,9 @@
                                     "revisions": [
                                         {
                                             "name": "1.0",
-                                            "boms": ["Default"],
+                                            "boms": [
+                                                "Default"
+                                            ],
                                             "schematic": "BBB-SCH.pdf",
                                             "board_file": "BBB.brd",
                                             "bom_csv": "BBB-BOM.csv",
@@ -289,11 +411,15 @@
             "flavors": [
                 {
                     "name": "SVB",
-                    "revisions": ["1.0"]
+                    "revisions": [
+                        "1.0"
+                    ]
                 },
                 {
                     "name": "Demo",
-                    "revisions": ["1.0"]
+                    "revisions": [
+                        "1.0"
+                    ]
                 }
             ]
         }
@@ -315,7 +441,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "2.0",
-            "short_code": "MQ9",
+            "short_code": "DE941",
             "manufacturer_id": "3060"
         },
         {
@@ -334,7 +460,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "1.0",
-            "short_code": "uh3",
+            "short_code": "DE942",
             "manufacturer_id": "5120"
         },
         {
@@ -353,7 +479,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "1.0",
-            "short_code": "Egg",
+            "short_code": "DE943",
             "manufacturer_id": "7180"
         },
         {
@@ -372,7 +498,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "1.1",
-            "short_code": "rKp",
+            "short_code": "DE944",
             "manufacturer_id": "9240"
         },
         {
@@ -391,7 +517,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Chamber",
             "board_rev": "1.0",
-            "short_code": "3XA",
+            "short_code": "DE945",
             "manufacturer_id": "2300"
         },
         {
@@ -410,7 +536,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "1.1",
-            "short_code": "qBn",
+            "short_code": "DE946",
             "manufacturer_id": "4360"
         },
         {
@@ -429,7 +555,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "2.0",
-            "short_code": "Kff",
+            "short_code": "DE947",
             "manufacturer_id": "6420"
         },
         {
@@ -448,7 +574,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "1.1",
-            "short_code": "X5X",
+            "short_code": "DE948",
             "manufacturer_id": "8480"
         },
         {
@@ -467,7 +593,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Chamber",
             "board_rev": "1.0",
-            "short_code": "Myj",
+            "short_code": "DE949",
             "manufacturer_id": "1540"
         },
         {
@@ -486,7 +612,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "1.1",
-            "short_code": "q7T",
+            "short_code": "DE94A",
             "manufacturer_id": "3600"
         },
         {
@@ -505,7 +631,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "1.1",
-            "short_code": "uPt",
+            "short_code": "DE94B",
             "manufacturer_id": "5660"
         },
         {
@@ -524,7 +650,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "1.0",
-            "short_code": "rmw",
+            "short_code": "DE94C",
             "manufacturer_id": "7720"
         },
         {
@@ -543,7 +669,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "1.1",
-            "short_code": "VaP",
+            "short_code": "DE94D",
             "manufacturer_id": "9780"
         },
         {
@@ -562,7 +688,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "1.1",
-            "short_code": "dPW",
+            "short_code": "DE94E",
             "manufacturer_id": "2840"
         },
         {
@@ -581,7 +707,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "1.0",
-            "short_code": "GFS",
+            "short_code": "DE94F",
             "manufacturer_id": "4900"
         },
         {
@@ -600,7 +726,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "1.1",
-            "short_code": "TNP",
+            "short_code": "DE94G",
             "manufacturer_id": "6960"
         },
         {
@@ -619,7 +745,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "1.1",
-            "short_code": "SVQ",
+            "short_code": "DE94H",
             "manufacturer_id": "9020"
         },
         {
@@ -638,7 +764,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "1.1",
-            "short_code": "bvJ",
+            "short_code": "DE94I",
             "manufacturer_id": "2080"
         },
         {
@@ -657,7 +783,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "2.0",
-            "short_code": "aSx",
+            "short_code": "DE94J",
             "manufacturer_id": "4140"
         },
         {
@@ -676,7 +802,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "1.1",
-            "short_code": "PvG",
+            "short_code": "DE94K",
             "manufacturer_id": "6200"
         },
         {
@@ -695,7 +821,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Chamber",
             "board_rev": "1.1",
-            "short_code": "mPN",
+            "short_code": "DE94L",
             "manufacturer_id": "8260"
         },
         {
@@ -714,7 +840,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "1.1",
-            "short_code": "bpC",
+            "short_code": "DE94M",
             "manufacturer_id": "1320"
         },
         {
@@ -733,7 +859,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "2.0",
-            "short_code": "YFf",
+            "short_code": "DE94N",
             "manufacturer_id": "3380"
         },
         {
@@ -752,7 +878,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "1.0",
-            "short_code": "Vfe",
+            "short_code": "DE94O",
             "manufacturer_id": "5440"
         },
         {
@@ -771,7 +897,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "1.1",
-            "short_code": "Ree",
+            "short_code": "DE94P",
             "manufacturer_id": "7500"
         },
         {
@@ -790,7 +916,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "2.0",
-            "short_code": "esX",
+            "short_code": "DE94Q",
             "manufacturer_id": "9560"
         },
         {
@@ -809,7 +935,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Chamber",
             "board_rev": "1.0",
-            "short_code": "PJY",
+            "short_code": "DE94R",
             "manufacturer_id": "2620"
         },
         {
@@ -828,7 +954,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "1.0",
-            "short_code": "W8P",
+            "short_code": "DE94S",
             "manufacturer_id": "4680"
         },
         {
@@ -847,7 +973,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "1.1",
-            "short_code": "fsT",
+            "short_code": "DE94T",
             "manufacturer_id": "6740"
         },
         {
@@ -866,7 +992,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Chamber",
             "board_rev": "2.0",
-            "short_code": "mdA",
+            "short_code": "DE94U",
             "manufacturer_id": "8800"
         },
         {
@@ -885,7 +1011,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "2.0",
-            "short_code": "WW6",
+            "short_code": "25TKHD",
             "manufacturer_id": "1860"
         },
         {
@@ -904,7 +1030,7 @@
             "silicon_corner": "SS",
             "board_flavor": "Chamber",
             "board_rev": "1.0",
-            "short_code": "vpM",
+            "short_code": "25TKHE",
             "manufacturer_id": "3920"
         },
         {
@@ -923,7 +1049,7 @@
             "silicon_corner": "FF",
             "board_flavor": "Demo",
             "board_rev": "1.0",
-            "short_code": "9Ud",
+            "short_code": "25TKHF",
             "manufacturer_id": "5980"
         },
         {
@@ -942,7 +1068,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "1.0",
-            "short_code": "uSs",
+            "short_code": "25TKHG",
             "manufacturer_id": "8040"
         },
         {
@@ -961,7 +1087,7 @@
             "silicon_corner": "SS",
             "board_flavor": "SVB",
             "board_rev": "1.1",
-            "short_code": "nBQ",
+            "short_code": "25TKHH",
             "manufacturer_id": "1100"
         },
         {
@@ -980,7 +1106,7 @@
             "silicon_corner": "FF",
             "board_flavor": "Demo",
             "board_rev": "2.0",
-            "short_code": "CjX",
+            "short_code": "25TKHI",
             "manufacturer_id": "3160"
         },
         {
@@ -999,7 +1125,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "1.0",
-            "short_code": "7vS",
+            "short_code": "25TKHJ",
             "manufacturer_id": "5220"
         },
         {
@@ -1018,7 +1144,7 @@
             "silicon_corner": "SS",
             "board_flavor": "Demo",
             "board_rev": "1.0",
-            "short_code": "W3t",
+            "short_code": "25TKHK",
             "manufacturer_id": "7280"
         },
         {
@@ -1037,7 +1163,7 @@
             "silicon_corner": "FF",
             "board_flavor": "Demo",
             "board_rev": "1.0",
-            "short_code": "yAA",
+            "short_code": "25TKHL",
             "manufacturer_id": "9340"
         },
         {
@@ -1056,7 +1182,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "1.0",
-            "short_code": "9TQ",
+            "short_code": "25TKHM",
             "manufacturer_id": "2400"
         },
         {
@@ -1075,7 +1201,7 @@
             "silicon_corner": "SS",
             "board_flavor": "Demo",
             "board_rev": "1.0",
-            "short_code": "APm",
+            "short_code": "25TKHN",
             "manufacturer_id": "4460"
         },
         {
@@ -1094,7 +1220,7 @@
             "silicon_corner": "FF",
             "board_flavor": "Chamber",
             "board_rev": "2.0",
-            "short_code": "ccv",
+            "short_code": "25TKHO",
             "manufacturer_id": "6520"
         },
         {
@@ -1113,7 +1239,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "2.0",
-            "short_code": "7QJ",
+            "short_code": "308LT",
             "manufacturer_id": "8580"
         },
         {
@@ -1132,7 +1258,7 @@
             "silicon_corner": "SS",
             "board_flavor": "Demo",
             "board_rev": "1.0",
-            "short_code": "RtE",
+            "short_code": "308LU",
             "manufacturer_id": "1640"
         },
         {
@@ -1151,7 +1277,7 @@
             "silicon_corner": "FF",
             "board_flavor": "Demo",
             "board_rev": "2.0",
-            "short_code": "cV3",
+            "short_code": "308LV",
             "manufacturer_id": "3700"
         },
         {
@@ -1170,7 +1296,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "1.1",
-            "short_code": "UBG",
+            "short_code": "308LW",
             "manufacturer_id": "5760"
         },
         {
@@ -1189,7 +1315,7 @@
             "silicon_corner": "SS",
             "board_flavor": "Demo",
             "board_rev": "1.1",
-            "short_code": "jeD",
+            "short_code": "308LX",
             "manufacturer_id": "7820"
         },
         {
@@ -1208,7 +1334,7 @@
             "silicon_corner": "FF",
             "board_flavor": "SVB",
             "board_rev": "1.1",
-            "short_code": "tdx",
+            "short_code": "308LY",
             "manufacturer_id": "9880"
         },
         {
@@ -1227,7 +1353,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "2.0",
-            "short_code": "SyG",
+            "short_code": "308LZ",
             "manufacturer_id": "2940"
         },
         {
@@ -1246,7 +1372,7 @@
             "silicon_corner": "SS",
             "board_flavor": "SVB",
             "board_rev": "1.1",
-            "short_code": "fX9",
+            "short_code": "308M0",
             "manufacturer_id": "5000"
         },
         {
@@ -1265,7 +1391,7 @@
             "silicon_corner": "FF",
             "board_flavor": "Chamber",
             "board_rev": "2.0",
-            "short_code": "kF4",
+            "short_code": "308M1",
             "manufacturer_id": "7060"
         },
         {
@@ -1284,7 +1410,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "1.0",
-            "short_code": "aXx",
+            "short_code": "308M2",
             "manufacturer_id": "9120"
         },
         {
@@ -1303,7 +1429,7 @@
             "silicon_corner": "SS",
             "board_flavor": "SVB",
             "board_rev": "1.0",
-            "short_code": "jjW",
+            "short_code": "308M3",
             "manufacturer_id": "2180"
         },
         {
@@ -1322,7 +1448,7 @@
             "silicon_corner": "FF",
             "board_flavor": "SVB",
             "board_rev": "1.0",
-            "short_code": "cPx",
+            "short_code": "308M4",
             "manufacturer_id": "4240"
         },
         {
@@ -1341,7 +1467,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Chamber",
             "board_rev": "1.1",
-            "short_code": "Aj5",
+            "short_code": "308M5",
             "manufacturer_id": "6300"
         },
         {
@@ -1360,7 +1486,7 @@
             "silicon_corner": "SS",
             "board_flavor": "SVB",
             "board_rev": "1.0",
-            "short_code": "Pep",
+            "short_code": "308M6",
             "manufacturer_id": "8360"
         },
         {
@@ -1379,7 +1505,7 @@
             "silicon_corner": "FF",
             "board_flavor": "Chamber",
             "board_rev": "2.0",
-            "short_code": "U3b",
+            "short_code": "308M7",
             "manufacturer_id": "1420"
         },
         {
@@ -1398,7 +1524,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Chamber",
             "board_rev": "2.0",
-            "short_code": "SPq",
+            "short_code": "308M8",
             "manufacturer_id": "3480"
         },
         {
@@ -1417,7 +1543,7 @@
             "silicon_corner": "SS",
             "board_flavor": "Demo",
             "board_rev": "1.1",
-            "short_code": "cVd",
+            "short_code": "308M9",
             "manufacturer_id": "5540"
         },
         {
@@ -1436,7 +1562,7 @@
             "silicon_corner": "FF",
             "board_flavor": "Chamber",
             "board_rev": "2.0",
-            "short_code": "x9a",
+            "short_code": "308MA",
             "manufacturer_id": "7600"
         },
         {
@@ -1455,7 +1581,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "1.1",
-            "short_code": "gxy",
+            "short_code": "308MB",
             "manufacturer_id": "9660"
         },
         {
@@ -1474,7 +1600,7 @@
             "silicon_corner": "SS",
             "board_flavor": "Chamber",
             "board_rev": "1.1",
-            "short_code": "FTn",
+            "short_code": "308MC",
             "manufacturer_id": "2720"
         },
         {
@@ -1493,7 +1619,7 @@
             "silicon_corner": "FF",
             "board_flavor": "SVB",
             "board_rev": "1.1",
-            "short_code": "wPq",
+            "short_code": "308MD",
             "manufacturer_id": "4780"
         },
         {
@@ -1512,7 +1638,7 @@
             "silicon_corner": "TT",
             "board_flavor": "Demo",
             "board_rev": "1.1",
-            "short_code": "mpN",
+            "short_code": "308ME",
             "manufacturer_id": "6840"
         },
         {
@@ -1531,7 +1657,7 @@
             "silicon_corner": "SS",
             "board_flavor": "Demo",
             "board_rev": "2.0",
-            "short_code": "VAs",
+            "short_code": "308MF",
             "manufacturer_id": "8900"
         },
         {
@@ -1550,7 +1676,7 @@
             "silicon_corner": "FF",
             "board_flavor": "SVB",
             "board_rev": "2.0",
-            "short_code": "URb",
+            "short_code": "308MG",
             "manufacturer_id": "1960"
         },
         {
@@ -1569,7 +1695,7 @@
             "silicon_corner": "TT",
             "board_flavor": "SVB",
             "board_rev": "1.0",
-            "short_code": "Jjf",
+            "short_code": "308MH",
             "manufacturer_id": "4020"
         },
         {
@@ -1588,7 +1714,7 @@
             "silicon_corner": "SS",
             "board_flavor": "Chamber",
             "board_rev": "1.1",
-            "short_code": "UeA",
+            "short_code": "308MI",
             "manufacturer_id": "6080"
         }
     ],

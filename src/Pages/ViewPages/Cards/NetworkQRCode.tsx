@@ -5,7 +5,7 @@ import { COLORS } from '../../../store/useStyles';
 import { useAppState } from '../../../store/useAppState';
 import { usePcbStore } from '../../../store/clientDataBase/usePcbStore';
 import { Popup } from '../../../components/Popup';
-import { resolveQrUrl, getQrCapacity, getQrGridSize, type QrErrorCorrectionLevel } from '../../../components/UrlManager/qrHelper';
+import { resolveQrUrl, getQrCapacity, getQrGridSize, encodeBase36ShortCode, type QrErrorCorrectionLevel } from '../../../components/UrlManager/qrHelper';
 
 export function NetworkQRCode() {
     const [qrDataUrl, setQrDataUrl] = useState<string>('');
@@ -25,7 +25,10 @@ export function NetworkQRCode() {
 
     const pcbs = usePcbStore(state => state.pcbs);
     const matchingPcb = pcbs.find(p => p.board_number === qrModalBoard);
-    const shortCode = matchingPcb?.short_code;
+    const projectKey = (matchingPcb as any)?.project_key || matchingPcb?.project || (qrModalBoard?.includes('-') ? qrModalBoard.split('-')[0] : 'PCB');
+    const shortCode = matchingPcb?.short_code && matchingPcb.short_code.length >= 5
+        ? matchingPcb.short_code
+        : encodeBase36ShortCode(projectKey, qrModalBoard || '');
 
     const activeLevel: QrErrorCorrectionLevel = qrCodeErrorCorrection || 'L';
 

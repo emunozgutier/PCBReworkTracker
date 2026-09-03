@@ -315,6 +315,18 @@ initDb().then(() => {
     lockDirectoryFiles(path.join(__dirname, 'docs'));
     lockDirectoryFiles(path.join(__dirname, 'pictures'));
 
+    // Migrate legacy short codes to Base36 format
+    db.all("SELECT id, board_number, project_id, short_code FROM pcbs WHERE length(short_code) < 5 OR short_code IS NULL", [], (errPcb: Error | null, rows: any[]) => {
+        if (!errPcb && rows) {
+            rows.forEach((row: any) => {
+                getProjectKeyById(row.project_id).then((pKey) => {
+                    const newCode = encodeBase36ShortCode(pKey, row.board_number);
+                    db.run("UPDATE pcbs SET short_code = ? WHERE id = ?", [newCode, row.id]);
+                });
+            });
+        }
+    });
+
     // Start Server
     app.listen(port, () => {
         console.log(`Server running at http://localhost:${port}`);
@@ -359,24 +371,70 @@ function generateCRC(input: string): string {
     return CHARSET[sum % CHARSET.length];
 }
 
-const RESERVED_URLS = new Set(['project', 'projects', 'pcb', 'pcbs', 'rework', 'reworks', 'owners', 'tags', 'crc', 'api', 'demo']);
+const RESERVED_URLS = new Set(['project', 'projects', 'pcb', 'pcbs', 'rework', 'reworks', 'owners', 'tags', 'crc', 'api', 'demo', 'settings']);
 
-function generateShortCode(attempt = 1): Promise<string> {
+function getProjectKeyById(projectId: number | string | undefined): Promise<string> {
+    return new Promise((resolve) => {
+        if (!projectId) return resolve("PCB");
+        db.get("SELECT project_key, name FROM projects WHERE id = ?", [projectId], (_err: Error | null, row: any) => {
+            if (row && row.project_key) {
+                resolve(row.project_key.toUpperCase().slice(0, 3));
+            } else if (row && row.name) {
+                resolve(row.name.replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 3) || "PCB");
+            } else {
+                resolve("PCB");
+            }
+        });
+    });
+}
+
+function encodeBase36ShortCode(projectKey: string, boardNumber: number | string): string {
+    const cleanKey = (projectKey || "PCB").toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3).padEnd(3, 'A');
+    const c0 = cleanKey.charCodeAt(0) - 65;
+    const c1 = cleanKey.charCodeAt(1) - 65;
+    const c2 = cleanKey.charCodeAt(2) - 65;
+    const projectIndex = (Math.max(0, Math.min(25, c0)) * 676) + 
+                         (Math.max(0, Math.min(25, c1)) * 26) + 
+                         Math.max(0, Math.min(25, c2));
+    
+    let num = 0;
+    if (typeof boardNumber === 'number') {
+        num = boardNumber;
+    } else {
+        const matches = String(boardNumber).match(/\d+/g);
+        if (matches && matches.length > 0) {
+            num = parseInt(matches[matches.length - 1], 10);
+        }
+    }
+    const safeNum = Math.abs(isNaN(num) ? 0 : num) % 10000;
+    
+    const combined = (projectIndex * 10000) + safeNum;
+    return combined.toString(36).toUpperCase().padStart(5, '0');
+}
+
+function generateShortCode(projectKey = "PCB", boardNum?: string | number, attempt = 1): Promise<string> {
     return new Promise((resolve, reject) => {
-        if (attempt > 20) return reject(new Error("Unable to generate short code"));
-        const chars = 'ABCDEFGHJKMNPQRSTUVWXYabcdefghjkmnpqrstuvwxy3456789';
+        if (attempt > 30) return reject(new Error("Unable to generate short code"));
+        
         let code = '';
-        for (let i = 0; i < 3; i++) {
-            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        if (attempt === 1 && boardNum !== undefined && boardNum !== null && String(boardNum).trim() !== '') {
+            // Encode the 3-letter project and 4-digit board number into Base36
+            code = encodeBase36ShortCode(projectKey, boardNum);
+        } else {
+            // If collision or no boardNum, generate random 5-char Base36
+            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            for (let i = 0; i < 5; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
         }
         
         if (RESERVED_URLS.has(code.toLowerCase())) {
-            return resolve(generateShortCode(attempt + 1));
+            code = code + 'X';
         }
         
         db.get("SELECT id FROM pcbs WHERE short_code = ?", [code], (err: Error | null, row: any) => {
             if (err) return reject(err);
-            if (row) resolve(generateShortCode(attempt + 1));
+            if (row) resolve(generateShortCode(projectKey, boardNum, attempt + 1));
             else resolve(code);
         });
     });
@@ -907,7 +965,8 @@ app.post('/api/pcbs', async (req: Request, res: Response) => {
         if (!isNaN(val)) numPart = val.toString();
     }
     try {
-        const short_code = await generateShortCode();
+        const projectKey = await getProjectKeyById(project_id);
+        const short_code = await generateShortCode(projectKey, numPart);
         const creator = req.headers['x-user-username'] || 'guest';
         // Resolve flavor name to FK id
         const resolveFlavorId = (cb: (id: number | null) => void) => {

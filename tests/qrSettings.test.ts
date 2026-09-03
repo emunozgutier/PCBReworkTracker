@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useAppState } from '../src/store/useAppState';
-import { resolveQrUrl, getQrCapacity, getQrGridSize, QR_ERROR_CORRECTION_LEVELS } from '../src/components/UrlManager/qrHelper';
+import { resolveQrUrl, getQrCapacity, getQrGridSize, QR_ERROR_CORRECTION_LEVELS, encodeBase36ShortCode, decodeBase36ShortCode } from '../src/components/UrlManager/qrHelper';
 
 describe('QR Settings and URL Resolution Unit Tests', () => {
     beforeEach(() => {
@@ -140,5 +140,33 @@ describe('QR Settings and URL Resolution Unit Tests', () => {
         expect(state.qrCodeBaseUrlType).toBe('current');
         expect(state.qrCodeCustomBaseUrl).toBe('');
         expect(state.qrCodeErrorCorrection).toBe('L');
+    });
+
+    it('should encode 3-letter project and board number into a compact Base36 short code', () => {
+        // DIO (project) and board 16 -> 5 characters
+        const code1 = encodeBase36ShortCode('DIO', 'DIO-0016X');
+        expect(code1.length).toBeGreaterThanOrEqual(5);
+        expect(/^[0-9A-Z]+$/.test(code1)).toBe(true);
+
+        const decoded1 = decodeBase36ShortCode(code1);
+        expect(decoded1).not.toBeNull();
+        expect(decoded1?.projectKey).toBe('DIO');
+        expect(decoded1?.boardNumber).toBe(16);
+
+        // DIO and board 1
+        const code2 = encodeBase36ShortCode('DIO', 1);
+        expect(code2.length).toBe(5);
+        const decoded2 = decodeBase36ShortCode(code2);
+        expect(decoded2?.projectKey).toBe('DIO');
+        expect(decoded2?.boardNumber).toBe(1);
+
+        // Extreme bounds: AAA 0
+        const codeAAA = encodeBase36ShortCode('AAA', 0);
+        expect(codeAAA).toBe('00000');
+        expect(decodeBase36ShortCode(codeAAA)).toEqual({ projectKey: 'AAA', boardNumber: 0 });
+
+        // Extreme bounds: ZZZ 9999
+        const codeZZZ = encodeBase36ShortCode('ZZZ', 9999);
+        expect(decodeBase36ShortCode(codeZZZ)).toEqual({ projectKey: 'ZZZ', boardNumber: 9999 });
     });
 });

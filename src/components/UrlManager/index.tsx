@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useAppState } from '../../store/useAppState';
 import { usePcbStore } from '../../store/clientDataBase/usePcbStore';
 import { useReworkStore } from '../../store/clientDataBase/useReworkStore';
+import { decodeBase36ShortCode } from './qrHelper';
 
 const getNormalizedPath = () => {
     if (typeof window === 'undefined') return '/';
@@ -152,7 +153,7 @@ export function UrlManager() {
                 return;
             }
 
-            if ((path.length === 3 || path.length === 4) && /^[A-Za-z0-9]{3,4}$/.test(path)) {
+            if (path.length >= 3 && path.length <= 10 && /^[A-Za-z0-9_-]{3,10}$/.test(path)) {
                 useAppState.getState().setActiveTab('pcbs');
                 useAppState.getState().setExpandedPcb(`SHORT:${path}`);
                 useAppState.getState().setIsolatedView(true);
@@ -222,20 +223,28 @@ export function UrlManager() {
             }
             return;
         }
-        if (page !== activeTab && page.includes('_')) return;
 
-        const search = window.location.search;
-        let targetUrl = `${base}/${activeTab}${search}`;
-        
-        if (activeTab === 'projects' && expandedProject) {
-            targetUrl = `${base}/projects/${encodeURIComponent(expandedProject)}${search}`;
-        } else if (activeTab === 'pcbs' && expandedPcb) {
-            targetUrl = `${base}/pcbs/${encodeURIComponent(expandedPcb)}${isolatedView ? '/view' : ''}${search}`;
-        } else if (activeTab === 'reworks' && expandedRework) {
-            targetUrl = `${base}/reworks/${encodeURIComponent(expandedRework)}${search}`;
+        if (page === 'reset_otp') {
+            const search = window.location.search;
+            const targetUrl = `${base}/reset-otp${search}`;
+            const currentPath = window.location.pathname + window.location.search;
+            if (currentPath !== targetUrl) {
+                window.history.pushState({}, '', targetUrl);
+            }
+            return;
         }
 
-        // Only push if the resulting URL is different from the current to avoid infinite loops
+        let targetUrl = `${base}/${activeTab}`;
+        if (activeTab === 'projects' && expandedProject) {
+            targetUrl = `${base}/projects/${encodeURIComponent(expandedProject)}`;
+        } else if (activeTab === 'pcbs' && expandedPcb) {
+            // Check if user is navigating back to all boards in project view or an individual board
+            const isViewOnly = isolatedView ? '/view' : '';
+            targetUrl = `${base}/pcbs/${encodeURIComponent(expandedPcb)}${isViewOnly}`;
+        } else if (activeTab === 'reworks' && expandedRework) {
+            targetUrl = `${base}/reworks/${encodeURIComponent(expandedRework)}`;
+        }
+
         const currentPath = window.location.pathname + window.location.search;
         console.log('[UrlManager] Before PushState ->', { activeTab, page, targetUrl, currentPath, base });
         if (currentPath !== targetUrl) {
@@ -247,8 +256,45 @@ export function UrlManager() {
     useEffect(() => {
         if (activeTab === 'pcbs' && expandedPcb && hasFetched && !loading) {
              if (expandedPcb.startsWith('SHORT:')) {
-                 const code = expandedPcb.slice(6).toUpperCase();
-                 const pcb = pcbs.find(p => p.short_code && p.short_code.toUpperCase() === code);
+                 const rawCode = expandedPcb.slice(6);
+                 const code = rawCode.toUpperCase();
+                 
+                 // 1. Direct match by pcb.short_code
+                 let pcb = pcbs.find(p => p.short_code && p.short_code.toUpperCase() === code);
+                 
+                 // 2. Base36 decoding match: decode project key and board number
+                 if (!pcb) {
+                     const decoded = decodeBase36ShortCode(code);
+                     if (decoded) {
+                         pcb = pcbs.find(p => {
+                             const pKey = ((p as any).project_key || (p.project || '').slice(0, 3)).toUpperCase();
+                             if (pKey !== decoded.projectKey) return false;
+                             
+                             const matches = (p.board_number || '').match(/\d+/g);
+                             if (matches && matches.length > 0) {
+                                 const bNum = parseInt(matches[matches.length - 1], 10);
+                                 return bNum === decoded.boardNumber;
+                             }
+                             return false;
+                         });
+                     }
+                 }
+
+                 // 3. Flexible match: match clean project + number (e.g. DIO16, DIO0016, or DIO01)
+                 if (!pcb) {
+                     pcb = pcbs.find(p => {
+                         const cleanBoard = (p.board_number || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+                         if (cleanBoard === code) return true;
+                         if (cleanBoard.slice(0, -1) === code) return true; // without checksum letter
+                         
+                         const boardMatch = cleanBoard.match(/^([A-Z]+)0*(\d+)[A-Z]?$/);
+                         const codeMatch = code.match(/^([A-Z]+)0*(\d+)$/);
+                         if (boardMatch && codeMatch && boardMatch[1] === codeMatch[1] && boardMatch[2] === codeMatch[2]) {
+                             return true;
+                         }
+                         return false;
+                     });
+                 }
                  if (pcb) {
                      useAppState.getState().setPage('pcbs');
                      useAppState.getState().setExpandedPcb(pcb.board_number);

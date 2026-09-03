@@ -5,7 +5,7 @@ import { QrCodeSettingCard } from './QrCodeSettingCard';
 import { useAppState } from '../../store/useAppState';
 import { usePcbStore, type Pcb } from '../../store/clientDataBase/usePcbStore';
 import { useProjectStore } from '../../store/clientDataBase/useProjectStore';
-import { resolveQrUrl } from '../../components/UrlManager/qrHelper';
+import { resolveQrUrl, encodeBase36ShortCode } from '../../components/UrlManager/qrHelper';
 import '../ViewPages/SettingsView.css';
 import './QrPrintPage.css';
 
@@ -17,7 +17,12 @@ function PrintLabelCell({ pcb, includeBoardName, customMessage, labelSize }: { p
     const { qrCodeUrlType, qrCodeBaseUrlType, qrCodeCustomBaseUrl, qrCodeErrorCorrection, qrCodeMode } = useAppState();
     const [qrDataUrl, setQrDataUrl] = useState<string>('');
 
-    const { url } = resolveQrUrl(pcb.board_number, pcb.short_code, {
+    const projectKey = (pcb as any).project_key || pcb.project || (pcb.board_number.includes('-') ? pcb.board_number.split('-')[0] : 'PCB');
+    const effectiveShortCode = pcb.short_code && pcb.short_code.length >= 5
+        ? pcb.short_code
+        : encodeBase36ShortCode(projectKey, pcb.board_number);
+
+    const { url } = resolveQrUrl(pcb.board_number, effectiveShortCode, {
         urlType: qrCodeUrlType,
         baseUrlType: qrCodeBaseUrlType,
         customBaseUrl: qrCodeCustomBaseUrl,

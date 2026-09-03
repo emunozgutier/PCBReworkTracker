@@ -9,10 +9,12 @@ import {
     QR_ERROR_CORRECTION_LEVELS,
     getQrCapacity,
     getQrGridSize,
+    encodeBase36ShortCode,
     type QrErrorCorrectionLevel
 } from '../../components/UrlManager/qrHelper';
 
 export function QrCodeSettingCard() {
+    const pcbs = usePcbStore(state => state.pcbs);
     const {
         qrCodeUrlType,
         qrCodeBaseUrlType,
@@ -26,17 +28,19 @@ export function QrCodeSettingCard() {
         setQrCodeMode
     } = useAppState();
 
-    const pcbs = usePcbStore(state => state.pcbs);
-
     // Test preview inputs
     const [testBoardName, setTestBoardName] = useState('MAP-0001');
     const [previewQrUrl, setPreviewQrUrl] = useState('');
     const [previewQrDataUrl, setPreviewQrDataUrl] = useState('');
     const [previewInfo, setPreviewInfo] = useState<{ version: number; size: number } | null>(null);
 
-    // Find test PCB's short code if available or generate sample
+    // Find test PCB's short code if available or generate Base36 code
     const matchingPcb = pcbs.find(p => p.board_number.toLowerCase() === testBoardName.trim().toLowerCase());
-    const previewShortCode = matchingPcb?.short_code || 'MQ9';
+    const testPcbName = testBoardName.trim() || 'MAP-0001';
+    const testProjectKey = matchingPcb?.project || (testPcbName.includes('-') ? testPcbName.split('-')[0] : 'MAP');
+    const previewShortCode = matchingPcb?.short_code && matchingPcb.short_code.length >= 5
+        ? matchingPcb.short_code
+        : encodeBase36ShortCode(testProjectKey, testPcbName);
 
     const defaultOrigin = getDefaultBaseUrl();
 
