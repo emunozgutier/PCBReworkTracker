@@ -73,23 +73,25 @@
 
 /* Print Styles */
 @media print {
-    /* Hide all screen elements */
-    body > *:not(.print-only-wrapper) {
-        display: none !important;
+    /* Hide everything EXCEPT the print wrapper and its parents */
+    body, html, #root, .app-container, .qr-print-studio-wrapper {
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
     }
-    
-    .app-container, .qr-print-studio-wrapper, .settings-page-wrapper, .title-bar, .tab-bar, .top-buttons {
+
+    /* Hide specific UI elements */
+    .title-bar, .tab-bar, .top-buttons, .qr-print-studio-header, .settings-main-card, .settings-page-wrapper {
         display: none !important;
     }
 
     /* Target the specific wrapper we want to print */
     .print-only-wrapper {
         display: block !important;
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 3in;
-        height: 4in;
+        width: 100%;
         margin: 0;
         padding: 0;
         background: white;
@@ -97,27 +99,17 @@
 
     .print-only-container {
         display: grid;
-        width: 3in;
-        height: 4in;
         margin: 0;
         padding: 0;
         box-sizing: border-box;
         overflow: hidden;
-        page-break-inside: avoid;
-        page-break-after: avoid;
+        page-break-after: always;
         background: white;
+        justify-content: center;
+        align-content: start;
     }
 
-    /* Grid configs based on selected label size */
-    .print-only-container.size-05 {
-        grid-template-columns: repeat(6, 0.5in);
-        grid-template-rows: repeat(8, 0.5in);
-    }
 
-    .print-only-container.size-10 {
-        grid-template-columns: repeat(3, 1in);
-        grid-template-rows: repeat(4, 1in);
-    }
 
     .print-label-cell {
         display: flex;
@@ -151,6 +143,13 @@
         margin-top: 1px;
     }
 
+    /* Font sizing for 0.75" */
+    .size-075 .print-label-text {
+        font-size: 7pt;
+        line-height: 1.1;
+        margin-top: 1px;
+    }
+
     /* Font sizing for 1.0" */
     .size-10 .print-label-text {
         font-size: 8pt;
@@ -158,8 +157,24 @@
         margin-top: 2px;
     }
 
-    @page {
-        size: 3in 4in;
-        margin: 0;
+    /* Font sizing for 1.5" */
+    .size-15 .print-label-text {
+        font-size: 10pt;
+        line-height: 1.2;
+        margin-top: 3px;
+    }
+
+    /* Font sizing for 2.0" */
+    .size-20 .print-label-text {
+        font-size: 12pt;
+        line-height: 1.2;
+        margin-top: 4px;
+    }
+
+    /* Font sizing for 3.0" */
+    .size-30 .print-label-text {
+        font-size: 14pt;
+        line-height: 1.2;
+        margin-top: 5px;
     }
 }
