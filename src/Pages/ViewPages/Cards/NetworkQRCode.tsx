@@ -19,6 +19,7 @@ export function NetworkQRCode() {
         qrCodeBaseUrlType,
         qrCodeCustomBaseUrl,
         qrCodeErrorCorrection,
+        qrCodeMode,
         setQrCodeUrlType
     } = useAppState();
 
@@ -36,7 +37,8 @@ export function NetworkQRCode() {
             urlType: qrCodeUrlType,
             baseUrlType: qrCodeBaseUrlType,
             customBaseUrl: qrCodeCustomBaseUrl,
-            errorCorrectionLevel: activeLevel
+            errorCorrectionLevel: activeLevel,
+            qrCodeMode: qrCodeMode
         }
     );
 
@@ -90,7 +92,7 @@ export function NetworkQRCode() {
 
     const currentVersion = qrInfo?.version || 1;
     const currentGridSize = qrInfo?.size || getQrGridSize(currentVersion);
-    const maxCapacity = getQrCapacity(currentVersion, activeLevel);
+    const maxCapacity = getQrCapacity(currentVersion, activeLevel, qrCodeMode);
     const urlLength = url.length;
 
     return (

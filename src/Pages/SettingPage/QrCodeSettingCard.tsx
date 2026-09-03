@@ -18,10 +18,12 @@ export function QrCodeSettingCard() {
         qrCodeBaseUrlType,
         qrCodeCustomBaseUrl,
         qrCodeErrorCorrection,
+        qrCodeMode,
         setQrCodeUrlType,
         setQrCodeBaseUrlType,
         setQrCodeCustomBaseUrl,
-        setQrCodeErrorCorrection
+        setQrCodeErrorCorrection,
+        setQrCodeMode
     } = useAppState();
 
     const pcbs = usePcbStore(state => state.pcbs);
@@ -46,7 +48,8 @@ export function QrCodeSettingCard() {
             urlType: qrCodeUrlType,
             baseUrlType: qrCodeBaseUrlType,
             customBaseUrl: qrCodeCustomBaseUrl,
-            errorCorrectionLevel: qrCodeErrorCorrection
+            errorCorrectionLevel: qrCodeErrorCorrection,
+            qrCodeMode: qrCodeMode
         }
     );
 
@@ -85,12 +88,12 @@ export function QrCodeSettingCard() {
     const urlLength = previewQrUrl.length;
     const currentVersion = previewInfo?.version || 1;
     const currentGridSize = previewInfo?.size || getQrGridSize(currentVersion);
-    const maxCapacity = getQrCapacity(currentVersion, activeLevel);
+    const maxCapacity = getQrCapacity(currentVersion, activeLevel, qrCodeMode);
     const isSmallestGrid = currentGridSize === 21;
     const usagePercent = Math.min(100, Math.round((urlLength / maxCapacity) * 100));
 
     // Capacity for smallest 21x21 at selected level
-    const smallest21Capacity = getQrCapacity(1, activeLevel);
+    const smallest21Capacity = getQrCapacity(1, activeLevel, qrCodeMode);
 
     return (
         <div className="settings-main-card">
@@ -195,7 +198,63 @@ export function QrCodeSettingCard() {
                 </div>
             </div>
 
-            {/* Section 2: URL Format (Full vs Compressed) */}
+            {/* Section 2: QR Code Data Mode */}
+            <div style={{ marginBottom: '24px' }}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    color: 'var(--text-h)',
+                    marginBottom: '12px'
+                }}>
+                    <Info size={16} color="var(--accent)" />
+                    <span>2. QR Code Data Mode (Byte vs Alphanumeric)</span>
+                </div>
+
+                <div className="settings-options-grid">
+                    {/* Option A: Byte Mode */}
+                    <div
+                        className={`setting-choice-card ${qrCodeMode === 'byte' ? 'selected' : ''}`}
+                        onClick={() => setQrCodeMode('byte')}
+                    >
+                        <div className="choice-card-top">
+                            <span className="choice-title">Byte Mode (Default)</span>
+                            <div className="choice-radio">
+                                {qrCodeMode === 'byte' && (
+                                    <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#ffffff' }} />
+                                )}
+                            </div>
+                        </div>
+
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                            Standard QR encoding. Supports upper/lowercase characters and all URL formats.
+                        </div>
+                    </div>
+
+                    {/* Option B: Alphanumeric Mode */}
+                    <div
+                        className={`setting-choice-card ${qrCodeMode === 'alphanumeric' ? 'selected' : ''}`}
+                        onClick={() => setQrCodeMode('alphanumeric')}
+                    >
+                        <div className="choice-card-top">
+                            <span className="choice-title">Alphanumeric Mode</span>
+                            <div className="choice-radio">
+                                {qrCodeMode === 'alphanumeric' && (
+                                    <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#ffffff' }} />
+                                )}
+                            </div>
+                        </div>
+
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                            Optimized for storage. Automatically converts the URL to UPPERCASE. Works perfectly with Short URLs.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Section 3: URL Format (Full vs Compressed) */}
             <div style={{ marginBottom: '24px' }}>
                 <div style={{
                     display: 'flex',
@@ -207,7 +266,7 @@ export function QrCodeSettingCard() {
                     marginBottom: '12px'
                 }}>
                     <Zap size={16} color="var(--accent)" />
-                    <span>2. QR Code URL Format</span>
+                    <span>3. QR Code URL Format</span>
                 </div>
 
                 <div className="settings-options-grid">
@@ -265,7 +324,7 @@ export function QrCodeSettingCard() {
                 </div>
             </div>
 
-            {/* Section 3: Error Correction / Recovery Level */}
+            {/* Section 4: Error Correction / Recovery Level */}
             <div style={{ marginBottom: '24px' }}>
                 <div style={{
                     display: 'flex',
@@ -277,7 +336,7 @@ export function QrCodeSettingCard() {
                     marginBottom: '12px'
                 }}>
                     <Shield size={16} color="var(--accent)" />
-                    <span>3. Error Correction & Damage Recovery Level</span>
+                    <span>4. Error Correction & Damage Recovery Level</span>
                 </div>
 
                 <div style={{

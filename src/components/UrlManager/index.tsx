@@ -49,27 +49,35 @@ export function UrlManager() {
         const handlePopState = () => {
             const rawPath = getNormalizedPath();
             
+            const lowerPath = rawPath.toLowerCase();
+
             // settings secrets page (DB settings)
-            if (rawPath === '/settings/secrets' || rawPath === '/settings/secrets/') {
+            if (lowerPath === '/settings/secrets' || lowerPath === '/settings/secrets/') {
                 useAppState.getState().setPage('settings_secrets');
                 return;
             }
 
             // settings test page
-            if (rawPath === '/settings/test' || rawPath === '/settings/test/' || rawPath === '/projects/test' || rawPath === '/projects/test/') {
+            if (lowerPath === '/settings/test' || lowerPath === '/settings/test/' || lowerPath === '/projects/test' || lowerPath === '/projects/test/') {
                 useAppState.getState().setPage('settings_test');
                 return;
             }
 
+            // settings qr print page
+            if (lowerPath === '/settings/qr-print' || lowerPath === '/settings/qr-print/') {
+                useAppState.getState().setPage('settings_qr_print');
+                return;
+            }
+
             // OTP Reset page
-            if (rawPath.startsWith('/reset-otp')) {
+            if (lowerPath.startsWith('/reset-otp')) {
                 useAppState.getState().setPage('reset_otp');
                 return;
             }
 
             // Board Viewer page
-            if (rawPath.startsWith('/boardViewer/') || rawPath.startsWith('/board-viewer/')) {
-                const docId = rawPath.replace(/^\/(boardViewer|board-viewer)\//, '');
+            if (lowerPath.startsWith('/boardviewer/') || lowerPath.startsWith('/board-viewer/')) {
+                const docId = rawPath.replace(/^\/(boardViewer|board-viewer)\//i, '');
                 if (docId) {
                     useAppState.getState().editItem('board_viewer', docId);
                 }
@@ -77,24 +85,24 @@ export function UrlManager() {
             }
 
             // Projects
-            if (rawPath.startsWith('/project/') || rawPath.startsWith('/projects/')) {
+            if (lowerPath.startsWith('/project/') || lowerPath.startsWith('/projects/')) {
                 usePcbStore.getState().resetFilters();
                 useReworkStore.getState().resetFilters();
-                const name = decodeURIComponent(rawPath.replace(/^\/projects?\//, ''));
+                const name = decodeURIComponent(rawPath.replace(/^\/projects?\//i, ''));
                 setActiveTab('projects');
                 setExpandedProject(name || null);
                 return;
             }
             // PCBs
-            if (rawPath.startsWith('/pcb/') || rawPath.startsWith('/pcbs/')) {
+            if (lowerPath.startsWith('/pcb/') || lowerPath.startsWith('/pcbs/')) {
                 // Ignore matching /pcbs_add or /pcbs_edit forms by only matching base slash
-                if (rawPath.startsWith('/pcbs_')) return; 
+                if (lowerPath.startsWith('/pcbs_')) return; 
 
                 useReworkStore.getState().resetFilters();
-                let board = decodeURIComponent(rawPath.replace(/^\/pcbs?\//, ''));
+                let board = decodeURIComponent(rawPath.replace(/^\/pcbs?\//i, ''));
                 let isolated = false;
-                if (board.endsWith('/view')) {
-                    board = board.replace(/\/view$/, '');
+                if (board.toLowerCase().endsWith('/view')) {
+                    board = board.replace(/\/[vV][iI][eE][wW]$/, '');
                     isolated = true;
                 }
                 setActiveTab('pcbs');
@@ -106,10 +114,10 @@ export function UrlManager() {
                 return;
             }
             // Reworks
-            if (rawPath.startsWith('/rework/') || rawPath.startsWith('/reworks/')) {
-                 if (rawPath.startsWith('/reworks_')) return; 
+            if (lowerPath.startsWith('/rework/') || lowerPath.startsWith('/reworks/')) {
+                 if (lowerPath.startsWith('/reworks_')) return; 
 
-                 const id = decodeURIComponent(rawPath.replace(/^\/reworks?\//, ''));
+                 const id = decodeURIComponent(rawPath.replace(/^\/reworks?\//i, ''));
                  setActiveTab('reworks');
                  setExpandedRework(id || null);
                  return;
@@ -118,7 +126,7 @@ export function UrlManager() {
             // Base Tabs
             // Use split to safely grab the first path segment regardless of leading/trailing slashes
             const pathSegments = rawPath.split('/').filter(Boolean);
-            const path = pathSegments[0] || 'projects';
+            const path = pathSegments[0] ? pathSegments[0].toLowerCase() : 'projects';
             
             if (path === 'crc' || path === 'sandbox') {
                 useAppState.getState().setActiveTab('settings');
@@ -194,11 +202,20 @@ export function UrlManager() {
             return;
         }
 
-        // Don't push state if we are inside a form view
         if (page === 'settings_test') {
             const search = window.location.search;
             const isProjectsPath = window.location.pathname.includes('/projects/test');
             const targetUrl = `${base}/${isProjectsPath ? 'projects/test' : 'settings/test'}${search}`;
+            const currentPath = window.location.pathname + window.location.search;
+            if (currentPath !== targetUrl) {
+                window.history.pushState({}, '', targetUrl);
+            }
+            return;
+        }
+
+        if (page === 'settings_qr_print') {
+            const search = window.location.search;
+            const targetUrl = `${base}/settings/qr-print${search}`;
             const currentPath = window.location.pathname + window.location.search;
             if (currentPath !== targetUrl) {
                 window.history.pushState({}, '', targetUrl);

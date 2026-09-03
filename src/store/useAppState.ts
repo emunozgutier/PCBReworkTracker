@@ -13,7 +13,7 @@ type Page =
     | 'owners' | 'owners_add' | 'owners_edit'
     | 'tags' | 'tags_add' | 'tags_edit'
     | 'wrong_url' | 'fixed_url'
-    | 'sandbox' | 'settings' | 'settings_test' | 'settings_secrets' | 'reset_otp' | 'board_viewer' | 'doc_viewer';
+    | 'sandbox' | 'settings' | 'settings_test' | 'settings_secrets' | 'settings_qr_print' | 'reset_otp' | 'board_viewer' | 'doc_viewer';
 
 interface NavigationState {
     page: Page;
@@ -63,6 +63,7 @@ interface NavigationState {
     qrCodeBaseUrlType: 'current' | 'custom';
     qrCodeCustomBaseUrl: string;
     qrCodeErrorCorrection: 'L' | 'M' | 'Q' | 'H';
+    qrCodeMode: 'byte' | 'alphanumeric';
     setCrcFormat: (crcFormat: 'letter' | 'nato') => void;
     toggleCrcFormat: () => void;
     setAllowGuestMinorRework: (allowed: boolean) => void;
@@ -70,6 +71,7 @@ interface NavigationState {
     setQrCodeBaseUrlType: (type: 'current' | 'custom') => void;
     setQrCodeCustomBaseUrl: (url: string) => void;
     setQrCodeErrorCorrection: (level: 'L' | 'M' | 'Q' | 'H') => void;
+    setQrCodeMode: (mode: 'byte' | 'alphanumeric') => void;
     resetSettings: () => void;
 }
 
@@ -117,6 +119,7 @@ export const useAppState = create<NavigationState>()(
             qrCodeBaseUrlType: 'current',
             qrCodeCustomBaseUrl: '',
             qrCodeErrorCorrection: 'L',
+            qrCodeMode: 'byte',
 
             setQrCodeUrlType: (qrCodeUrlType) => {
                 set({ qrCodeUrlType });
@@ -159,6 +162,17 @@ export const useAppState = create<NavigationState>()(
                     body: JSON.stringify({ qrCodeErrorCorrection })
                 }).catch(err => {
                     console.error('Failed to save qrCodeErrorCorrection to DB:', err);
+                });
+            },
+
+            setQrCodeMode: (qrCodeMode) => {
+                set({ qrCodeMode });
+                apiFetch(`${API_BASE}/settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ qrCodeMode })
+                }).catch(err => {
+                    console.error('Failed to save qrCodeMode to DB:', err);
                 });
             },
 
@@ -211,7 +225,8 @@ export const useAppState = create<NavigationState>()(
                     qrCodeUrlType: 'full',
                     qrCodeBaseUrlType: 'current',
                     qrCodeCustomBaseUrl: '',
-                    qrCodeErrorCorrection: 'L'
+                    qrCodeErrorCorrection: 'L',
+                    qrCodeMode: 'byte'
                 });
                 apiFetch(`${API_BASE}/settings`, {
                     method: 'POST',
@@ -222,7 +237,8 @@ export const useAppState = create<NavigationState>()(
                         qrCodeUrlType: 'full',
                         qrCodeBaseUrlType: 'current',
                         qrCodeCustomBaseUrl: '',
-                        qrCodeErrorCorrection: 'L'
+                        qrCodeErrorCorrection: 'L',
+                        qrCodeMode: 'byte'
                     })
                 }).catch(err => {
                     console.error('Failed to reset DB settings:', err);
@@ -320,6 +336,7 @@ export const useAppState = create<NavigationState>()(
                 qrCodeBaseUrlType: state.qrCodeBaseUrlType,
                 qrCodeCustomBaseUrl: state.qrCodeCustomBaseUrl,
                 qrCodeErrorCorrection: state.qrCodeErrorCorrection,
+                qrCodeMode: state.qrCodeMode,
                 currentUser: state.currentUser,
                 currentUserRole: state.currentUserRole
             }),

@@ -36,6 +36,9 @@ const SettingsTest = lazy(() =>
 const SettingsSecrets = lazy(() =>
   import('./Pages/SettingPage/SettingsSecrets').then(m => ({ default: m.SettingsSecrets }))
 );
+const QrPrintPage = lazy(() =>
+  import('./Pages/SettingPage/QrPrintPage').then(m => ({ default: m.QrPrintPage }))
+);
 
 // Add / Edit forms (rarely on the critical path)
 const AddProject  = lazy(() => import('./Pages/AddPages/AddProject').then(m => ({ default: m.AddProject })));
@@ -132,6 +135,8 @@ export function PageWithMargins() {
         return <SettingsTest onBack={goBack} />;
       case 'settings_secrets':
         return <SettingsSecrets onBack={goBack} />;
+      case 'settings_qr_print':
+        return <QrPrintPage onBack={goBack} />;
 
       // ── Heavy viewers ──────────────────────────────────────────────────────
       case 'board_viewer':

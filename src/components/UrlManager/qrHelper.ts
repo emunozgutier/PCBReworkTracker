@@ -7,6 +7,7 @@ export interface QrUrlOptions {
     baseUrlType?: 'current' | 'custom';
     customBaseUrl?: string;
     errorCorrectionLevel?: QrErrorCorrectionLevel;
+    qrCodeMode?: 'byte' | 'alphanumeric';
 }
 
 export const QR_ERROR_CORRECTION_LEVELS: {
@@ -41,7 +42,6 @@ export const QR_ERROR_CORRECTION_LEVELS: {
     }
 ];
 
-// ISO/IEC 18004 standard max Byte-mode character capacities per Version (1-14)
 const QR_BYTE_CAPACITIES: Record<QrErrorCorrectionLevel, number[]> = {
     L: [0, 17, 32, 53, 78, 106, 134, 154, 192, 230, 271, 321, 367, 425, 458],
     M: [0, 14, 26, 42, 62, 84, 106, 122, 152, 180, 213, 251, 287, 331, 362],
@@ -49,8 +49,17 @@ const QR_BYTE_CAPACITIES: Record<QrErrorCorrectionLevel, number[]> = {
     H: [0, 7, 14, 24, 34, 46, 58, 64, 84, 100, 119, 137, 155, 177, 194]
 };
 
-export function getQrCapacity(version: number, level: QrErrorCorrectionLevel = 'L'): number {
-    const list = QR_BYTE_CAPACITIES[level] || QR_BYTE_CAPACITIES.L;
+// ISO/IEC 18004 standard max Alphanumeric-mode character capacities per Version (1-14)
+const QR_ALPHANUMERIC_CAPACITIES: Record<QrErrorCorrectionLevel, number[]> = {
+    L: [0, 25, 47, 77, 114, 154, 195, 224, 279, 335, 395, 468, 535, 619, 667],
+    M: [0, 20, 38, 61, 90, 122, 154, 178, 221, 262, 311, 366, 419, 483, 528],
+    Q: [0, 16, 29, 47, 67, 87, 108, 125, 157, 189, 221, 259, 296, 352, 376],
+    H: [0, 10, 20, 35, 50, 64, 84, 93, 122, 143, 174, 200, 227, 259, 283]
+};
+
+export function getQrCapacity(version: number, level: QrErrorCorrectionLevel = 'L', mode: 'byte' | 'alphanumeric' = 'byte'): number {
+    const capacities = mode === 'alphanumeric' ? QR_ALPHANUMERIC_CAPACITIES : QR_BYTE_CAPACITIES;
+    const list = capacities[level] || capacities.L;
     if (version < 1) return list[1];
     if (version >= list.length) return list[list.length - 1];
     return list[version];
@@ -114,12 +123,21 @@ export function resolveQrUrl(
     // Ensure single slash between domain and path
     const cleanDomain = domain.replace(/\/+$/, '');
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
-    const url = `${cleanDomain}${cleanPath}`;
+    let url = `${cleanDomain}${cleanPath}`;
+
+    let finalDomain = cleanDomain;
+    let finalPath = cleanPath;
+
+    if (options?.qrCodeMode === 'alphanumeric') {
+        url = url.toUpperCase();
+        finalDomain = finalDomain.toUpperCase();
+        finalPath = finalPath.toUpperCase();
+    }
 
     return {
         url,
-        domain: cleanDomain,
-        path: cleanPath,
+        domain: finalDomain,
+        path: finalPath,
         isCompressed,
         isCustomBase
     };

@@ -1,0 +1,165 @@
+/* QrPrintPage.css */
+
+.qr-print-studio-wrapper {
+    padding: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-bottom: 64px;
+}
+
+.qr-print-studio-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.back-button:hover {
+    background: var(--bg-hover);
+}
+
+.qr-print-studio-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-h);
+    margin: 0;
+}
+
+.print-action-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+
+.btn-print-labels {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.2s;
+}
+
+.btn-print-labels:hover {
+    opacity: 0.9;
+}
+
+/* Hide the print container from the screen by default */
+.print-only-container {
+    display: none;
+}
+
+/* Print Styles */
+@media print {
+    /* Hide all screen elements */
+    body > *:not(.print-only-wrapper) {
+        display: none !important;
+    }
+    
+    .app-container, .qr-print-studio-wrapper, .settings-page-wrapper, .title-bar, .tab-bar, .top-buttons {
+        display: none !important;
+    }
+
+    /* Target the specific wrapper we want to print */
+    .print-only-wrapper {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 3in;
+        height: 4in;
+        margin: 0;
+        padding: 0;
+        background: white;
+    }
+
+    .print-only-container {
+        display: grid;
+        width: 3in;
+        height: 4in;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        overflow: hidden;
+        page-break-inside: avoid;
+        page-break-after: avoid;
+        background: white;
+    }
+
+    /* Grid configs based on selected label size */
+    .print-only-container.size-05 {
+        grid-template-columns: repeat(6, 0.5in);
+        grid-template-rows: repeat(8, 0.5in);
+    }
+
+    .print-only-container.size-10 {
+        grid-template-columns: repeat(3, 1in);
+        grid-template-rows: repeat(4, 1in);
+    }
+
+    .print-label-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        border: 1px dashed rgba(0,0,0,0.1); /* Slight border to help with cutting */
+        padding: 0.05in;
+        overflow: hidden;
+    }
+
+    .print-label-cell canvas {
+        display: block;
+    }
+
+    .print-label-text {
+        font-family: sans-serif;
+        color: #000;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: clip;
+        width: 100%;
+    }
+
+    /* Font sizing for 0.5" */
+    .size-05 .print-label-text {
+        font-size: 5pt;
+        line-height: 1.1;
+        margin-top: 1px;
+    }
+
+    /* Font sizing for 1.0" */
+    .size-10 .print-label-text {
+        font-size: 8pt;
+        line-height: 1.2;
+        margin-top: 2px;
+    }
+
+    @page {
+        size: 3in 4in;
+        margin: 0;
+    }
+}
