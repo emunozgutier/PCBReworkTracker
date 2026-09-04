@@ -20,14 +20,19 @@ export const useDemoStore = create<DemoState>()(
 
 export function getDocumentUrl(pathStr: string, filename: string): string {
     const isDemoMode = useDemoStore.getState().isDemoMode;
+    const basePath = import.meta.env.BASE_URL || '/';
+    const cleanBase = basePath.endsWith('/') ? basePath : `${basePath}/`;
+
     if (isDemoMode) {
-        const basePath = import.meta.env.BASE_URL || '/';
         // Resolve path to the copied files in the public/docs directory of production bundle
-        return `${window.location.origin}${basePath}docs/${filename}`;
+        return `${window.location.origin}${cleanBase}docs/${filename}`;
     }
-    const apiPort = 5002;
-    const API_BASE = typeof window !== 'undefined' ? `http://${window.location.hostname}:${apiPort}/api` : '';
-    return pathStr.startsWith('http') 
-        ? pathStr 
-        : `${API_BASE.replace('/api', '')}/api${pathStr}`;
+    
+    if (pathStr.startsWith('http')) {
+        return pathStr;
+    }
+
+    const cleanPath = pathStr.startsWith('/') ? pathStr.slice(1) : pathStr;
+    return `${window.location.origin}${cleanBase}api/${cleanPath}`;
 }
+

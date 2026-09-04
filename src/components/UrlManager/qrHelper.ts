@@ -71,23 +71,22 @@ export function getQrGridSize(version: number): number {
 }
 
 export function getDefaultBaseUrl(): string {
-    if (typeof window !== 'undefined' && window.location.hostname.includes('github.io')) {
+    if (typeof window !== 'undefined') {
         const base = import.meta.env.BASE_URL || '/';
         const cleanBase = base.endsWith('/') ? base : base + '/';
-        const origin = window.location.origin;
         const basePath = cleanBase === '/' ? '' : `/${cleanBase.replace(/^\/|\/$/g, '')}`;
-        return `${origin}${basePath}`;
+        
+        // If accessed through standard reverse proxy ports (443, 80, or standard HTTPS without explicit port) or github.io
+        if (window.location.port === '' || window.location.port === '80' || window.location.port === '443' || window.location.hostname.includes('github.io')) {
+            return `${window.location.origin}${basePath}`;
+        }
+        
+        // Fallback for direct local dev on port 5001
+        let port = window.location.port || (typeof __PORT__ !== 'undefined' ? __PORT__ : '');
+        const portSuffix = port ? `:${port}` : '';
+        return `${window.location.protocol}//${window.location.hostname}${portSuffix}${basePath}`;
     }
-    const currentHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    let port = '';
-    if (typeof __PORT__ !== 'undefined') {
-        port = __PORT__;
-    } else if (typeof window !== 'undefined') {
-        port = window.location.port;
-    }
-    const portSuffix = port ? `:${port}` : '';
-    const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
-    return `${protocol}//${currentHost}${portSuffix}`;
+    return 'http://localhost:5001';
 }
 
 export function resolveQrUrl(

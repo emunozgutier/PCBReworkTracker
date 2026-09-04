@@ -8,8 +8,8 @@ const getNormalizedPath = () => {
     if (typeof window === 'undefined') return '/';
     let path = window.location.pathname;
     
-    // Explicitly handle GitHub pages repository name masking, even in DEV mode (case-insensitive)
-    const baseMatch = path.match(/^\/rework-tracker(\/|$)/i);
+    // Explicitly handle GitHub pages repository name masking and Caddy /rt/ subpath (case-insensitive)
+    const baseMatch = path.match(/^\/(rework-tracker|rt)(\/|$)/i);
     if (baseMatch) {
         path = path.slice(baseMatch[0].length);
         if (!path.startsWith('/')) path = '/' + path;
@@ -17,7 +17,7 @@ const getNormalizedPath = () => {
     
     let base = import.meta.env.BASE_URL || '/';
     if (base.endsWith('/')) base = base.slice(0, -1);
-    if (path.startsWith(base)) {
+    if (base && path.toLowerCase().startsWith(base.toLowerCase())) {
         path = path.slice(base.length);
     }
     if (!path.startsWith('/')) path = '/' + path;
@@ -181,6 +181,14 @@ export function UrlManager() {
 
         let base = import.meta.env.BASE_URL || '/';
         if (base.endsWith('/')) base = base.slice(0, -1);
+        
+        // Retain detected subpath if running behind reverse proxy without BASE_PATH set
+        if (!base) {
+            const match = window.location.pathname.match(/^\/(rework-tracker|rt)/i);
+            if (match) {
+                base = match[0];
+            }
+        }
         
         // Handle board_viewer page URL mapping
         if (page === 'board_viewer' && selectedId) {

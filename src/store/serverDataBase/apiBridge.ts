@@ -3,7 +3,21 @@ import { useAppState } from '../useAppState';
 import { getSessionCookie } from '../../authentication/clientAuth';
 import demoData from './data/demoData.json';
 
-export const API_BASE = `http://${window.location.hostname}:5002/api`;
+const getApiBase = () => {
+    // In Node / Vitest test runner, connect directly to local test backend on 5002
+    if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') {
+        return 'http://localhost:5002/api';
+    }
+    // In browser, use relative base path so requests stay on HTTPS and route through proxy
+    if (typeof window !== 'undefined') {
+        const base = import.meta.env?.BASE_URL || '/';
+        const cleanBase = base.endsWith('/') ? base : `${base}/`;
+        return `${cleanBase}api`;
+    }
+    return '/api';
+};
+
+export const API_BASE = getApiBase();
 
 
 let internalProjects = [...demoData.demoProjects] as any[];

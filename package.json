@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"tsx src/store/serverDataBase/server.ts\" \"vite\"",
+    "dev:caddy": "BASE_PATH=/RT/ concurrently \"tsx src/store/serverDataBase/server.ts\" \"vite\"",
     "build": "tsc -b && vite build && node copy-404.js",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
