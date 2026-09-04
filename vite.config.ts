@@ -48,7 +48,9 @@ function ipAllowlistPlugin() {
 
 // https://vite.dev/config/
 export default defineConfig(({ command }) => {
-  const basePath = process.env.BASE_PATH ?? (command === 'build' ? '/Rework-Tracker/' : '/');
+  const isCaddy = process.env.npm_lifecycle_event === 'dev:caddy' || process.env.BASE_PATH === '/RT/';
+  const defaultDevBase = isCaddy ? '/RT/' : '/';
+  const basePath = process.env.BASE_PATH ?? (command === 'build' ? '/Rework-Tracker/' : defaultDevBase);
 
   return {
     plugins: [
