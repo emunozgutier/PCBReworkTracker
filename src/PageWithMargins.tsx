@@ -56,6 +56,7 @@ const ResetOtp    = lazy(() => import('./Pages/EditPages/ResetOtp').then(m => ({
 
 // Error/utility pages
 const WrongUrl = lazy(() => import('./Pages/WrongPage/WrongUrl').then(m => ({ default: m.WrongUrl })));
+const NotFound = lazy(() => import('./Pages/WrongPage/NotFound').then(m => ({ default: m.NotFound })));
 const FixedUrl = lazy(() => import('./Pages/WrongPage/FixedUrl').then(m => ({ default: m.FixedUrl })));
 
 // ── Fallback shown while a lazy chunk is loading ──────────────────────────────
@@ -111,6 +112,7 @@ export function PageWithMargins() {
 
       // ── Utility pages ──────────────────────────────────────────────────────
       case 'wrong_url': return <WrongUrl />;
+      case 'not_found': return <NotFound />;
       case 'fixed_url': return <FixedUrl />;
       case 'reset_otp': {
         const searchParams = new URLSearchParams(window.location.search);

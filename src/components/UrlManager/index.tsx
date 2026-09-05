@@ -4,7 +4,7 @@ import { usePcbStore } from '../../store/clientDataBase/usePcbStore';
 import { useReworkStore } from '../../store/clientDataBase/useReworkStore';
 import { decodeBase36ShortCode } from './qrHelper';
 
-const getNormalizedPath = () => {
+export const getNormalizedPath = () => {
     if (typeof window === 'undefined') return '/';
     let path = window.location.pathname;
     
@@ -51,6 +51,12 @@ export function UrlManager() {
             const rawPath = getNormalizedPath();
             
             const lowerPath = rawPath.toLowerCase();
+
+            // 404 / Not Found page
+            if (lowerPath === '/404' || lowerPath === '/not-found' || lowerPath === '/notfound') {
+                useAppState.getState().setPage('not_found');
+                return;
+            }
 
             // settings secrets page (DB settings)
             if (lowerPath === '/settings/secrets' || lowerPath === '/settings/secrets/') {
@@ -127,7 +133,15 @@ export function UrlManager() {
             // Base Tabs
             // Use split to safely grab the first path segment regardless of leading/trailing slashes
             const pathSegments = rawPath.split('/').filter(Boolean);
-            const path = pathSegments[0] ? pathSegments[0].toLowerCase() : 'projects';
+            if (pathSegments.length === 0) {
+                setActiveTab('projects');
+                setExpandedProject(null);
+                setExpandedPcb(null);
+                setExpandedRework(null);
+                return;
+            }
+
+            const path = pathSegments[0].toLowerCase();
             
             if (path === 'crc' || path === 'sandbox') {
                 useAppState.getState().setActiveTab('settings');
@@ -159,6 +173,9 @@ export function UrlManager() {
                 useAppState.getState().setIsolatedView(true);
                 return;
             }
+
+            // Unmatched route -> Route to Not Found page to show the redirected URL
+            useAppState.getState().setPage('not_found');
         };
 
         // Run once on mount to handle initial load
@@ -176,6 +193,11 @@ export function UrlManager() {
     useEffect(() => {
         if (isInitialMount.current) {
             isInitialMount.current = false;
+            return;
+        }
+
+        // Do not overwrite browser address bar if user is on Not Found or Wrong URL
+        if (page === 'not_found' || page === 'wrong_url') {
             return;
         }
 

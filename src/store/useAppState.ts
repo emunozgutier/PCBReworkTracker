@@ -12,7 +12,7 @@ type Page =
     | 'reworks' | 'reworks_add' | 'reworks_edit'
     | 'owners' | 'owners_add' | 'owners_edit'
     | 'tags' | 'tags_add' | 'tags_edit'
-    | 'wrong_url' | 'fixed_url'
+    | 'wrong_url' | 'not_found' | 'fixed_url'
     | 'sandbox' | 'settings' | 'settings_test' | 'settings_secrets' | 'settings_qr_print' | 'reset_otp' | 'board_viewer' | 'doc_viewer';
 
 interface NavigationState {
