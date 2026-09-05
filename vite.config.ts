@@ -46,6 +46,23 @@ function ipAllowlistPlugin() {
   };
 }
 
+function trailingSlashRedirectPlugin() {
+  return {
+    name: 'trailing-slash-redirect',
+    configureServer(server: any) {
+      server.middlewares.use((req: any, res: any, next: any) => {
+        const [pathname, query] = (req.url || '').split('?');
+        if (pathname === '/RT' || pathname === '/rt' || pathname === '/rework-tracker' || pathname === '/Rework-Tracker') {
+          res.writeHead(301, { Location: `${pathname}/${query ? '?' + query : ''}` });
+          res.end();
+          return;
+        }
+        next();
+      });
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ command }) => {
   const isCaddy = process.env.npm_lifecycle_event === 'dev:caddy' || process.env.BASE_PATH === '/RT/';
@@ -57,6 +74,7 @@ export default defineConfig(({ command }) => {
       react(),
       babel({ presets: [reactCompilerPreset()] }),
       ipAllowlistPlugin(),
+      trailingSlashRedirectPlugin(),
     ],
     // Automatically use repository name only in production builds (GitHub Pages)
     // BASE_PATH env var lets Docker / Caddy override the base (default: /Rework-Tracker/ for GitHub Pages)
@@ -72,8 +90,9 @@ export default defineConfig(({ command }) => {
       strictPort: true, // Fail if port is already in use
       allowedHosts: ['asgv', 'asgv.infineon.com', 'localhost', '127.0.0.1'],
       proxy: {
-        // Proxy any /api requests (e.g. /api/... or /RT/api/...) to the Express backend on 5002
-        '^.*\\/api': {
+        // Proxy /api/... requests (e.g. /api/..., /RT/api/..., or /rework-tracker/api/...) to Express on 5002
+        // Strict pattern matching /api/ or end of string ensures we never intercept source files like apiBridge.ts!
+        '^.*\\/api(\\/|$)': {
           target: 'http://127.0.0.1:5002',
           changeOrigin: true,
           rewrite: (path: string) => path.replace(/^.*\/api/, '/api'),
@@ -82,4 +101,3 @@ export default defineConfig(({ command }) => {
     }
   }
 })
-// force restart
