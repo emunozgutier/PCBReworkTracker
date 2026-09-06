@@ -1417,10 +1417,10 @@ app.post('/api/reworks', upload.any(), fileSanityCheckMiddleware, deduplicate, s
                 if (rework_type === 'Silicon Swap' && new_silicon_rev !== undefined) {
                     db.run("UPDATE pcbs SET silicon_rev = ?, silicon_corner = ? WHERE id = ?", [new_silicon_rev, new_silicon_corner, pcb_id], function(this: any, updateErr: Error | null) {
                         if (updateErr) return res.status(500).json({ error: updateErr.message });
-                        res.status(201).json({ id: reworkId, pcb_id, rework_number: sequence, title: title || null, rework_type, image_path, new_product });
+                        res.status(201).json({ id: reworkId, pcb_id, rework_number: sequence, rework_name: reworkName, title: title || null, rework_type, image_path, new_product });
                     });
                 } else {
-                    res.status(201).json({ id: reworkId, pcb_id, rework_number: sequence, title: title || null, rework_type: rework_type || 'Minor', image_path });
+                    res.status(201).json({ id: reworkId, pcb_id, rework_number: sequence, rework_name: reworkName, title: title || null, rework_type: rework_type || 'Minor', image_path });
                 }
             });
         });

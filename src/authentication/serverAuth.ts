@@ -187,8 +187,7 @@ export function isSuperUser(req: AuthenticatedRequest): boolean {
 export function canAddProject(req: AuthenticatedRequest): boolean {
     if (isSuperUser(req)) return true;
     if (req.headers['x-allow-add-project'] === 'true') return true;
-    const role = req.user?.role;
-    return role === 'Guest' || role === 'User';
+    return false;
 }
 
 /**
@@ -197,8 +196,7 @@ export function canAddProject(req: AuthenticatedRequest): boolean {
 export function canUpdateProject(req: AuthenticatedRequest): boolean {
     if (isSuperUser(req)) return true;
     if (req.headers['x-allow-edit-project'] === 'true') return true;
-    const role = req.user?.role;
-    return role === 'Guest' || role === 'User';
+    return false;
 }
 
 /**
@@ -207,8 +205,7 @@ export function canUpdateProject(req: AuthenticatedRequest): boolean {
 export function canDeleteProject(req: AuthenticatedRequest): boolean {
     if (isSuperUser(req)) return true;
     if (req.headers['x-allow-delete-project'] === 'true') return true;
-    const role = req.user?.role;
-    return role === 'Guest';
+    return false;
 }
 
 /**
@@ -217,8 +214,7 @@ export function canDeleteProject(req: AuthenticatedRequest): boolean {
 export function canAddProjectDoc(req: AuthenticatedRequest): boolean {
     if (isSuperUser(req)) return true;
     if (req.headers['x-allow-add-doc'] === 'true' || req.headers['x-allow-add-project'] === 'true') return true;
-    const role = req.user?.role;
-    return role === 'Guest' || role === 'User';
+    return false;
 }
 
 /**
@@ -227,8 +223,7 @@ export function canAddProjectDoc(req: AuthenticatedRequest): boolean {
 export function canDeleteProjectDoc(req: AuthenticatedRequest): boolean {
     if (isSuperUser(req)) return true;
     if (req.headers['x-allow-delete-doc'] === 'true') return true;
-    const role = req.user?.role;
-    return role === 'Guest';
+    return false;
 }
 
 /**
