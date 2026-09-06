@@ -10,9 +10,9 @@ interface TagCardHeaderProps {
 }
 
 export function TagCardHeader({ tag, isExpanded, onToggle, onEdit }: TagCardHeaderProps) {
-    const { currentUserRole } = useAppState();
+    const { currentUserRole, debugBypassPermissions } = useAppState();
 
-    const isSuperUser = currentUserRole === 'Super User';
+    const isSuperUser = currentUserRole === 'Super User' || debugBypassPermissions;
     const canEdit = isSuperUser;
 
     return (

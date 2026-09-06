@@ -2,13 +2,19 @@ import { CheckSumCard } from './CheckSumCard';
 import { useAppState } from '../../store/useAppState';
 import { RolePermissionCard } from './RolePermissionCard';
 import { ReworkPriorityCard } from './ReworkPriorityCard';
-import { Calendar } from 'lucide-react';
+import { Calendar, Bug } from 'lucide-react';
 import '../ViewPages/SettingsView.css';
 
 declare const __BUILD_DATE__: string;
 
 export function TopSettingPage() {
-    const { setPage } = useAppState();
+    const { 
+        setPage, 
+        debugMode, 
+        setDebugMode, 
+        debugBypassPermissions, 
+        setDebugBypassPermissions 
+    } = useAppState();
     const buildDate = typeof __BUILD_DATE__ !== 'undefined' ? __BUILD_DATE__ : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
     return (
@@ -56,6 +62,47 @@ export function TopSettingPage() {
                 <p className="settings-description" style={{ margin: 0 }}>
                     Website Last Updated: <strong style={{ color: 'var(--text)', fontWeight: 600 }}>{buildDate}</strong>
                 </p>
+            </div>
+
+            <div className="settings-main-card" style={{ borderLeft: '3px solid #6366f1' }}>
+                <div className="settings-card-label">
+                    <Bug size={18} color="#6366f1" />
+                    <span>Developer & AI Debug Tools</span>
+                </div>
+                <p className="settings-description">
+                    Quickly inspect forms, test Add/Edit flows as Guest, and jump directly to any page without standard permission roadblocks.
+                </p>
+                <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+                        <div>
+                            <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Debug Hub Widget</div>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Show the floating debug launcher in the bottom right corner</div>
+                        </div>
+                        <input 
+                            type="checkbox" 
+                            checked={debugMode} 
+                            onChange={(e) => setDebugMode(e.target.checked)}
+                            style={{ width: '18px', height: '18px', accentColor: '#6366f1', cursor: 'pointer' }}
+                        />
+                    </label>
+
+                    <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+                        <div>
+                            <div style={{ fontWeight: 600, fontSize: '0.9rem', color: debugBypassPermissions ? '#4ade80' : 'inherit' }}>
+                                Bypass UI Permissions (Guest & Test Mode)
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                                Allows Guests to see, open, and test all Add and Edit pages without permission denials
+                            </div>
+                        </div>
+                        <input 
+                            type="checkbox" 
+                            checked={debugBypassPermissions} 
+                            onChange={(e) => setDebugBypassPermissions(e.target.checked)}
+                            style={{ width: '18px', height: '18px', accentColor: '#22c55e', cursor: 'pointer' }}
+                        />
+                    </label>
+                </div>
             </div>
         </div>
     );

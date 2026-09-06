@@ -1,5 +1,11 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { NetworkQRCode } from './Pages/ViewPages/Cards/NetworkQRCode';
+import { DebugHub } from './components/DebugHub/DebugHub';
+import { useProjectStore } from './store/clientDataBase/useProjectStore';
+import { usePcbStore } from './store/clientDataBase/usePcbStore';
+import { useReworkStore } from './store/clientDataBase/useReworkStore';
+import { useOwnerStore } from './store/clientDataBase/useOwnerStore';
+import { useTagStore } from './store/clientDataBase/useTagStore';
 import { TabBar } from './components/TabBar';
 import { usePermissionsStore } from './store/clientDataBase/usePermissionsStore';
 import { usePriorityStore } from './store/clientDataBase/usePriorityStore';
@@ -73,6 +79,13 @@ export function PageWithMargins() {
   const fetchPermissions = usePermissionsStore(state => state.fetchPermissions);
   const fetchPriorities  = usePriorityStore(state => state.fetchPriorities);
 
+  // Fallback IDs for direct / debug edit page views
+  const fallbackProjectId = useProjectStore(state => state.projects[0]?.id || 1);
+  const fallbackPcbId     = usePcbStore(state => state.pcbs[0]?.id || 1);
+  const fallbackReworkId  = useReworkStore(state => state.reworks[0]?.id || 1);
+  const fallbackOwnerId   = useOwnerStore(state => state.owners[0]?.id || 1);
+  const fallbackTagId     = useTagStore(state => state.tags[0]?.id || 1);
+
   useEffect(() => {
     fetchPermissions();
     fetchPriorities();
@@ -103,12 +116,12 @@ export function PageWithMargins() {
       case 'owners_add':   return <AddUser    onBack={goBack} onSuccess={handleSuccess} />;
       case 'tags_add':     return <AddTab     onBack={goBack} onSuccess={handleSuccess} />;
 
-      // ── Edit forms ─────────────────────────────────────────────────────────
-      case 'projects_edit': return <EditProject id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
-      case 'pcbs_edit':     return <EditPCB     id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
-      case 'reworks_edit':  return <EditRework  id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
-      case 'owners_edit':   return <EditUser    id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
-      case 'tags_edit':     return <EditTab     id={selectedId!} onBack={goBack} onSuccess={handleSuccess} />;
+      // ── Edit forms (with safe fallback IDs) ────────────────────────────────
+      case 'projects_edit': return <EditProject id={selectedId ?? fallbackProjectId} onBack={goBack} onSuccess={handleSuccess} />;
+      case 'pcbs_edit':     return <EditPCB     id={selectedId ?? fallbackPcbId} onBack={goBack} onSuccess={handleSuccess} />;
+      case 'reworks_edit':  return <EditRework  id={selectedId ?? fallbackReworkId} onBack={goBack} onSuccess={handleSuccess} />;
+      case 'owners_edit':   return <EditUser    id={selectedId ?? fallbackOwnerId} onBack={goBack} onSuccess={handleSuccess} />;
+      case 'tags_edit':     return <EditTab     id={selectedId ?? fallbackTagId} onBack={goBack} onSuccess={handleSuccess} />;
 
       // ── Utility pages ──────────────────────────────────────────────────────
       case 'wrong_url': return <WrongUrl />;
@@ -168,6 +181,7 @@ export function PageWithMargins() {
       </main>
 
       <NetworkQRCode />
+      <DebugHub />
     </div>
   );
 }

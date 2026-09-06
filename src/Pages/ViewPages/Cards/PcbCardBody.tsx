@@ -22,10 +22,10 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const { reworks, fetchReworks, setSelectedBoards } = useReworkStore();
     const { tags, fetchTags } = useTagStore();
     const { fetchPcbs, deletePcb } = usePcbStore();
-    const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile, currentUserRole, allowGuestMinorRework } = useAppState();
+    const { addItem, setActiveTab, setQrModalBoard, editItem, isMobile, currentUserRole, allowGuestMinorRework, debugBypassPermissions } = useAppState();
     const { projects, projectDocs, fetchDocs } = useProjectStore();
 
-    const isSuperUser = currentUserRole === 'Super User';
+    const isSuperUser = currentUserRole === 'Super User' || debugBypassPermissions;
 
     const canAddRework = isSuperUser || currentUserRole === 'User' || (currentUserRole === 'Guest' && allowGuestMinorRework);
 

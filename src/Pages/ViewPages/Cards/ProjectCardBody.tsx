@@ -27,8 +27,8 @@ interface ProjectCardBodyProps {
 export function ProjectCardBody({ project }: ProjectCardBodyProps) {
     const { pcbs: allPcbs, setSelectedProjects, setSelectedBoardNumbers } = usePcbStore();
     const { deleteProject } = useProjectStore();
-    const { crcFormat, setActiveTab, editItem, setExpandedPcb, setIsolatedView, setPage, isMobile, currentUserRole } = useAppState();
-    const isSuperUser = currentUserRole === 'Super User';
+    const { crcFormat, setActiveTab, editItem, setExpandedPcb, setIsolatedView, setPage, isMobile, currentUserRole, debugBypassPermissions } = useAppState();
+    const isSuperUser = currentUserRole === 'Super User' || debugBypassPermissions;
     
     const [isRemoveProjectOpen, setIsRemoveProjectOpen] = useState(false);
     const [isDocsOpen, setIsDocsOpen] = useState(false);

@@ -18,10 +18,10 @@ export function ReworkCardBody({ rework }: ReworkCardBodyProps) {
     const [showDescriptionModal, setShowDescriptionModal] = useState(false);
     const [isRemoveOpen, setIsRemoveOpen] = useState(false);
     const { deleteRework } = useReworkStore();
-    const { editItem, isMobile, currentUser, currentUserRole } = useAppState();
+    const { editItem, isMobile, currentUser, currentUserRole, debugBypassPermissions } = useAppState();
     const { checkReworkEditRequirements } = useDeleteEditRequirements();
 
-    const isSuperUser = currentUserRole === 'Super User';
+    const isSuperUser = currentUserRole === 'Super User' || debugBypassPermissions;
     const isOwner = currentUser && (
         rework.owner_id === currentUser.id || 
         rework.owner_username === currentUser.username || 

@@ -12,43 +12,43 @@ interface PermissionsStore {
 const initialPermissions: Record<string, boolean> = {
     // Projects
     'Projects__View__superUser': true, 'Projects__View__user': true, 'Projects__View__guest': true,
-    'Projects__Add__superUser': true, 'Projects__Add__user': false, 'Projects__Add__guest': false,
-    'Projects__Edit__superUser': true, 'Projects__Edit__user': false, 'Projects__Edit__guest': false,
-    'Projects__Delete__superUser': true, 'Projects__Delete__user': false, 'Projects__Delete__guest': false,
+    'Projects__Add__superUser': true, 'Projects__Add__user': false, 'Projects__Add__guest': true,
+    'Projects__Edit__superUser': true, 'Projects__Edit__user': false, 'Projects__Edit__guest': true,
+    'Projects__Delete__superUser': true, 'Projects__Delete__user': false, 'Projects__Delete__guest': true,
 
     // PCBs
     'PCBs__View__superUser': true, 'PCBs__View__user': true, 'PCBs__View__guest': true,
-    'PCBs__Add__superUser': true, 'PCBs__Add__user': true, 'PCBs__Add__guest': false,
+    'PCBs__Add__superUser': true, 'PCBs__Add__user': true, 'PCBs__Add__guest': true,
     'PCBs__Edit__superUser': true, 'PCBs__Edit__editRow': true, 'PCBs__Edit__editOthers': false,
-    'PCBs__Edit__user': false, 'PCBs__Edit__guest': false,
-    'PCBs__Delete__superUser': true, 'PCBs__Delete__user': false, 'PCBs__Delete__guest': false,
+    'PCBs__Edit__user': false, 'PCBs__Edit__guest': true,
+    'PCBs__Delete__superUser': true, 'PCBs__Delete__user': false, 'PCBs__Delete__guest': true,
 
     // Reworks
     'Reworks__View__superUser': true, 'Reworks__View__user': true, 'Reworks__View__guest': true,
-    'Reworks__Add High Priority__superUser': true, 'Reworks__Add High Priority__user': true, 'Reworks__Add High Priority__guest': false,
+    'Reworks__Add High Priority__superUser': true, 'Reworks__Add High Priority__user': true, 'Reworks__Add High Priority__guest': true,
     'Reworks__Add Low Priority__superUser': true, 'Reworks__Add Low Priority__user': true, 'Reworks__Add Low Priority__guest': true,
-    'Reworks__Edit Own__superUser': true, 'Reworks__Edit Own__user': true, 'Reworks__Edit Own__guest': false,
-    'Reworks__Edit Others__superUser': true, 'Reworks__Edit Others__user': false, 'Reworks__Edit Others__guest': false,
-    'Reworks__Delete Own__superUser': true, 'Reworks__Delete Own__user': true, 'Reworks__Delete Own__guest': false,
-    'Reworks__Delete Others__superUser': true, 'Reworks__Delete Others__user': false, 'Reworks__Delete Others__guest': false,
+    'Reworks__Edit Own__superUser': true, 'Reworks__Edit Own__user': true, 'Reworks__Edit Own__guest': true,
+    'Reworks__Edit Others__superUser': true, 'Reworks__Edit Others__user': false, 'Reworks__Edit Others__guest': true,
+    'Reworks__Delete Own__superUser': true, 'Reworks__Delete Own__user': true, 'Reworks__Delete Own__guest': true,
+    'Reworks__Delete Others__superUser': true, 'Reworks__Delete Others__user': false, 'Reworks__Delete Others__guest': true,
 
     // Users
     'Users__View__superUser': true, 'Users__View__user': true, 'Users__View__guest': true,
     'Users__Add__superUser': true, 'Users__Add__user': true, 'Users__Add__guest': true,
-    'Users__Edit Own__superUser': true, 'Users__Edit Own__user': true, 'Users__Edit Own__guest': false,
-    'Users__Edit Others__superUser': true, 'Users__Edit Others__user': false, 'Users__Edit Others__guest': false,
-    'Users__Delete__superUser': true, 'Users__Delete__user': false, 'Users__Delete__guest': false,
+    'Users__Edit Own__superUser': true, 'Users__Edit Own__user': true, 'Users__Edit Own__guest': true,
+    'Users__Edit Others__superUser': true, 'Users__Edit Others__user': false, 'Users__Edit Others__guest': true,
+    'Users__Delete__superUser': true, 'Users__Delete__user': false, 'Users__Delete__guest': true,
 
     // Tags
     'Tags__View__superUser': true, 'Tags__View__user': true, 'Tags__View__guest': true,
-    'Tags__Add__superUser': true, 'Tags__Add__user': false, 'Tags__Add__guest': false,
-    'Tags__Edit__superUser': true, 'Tags__Edit__user': false, 'Tags__Edit__guest': false,
-    'Tags__Delete__superUser': true, 'Tags__Delete__user': false, 'Tags__Delete__guest': false,
+    'Tags__Add__superUser': true, 'Tags__Add__user': false, 'Tags__Add__guest': true,
+    'Tags__Edit__superUser': true, 'Tags__Edit__user': false, 'Tags__Edit__guest': true,
+    'Tags__Delete__superUser': true, 'Tags__Delete__user': false, 'Tags__Delete__guest': true,
 
     // Docs
     'Docs__View__superUser': true, 'Docs__View__user': true, 'Docs__View__guest': true,
-    'Docs__Add__superUser': true, 'Docs__Add__user': false, 'Docs__Add__guest': false,
-    'Docs__Delete__superUser': true, 'Docs__Delete__user': false, 'Docs__Delete__guest': false,
+    'Docs__Add__superUser': true, 'Docs__Add__user': false, 'Docs__Add__guest': true,
+    'Docs__Delete__superUser': true, 'Docs__Delete__user': false, 'Docs__Delete__guest': true,
 };
 
 export const usePermissionsStore = create<PermissionsStore>((set) => ({
