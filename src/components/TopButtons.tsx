@@ -125,9 +125,6 @@ export function TopButtons() {
                         <button 
                             className="add-button" 
                             onClick={onAdd}
-                            disabled={isGuestPcbAdd}
-                            title={isGuestPcbAdd ? "Only users can add PCBs" : undefined}
-                            style={isGuestPcbAdd ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
                         >
                             <Plus size={18} />
                             <span>Add New</span>
