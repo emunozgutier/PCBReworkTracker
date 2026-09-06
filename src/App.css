@@ -662,6 +662,48 @@ select:not([multiple]):focus {
   padding: 32px;
   box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
+  text-align: left;
+}
+
+.project-form-container label,
+.project-meta-card label,
+.form-group label,
+.nested-tier label {
+  text-align: left !important;
+}
+
+/* Modern Project Input Styles */
+.project-form-container input[type="text"],
+.project-form-container select,
+.project-form-container textarea,
+.add-form input[type="text"],
+.add-form select,
+.add-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #f1f5f9;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 42px;
+  text-align: left;
+}
+
+.project-form-container input[type="text"]::placeholder,
+.add-form input[type="text"]::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.project-form-container input[type="text"]:focus,
+.add-form input[type="text"]:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .project-meta-card {
@@ -672,7 +714,9 @@ select:not([multiple]):focus {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  text-align: left;
 }
+
 
 .project-meta-grid {
   display: grid;
@@ -950,3 +994,154 @@ select:not([multiple]):focus {
   gap: 16px;
   flex-wrap: wrap;
 }
+
+.responsive-tier-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* ==========================================================================
+   Mobile & Phone Viewport Optimizations (max-width: 768px & 480px)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .project-form-container {
+    padding: 14px 10px;
+    border-radius: 14px;
+  }
+
+  .project-meta-card {
+    padding: 16px 12px;
+    border-radius: 12px;
+    gap: 14px;
+  }
+
+  .project-meta-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  /* Compact indentation for phone view so nested tabs are not squished */
+  .nested-tier {
+    border-radius: 10px;
+    margin-bottom: 6px;
+  }
+
+  .nested-tier-body {
+    padding: 12px 8px;
+    gap: 12px;
+  }
+
+  .nested-tier-header {
+    padding: 10px 10px;
+    gap: 8px;
+  }
+
+  .nested-tabs-nav {
+    padding: 6px 8px;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nested-tab-chip {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    gap: 6px;
+  }
+
+  .nested-add-tab-btn {
+    padding: 5px 9px;
+    font-size: 0.76rem;
+  }
+
+  .responsive-tier-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .doc-slot-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .active-hierarchy-bar {
+    padding: 8px 10px;
+    gap: 6px;
+    font-size: 0.76rem;
+  }
+
+  .breadcrumb-step {
+    padding: 3px 7px;
+    font-size: 0.74rem;
+  }
+
+  .form-sticky-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 12px;
+    gap: 12px;
+  }
+
+  .form-sticky-bar > div:last-child {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+
+  .form-sticky-bar > div:last-child button {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .project-form-container {
+    padding: 8px 4px;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .add-page-header {
+    margin-bottom: 16px;
+    gap: 10px;
+  }
+
+  .add-page-header h2 {
+    font-size: 1.3rem !important;
+  }
+
+  .project-meta-card {
+    padding: 12px 10px;
+  }
+
+  /* Compact indentation for small phones */
+  .nested-tier-body {
+    padding: 10px 6px;
+    gap: 10px;
+  }
+
+  .nested-tabs-nav {
+    padding: 6px 4px;
+  }
+
+  .tier-badge {
+    font-size: 0.68rem;
+    padding: 2px 6px;
+  }
+
+  .nested-tier-header {
+    padding: 8px 8px;
+  }
+
+  .nested-tier-header span:not(.tier-badge) {
+    font-size: 0.74rem !important;
+  }
+
+  .form-group label {
+    font-size: 0.8rem;
+  }
+}
+

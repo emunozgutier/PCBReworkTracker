@@ -372,7 +372,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <form onSubmit={handleSubmit} className="add-form" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 
                 {/* 1. PROJECT OVERVIEW CARD */}
                 <div className="project-meta-card">
@@ -386,7 +386,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                     <div className="project-meta-grid">
                         {/* Project Name */}
                         <div className="form-group" style={{ margin: 0 }}>
-                            <label htmlFor="name" style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', display: 'block' }}>
+                            <label htmlFor="name" style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', display: 'block', textAlign: 'left' }}>
                                 Project Name <span style={{ color: '#ef4444' }}>*</span>
                             </label>
                             <input 
@@ -402,7 +402,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
 
                         {/* Project Key */}
                         <div className="form-group" style={{ margin: 0 }}>
-                            <label htmlFor="project_key" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>
+                            <label htmlFor="project_key" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px', textAlign: 'left' }}>
                                 <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     Project Key (3 Letters) <span style={{ color: '#ef4444' }}>*</span>
                                     <span title="The 3-letter project key is used in URLs and identifiers" style={{ cursor: 'help' }}>
@@ -429,9 +429,9 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                 required 
                                 style={{
                                     borderColor: keyBorderColor,
-                                    color: keyTextColor,
+                                    color: keyTextColor || '#f1f5f9',
                                     fontWeight: 700,
-                                    letterSpacing: '1px',
+                                    letterSpacing: '2px',
                                     textTransform: 'uppercase',
                                     width: '100%',
                                     boxSizing: 'border-box'
@@ -670,7 +670,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                     <div className="nested-tier-body">
                                         {currentSi && (
                                             <>
-                                                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 240px) 1fr', gap: '16px', alignItems: 'start' }}>
+                                                <div className="responsive-tier-grid">
                                                     <div>
                                                         <label style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '6px', display: 'block', color: 'var(--text-muted)' }}>
                                                             Silicon Version Name
@@ -851,7 +851,7 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                                                     <div className="nested-tier-body">
                                                                         {currentRev && (
                                                                             <>
-                                                                                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 240px) 1fr', gap: '16px', alignItems: 'start' }}>
+                                                                                <div className="responsive-tier-grid">
                                                                                     <div>
                                                                                         <label style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '6px', display: 'block', color: 'var(--text-muted)' }}>
                                                                                             PCB Revision Name
