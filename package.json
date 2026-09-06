@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"tsx src/store/serverDataBase/server.ts\" \"vite\"",
-    "dev:caddy": "concurrently \"tsx src/store/serverDataBase/server.ts\" \"vite --base=/RT/\"",
+    "dev": "concurrently \"tsx watch src/store/serverDataBase/server.ts\" \"vite\"",
+    "dev:caddy": "concurrently \"tsx watch src/store/serverDataBase/server.ts\" \"vite --base=/RT/\"",
     "diag:5001": "python3 diagnose_5001.py",
     "build": "tsc -b && vite build && node copy-404.js",
     "predeploy": "npm run build",

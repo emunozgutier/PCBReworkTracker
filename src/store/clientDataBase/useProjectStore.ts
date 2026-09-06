@@ -193,11 +193,16 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                 method: 'POST',
                 body: formData
             });
-            if (!res.ok) throw new Error('Failed to upload docs');
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                const errMsg = errData.error || `Failed to upload documents (HTTP ${res.status})`;
+                throw new Error(errMsg);
+            }
             await get().fetchDocs(projectId);
             return true;
         } catch (err: any) {
             console.error("uploadDocs error:", err);
+            set({ error: err.message });
             return false;
         }
     },
@@ -207,11 +212,15 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             const res = await apiFetch(`${API_BASE}/projects/${projectId}/docs/${docId}`, {
                 method: 'DELETE'
             });
-            if (!res.ok) throw new Error('Failed to delete doc');
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || 'Failed to delete doc');
+            }
             await get().fetchDocs(projectId);
             return true;
         } catch (err: any) {
             console.error("deleteDoc error:", err);
+            set({ error: err.message });
             return false;
         }
     },
@@ -233,11 +242,17 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
             const newProjectId = result.id;
             if (files && files.length > 0 && newProjectId) {
-                await get().uploadDocs(newProjectId, files);
+                const uploadOk = await get().uploadDocs(newProjectId, files);
+                if (!uploadOk) {
+                    await get().fetchProjects();
+                    set({ loading: false });
+                    return false;
+                }
             }
             
             // Re-fetch to get complete updated state with arrays correctly parsed
             await get().fetchProjects();
+            set({ loading: false, error: null });
             return true;
         } catch (err: any) {
             set({ error: err.message, loading: false });
@@ -261,11 +276,17 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             }
 
             if (files && files.length > 0) {
-                await get().uploadDocs(id, files);
+                const uploadOk = await get().uploadDocs(id, files);
+                if (!uploadOk) {
+                    await get().fetchProjects();
+                    set({ loading: false });
+                    return false;
+                }
             }
 
             // Re-fetch to get complete updated state
             await get().fetchProjects();
+            set({ loading: false, error: null });
             return true;
         } catch (err: any) {
             set({ error: err.message, loading: false });

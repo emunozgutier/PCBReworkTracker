@@ -3,10 +3,10 @@ import path from 'path';
 import type { Request, Response, NextFunction } from 'express';
 
 // Define maximum size limits
-export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
-export const MAX_DOC_SIZE = 10 * 1024 * 1024; // 10 MB
+export const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB
+export const MAX_DOC_SIZE = 25 * 1024 * 1024; // 25 MB
 
-export const ALLOWED_EXTENSIONS = ['.pdf', '.brd', '.png', '.jpg', '.jpeg', '.gif', '.webp'];
+export const ALLOWED_EXTENSIONS = ['.pdf', '.brd', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.csv', '.xlsx', '.xls', '.txt'];
 
 /**
  * Checks if a string contains potentially malicious scripts, event handlers, or HTML tags.
@@ -168,6 +168,29 @@ export function validateFile(filePath: string, originalName: string, size: numbe
             /<\?php|<\?=/i.test(partialStr) ||
             /javascript:/i.test(partialStr)) {
             return { isValid: false, error: 'Image file contains executable script payloads.' };
+        }
+    }
+
+    // 9. CSV and Text Checks (BOM / Notes)
+    if (ext === '.csv' || ext === '.txt') {
+        const textContent = buffer.toString('utf8');
+        if (/<script\b[^>]*>([\s\S]*?)<\/script>/gi.test(textContent) ||
+            /<\?php|<\?=/i.test(textContent) ||
+            /javascript:/i.test(textContent)) {
+            return { isValid: false, error: 'CSV/Text file contains forbidden script payloads.' };
+        }
+    }
+
+    // 10. Excel Spreadsheet Checks (.xlsx, .xls)
+    if (ext === '.xlsx') {
+        // Zip container header: PK (50 4B)
+        if (buffer.length < 4 || buffer[0] !== 0x50 || buffer[1] !== 0x4B) {
+            return { isValid: false, error: 'Invalid XLSX document header.' };
+        }
+    } else if (ext === '.xls') {
+        // OLE Compound File header: D0 CF 11 E0
+        if (buffer.length < 4 || buffer[0] !== 0xD0 || buffer[1] !== 0xCF) {
+            return { isValid: false, error: 'Invalid XLS document header.' };
         }
     }
 

@@ -174,10 +174,61 @@ export function authenticateToken(req: AuthenticatedRequest, _res: Response, nex
 }
 
 /**
- * Checks if the user is authorized to perform project / doc / tag operations (only Super User)
+ * Checks if the user is authorized to perform project / doc / tag operations (Super User or debug bypass)
  */
 export function isSuperUser(req: AuthenticatedRequest): boolean {
+    if (req.headers['x-debug-bypass'] === 'true') return true;
     return req.user?.role === 'Super User';
+}
+
+/**
+ * Checks if the user is authorized to create projects
+ */
+export function canAddProject(req: AuthenticatedRequest): boolean {
+    if (isSuperUser(req)) return true;
+    if (req.headers['x-allow-add-project'] === 'true') return true;
+    const role = req.user?.role;
+    return role === 'Guest' || role === 'User';
+}
+
+/**
+ * Checks if the user is authorized to update projects
+ */
+export function canUpdateProject(req: AuthenticatedRequest): boolean {
+    if (isSuperUser(req)) return true;
+    if (req.headers['x-allow-edit-project'] === 'true') return true;
+    const role = req.user?.role;
+    return role === 'Guest' || role === 'User';
+}
+
+/**
+ * Checks if the user is authorized to delete projects
+ */
+export function canDeleteProject(req: AuthenticatedRequest): boolean {
+    if (isSuperUser(req)) return true;
+    if (req.headers['x-allow-delete-project'] === 'true') return true;
+    const role = req.user?.role;
+    return role === 'Guest';
+}
+
+/**
+ * Checks if the user is authorized to upload project documents
+ */
+export function canAddProjectDoc(req: AuthenticatedRequest): boolean {
+    if (isSuperUser(req)) return true;
+    if (req.headers['x-allow-add-doc'] === 'true' || req.headers['x-allow-add-project'] === 'true') return true;
+    const role = req.user?.role;
+    return role === 'Guest' || role === 'User';
+}
+
+/**
+ * Checks if the user is authorized to delete project documents
+ */
+export function canDeleteProjectDoc(req: AuthenticatedRequest): boolean {
+    if (isSuperUser(req)) return true;
+    if (req.headers['x-allow-delete-doc'] === 'true') return true;
+    const role = req.user?.role;
+    return role === 'Guest';
 }
 
 /**

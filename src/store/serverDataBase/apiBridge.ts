@@ -1,5 +1,6 @@
 import { useDemoStore } from '../useDemoStore';
 import { useAppState } from '../useAppState';
+import { usePermissionsStore } from '../clientDataBase/usePermissionsStore';
 import { getSessionCookie } from '../../authentication/clientAuth';
 import demoData from './data/demoData.json';
 
@@ -71,13 +72,41 @@ export async function apiFetch(fullUrl: string, options?: RequestInit): Promise<
     const isDemoMode = useDemoStore.getState().isDemoMode;
     
     if (!isDemoMode) {
-        const { currentUser, currentUserRole } = useAppState.getState();
+        const { currentUser, currentUserRole, debugBypassPermissions } = useAppState.getState();
         const headers = new Headers(options?.headers);
         const username = currentUser?.username || (currentUserRole === 'Super User' ? 'admin' : 'guest');
         const name = currentUser?.name || (currentUserRole === 'Super User' ? 'Super User' : 'Guest');
         headers.set('X-User-Username', username);
         headers.set('X-User-Name', name);
         headers.set('X-User-Role', currentUserRole);
+
+        if (debugBypassPermissions) {
+            headers.set('X-Debug-Bypass', 'true');
+        }
+
+        try {
+            const { permissions } = usePermissionsStore.getState();
+            const canAddProj = debugBypassPermissions || currentUserRole === 'Super User' ||
+                (currentUserRole === 'User' && permissions['Projects__Add__user'] === true) ||
+                (currentUserRole === 'Guest' && permissions['Projects__Add__guest'] === true);
+            if (canAddProj) {
+                headers.set('X-Allow-Add-Project', 'true');
+            }
+
+            const canEditProj = debugBypassPermissions || currentUserRole === 'Super User' ||
+                (currentUserRole === 'User' && permissions['Projects__Edit__user'] === true) ||
+                (currentUserRole === 'Guest' && permissions['Projects__Edit__guest'] === true);
+            if (canEditProj) {
+                headers.set('X-Allow-Edit-Project', 'true');
+            }
+
+            const canAddDoc = debugBypassPermissions || currentUserRole === 'Super User' ||
+                (currentUserRole === 'User' && permissions['Docs__Add__user'] === true) ||
+                (currentUserRole === 'Guest' && permissions['Docs__Add__guest'] === true);
+            if (canAddDoc) {
+                headers.set('X-Allow-Add-Doc', 'true');
+            }
+        } catch {}
 
         const token = getSessionCookie();
         if (token) {

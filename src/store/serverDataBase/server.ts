@@ -16,7 +16,12 @@ import {
     canUpdatePcb,
     canUpdateRework,
     canAddPcb,
-    canAddRework
+    canAddRework,
+    canAddProject,
+    canUpdateProject,
+    canDeleteProject,
+    canAddProjectDoc,
+    canDeleteProjectDoc
 } from '../../authentication/serverAuth';
 import {
     inputSanityCheckMiddleware,
@@ -843,8 +848,8 @@ app.get('/api/projects', (_req: Request, res: Response) => {
 });
 
 app.post('/api/projects', async (req: Request, res: Response) => {
-    if (!isSuperUser(req as any)) {
-        return res.status(403).json({ error: "Only Super Users can create projects." });
+    if (!canAddProject(req as any)) {
+        return res.status(403).json({ error: "You do not have permission to create projects." });
     }
     const { name, description, revisions, project_key, flavors, silicon_corners, number_format, packages } = req.body;
     const cleanName = sanitizeProjectName(name);
@@ -1426,8 +1431,8 @@ app.post('/api/reworks', upload.any(), fileSanityCheckMiddleware, deduplicate, s
 
 // --- Projects API Expansions ---
 app.put('/api/projects/:id', (req: Request, res: Response) => {
-    if (!isSuperUser(req as any)) {
-        return res.status(403).json({ error: "Only Super Users can update projects." });
+    if (!canUpdateProject(req as any)) {
+        return res.status(403).json({ error: "You do not have permission to update projects." });
     }
     const { name, description, revisions, project_key, flavors, silicon_corners, number_format, packages } = req.body;
     const cleanName = sanitizeProjectName(name);
@@ -1463,8 +1468,8 @@ app.put('/api/projects/:id', (req: Request, res: Response) => {
 });
 
 app.delete('/api/projects/:id', (req: Request, res: Response) => {
-    if (!isSuperUser(req as any)) {
-        return res.status(403).json({ error: "Only Super Users can delete projects." });
+    if (!canDeleteProject(req as any)) {
+        return res.status(403).json({ error: "You do not have permission to delete projects." });
     }
     db.run("DELETE FROM projects WHERE id = ?", [req.params.id], function(this: any, err: Error | null) {
         if (err) return res.status(500).json({ error: err.message });
@@ -1482,8 +1487,8 @@ app.get('/api/projects/:id/docs', (req: Request, res: Response) => {
 });
 
 app.post('/api/projects/:id/docs', upload.any(), fileSanityCheckMiddleware, (req: Request, res: Response) => {
-    if (!isSuperUser(req as any)) {
-        return res.status(403).json({ error: "Only Super Users can add project documents." });
+    if (!canAddProjectDoc(req as any)) {
+        return res.status(403).json({ error: "You do not have permission to add project documents." });
     }
     const projectId = req.params.id;
     db.get("SELECT name, project_key FROM projects WHERE id = ?", [projectId], (err: Error | null, project: any) => {
@@ -1557,8 +1562,8 @@ app.post('/api/projects/:id/docs', upload.any(), fileSanityCheckMiddleware, (req
 });
 
 app.delete('/api/projects/:projectId/docs/:docId', (req: Request, res: Response) => {
-    if (!isSuperUser(req as any)) {
-        return res.status(403).json({ error: "Only Super Users can delete project documents." });
+    if (!canDeleteProjectDoc(req as any)) {
+        return res.status(403).json({ error: "You do not have permission to delete project documents." });
     }
     const { projectId, docId } = req.params;
     db.get("SELECT * FROM project_docs WHERE id = ? AND project_id = ?", [docId, projectId], (err: Error | null, row: any) => {
