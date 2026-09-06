@@ -88,6 +88,23 @@ CREATE TABLE formfactor_revision_docs (
     FOREIGN KEY (formfactor_revision_id) REFERENCES board_formfactor_revisions(id) ON DELETE CASCADE
 );
 
+CREATE TABLE uploaded_docs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    entity_type TEXT NOT NULL,
+    entity_id INTEGER NOT NULL,
+    project_id INTEGER,
+    pcb_id INTEGER,
+    doc_type TEXT NOT NULL,
+    filename TEXT NOT NULL,
+    original_filename TEXT,
+    path TEXT NOT NULL,
+    file_size INTEGER DEFAULT 0,
+    mime_type TEXT,
+    uploaded_by TEXT,
+    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+
 CREATE TABLE "reworks" (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     pcb_id INTEGER,

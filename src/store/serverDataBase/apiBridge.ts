@@ -217,6 +217,95 @@ async function processDemoRequest(fullUrl: string, options?: RequestInit): Promi
             });
         }
     }
+    if (localPath.startsWith('/uploaded-docs')) {
+        const parts = localPath.split('/');
+        if (method === 'DELETE' && parts.length === 3) {
+            const docId = parseInt(parts[2]);
+            internalProjectDocs = internalProjectDocs.filter(s => s.id !== docId);
+            return createResponse({ message: 'Document deleted successfully', deletedId: docId });
+        }
+
+        // Build list of all uploaded documents
+        const allDocs: any[] = [];
+        // 1. Project docs
+        internalProjectDocs.forEach(d => {
+            const fn = d.filename || '';
+            const docType = fn.toLowerCase().endsWith('.brd') ? 'board_file'
+                          : fn.toLowerCase().endsWith('.csv') ? 'bom_csv'
+                          : fn.toLowerCase().includes('datasheet') ? 'datasheet'
+                          : 'schematic';
+            const proj = internalProjects.find(p => p.id === d.project_id);
+            allDocs.push({
+                id: d.id,
+                entity_type: 'project',
+                entity_id: d.project_id,
+                project_id: d.project_id,
+                project_name: proj?.name || 'Project',
+                project_key: proj?.project_key || 'PRJ',
+                doc_type: docType,
+                filename: d.filename,
+                original_filename: d.filename,
+                path: d.path,
+                mime_type: docType === 'board_file' ? 'application/octet-stream' : docType === 'bom_csv' ? 'text/csv' : 'application/pdf',
+                uploaded_at: d.uploaded_at || new Date().toISOString()
+            });
+        });
+
+        // 2. Rework images
+        internalReworks.forEach(r => {
+            if (r.image_path) {
+                let paths: string[] = [];
+                try {
+                    paths = JSON.parse(r.image_path);
+                    if (!Array.isArray(paths)) paths = [r.image_path];
+                } catch {
+                    paths = [r.image_path];
+                }
+                const pcb = internalPcbs.find(p => p.id === r.pcb_id);
+                const proj = pcb ? internalProjects.find(p => p.name === pcb.project) : null;
+                paths.forEach((imgUrl, i) => {
+                    const fn = imgUrl.split('/').pop() || `PIC-${i + 1}`;
+                    allDocs.push({
+                        id: 100000 + r.id * 10 + i,
+                        entity_type: 'rework',
+                        entity_id: r.id,
+                        project_id: proj?.id || null,
+                        pcb_id: r.pcb_id,
+                        project_name: proj?.name || pcb?.project,
+                        project_key: proj?.project_key,
+                        pcb_board_number: pcb?.board_number,
+                        rework_number: r.rework_number || r.id,
+                        rework_title: r.title,
+                        doc_type: 'picture',
+                        filename: fn,
+                        original_filename: fn,
+                        path: imgUrl,
+                        mime_type: 'image/jpeg',
+                        uploaded_at: r.timestamp || new Date().toISOString()
+                    });
+                });
+            }
+        });
+
+        if (localPath.includes('/summary')) {
+            const counts: Record<string, number> = {
+                picture: 0,
+                schematic: 0,
+                board_file: 0,
+                bom_csv: 0,
+                datasheet: 0,
+                other: 0,
+                total: allDocs.length
+            };
+            allDocs.forEach(d => {
+                if (counts[d.doc_type] !== undefined) counts[d.doc_type]++;
+                else counts.other++;
+            });
+            return createResponse(counts);
+        }
+
+        return createResponse(allDocs);
+    }
     if (localPath.startsWith('/projects')) {
         const parts = localPath.split('/');
         

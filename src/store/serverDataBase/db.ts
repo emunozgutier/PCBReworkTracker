@@ -195,6 +195,28 @@ const initDb = async (): Promise<void> => {
             )`);
             dbInstance.run(`CREATE INDEX IF NOT EXISTS idx_ff_revision_docs_rev ON formfactor_revision_docs(formfactor_revision_id)`);
 
+            // Uploaded Docs Table (Unified registry for pictures, schematics, board files, bom files, datasheets)
+            dbInstance.run(`CREATE TABLE IF NOT EXISTS uploaded_docs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                entity_type TEXT NOT NULL, -- 'rework' | 'revision' | 'project' | 'pcb'
+                entity_id INTEGER NOT NULL,
+                project_id INTEGER,
+                pcb_id INTEGER,
+                doc_type TEXT NOT NULL,    -- 'picture' | 'schematic' | 'board_file' | 'bom_csv' | 'datasheet' | 'other'
+                filename TEXT NOT NULL,
+                original_filename TEXT,
+                path TEXT NOT NULL,
+                file_size INTEGER DEFAULT 0,
+                mime_type TEXT,
+                uploaded_by TEXT,
+                uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+            )`);
+            dbInstance.run(`CREATE INDEX IF NOT EXISTS idx_uploaded_docs_entity ON uploaded_docs(entity_type, entity_id)`);
+            dbInstance.run(`CREATE INDEX IF NOT EXISTS idx_uploaded_docs_type ON uploaded_docs(doc_type)`);
+            dbInstance.run(`CREATE INDEX IF NOT EXISTS idx_uploaded_docs_project ON uploaded_docs(project_id)`);
+            dbInstance.run(`CREATE INDEX IF NOT EXISTS idx_uploaded_docs_pcb ON uploaded_docs(pcb_id)`);
+
             // Owners Table
             dbInstance.run(`CREATE TABLE IF NOT EXISTS owners (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -475,8 +497,92 @@ const initDb = async (): Promise<void> => {
                     resolve();
                 }
             });
+
+            // Auto-migrate legacy documents (project_docs, formfactor_revision_docs, reworks.image_path) to uploaded_docs
+            setTimeout(() => {
+                autoMigrateUploadedDocs(dbInstance);
+            }, 1000);
         });
     });
 };
+
+export function autoMigrateUploadedDocs(dbInstance: any = db) {
+    if (!dbInstance) return;
+
+    // 1. Backfill from project_docs
+    dbInstance.run(`
+        INSERT OR IGNORE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, uploaded_at)
+        SELECT 'project', pd.project_id, (SELECT id FROM projects WHERE id = pd.project_id),
+               CASE 
+                 WHEN lower(pd.filename) LIKE '%.brd' THEN 'board_file'
+                 WHEN lower(pd.filename) LIKE '%.csv' THEN 'bom_csv'
+                 WHEN lower(pd.filename) LIKE '%datasheet%.pdf' THEN 'datasheet'
+                 WHEN lower(pd.filename) LIKE '%.pdf' THEN 'schematic'
+                 ELSE 'other'
+               END,
+               pd.filename, pd.filename, pd.path, pd.uploaded_at
+        FROM project_docs pd
+        WHERE NOT EXISTS (
+            SELECT 1 FROM uploaded_docs u
+            WHERE u.entity_type = 'project' AND u.entity_id = pd.project_id AND u.path = pd.path
+        )
+    `);
+
+    // 2. Backfill from formfactor_revision_docs
+    dbInstance.run(`
+        INSERT OR IGNORE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, uploaded_at)
+        SELECT 'revision', ffrd.formfactor_revision_id, (SELECT id FROM projects WHERE id = pkg.project_id), ffrd.doc_type, ffrd.filename, ffrd.filename, ffrd.path, ffrd.uploaded_at
+        FROM formfactor_revision_docs ffrd
+        LEFT JOIN board_formfactor_revisions bffr ON bffr.id = ffrd.formfactor_revision_id
+        LEFT JOIN board_formfactors bff ON bff.id = bffr.board_formfactor_id
+        LEFT JOIN silicon_versions sv ON sv.id = bff.silicon_version_id
+        LEFT JOIN packages pkg ON pkg.id = sv.package_id
+        WHERE NOT EXISTS (
+            SELECT 1 FROM uploaded_docs u
+            WHERE u.entity_type = 'revision' AND u.entity_id = ffrd.formfactor_revision_id AND u.path = ffrd.path
+        )
+    `);
+
+    // 3. Backfill from reworks.image_path
+    dbInstance.all(
+        `SELECT r.id, r.pcb_id, r.image_path, r.timestamp, r.created_by, p.project_id
+         FROM reworks r
+         LEFT JOIN pcbs p ON p.id = r.pcb_id
+         WHERE r.image_path IS NOT NULL AND r.image_path != ''`,
+        [],
+        (_err: any, reworkRows: any[]) => {
+            if (!reworkRows || reworkRows.length === 0) return;
+            reworkRows.forEach(rw => {
+                let imgList: string[] = [];
+                try {
+                    imgList = JSON.parse(rw.image_path);
+                    if (!Array.isArray(imgList)) imgList = [rw.image_path];
+                } catch {
+                    imgList = [rw.image_path];
+                }
+                imgList.forEach(imgUrl => {
+                    if (!imgUrl || typeof imgUrl !== 'string') return;
+                    const fn = path.basename(imgUrl);
+                    dbInstance.get(
+                        "SELECT id FROM uploaded_docs WHERE entity_type = 'rework' AND entity_id = ? AND path = ?",
+                        [rw.id, imgUrl],
+                        (_errDoc: any, docRow: any) => {
+                            if (!docRow) {
+                                dbInstance.get("SELECT id FROM projects WHERE id = ?", [rw.project_id], (_ePrj: any, prjRow: any) => {
+                                    const finalProjectId = prjRow ? rw.project_id : null;
+                                    dbInstance.run(
+                                        `INSERT INTO uploaded_docs (entity_type, entity_id, project_id, pcb_id, doc_type, filename, original_filename, path, mime_type, uploaded_by, uploaded_at)
+                                         VALUES ('rework', ?, ?, ?, 'picture', ?, ?, ?, 'image/jpeg', ?, ?)`,
+                                        [rw.id, finalProjectId, rw.pcb_id || null, fn, fn, imgUrl, rw.created_by || 'guest', rw.timestamp || new Date().toISOString()]
+                                    );
+                                });
+                            }
+                        }
+                    );
+                });
+            });
+        }
+    );
+}
 
 export { db, initDb };

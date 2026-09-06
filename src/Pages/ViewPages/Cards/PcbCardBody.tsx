@@ -6,11 +6,11 @@ import { usePcbStore } from '../../../store/clientDataBase/usePcbStore';
 import { API_BASE, apiFetch } from '../../../store/serverDataBase/apiBridge';
 import { FormTabs } from '../../../components/forms/FormTabs';
 import { RemoveTag } from '../../RemovePage/RemoveTag';
-import { Tag as TagIcon, X, FileText } from 'lucide-react';
+import { Tag as TagIcon, X } from 'lucide-react';
 import { formatTagName } from '../../../store/clientDataBase/useTagStore';
 import { EditButton, ViewButton, AddButton, QrButton, DeleteButton, DocsButton } from '../../../components/forms/ActionButtons';
 import { RemovePcb } from '../../RemovePage/RemovePcb';
-import { Popup } from '../../../components/Popup';
+import { UploadedDocsModal } from '../../PopupPage/UploadedDocsModal';
 import { ReworkCardBody } from './ReworkCardBody';
 import { useProjectStore } from '../../../store/clientDataBase/useProjectStore';
 
@@ -101,7 +101,6 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
     const bomCsvDoc = docs.find(s => s.filename === bomCsvFilename) || (bomCsvFilename ? { id: bomCsvFilename, filename: bomCsvFilename, path: `/docs/${bomCsvFilename}` } : null);
     const datasheetDoc = docs.find(s => s.filename === datasheetFilename) || (datasheetFilename ? { id: datasheetFilename, filename: datasheetFilename, path: `/docs/${datasheetFilename}` } : null);
 
-    const hasAnyDocs = Boolean(schematicDoc || boardFileDoc || bomCsvDoc || datasheetDoc);
 
     useEffect(() => {
         if (project && !projectDocs[project.id.toString()]) {
@@ -159,6 +158,8 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
             }
             return b.id - a.id;
         });
+
+    const hasAnyDocs = Boolean(schematicDoc || boardFileDoc || bomCsvDoc || datasheetDoc || pcbReworks.some((r: any) => r.image_path));
 
 
 
@@ -435,246 +436,12 @@ export function PcbCardBody({ pcb }: PcbCardBodyProps) {
                 pcb={pcb}
             />
 
-            <Popup 
+            <UploadedDocsModal 
                 isOpen={isDocsPopupOpen} 
                 onClose={() => setIsDocsPopupOpen(false)} 
-                title="Board Revision Documents"
-                maxWidth="500px"
-            >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
-                    {schematicDoc && (
-                        <div 
-                            style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'space-between', 
-                                padding: '12px 16px', 
-                                background: 'rgba(255, 255, 255, 0.02)', 
-                                border: '1px solid var(--border)', 
-                                borderRadius: '8px',
-                                gap: '12px'
-                            }}
-                        >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
-                                <div style={{ 
-                                    width: '40px', 
-                                    height: '40px', 
-                                    borderRadius: '8px', 
-                                    background: 'rgba(99, 102, 241, 0.1)', 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    justifyContent: 'center',
-                                    flexShrink: 0
-                                }}>
-                                    <FileText size={20} color="var(--accent)" />
-                                </div>
-                                <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                                    <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)' }}>PDF Schematic</span>
-                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={schematicDoc.filename}>
-                                        {schematicDoc.filename}
-                                    </span>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    editItem('doc_viewer', schematicDoc.id);
-                                    setIsDocsPopupOpen(false);
-                                }}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    padding: '8px 14px',
-                                    background: 'rgba(99, 102, 241, 0.1)',
-                                    border: '1px solid rgba(99, 102, 241, 0.3)',
-                                    borderRadius: '6px',
-                                    color: 'var(--accent)',
-                                    cursor: 'pointer',
-                                    fontSize: '0.85rem',
-                                    fontWeight: 600,
-                                    transition: 'all 0.2s'
-                                }}
-                            >
-                                <span>View</span>
-                            </button>
-                        </div>
-                    )}
-
-                    {boardFileDoc && (
-                        <div 
-                            style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'space-between', 
-                                padding: '12px 16px', 
-                                background: 'rgba(255, 255, 255, 0.02)', 
-                                border: '1px solid var(--border)', 
-                                borderRadius: '8px',
-                                gap: '12px'
-                            }}
-                        >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
-                                <div style={{ 
-                                    width: '40px', 
-                                    height: '40px', 
-                                    borderRadius: '8px', 
-                                    background: 'rgba(99, 102, 241, 0.1)', 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    justifyContent: 'center',
-                                    flexShrink: 0
-                                }}>
-                                    <FileText size={20} color="var(--accent)" />
-                                </div>
-                                <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                                    <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)' }}>BRD Board File</span>
-                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={boardFileDoc.filename}>
-                                        {boardFileDoc.filename}
-                                    </span>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    editItem('board_viewer', boardFileDoc.id);
-                                    setIsDocsPopupOpen(false);
-                                }}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    padding: '8px 14px',
-                                    background: 'rgba(99, 102, 241, 0.1)',
-                                    border: '1px solid rgba(99, 102, 241, 0.3)',
-                                    borderRadius: '6px',
-                                    color: 'var(--accent)',
-                                    cursor: 'pointer',
-                                    fontSize: '0.85rem',
-                                    fontWeight: 600,
-                                    transition: 'all 0.2s'
-                                }}
-                            >
-                                <span>View</span>
-                            </button>
-                        </div>
-                    )}
-
-                    {bomCsvDoc && (
-                        <div 
-                            style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'space-between', 
-                                padding: '12px 16px', 
-                                background: 'rgba(255, 255, 255, 0.02)', 
-                                border: '1px solid var(--border)', 
-                                borderRadius: '8px',
-                                gap: '12px'
-                            }}
-                        >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
-                                <div style={{ 
-                                    width: '40px', 
-                                    height: '40px', 
-                                    borderRadius: '8px', 
-                                    background: 'rgba(34, 197, 94, 0.1)', 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    justifyContent: 'center',
-                                    flexShrink: 0
-                                }}>
-                                    <FileText size={20} color="var(--success, #22c55e)" />
-                                </div>
-                                <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                                    <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)' }}>BOM CSV File</span>
-                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={bomCsvDoc.filename}>
-                                        {bomCsvDoc.filename}
-                                    </span>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    editItem('doc_viewer', bomCsvDoc.id);
-                                    setIsDocsPopupOpen(false);
-                                }}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    padding: '8px 14px',
-                                    background: 'rgba(34, 197, 94, 0.1)',
-                                    border: '1px solid rgba(34, 197, 94, 0.3)',
-                                    borderRadius: '6px',
-                                    color: 'var(--success, #22c55e)',
-                                    cursor: 'pointer',
-                                    fontSize: '0.85rem',
-                                    fontWeight: 600,
-                                    transition: 'all 0.2s'
-                                }}
-                            >
-                                <span>View</span>
-                            </button>
-                        </div>
-                    )}
-
-                    {datasheetDoc && (
-                        <div 
-                            style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'space-between', 
-                                padding: '12px 16px', 
-                                background: 'rgba(255, 255, 255, 0.02)', 
-                                border: '1px solid var(--border)', 
-                                borderRadius: '8px',
-                                gap: '12px'
-                            }}
-                        >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
-                                <div style={{ 
-                                    width: '40px', 
-                                    height: '40px', 
-                                    borderRadius: '8px', 
-                                    background: 'rgba(245, 158, 11, 0.1)', 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    justifyContent: 'center',
-                                    flexShrink: 0
-                                }}>
-                                    <FileText size={20} color="var(--warning, #f59e0b)" />
-                                </div>
-                                <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                                    <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)' }}>PDF Datasheet</span>
-                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={datasheetDoc.filename}>
-                                        {datasheetDoc.filename}
-                                    </span>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    editItem('doc_viewer', datasheetDoc.id);
-                                    setIsDocsPopupOpen(false);
-                                }}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    padding: '8px 14px',
-                                    background: 'rgba(245, 158, 11, 0.1)',
-                                    border: '1px solid rgba(245, 158, 11, 0.3)',
-                                    borderRadius: '6px',
-                                    color: 'var(--warning, #f59e0b)',
-                                    cursor: 'pointer',
-                                    fontSize: '0.85rem',
-                                    fontWeight: 600,
-                                    transition: 'all 0.2s'
-                                }}
-                            >
-                                <span>View</span>
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </Popup>
+                project={project ? { id: project.id, name: project.name, project_key: project.project_key } : null}
+                pcb={{ id: pcb.id, board_number: pcb.board_number }}
+            />
         </div>
     );
 }

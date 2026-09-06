@@ -12,13 +12,27 @@ interface DocViewerProps {
 export function DocViewer({ docId, onBack }: DocViewerProps) {
     const { projectDocs, fetchDocs, projects } = useProjectStore();
     
-    // Find the document across all projects
-    let boardDoc = null;
+    // Find the document across all projects or uploaded docs
+    let boardDoc: any = null;
     for (const projId in projectDocs) {
-        const found = projectDocs[projId].find(d => String(d.id) === String(docId));
+        const found = projectDocs[projId].find(d => String(d.id) === String(docId) || d.filename === String(docId));
         if (found) {
             boardDoc = found;
             break;
+        }
+    }
+
+    if (!boardDoc) {
+        const uploadedDocs = (window as any).__lastUploadedDocs || [];
+        const foundUp = uploadedDocs.find((d: any) => String(d.id) === String(docId) || d.filename === String(docId));
+        if (foundUp) {
+            boardDoc = foundUp;
+        } else if (typeof docId === 'string' && (docId.includes('.') || docId.includes('/'))) {
+            boardDoc = {
+                id: docId,
+                filename: docId.split('/').pop() || docId,
+                path: docId.startsWith('/') ? docId : `/docs/${docId}`
+            };
         }
     }
 

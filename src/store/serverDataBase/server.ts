@@ -578,20 +578,25 @@ function saveProjectHierarchy(projectId: number | string, packagesInput: any[], 
                                             if (r.schematic || r.doc) {
                                                 const sch = r.schematic || r.doc;
                                                 db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'schematic', ?, ?)", [revisionId, sch, `/docs/${sch}`]);
+                                                db.run("INSERT OR REPLACE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, mime_type) VALUES ('revision', ?, ?, 'schematic', ?, ?, ?, 'application/pdf')", [revisionId, projectId, sch, sch, `/docs/${sch}`]);
                                             }
                                             if (r.board_file) {
                                                 db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'board_file', ?, ?)", [revisionId, r.board_file, `/docs/${r.board_file}`]);
+                                                db.run("INSERT OR REPLACE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, mime_type) VALUES ('revision', ?, ?, 'board_file', ?, ?, ?, 'application/octet-stream')", [revisionId, projectId, r.board_file, r.board_file, `/docs/${r.board_file}`]);
                                             }
                                             if (r.bom_csv) {
                                                 db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'bom_csv', ?, ?)", [revisionId, r.bom_csv, `/docs/${r.bom_csv}`]);
+                                                db.run("INSERT OR REPLACE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, mime_type) VALUES ('revision', ?, ?, 'bom_csv', ?, ?, ?, 'text/csv')", [revisionId, projectId, r.bom_csv, r.bom_csv, `/docs/${r.bom_csv}`]);
                                             }
                                             if (r.datasheet) {
                                                 db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, 'datasheet', ?, ?)", [revisionId, r.datasheet, `/docs/${r.datasheet}`]);
+                                                db.run("INSERT OR REPLACE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, mime_type) VALUES ('revision', ?, ?, 'datasheet', ?, ?, ?, 'application/pdf')", [revisionId, projectId, r.datasheet, r.datasheet, `/docs/${r.datasheet}`]);
                                             }
                                             if (Array.isArray(r.documents)) {
                                                 r.documents.forEach((docItem: any) => {
                                                     if (docItem.filename && !['schematic', 'board_file', 'bom_csv', 'datasheet'].includes(docItem.doc_type)) {
                                                         db.run("INSERT INTO formfactor_revision_docs (formfactor_revision_id, doc_type, filename, path) VALUES (?, ?, ?, ?)", [revisionId, docItem.doc_type || 'other', docItem.filename, docItem.path || `/docs/${docItem.filename}`]);
+                                                        db.run("INSERT OR REPLACE INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path) VALUES ('revision', ?, ?, ?, ?, ?, ?)", [revisionId, projectId, docItem.doc_type || 'other', docItem.filename, docItem.filename, docItem.path || `/docs/${docItem.filename}`]);
                                                     }
                                                 });
                                             }
@@ -1412,6 +1417,20 @@ app.post('/api/reworks', upload.any(), fileSanityCheckMiddleware, deduplicate, s
             db.run(insertQuery, [pcb_id, sequence, title || null, description, finalOwnerId, image_path, rework_type || 'Minor', creator, creator], function(this: any, errInsert: Error | null) {
                 if (errInsert) return res.status(500).json({ error: errInsert.message });
                 const reworkId = this.lastID;
+
+                // Record rework images in uploaded_docs
+                if (finalPaths.length > 0) {
+                    finalPaths.forEach((imgPath, idx) => {
+                        const fn = path.basename(imgPath);
+                        const origFile = reqFiles && reqFiles[idx] ? reqFiles[idx].originalname : fn;
+                        const fileSize = reqFiles && reqFiles[idx] ? reqFiles[idx].size : 0;
+                        const mimeType = reqFiles && reqFiles[idx] ? reqFiles[idx].mimetype : 'image/jpeg';
+                        db.run(
+                            "INSERT INTO uploaded_docs (entity_type, entity_id, project_id, pcb_id, doc_type, filename, original_filename, path, file_size, mime_type, uploaded_by) VALUES ('rework', ?, ?, ?, 'picture', ?, ?, ?, ?, ?, ?)",
+                            [reworkId, row.project_id || null, pcb_id, fn, origFile, imgPath, fileSize, mimeType, creator]
+                        );
+                    });
+                }
                 
                 // 4. Update PCB if it's a Silicon Swap
                 if (rework_type === 'Silicon Swap' && new_silicon_rev !== undefined) {
@@ -1542,6 +1561,19 @@ app.post('/api/projects/:id/docs', upload.any(), fileSanityCheckMiddleware, (req
                                     path: relativePath,
                                     uploaded_at: new Date().toISOString()
                                 });
+
+                                // Record in uploaded_docs
+                                const docType = originalName.toLowerCase().endsWith('.brd') ? 'board_file'
+                                              : originalName.toLowerCase().endsWith('.csv') ? 'bom_csv'
+                                              : originalName.toLowerCase().includes('datasheet') ? 'datasheet'
+                                              : originalName.toLowerCase().endsWith('.pdf') ? 'schematic'
+                                              : 'other';
+                                const mimeType = file.mimetype || (docType === 'board_file' ? 'application/octet-stream' : docType === 'bom_csv' ? 'text/csv' : 'application/pdf');
+                                const editor = req.headers['x-user-username'] || 'guest';
+                                db.run(
+                                    "INSERT INTO uploaded_docs (entity_type, entity_id, project_id, doc_type, filename, original_filename, path, file_size, mime_type, uploaded_by) VALUES ('project', ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                    [projectId, projectId, docType, originalName, originalName, relativePath, file.size || 0, mimeType, editor]
+                                );
                                 
                                 processedCount++;
                                 if (processedCount === reqFiles.length && !errorOccurred) {
@@ -1574,6 +1606,9 @@ app.delete('/api/projects/:projectId/docs/:docId', (req: Request, res: Response)
         db.run("DELETE FROM project_docs WHERE id = ?", [docId], function(this: any, deleteErr: Error | null) {
             if (deleteErr) return res.status(500).json({ error: deleteErr.message });
 
+            // Also remove from uploaded_docs
+            db.run("DELETE FROM uploaded_docs WHERE entity_type = 'project' AND project_id = ? AND (path = ? OR filename = ?)", [projectId, row.path, row.filename]);
+
             try {
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
@@ -1586,6 +1621,128 @@ app.delete('/api/projects/:projectId/docs/:docId', (req: Request, res: Response)
         });
     });
 });
+
+// --- Uploaded Docs Unified API ---
+app.get('/api/uploaded-docs', (req: Request, res: Response) => {
+    const { entity_type, entity_id, project_id, pcb_id, doc_type, search } = req.query;
+    let query = `
+        SELECT ud.*, 
+               p.name as project_name, 
+               p.project_key,
+               pcb.board_number as pcb_board_number,
+               pcb.crc as pcb_crc,
+               rw.rework_number as rework_number,
+               rw.title as rework_title
+        FROM uploaded_docs ud
+        LEFT JOIN projects p ON ud.project_id = p.id
+        LEFT JOIN pcbs pcb ON ud.pcb_id = pcb.id
+        LEFT JOIN reworks rw ON ud.entity_type = 'rework' AND ud.entity_id = rw.id
+        WHERE 1=1
+    `;
+    const params: any[] = [];
+
+    if (entity_type) {
+        query += " AND ud.entity_type = ?";
+        params.push(entity_type);
+    }
+    if (entity_id) {
+        query += " AND ud.entity_id = ?";
+        params.push(entity_id);
+    }
+    if (project_id) {
+        query += " AND ud.project_id = ?";
+        params.push(project_id);
+    }
+    if (pcb_id) {
+        query += " AND ud.pcb_id = ?";
+        params.push(pcb_id);
+    }
+    if (doc_type) {
+        query += " AND ud.doc_type = ?";
+        params.push(doc_type);
+    }
+    if (search) {
+        query += " AND (ud.filename LIKE ? OR ud.original_filename LIKE ?)";
+        params.push(`%${search}%`, `%${search}%`);
+    }
+
+    query += " ORDER BY ud.uploaded_at DESC";
+
+    db.all(query, params, (err: Error | null, rows: any[]) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows || []);
+    });
+});
+
+app.get('/api/uploaded-docs/summary', (req: Request, res: Response) => {
+    const { project_id, pcb_id } = req.query;
+    let whereClause = "WHERE 1=1";
+    const params: any[] = [];
+    if (project_id) {
+        whereClause += " AND project_id = ?";
+        params.push(project_id);
+    }
+    if (pcb_id) {
+        whereClause += " AND pcb_id = ?";
+        params.push(pcb_id);
+    }
+
+    db.all(
+        `SELECT doc_type, COUNT(*) as count FROM uploaded_docs ${whereClause} GROUP BY doc_type`,
+        params,
+        (err: Error | null, rows: any[]) => {
+            if (err) return res.status(500).json({ error: err.message });
+            const counts: Record<string, number> = {
+                picture: 0,
+                schematic: 0,
+                board_file: 0,
+                bom_csv: 0,
+                datasheet: 0,
+                other: 0,
+                total: 0
+            };
+            (rows || []).forEach((r: any) => {
+                counts[r.doc_type] = r.count;
+                counts.total += r.count;
+            });
+            res.json(counts);
+        }
+    );
+});
+
+app.delete('/api/uploaded-docs/:id', (req: Request, res: Response) => {
+    if (!canDeleteProjectDoc(req as any)) {
+        return res.status(403).json({ error: "You do not have permission to delete documents." });
+    }
+    const docId = req.params.id;
+    db.get("SELECT * FROM uploaded_docs WHERE id = ?", [docId], (err: Error | null, row: any) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ error: "Document not found" });
+
+        const filePath = path.join(__dirname, row.path.replace(/^\//, ''));
+        db.run("DELETE FROM uploaded_docs WHERE id = ?", [docId], function(this: any, delErr: Error | null) {
+            if (delErr) return res.status(500).json({ error: delErr.message });
+
+            // If it's a project doc, also clean up from project_docs
+            if (row.entity_type === 'project') {
+                db.run("DELETE FROM project_docs WHERE project_id = ? AND (path = ? OR filename = ?)", [row.project_id, row.path, row.filename]);
+            } else if (row.entity_type === 'revision') {
+                db.run("DELETE FROM formfactor_revision_docs WHERE formfactor_revision_id = ? AND (path = ? OR filename = ?)", [row.entity_id, row.path, row.filename]);
+            }
+
+            try {
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            } catch (unlinkErr) {
+                console.error("Failed to delete physical file:", unlinkErr);
+            }
+
+            res.json({ message: "Document deleted successfully", deletedId: docId });
+        });
+    });
+});
+
 
 // --- PCBs API Expansions ---
 app.get('/api/pcbs/:id', (req: Request, res: Response) => {
@@ -2057,6 +2214,20 @@ app.delete('/api/reworks/:id', async (req: Request, res: Response) => {
 
             db.run("DELETE FROM reworks WHERE id = ?", [reworkId], function(this: any, errDelete: Error | null) {
                 if (errDelete) return res.status(500).json({ error: errDelete.message });
+                
+                // Clean up rework images from uploaded_docs and disk
+                db.all("SELECT path FROM uploaded_docs WHERE entity_type = 'rework' AND entity_id = ?", [reworkId], (_eDoc: any, docRows: any[]) => {
+                    if (docRows && docRows.length > 0) {
+                        docRows.forEach((d: any) => {
+                            try {
+                                const diskPath = path.join(__dirname, d.path.replace(/^\//, ''));
+                                if (fs.existsSync(diskPath)) fs.unlinkSync(diskPath);
+                            } catch {}
+                        });
+                    }
+                    db.run("DELETE FROM uploaded_docs WHERE entity_type = 'rework' AND entity_id = ?", [reworkId]);
+                });
+
                 res.json({ deleted: this.changes });
             });
         });
