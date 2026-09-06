@@ -41,10 +41,10 @@ interface FormPackage {
 }
 
 export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
-    const { currentUserRole } = useAppState();
+    const { currentUserRole, debugBypassPermissions } = useAppState();
     const { permissions } = usePermissionsStore();
 
-    const canEditProject = currentUserRole === 'Super User' ||
+    const canEditProject = debugBypassPermissions || currentUserRole === 'Super User' ||
         (currentUserRole === 'User' && permissions['Projects__Edit__user'] === true) ||
         (currentUserRole === 'Guest' && permissions['Projects__Edit__guest'] === true);
 
@@ -379,6 +379,14 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                     <Trash2 size={20} />
                 </button>
             </header>
+
+            {debugBypassPermissions && currentUserRole !== 'Super User' && (
+                <div className="debug-preview-banner">
+                    <span className="debug-preview-banner-text">
+                        ⚡ Debug Preview Mode: UI permissions bypassed for page inspection.
+                    </span>
+                </div>
+            )}
 
             <form onSubmit={handleUpdate} className="add-form">
                 <div className="form-group">

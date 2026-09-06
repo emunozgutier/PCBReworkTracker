@@ -36,9 +36,9 @@ interface AddPCBProps {
 }
 
 export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
-    const { currentUser, currentUserRole } = useAppState();
+    const { currentUser, currentUserRole, debugBypassPermissions } = useAppState();
 
-    if (currentUserRole === 'Guest') {
+    if (!debugBypassPermissions && currentUserRole === 'Guest') {
         return (
             <div className="add-page-container">
                 <header className="add-page-header">
@@ -332,6 +332,14 @@ export function AddPCB({ onBack, onSuccess }: AddPCBProps) {
                 </button>
                 <h2>Add New PCB Board</h2>
             </header>
+
+            {debugBypassPermissions && currentUserRole === 'Guest' && (
+                <div className="debug-preview-banner">
+                    <span className="debug-preview-banner-text">
+                        ⚡ Debug Preview Mode: UI permissions bypassed for page inspection.
+                    </span>
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="add-form">
                 <FormGroup title="Silicon">

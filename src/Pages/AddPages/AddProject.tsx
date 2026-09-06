@@ -56,10 +56,10 @@ interface FormPackage {
 }
 
 export function AddProject({ onBack, onSuccess }: AddProjectProps) {
-    const { currentUserRole } = useAppState();
+    const { currentUserRole, debugBypassPermissions } = useAppState();
     const { permissions } = usePermissionsStore();
 
-    const canAddProject = currentUserRole === 'Super User' ||
+    const canAddProject = debugBypassPermissions || currentUserRole === 'Super User' ||
         (currentUserRole === 'User' && permissions['Projects__Add__user'] === true) ||
         (currentUserRole === 'Guest' && permissions['Projects__Add__guest'] === true);
 
@@ -338,6 +338,14 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                 </button>
                 <h2>Add New Project</h2>
             </header>
+
+            {debugBypassPermissions && currentUserRole !== 'Super User' && (
+                <div className="debug-preview-banner">
+                    <span className="debug-preview-banner-text">
+                        ⚡ Debug Preview Mode: UI permissions bypassed for page inspection.
+                    </span>
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="add-form">
                 <div className="form-group">

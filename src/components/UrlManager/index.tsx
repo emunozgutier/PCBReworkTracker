@@ -85,6 +85,74 @@ export function UrlManager() {
                 return;
             }
 
+            // Debug mode auto-enable via URL query or /debug path
+            const searchParams = new URLSearchParams(window.location.search);
+            if (searchParams.get('debug') === 'true' || searchParams.get('debug') === '1') {
+                useAppState.getState().setDebugMode(true);
+                useAppState.getState().setDebugBypassPermissions(true);
+            }
+
+            if (lowerPath === '/debug' || lowerPath === '/debug/') {
+                useAppState.getState().setDebugMode(true);
+                useAppState.getState().setDebugBypassPermissions(true);
+                useAppState.getState().setActiveTab('settings');
+                return;
+            }
+
+            // ── Add pages direct routing ─────────────────────────────────────────
+            if (lowerPath === '/projects/add' || lowerPath === '/projects/add/' || lowerPath === '/projects_add') {
+                useAppState.getState().addItem('projects_add');
+                return;
+            }
+            if (lowerPath === '/pcbs/add' || lowerPath === '/pcbs/add/' || lowerPath === '/pcbs_add') {
+                useAppState.getState().addItem('pcbs_add');
+                return;
+            }
+            if (lowerPath === '/reworks/add' || lowerPath === '/reworks/add/' || lowerPath === '/reworks_add') {
+                useAppState.getState().addItem('reworks_add');
+                return;
+            }
+            if (lowerPath === '/owners/add' || lowerPath === '/owners/add/' || lowerPath === '/owners_add') {
+                useAppState.getState().addItem('owners_add');
+                return;
+            }
+            if (lowerPath === '/tags/add' || lowerPath === '/tags/add/' || lowerPath === '/tags_add') {
+                useAppState.getState().addItem('tags_add');
+                return;
+            }
+
+            // ── Edit pages direct routing ────────────────────────────────────────
+            const projEditMatch = lowerPath.match(/^\/projects\/([^\/]+)\/edit\/?$/);
+            if (projEditMatch || lowerPath === '/projects/edit' || lowerPath === '/projects_edit') {
+                const id = projEditMatch ? projEditMatch[1] : null;
+                useAppState.getState().editItem('projects_edit', id || 1);
+                return;
+            }
+            const pcbEditMatch = lowerPath.match(/^\/pcbs\/([^\/]+)\/edit\/?$/);
+            if (pcbEditMatch || lowerPath === '/pcbs/edit' || lowerPath === '/pcbs_edit') {
+                const id = pcbEditMatch ? pcbEditMatch[1] : null;
+                useAppState.getState().editItem('pcbs_edit', id || 1);
+                return;
+            }
+            const reworkEditMatch = lowerPath.match(/^\/reworks\/([^\/]+)\/edit\/?$/);
+            if (reworkEditMatch || lowerPath === '/reworks/edit' || lowerPath === '/reworks_edit') {
+                const id = reworkEditMatch ? reworkEditMatch[1] : null;
+                useAppState.getState().editItem('reworks_edit', id || 1);
+                return;
+            }
+            const ownerEditMatch = lowerPath.match(/^\/owners\/([^\/]+)\/edit\/?$/);
+            if (ownerEditMatch || lowerPath === '/owners/edit' || lowerPath === '/owners_edit') {
+                const id = ownerEditMatch ? ownerEditMatch[1] : null;
+                useAppState.getState().editItem('owners_edit', id || 1);
+                return;
+            }
+            const tagEditMatch = lowerPath.match(/^\/tags\/([^\/]+)\/edit\/?$/);
+            if (tagEditMatch || lowerPath === '/tags/edit' || lowerPath === '/tags_edit') {
+                const id = tagEditMatch ? tagEditMatch[1] : null;
+                useAppState.getState().editItem('tags_edit', id || 1);
+                return;
+            }
+
             // Projects
             if (lowerPath.startsWith('/project/') || lowerPath.startsWith('/projects/')) {
                 usePcbStore.getState().resetFilters();
@@ -227,6 +295,29 @@ export function UrlManager() {
         if (page === 'reset_otp') {
             const search = window.location.search;
             const targetUrl = `${base}/reset-otp${search}`;
+            const currentPath = window.location.pathname + window.location.search;
+            if (currentPath !== targetUrl) {
+                window.history.pushState({}, '', targetUrl);
+            }
+            return;
+        }
+
+        if (page.endsWith('_add')) {
+            const resource = page.replace('_add', '');
+            const search = window.location.search;
+            const targetUrl = `${base}/${resource}/add${search}`;
+            const currentPath = window.location.pathname + window.location.search;
+            if (currentPath !== targetUrl) {
+                window.history.pushState({}, '', targetUrl);
+            }
+            return;
+        }
+
+        if (page.endsWith('_edit')) {
+            const resource = page.replace('_edit', '');
+            const search = window.location.search;
+            const idPart = selectedId ? `/${encodeURIComponent(String(selectedId))}` : '';
+            const targetUrl = `${base}/${resource}${idPart}/edit${search}`;
             const currentPath = window.location.pathname + window.location.search;
             if (currentPath !== targetUrl) {
                 window.history.pushState({}, '', targetUrl);

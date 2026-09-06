@@ -15,7 +15,8 @@ export function TopButtons() {
         setShowFilters,
         showMobileSearch,
         setShowMobileSearch,
-        currentUserRole
+        currentUserRole,
+        debugBypassPermissions
     } = useAppState();
 
     // PCBs and Tags (tags) have search and filters
@@ -28,7 +29,7 @@ export function TopButtons() {
 
     // Check permissions for Add button
     let canAdd = false;
-    if (currentUserRole === 'Super User') {
+    if (debugBypassPermissions || currentUserRole === 'Super User') {
         canAdd = true;
     } else if (currentUserRole === 'User') {
         // Users can add PCBs and reworks, but tag/project creation is controlled by permissions

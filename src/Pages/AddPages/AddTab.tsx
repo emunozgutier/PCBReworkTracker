@@ -14,7 +14,7 @@ export function AddTab({ onBack, onSuccess }: AddTabProps) {
     const [name, setName] = useState('');
     const [color, setColor] = useState('#818cf8');
     const { addTag, loading } = useTagStore();
-    const { currentUserRole } = useAppState();
+    const { currentUserRole, debugBypassPermissions } = useAppState();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -35,6 +35,7 @@ export function AddTab({ onBack, onSuccess }: AddTabProps) {
     const { permissions } = usePermissionsStore();
 
     const canAddTag =
+        debugBypassPermissions ||
         currentUserRole === 'Super User' ||
         (currentUserRole === 'User' && permissions['Tags__Add__user'] === true);
 
@@ -63,6 +64,14 @@ export function AddTab({ onBack, onSuccess }: AddTabProps) {
                 </button>
                 <h2>Add New Tag</h2>
             </header>
+
+            {debugBypassPermissions && currentUserRole !== 'Super User' && (
+                <div className="debug-preview-banner">
+                    <span className="debug-preview-banner-text">
+                        ⚡ Debug Preview Mode: UI permissions bypassed for page inspection.
+                    </span>
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="add-form">
                 <div className="form-group">

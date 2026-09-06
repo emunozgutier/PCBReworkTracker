@@ -68,10 +68,10 @@ const compressImage = async (file: File, maxSizeMB: number = 10, maxDimension: n
 };
 
 export function AddRework({ onBack, onSuccess }: AddReworkProps) {
-    const { selectedId, currentUser, currentUserRole, allowGuestMinorRework } = useAppState();
+    const { selectedId, currentUser, currentUserRole, allowGuestMinorRework, debugBypassPermissions } = useAppState();
     const priorities = usePriorityStore((state) => state.priorities);
 
-    if (currentUserRole === 'Guest' && !allowGuestMinorRework) {
+    if (!debugBypassPermissions && currentUserRole === 'Guest' && !allowGuestMinorRework) {
         return (
             <div className="add-page-container">
                 <header className="add-page-header">
@@ -276,6 +276,14 @@ export function AddRework({ onBack, onSuccess }: AddReworkProps) {
                 </button>
                 <h2>Add Rework Record</h2>
             </header>
+
+            {debugBypassPermissions && currentUserRole === 'Guest' && (
+                <div className="debug-preview-banner">
+                    <span className="debug-preview-banner-text">
+                        ⚡ Debug Preview Mode: UI permissions bypassed for page inspection.
+                    </span>
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="add-form">
                 {selectedId ? (

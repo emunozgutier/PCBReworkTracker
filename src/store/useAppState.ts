@@ -72,12 +72,30 @@ interface NavigationState {
     setQrCodeCustomBaseUrl: (url: string) => void;
     setQrCodeErrorCorrection: (level: 'L' | 'M' | 'Q' | 'H') => void;
     setQrCodeMode: (mode: 'byte' | 'alphanumeric') => void;
+    // Debug & AI Tools
+    debugMode: boolean;
+    debugBypassPermissions: boolean;
+    setDebugMode: (enabled: boolean) => void;
+    setDebugBypassPermissions: (bypass: boolean) => void;
+    setRoleQuick: (role: 'Super User' | 'User' | 'Guest') => void;
     resetSettings: () => void;
 }
 
 // Initial default auth values
 let initialUser = null;
 let initialRole: 'Super User' | 'User' | 'Guest' = 'Guest';
+
+function getInitialDebugMode(): boolean {
+    if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('debug') === 'true' || params.get('debug') === '1') return true;
+        if (window.location.pathname.toLowerCase().includes('/debug')) return true;
+        try {
+            return localStorage.getItem('pcb_debug_mode') === 'true';
+        } catch {}
+    }
+    return false;
+}
 
 function getInitialCrcFormat(): 'letter' | 'nato' {
     if (typeof window !== 'undefined') {
@@ -111,6 +129,20 @@ export const useAppState = create<NavigationState>()(
             showMobileSearch: false,
             currentUser: initialUser,
             currentUserRole: initialRole,
+
+            // Debug & AI Tools
+            debugMode: getInitialDebugMode(),
+            debugBypassPermissions: getInitialDebugMode(),
+            setDebugMode: (debugMode) => {
+                set({ debugMode });
+                if (typeof window !== 'undefined') {
+                    try { localStorage.setItem('pcb_debug_mode', String(debugMode)); } catch {}
+                }
+            },
+            setDebugBypassPermissions: (debugBypassPermissions) => set({ debugBypassPermissions }),
+            setRoleQuick: (role) => {
+                set({ currentUserRole: role });
+            },
 
             // Global Settings
             crcFormat: getInitialCrcFormat(),
@@ -338,7 +370,9 @@ export const useAppState = create<NavigationState>()(
                 qrCodeErrorCorrection: state.qrCodeErrorCorrection,
                 qrCodeMode: state.qrCodeMode,
                 currentUser: state.currentUser,
-                currentUserRole: state.currentUserRole
+                currentUserRole: state.currentUserRole,
+                debugMode: state.debugMode,
+                debugBypassPermissions: state.debugBypassPermissions
             }),
             onRehydrateStorage: () => (state) => {
                 if (state) {
