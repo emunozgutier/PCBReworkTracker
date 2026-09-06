@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
     ArrowLeft, Save, HelpCircle, Upload, FileText, Cpu, Layers, 
-    Box, Trash2, Plus, CheckCircle2, AlertCircle, CircuitBoard, Hash, Binary, Sparkles
+    Box, Trash2, Plus, CheckCircle2, AlertCircle, CircuitBoard, Hash, Binary, Sparkles,
+    Paperclip, X, FileCheck
 } from 'lucide-react';
 import { MultipleInputs } from '../../components/forms/MultipleInputs';
 import { useProjectStore } from '../../store/clientDataBase/useProjectStore';
@@ -160,11 +161,62 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
         }
     };
 
-    const handleFileUpload = (file: File, updateRevField: (filename: string) => void) => {
-        if (!selectedFiles.some(f => f.name === file.name)) {
-            setSelectedFiles(prev => [...prev, file]);
+    const handleFileUpload = (file: File, updateRevField?: (filename: string) => void) => {
+        if (file.size > 25 * 1024 * 1024) {
+            alert(`File "${file.name}" exceeds the 25MB maximum size limit.`);
+            return;
         }
-        updateRevField(file.name);
+        setSelectedFiles(prev => {
+            const exists = prev.some(f => f.name === file.name);
+            return exists ? prev : [...prev, file];
+        });
+        if (updateRevField) {
+            updateRevField(file.name);
+        }
+    };
+
+    const handleRemoveFile = (filename: string) => {
+        setSelectedFiles(prev => prev.filter(f => f.name !== filename));
+        setPackages(prev => prev.map(pkg => ({
+            ...pkg,
+            silicon_versions: pkg.silicon_versions.map(sv => ({
+                ...sv,
+                formfactors: sv.formfactors.map(ff => ({
+                    ...ff,
+                    revisions: ff.revisions.map(r => ({
+                        ...r,
+                        schematic: r.schematic === filename ? null : r.schematic,
+                        board_file: r.board_file === filename ? null : r.board_file,
+                        bom_csv: r.bom_csv === filename ? null : r.bom_csv,
+                        datasheet: r.datasheet === filename ? null : r.datasheet,
+                    }))
+                }))
+            }))
+        })));
+    };
+
+    const handleMultipleFiles = (files: FileList | null) => {
+        if (!files || files.length === 0) return;
+        const fileList = Array.from(files);
+        fileList.forEach(file => {
+            handleFileUpload(file);
+            const ext = file.name.toLowerCase().split('.').pop() || '';
+            const curRev = packages[activePkgTab]?.silicon_versions[activeSiTab]?.formfactors[activeFfTab]?.revisions[activeRevTab];
+            if (curRev) {
+                const updated = [...packages];
+                const revRef = updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab];
+                if (ext === 'pdf' && !revRef.schematic) {
+                    revRef.schematic = file.name;
+                } else if (ext === 'brd' && !revRef.board_file) {
+                    revRef.board_file = file.name;
+                } else if ((ext === 'csv' || ext === 'xlsx' || ext === 'xls') && !revRef.bom_csv) {
+                    revRef.bom_csv = file.name;
+                } else if (ext === 'pdf' && revRef.schematic && !revRef.datasheet) {
+                    revRef.datasheet = file.name;
+                }
+                setPackages(updated);
+            }
+        });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -919,11 +971,26 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                                                                                         <option key={f.name} value={f.name}>{f.name}</option>
                                                                                                     ))}
                                                                                                 </select>
+                                                                                                {currentRev.schematic && (
+                                                                                                    <button
+                                                                                                        type="button"
+                                                                                                        className="doc-clear-btn"
+                                                                                                        onClick={() => {
+                                                                                                            const updated = [...packages];
+                                                                                                            updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].schematic = null;
+                                                                                                            setPackages(updated);
+                                                                                                        }}
+                                                                                                        title="Detach schematic"
+                                                                                                    >
+                                                                                                        <X size={12} />
+                                                                                                    </button>
+                                                                                                )}
                                                                                                 <input 
                                                                                                     type="file" 
                                                                                                     accept=".pdf" 
                                                                                                     id={`sch-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
                                                                                                     style={{ display: 'none' }}
+                                                                                                    onClick={e => { (e.target as HTMLInputElement).value = ''; }}
                                                                                                     onChange={e => {
                                                                                                         if (e.target.files && e.target.files[0]) {
                                                                                                             handleFileUpload(e.target.files[0], (fn) => {
@@ -936,10 +1003,11 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                                                                                 />
                                                                                                 <label 
                                                                                                     htmlFor={`sch-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
-                                                                                                    style={{ cursor: 'pointer', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                                                    className="doc-browse-btn"
                                                                                                     title="Upload Schematic PDF"
                                                                                                 >
-                                                                                                    <Upload size={14} />
+                                                                                                    <Upload size={13} />
+                                                                                                    <span>Browse</span>
                                                                                                 </label>
                                                                                             </div>
                                                                                             <span style={{ fontSize: '0.72rem', color: currentRev.schematic ? '#4ade80' : 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -972,11 +1040,26 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                                                                                         <option key={f.name} value={f.name}>{f.name}</option>
                                                                                                     ))}
                                                                                                 </select>
+                                                                                                {currentRev.board_file && (
+                                                                                                    <button
+                                                                                                        type="button"
+                                                                                                        className="doc-clear-btn"
+                                                                                                        onClick={() => {
+                                                                                                            const updated = [...packages];
+                                                                                                            updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].board_file = null;
+                                                                                                            setPackages(updated);
+                                                                                                        }}
+                                                                                                        title="Detach board file"
+                                                                                                    >
+                                                                                                        <X size={12} />
+                                                                                                    </button>
+                                                                                                )}
                                                                                                 <input 
                                                                                                     type="file" 
                                                                                                     accept=".brd" 
                                                                                                     id={`brd-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
                                                                                                     style={{ display: 'none' }}
+                                                                                                    onClick={e => { (e.target as HTMLInputElement).value = ''; }}
                                                                                                     onChange={e => {
                                                                                                         if (e.target.files && e.target.files[0]) {
                                                                                                             handleFileUpload(e.target.files[0], (fn) => {
@@ -989,10 +1072,11 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                                                                                 />
                                                                                                 <label 
                                                                                                     htmlFor={`brd-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
-                                                                                                    style={{ cursor: 'pointer', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                                                    className="doc-browse-btn"
                                                                                                     title="Upload Board (.brd) File"
                                                                                                 >
-                                                                                                    <Upload size={14} />
+                                                                                                    <Upload size={13} />
+                                                                                                    <span>Browse</span>
                                                                                                 </label>
                                                                                             </div>
                                                                                             <span style={{ fontSize: '0.72rem', color: currentRev.board_file ? '#4ade80' : 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -1000,14 +1084,14 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                                                                             </span>
                                                                                         </div>
 
-                                                                                        {/* 3. BOM CSV (.csv) */}
+                                                                                        {/* 3. BOM CSV (.csv, .xlsx, .xls, .txt) */}
                                                                                         <div className="doc-slot-card">
                                                                                             <div className="doc-slot-title">
                                                                                                 <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#34d399' }}>
-                                                                                                    <FileText size={15} /> BOM CSV
+                                                                                                    <FileText size={15} /> BOM CSV / Excel
                                                                                                 </span>
                                                                                                 <span style={{ fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
-                                                                                                    .CSV
+                                                                                                    .CSV / .XLSX
                                                                                                 </span>
                                                                                             </div>
                                                                                             <div style={{ display: 'flex', gap: '6px' }}>
@@ -1025,11 +1109,26 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                                                                                         <option key={f.name} value={f.name}>{f.name}</option>
                                                                                                     ))}
                                                                                                 </select>
+                                                                                                {currentRev.bom_csv && (
+                                                                                                    <button
+                                                                                                        type="button"
+                                                                                                        className="doc-clear-btn"
+                                                                                                        onClick={() => {
+                                                                                                            const updated = [...packages];
+                                                                                                            updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].bom_csv = null;
+                                                                                                            setPackages(updated);
+                                                                                                        }}
+                                                                                                        title="Detach BOM file"
+                                                                                                    >
+                                                                                                        <X size={12} />
+                                                                                                    </button>
+                                                                                                )}
                                                                                                 <input 
                                                                                                     type="file" 
-                                                                                                    accept=".csv" 
+                                                                                                    accept=".csv,.xlsx,.xls,.txt" 
                                                                                                     id={`bom-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
                                                                                                     style={{ display: 'none' }}
+                                                                                                    onClick={e => { (e.target as HTMLInputElement).value = ''; }}
                                                                                                     onChange={e => {
                                                                                                         if (e.target.files && e.target.files[0]) {
                                                                                                             handleFileUpload(e.target.files[0], (fn) => {
@@ -1042,18 +1141,19 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                                                                                 />
                                                                                                 <label 
                                                                                                     htmlFor={`bom-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
-                                                                                                    style={{ cursor: 'pointer', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                                                                                    title="Upload BOM CSV"
+                                                                                                    className="doc-browse-btn"
+                                                                                                    title="Upload BOM CSV or Excel File"
                                                                                                 >
-                                                                                                    <Upload size={14} />
+                                                                                                    <Upload size={13} />
+                                                                                                    <span>Browse</span>
                                                                                                 </label>
                                                                                             </div>
                                                                                             <span style={{ fontSize: '0.72rem', color: currentRev.bom_csv ? '#4ade80' : 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                                                                {currentRev.bom_csv ? `✓ ${currentRev.bom_csv}` : 'No BOM CSV attached'}
+                                                                                                {currentRev.bom_csv ? `✓ ${currentRev.bom_csv}` : 'No BOM attached'}
                                                                                             </span>
                                                                                         </div>
 
-                                                                                        {/* 4. Datasheet (.pdf) */}
+                                                                                        {/* 4. Datasheet (.pdf, .txt) */}
                                                                                         <div className="doc-slot-card">
                                                                                             <div className="doc-slot-title">
                                                                                                 <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fbbf24' }}>
@@ -1078,11 +1178,26 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                                                                                         <option key={f.name} value={f.name}>{f.name}</option>
                                                                                                     ))}
                                                                                                 </select>
+                                                                                                {currentRev.datasheet && (
+                                                                                                    <button
+                                                                                                        type="button"
+                                                                                                        className="doc-clear-btn"
+                                                                                                        onClick={() => {
+                                                                                                            const updated = [...packages];
+                                                                                                            updated[activePkgTab].silicon_versions[activeSiTab].formfactors[activeFfTab].revisions[activeRevTab].datasheet = null;
+                                                                                                            setPackages(updated);
+                                                                                                        }}
+                                                                                                        title="Detach datasheet"
+                                                                                                    >
+                                                                                                        <X size={12} />
+                                                                                                    </button>
+                                                                                                )}
                                                                                                 <input 
                                                                                                     type="file" 
-                                                                                                    accept=".pdf" 
+                                                                                                    accept=".pdf,.txt" 
                                                                                                     id={`ds-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
                                                                                                     style={{ display: 'none' }}
+                                                                                                    onClick={e => { (e.target as HTMLInputElement).value = ''; }}
                                                                                                     onChange={e => {
                                                                                                         if (e.target.files && e.target.files[0]) {
                                                                                                             handleFileUpload(e.target.files[0], (fn) => {
@@ -1095,16 +1210,79 @@ export function AddProject({ onBack, onSuccess }: AddProjectProps) {
                                                                                                 />
                                                                                                 <label 
                                                                                                     htmlFor={`ds-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
-                                                                                                    style={{ cursor: 'pointer', padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                                                    className="doc-browse-btn"
                                                                                                     title="Upload Datasheet PDF"
                                                                                                 >
-                                                                                                    <Upload size={14} />
+                                                                                                    <Upload size={13} />
+                                                                                                    <span>Browse</span>
                                                                                                 </label>
                                                                                             </div>
                                                                                             <span style={{ fontSize: '0.72rem', color: currentRev.datasheet ? '#4ade80' : 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                                                                 {currentRev.datasheet ? `✓ ${currentRev.datasheet}` : 'No datasheet attached'}
                                                                                             </span>
                                                                                         </div>
+                                                                                    </div>
+
+                                                                                    {/* Staged Files & Documents Hub */}
+                                                                                    <div className="staged-files-card">
+                                                                                        <div className="staged-files-header">
+                                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                                                <Paperclip size={15} color="var(--accent)" />
+                                                                                                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text)' }}>
+                                                                                                    Staged Project Files ({selectedFiles.length})
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                                                                <input 
+                                                                                                    type="file" 
+                                                                                                    multiple
+                                                                                                    accept=".pdf,.brd,.csv,.xlsx,.xls,.txt,.png,.jpg,.jpeg" 
+                                                                                                    id={`bulk-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
+                                                                                                    style={{ display: 'none' }}
+                                                                                                    onClick={e => { (e.target as HTMLInputElement).value = ''; }}
+                                                                                                    onChange={e => handleMultipleFiles(e.target.files)}
+                                                                                                />
+                                                                                                <label 
+                                                                                                    htmlFor={`bulk-upload-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
+                                                                                                    className="doc-browse-btn"
+                                                                                                    title="Select multiple project documents or CAD files"
+                                                                                                >
+                                                                                                    <Plus size={13} />
+                                                                                                    <span>Add Documents / CAD Files</span>
+                                                                                                </label>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        
+                                                                                        {selectedFiles.length > 0 ? (
+                                                                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                                                                                {selectedFiles.map(f => {
+                                                                                                    const sizeKb = Math.round(f.size / 1024);
+                                                                                                    return (
+                                                                                                        <div key={f.name} className="staged-file-chip">
+                                                                                                            <FileCheck size={14} color="#34d399" />
+                                                                                                            <span style={{ fontWeight: 600, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                                                                                {f.name}
+                                                                                                            </span>
+                                                                                                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                                                                                                                ({sizeKb > 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`})
+                                                                                                            </span>
+                                                                                                            <button
+                                                                                                                type="button"
+                                                                                                                className="staged-file-remove"
+                                                                                                                onClick={() => handleRemoveFile(f.name)}
+                                                                                                                title={`Remove ${f.name}`}
+                                                                                                            >
+                                                                                                                <X size={12} />
+                                                                                                            </button>
+                                                                                                        </div>
+                                                                                                    );
+                                                                                                })}
+                                                                                            </div>
+                                                                                        ) : (
+                                                                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                                                                                No files staged yet. Use <strong>Browse</strong> in the revision slots above or click <strong>Add Documents / CAD Files</strong> to attach schematics, board files, or BOMs.
+                                                                                            </span>
+                                                                                        )}
                                                                                     </div>
                                                                                 </div>
                                                                             </>

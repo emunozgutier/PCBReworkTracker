@@ -161,6 +161,10 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
     const currentRev = currentFf?.revisions[activeRevTab] || currentFf?.revisions[0];
 
     const handleFileUpload = (file: File, updateRevField: (filename: string) => void) => {
+        if (file.size > 25 * 1024 * 1024) {
+            alert(`File "${file.name}" exceeds the 25MB maximum size limit.`);
+            return;
+        }
         if (!selectedFiles.some(f => f.name === file.name)) {
             setSelectedFiles(prev => [...prev, file]);
         }
@@ -714,6 +718,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                                         accept=".pdf" 
                                                         id={`sch-edit-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
                                                         style={{ display: 'none' }}
+                                                        onClick={e => { (e.target as HTMLInputElement).value = ''; }}
                                                         onChange={e => {
                                                             if (e.target.files && e.target.files[0]) {
                                                                 handleFileUpload(e.target.files[0], (fn) => {
@@ -759,6 +764,7 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                                         accept=".brd" 
                                                         id={`brd-edit-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
                                                         style={{ display: 'none' }}
+                                                        onClick={e => { (e.target as HTMLInputElement).value = ''; }}
                                                         onChange={e => {
                                                             if (e.target.files && e.target.files[0]) {
                                                                 handleFileUpload(e.target.files[0], (fn) => {
@@ -801,9 +807,10 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                                     </select>
                                                     <input 
                                                         type="file" 
-                                                        accept=".csv" 
+                                                        accept=".csv,.xlsx,.xls,.txt" 
                                                         id={`bom-edit-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
                                                         style={{ display: 'none' }}
+                                                        onClick={e => { (e.target as HTMLInputElement).value = ''; }}
                                                         onChange={e => {
                                                             if (e.target.files && e.target.files[0]) {
                                                                 handleFileUpload(e.target.files[0], (fn) => {
@@ -846,9 +853,10 @@ export function EditProject({ id, onBack, onSuccess }: EditProjectProps) {
                                                     </select>
                                                     <input 
                                                         type="file" 
-                                                        accept=".pdf" 
+                                                        accept=".pdf,.txt" 
                                                         id={`ds-edit-${activePkgTab}-${activeSiTab}-${activeFfTab}-${activeRevTab}`}
                                                         style={{ display: 'none' }}
+                                                        onClick={e => { (e.target as HTMLInputElement).value = ''; }}
                                                         onChange={e => {
                                                             if (e.target.files && e.target.files[0]) {
                                                                 handleFileUpload(e.target.files[0], (fn) => {
